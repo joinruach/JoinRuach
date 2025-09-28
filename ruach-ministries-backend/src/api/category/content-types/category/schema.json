@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "categories",
+  "info": {
+    "singularName": "category",
+    "pluralName": "categories",
+    "displayName": "Category",
+    "description": "Organize your content into categories"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "unique": true,
+      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "text"
+    },
+    "accentColor": {
+      "type": "string",
+      "regex": "^#(?:[0-9a-fA-F]{3}){1,2}$"
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "mediaItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::media-item.media-item",
+      "mappedBy": "category"
+    },
+    "articles": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::article.article",
+      "mappedBy": "category"
+    },
+    "audio_files": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::audio-file.audio-file",
+      "mappedBy": "categories"
+    },
+    "images": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::image.image",
+      "mappedBy": "categories"
+    },
+    "videos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::video.video",
+      "mappedBy": "categories"
+    }
+  }
+}

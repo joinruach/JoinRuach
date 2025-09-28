@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "video_heroes",
+  "info": {
+    "singularName": "video-hero",
+    "pluralName": "video-heroes",
+    "displayName": "video-hero",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "button": {
+      "displayName": "Button",
+      "type": "component",
+      "repeatable": true,
+      "component": "general.button"
+    }
+  }
+}

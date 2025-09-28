@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_shared_resource_links",
+  "info": {
+    "displayName": "Resource Link"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["notes", "download", "registration", "external", "assignment"],
+      "default": "external"
+    },
+    "requiresLogin": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

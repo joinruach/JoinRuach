@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "audio_files",
+  "info": {
+    "singularName": "audio-file",
+    "pluralName": "audio-files",
+    "displayName": "Audio file",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "audioFile": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "files",
+        "audios"
+      ]
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "duration": {
+      "type": "decimal"
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tag.tag",
+      "inversedBy": "audio_files"
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "audio_files"
+    }
+  }
+}

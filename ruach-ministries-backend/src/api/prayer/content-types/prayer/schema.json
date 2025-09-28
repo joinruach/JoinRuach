@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "prayers",
+  "info": {
+    "singularName": "prayer",
+    "pluralName": "prayers",
+    "displayName": "Prayer"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "body": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["open", "answered", "closed"],
+      "default": "open"
+    },
+    "content": {
+      "type": "blocks"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::author.author",
+      "inversedBy": "prayers"
+    },
+    "prayedCount": {
+      "type": "integer"
+    },
+    "answered": {
+      "type": "boolean"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "replies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reply.reply",
+      "mappedBy": "prayer"
+    }
+  }
+}

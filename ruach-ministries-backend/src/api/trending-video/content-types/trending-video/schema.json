@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "trending_videos",
+  "info": {
+    "singularName": "trending-video",
+    "pluralName": "trending-videos",
+    "displayName": "Trending Video",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "views": {
+      "type": "integer",
+      "default": 0
+    },
+    "trendingScore": {
+      "type": "integer",
+      "default": 0
+    },
+    "lastUpdated": {
+      "type": "date"
+    }
+  }
+}

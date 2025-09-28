@@ -1,0 +1,299 @@
+================================================================================
+About (about) - singleType
+ - title: string ()
+ - blocks: dynamiczone (components=shared.quote,shared.rich-text)
+================================================================================
+Article (article) - collectionType
+ - title: string ()
+ - description: text ()
+ - slug: uid ()
+ - cover: media (single, types=images|files|videos)
+ - author: relation (manyToOne, api::author.author, inverse:articles)
+ - category: relation (manyToOne, api::category.category, inverse:articles)
+ - blocks: dynamiczone (components=shared.media,shared.quote,shared.rich-text,shared.slider)
+================================================================================
+Audio file (audio-file) - collectionType
+ - title: string ()
+ - audioFile: media (single, types=files|audios)
+ - description: blocks ()
+ - duration: decimal ()
+ - tags: relation (manyToMany, api::tag.tag, inverse:audio_files)
+ - categories: relation (manyToMany, api::category.category, inverse:audio_files)
+================================================================================
+Author (author) - collectionType
+ - name: string ()
+ - avatar: media (single, types=images|files|videos)
+ - email: string ()
+ - articles: relation (oneToMany, api::article.article, mapped:author)
+ - prayers: relation (oneToMany, api::prayer.prayer, mapped:author)
+================================================================================
+Blog Post (blog-post) - collectionType
+ - title: string ()
+ - slug: uid ()
+ - content: blocks ()
+ - publishedDate: date ()
+ - featuredImage: media (single, types=images|files|videos|audios)
+ - team_member: relation (manyToOne, api::team-member.team-member, inverse:blog_posts)
+================================================================================
+Category (category) - collectionType
+ - name: string (required, unique)
+ - slug: uid (required, unique)
+ - description: text ()
+ - accentColor: string ()
+ - displayOrder: integer (default=0)
+ - mediaItems: relation (oneToMany, api::media-item.media-item, mapped:category)
+ - articles: relation (oneToMany, api::article.article, mapped:category)
+ - audio_files: relation (manyToMany, api::audio-file.audio-file, mapped:categories)
+ - images: relation (manyToMany, api::image.image, mapped:categories)
+ - videos: relation (manyToMany, api::video.video, mapped:categories)
+================================================================================
+Channel (channel) - collectionType
+ - name: string (required)
+ - avatar: media (single, types=images|files|videos|audios)
+ - description: blocks ()
+ - videos: relation (manyToMany, api::video.video, mapped:channels)
+================================================================================
+Comment Report (comment-report) - collectionType
+ - commentId: string (required)
+ - reason: text ()
+ - user: relation (manyToOne, plugin::users-permissions.user)
+================================================================================
+Contact Info (contact-info) - singleType
+ - email: email ()
+ - phone: string ()
+ - address: text ()
+ - socialLinks: component (repeatable, general.social-links)
+================================================================================
+contact-message (contact-message) - collectionType
+ - name: string ()
+ - email: email ()
+ - message: blocks ()
+================================================================================
+Course (course) - collectionType
+ - title: string (required)
+ - excerpt: text ()
+ - slug: uid (required, unique)
+ - description: text ()
+ - level: enumeration (enum=foundation|intermediate|advanced, default='foundation')
+ - estimatedDuration: string ()
+ - featured: boolean (default=False)
+ - cover: media (single, types=images)
+ - heroVideo: media (single, types=videos)
+ - lessons: relation (oneToMany, api::lesson.lesson, mapped:course)
+ - ctaLabel: string ()
+ - ctaUrl: string ()
+ - seoTitle: string ()
+ - seoDescription: text ()
+ - seoImage: media (single, types=images)
+================================================================================
+Event (event) - collectionType
+ - title: string (required)
+ - slug: uid (required, unique)
+ - startDate: datetime (required)
+ - endDate: datetime ()
+ - timezone: string ()
+ - isOnline: boolean (default=False)
+ - location: string ()
+ - description: text ()
+ - registrationUrl: string ()
+ - ctaLabel: string ()
+ - cover: media (single, types=images)
+ - heroGallery: media (multiple, types=images)
+ - category: enumeration (enum=conference|gathering|outreach|online, default='conference')
+ - seoTitle: string ()
+ - seoDescription: text ()
+ - seoImage: media (single, types=images)
+================================================================================
+FAQ (faq) - collectionType
+ - question: text ()
+ - answer: blocks ()
+================================================================================
+Gallery (gallery) - collectionType
+ - title: string ()
+ - image: media (multiple, types=images|files|videos|audios)
+================================================================================
+Global (global) - singleType
+ - siteName: string (required)
+ - favicon: media (single, types=images|files|videos)
+ - siteDescription: text (required)
+ - defaultSeo: component (shared.seo)
+ - contactEmail: string ()
+ - contactPhone: string ()
+ - mailingAddress: text ()
+ - socialLinks: component (repeatable, shared.social-link)
+ - primaryCtaLabel: string ()
+ - primaryCtaUrl: string ()
+================================================================================
+Hero Section (hero-section) - singleType
+ - title: string ()
+ - subtitle: text ()
+ - backgroundImage: media (single, types=images|files|videos|audios)
+ - buttonText: string ()
+ - buttonLink: string ()
+================================================================================
+Image (image) - collectionType
+ - title: string ()
+ - altText: string ()
+ - imageFile: media (single, types=images|files|videos|audios)
+ - tags: relation (manyToMany, api::tag.tag, inverse:images)
+ - categories: relation (manyToMany, api::category.category, inverse:images)
+ - team_member: relation (manyToOne, api::team-member.team-member, inverse:images)
+================================================================================
+Lesson (lesson) - collectionType
+ - title: string (required)
+ - slug: uid (required, unique)
+ - summary: text ()
+ - order: integer (required, default=1, min=1)
+ - duration: integer (min=0)
+ - videoUrl: string ()
+ - source: component (media.video-source)
+ - transcript: richtext ()
+ - transcriptFile: media (single, types=files)
+ - course: relation (manyToOne, api::course.course, inverse:lessons)
+ - speakers: relation (manyToMany, api::speaker.speaker, mapped:lessons)
+ - resources: component (repeatable, shared.resource-link)
+ - previewAvailable: boolean (default=False)
+================================================================================
+Lesson Comment (lesson-comment) - collectionType
+ - courseSlug: string (required)
+ - lessonSlug: string (required)
+ - text: text (required)
+ - approved: boolean (default=False)
+ - user: relation (manyToOne, plugin::users-permissions.user)
+================================================================================
+Lesson Progress (lesson-progress) - collectionType
+ - courseSlug: string (required)
+ - lessonSlug: string (required)
+ - secondsWatched: integer (default=0)
+ - completed: boolean (default=False)
+ - user: relation (manyToOne, plugin::users-permissions.user)
+================================================================================
+Media Item (media-item) - collectionType
+ - title: string (required)
+ - type: enumeration (enum=testimony|teaching|worship|podcast|short, required, default='testimony')
+ - slug: uid (required, unique)
+ - description: text ()
+ - excerpt: text ()
+ - views: integer (default=0, locked, min=0)
+ - legacyCategory: string (private, locked)
+ - category: relation (manyToOne, api::category.category, inverse:mediaItems)
+ - source: component (media.video-source)
+ - durationSec: integer (min=0)
+ - releasedAt: datetime ()
+ - featured: boolean (default=False)
+ - speakers: relation (manyToMany, api::speaker.speaker, inverse:mediaItems)
+ - tags: relation (manyToMany, api::tag.tag, mapped:mediaItems)
+ - videoUrl: string ()
+ - ctaLabel: string ()
+ - ctaUrl: string ()
+ - thumbnail: media (single, types=images)
+ - gallery: media (multiple, types=images)
+ - transcript: richtext ()
+ - seoTitle: string ()
+ - seoDescription: text ()
+ - seoImage: media (single, types=images)
+================================================================================
+Prayer (prayer) - collectionType
+ - name: string ()
+ - email: string ()
+ - body: text ()
+ - status: enumeration (enum=open|answered|closed, default='open')
+ - content: blocks ()
+ - author: relation (manyToOne, api::author.author, inverse:prayers)
+ - prayedCount: integer ()
+ - answered: boolean ()
+ - featured: boolean (default=False)
+ - city: string ()
+ - country: string ()
+ - replies: relation (oneToMany, api::reply.reply, mapped:prayer)
+================================================================================
+Project (project) - collectionType
+ - title: string ()
+ - description: blocks ()
+ - videoURL: string ()
+ - thumbnail: media (single, types=images|files|videos|audios)
+ - publishedDate: date ()
+================================================================================
+Reply (reply) - collectionType
+ - content: text ()
+ - author: relation (oneToOne, api::user-profile.user-profile, inverse:reply)
+ - prayer: relation (manyToOne, api::prayer.prayer, inverse:replies)
+================================================================================
+setting (setting) - collectionType
+ - siteName: string ()
+ - logo: media (single, types=images|files|videos|audios)
+ - favicon: media (single, types=images|files|videos|audios)
+ - defaultSEO: component (general.se-ometadata)
+================================================================================
+Speaker (speaker) - collectionType
+ - name: string (required)
+ - slug: uid (required, unique)
+ - title: string ()
+ - organization: string ()
+ - bio: text ()
+ - photo: media (single, types=images)
+ - socialLinks: component (repeatable, shared.social-link)
+ - featured: boolean (default=False)
+ - mediaItems: relation (manyToMany, api::media-item.media-item, mapped:speakers)
+ - lessons: relation (manyToMany, api::lesson.lesson, inverse:speakers)
+================================================================================
+Impact Stat (stat) - collectionType
+ - headline: string (required)
+ - body: text ()
+ - metrics: component (repeatable, impact.metric)
+================================================================================
+Tag (tag) - collectionType
+ - name: string (required, unique)
+ - slug: uid (required, unique)
+ - description: text ()
+ - mediaItems: relation (manyToMany, api::media-item.media-item, inverse:tags)
+ - audio_files: relation (manyToMany, api::audio-file.audio-file, mapped:tags)
+ - images: relation (manyToMany, api::image.image, mapped:tags)
+ - videos: relation (manyToMany, api::video.video, mapped:tags)
+================================================================================
+Team Member (team-member) - collectionType
+ - name: string ()
+ - role: string ()
+ - bio: blocks ()
+ - profilePicture: media (single, types=images|files|videos|audios)
+ - socialLinks: component (repeatable, general.social-links)
+ - blog_posts: relation (oneToMany, api::blog-post.blog-post, mapped:team_member)
+ - images: relation (oneToMany, api::image.image, mapped:team_member)
+================================================================================
+Testimonial (testimonial) - collectionType
+ - clientName: string ()
+ - feedback: blocks ()
+ - clientImage: media (single, types=images|files|videos|audios)
+ - rating: integer ()
+================================================================================
+Trending Video (trending-video) - collectionType
+ - views: integer (default=0)
+ - trendingScore: integer (default=0)
+ - lastUpdated: date ()
+================================================================================
+User Profile (user-profile) - collectionType
+ - fullName: string ()
+ - profilePicture: media (single, types=images|files)
+ - bio: blocks ()
+ - location: string ()
+ - socialLinks: component (repeatable, general.social-links)
+ - users_permissions_user: relation (oneToOne, plugin::users-permissions.user, inverse:user_profile)
+ - role: enumeration (enum=Artist|Supporter|Collaborator, default='Supporter')
+ - preferences: json ()
+ - reply: relation (oneToOne, api::reply.reply, mapped:author)
+================================================================================
+Video (video) - collectionType
+ - title: string ()
+ - description: blocks ()
+ - videoUrl: string (required)
+ - tags: relation (manyToMany, api::tag.tag, inverse:videos)
+ - thumbnail: media (single, types=files|images)
+ - categories: relation (manyToMany, api::category.category, inverse:videos)
+ - publishedDate: date ()
+ - channels: relation (manyToMany, api::channel.channel, inverse:videos)
+ - isShort: boolean ()
+ - uid: uid ()
+ - trending_video: boolean ()
+================================================================================
+video-hero (video-hero) - collectionType
+ - button: component (repeatable, general.button)

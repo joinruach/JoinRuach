@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_general_social_links",
+  "info": {
+    "displayName": "socialLink",
+    "icon": "manyToOne",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "platform": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    }
+  }
+}

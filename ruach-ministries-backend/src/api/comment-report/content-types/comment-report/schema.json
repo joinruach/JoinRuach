@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "comment_reports",
+  "info": {
+    "singularName": "comment-report",
+    "pluralName": "comment-reports",
+    "displayName": "Comment Report"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "commentId": {
+      "type": "string",
+      "required": true
+    },
+    "reason": {
+      "type": "text"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

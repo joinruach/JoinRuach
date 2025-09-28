@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "lesson_comments",
+  "info": {
+    "singularName": "lesson-comment",
+    "pluralName": "lesson-comments",
+    "displayName": "Lesson Comment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "courseSlug": {
+      "type": "string",
+      "required": true
+    },
+    "lessonSlug": {
+      "type": "string",
+      "required": true
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "approved": {
+      "type": "boolean",
+      "default": false
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

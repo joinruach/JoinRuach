@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "replies",
+  "info": {
+    "singularName": "reply",
+    "pluralName": "replies",
+    "displayName": "Reply"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "content": {
+      "type": "text"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::user-profile.user-profile",
+      "inversedBy": "reply"
+    },
+    "prayer": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::prayer.prayer",
+      "inversedBy": "replies"
+    }
+  }
+}

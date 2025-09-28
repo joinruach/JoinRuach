@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tags",
+  "info": {
+    "singularName": "tag",
+    "pluralName": "tags",
+    "displayName": "Tag"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "unique": true,
+      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "text"
+    },
+    "mediaItems": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::media-item.media-item",
+      "inversedBy": "tags"
+    },
+    "audio_files": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::audio-file.audio-file",
+      "mappedBy": "tags"
+    },
+    "images": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::image.image",
+      "mappedBy": "tags"
+    },
+    "videos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::video.video",
+      "mappedBy": "tags"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "ruach-ministries-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "node scripts/run-strapi.js build",
+    "deploy": "node scripts/run-strapi.js deploy",
+    "develop": "node scripts/run-strapi.js develop",
+    "start": "node scripts/run-strapi.js start",
+    "strapi": "node scripts/run-strapi.js",
+    "postinstall": "node scripts/link-dependencies.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.758.0",
+    "@aws-sdk/client-rds": "^3.758.0",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "@strapi/plugin-cloud": "5.10.4",
+    "@strapi/plugin-users-permissions": "5.10.4",
+    "@strapi/provider-email-resend": "npm:strapi-provider-email-resend@^1.0.4",
+    "@strapi/provider-upload-aws-s3": "^5.11.0",
+    "@strapi/strapi": "5.10.4",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.24.1",
+    "codemirror": "^6.0.1",
+    "dotenv": "^16.4.7",
+    "formidable": "^3.5.2",
+    "pg": "^8.13.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "strapi-provider-upload-cloudflare-r2": "^1.0.2",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/formidable": "^3.4.5",
+    "@types/node": "^20.17.21",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "9e05056a-e26b-4acf-91e9-c4df2e5920b3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "aws-sdk",
+      "core-js-pure",
+      "esbuild",
+      "sharp"
+    ]
+  }
+}

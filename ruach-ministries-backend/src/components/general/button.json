@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_general_buttons",
+  "info": {
+    "displayName": "Button",
+    "icon": "play"
+  },
+  "options": {},
+  "attributes": {
+    "Text": {
+      "type": "string"
+    },
+    "Link": {
+      "type": "string"
+    }
+  }
+}

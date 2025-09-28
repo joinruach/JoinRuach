@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_shared_core_beliefs",
+  "info": {
+    "displayName": "Core Beliefs",
+    "icon": "shield"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.media"
+    },
+    "videoURL": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

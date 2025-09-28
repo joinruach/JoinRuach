@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_profiles",
+  "info": {
+    "singularName": "user-profile",
+    "pluralName": "user-profiles",
+    "displayName": "User Profile",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "fullName": {
+      "type": "string"
+    },
+    "profilePicture": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "bio": {
+      "type": "blocks"
+    },
+    "location": {
+      "type": "string"
+    },
+    "socialLinks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "general.social-links"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_profile"
+    },
+    "role": {
+      "type": "enumeration",
+      "enum": [
+        "Artist",
+        "Supporter",
+        "Collaborator"
+      ],
+      "default": "Supporter"
+    },
+    "preferences": {
+      "type": "json"
+    },
+    "reply": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::reply.reply",
+      "mappedBy": "author"
+    }
+  }
+}

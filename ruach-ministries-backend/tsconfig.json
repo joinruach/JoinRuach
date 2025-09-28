@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",                        // Module system
+    "moduleResolution": "Node",                  // Resolving modules in Node.js style
+    "lib": ["ES2020"],                           // Specify library files to include
+    "target": "ES2019",                          // Set the target ECMAScript version
+    "strict": false,                             // Disable strict type-checking
+    "skipLibCheck": true,                        // Skip type checking of all declaration files
+    "forceConsistentCasingInFileNames": true,    // Ensure consistent casing in file names
+    "incremental": true,                         // Enable incremental compilation
+    "esModuleInterop": true,                     // Enable compatibility with CommonJS
+    "resolveJsonModule": true,                   // Allow importing .json files as modules
+    "noEmitOnError": true,                       // Prevent emitting output if there are errors
+    "noImplicitThis": true,                      // Raise error on `this` used incorrectly
+    "outDir": "dist",                            // Output directory for compiled files
+    "rootDir": ".",                              // Root directory for TypeScript files
+    "baseUrl": "./",                             // Base directory for non-relative imports
+    "paths": {                                   // Configure path mappings
+      "@/*": ["src/*"]                           // Allow '@' to refer to the 'src' directory
+    }
+  },
+  "include": [
+    "./",                                      // Include root directory files
+    "./**/*.ts",                                // Include all TypeScript files
+    "./**/*.js",                                // Include all JavaScript files
+    "src/**/*.json"                             // Include JSON files in 'src' directory
+  ],
+  "exclude": [
+    "node_modules/",                           // Exclude node_modules
+    "build/",                                  // Exclude build output
+    "dist/",                                   // Exclude dist output
+    ".cache/",                                 // Exclude cache files
+    ".tmp/",                                   // Exclude temporary files
+    "src/admin/",                              // Exclude admin files
+    "**/*.test.*",                              // Exclude test files
+    "src/plugins/**"                            // Exclude plugin files
+  ]
+}
