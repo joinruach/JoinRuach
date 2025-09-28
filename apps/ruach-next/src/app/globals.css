@@ -1,0 +1,10 @@
+@import '../../../../packages/ruach-components/src/styles/tokens.css';
+
+/* Tailwind layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global base styles */
+html, body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+html, body { @apply bg-white text-black; }

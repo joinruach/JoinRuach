@@ -1,0 +1,46 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@ruach/components/*": [
+        "../../packages/ruach-components/src/*"
+      ],
+      "@ruach/addons/*": [
+        "../../packages/ruach-next-addons/src/*"
+      ]
+    },
+    "incremental": true,
+    "composite": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": false
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/ruach-components/src/**/*.ts",
+    "../../packages/ruach-components/src/**/*.tsx",
+    "../../packages/ruach-next-addons/src/**/*.ts",
+    "../../packages/ruach-next-addons/src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

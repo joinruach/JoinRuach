@@ -1,0 +1,1 @@
+export default function Confirmed(){return(<div className='space-y-4'><h1 className='text-2xl font-bold'>Email confirmed</h1><p>You can now sign in.</p></div>);}

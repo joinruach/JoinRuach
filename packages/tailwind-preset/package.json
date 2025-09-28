@@ -1,0 +1,10 @@
+{
+  "name": "@ruach/tailwind-preset",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "main": "index.js",
+  "peerDependencies": {
+    "tailwindcss": "^3.4.10"
+  }
+}

@@ -1,0 +1,8 @@
+import { CourseCard, Course } from "./CourseCard";
+export default function CourseGrid({ courses }:{ courses: Course[] }) {
+  return (
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {courses.map(c => <CourseCard key={c.slug} {...c} />)}
+    </div>
+  );
+}

@@ -1,0 +1,4 @@
+{
+  "buildCommand": "pnpm -w --filter @ruach/components build && pnpm -w --filter @ruach/addons build && pnpm --filter ruach-next build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD . || echo 'changes'"
+}
