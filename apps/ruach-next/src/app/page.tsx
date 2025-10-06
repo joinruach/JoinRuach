@@ -47,12 +47,20 @@ export default async function Home(){
       .filter(Boolean)
   }));
 
-  const courseList = (courses || []).slice(0, 3).map((c:any) => ({
-    title: c.attributes.title,
-    slug: c.attributes.slug,
-    description: c.attributes.description,
-    coverUrl: c.attributes.cover?.data?.attributes?.url
-  }));
+  const courseList = (courses || [])
+    .map((c: any) => {
+      const attributes = c?.attributes;
+      if (!attributes) return null;
+
+      return {
+        title: attributes.title,
+        slug: attributes.slug,
+        description: attributes.description,
+        coverUrl: attributes.cover?.data?.attributes?.url
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 3);
 
   const eventCards = (events || []).map((event: any) => ({
     title: event.attributes.title,

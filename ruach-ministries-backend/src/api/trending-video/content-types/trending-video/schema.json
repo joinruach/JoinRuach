@@ -4,7 +4,7 @@
   "info": {
     "singularName": "trending-video",
     "pluralName": "trending-videos",
-    "displayName": "Trending Video",
+    "displayName": "Trending Video (read-only)",
     "description": ""
   },
   "options": {

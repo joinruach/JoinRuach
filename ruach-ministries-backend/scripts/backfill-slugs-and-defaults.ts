@@ -43,24 +43,44 @@ async function backfillMediaItems(strapi: any) {
       $or: [
         { slug: { $null: true } },
         { releasedAt: { $null: true } },
+        { type: { $null: true } },
+        { featured: { $null: true } },
       ],
     },
     publicationState: 'preview',
-    fields: ['id', 'title', 'slug', 'releasedAt'],
+    fields: ['id', 'title', 'slug', 'releasedAt', 'type', 'featured'],
   });
+
+  let updated = 0;
 
   for (const row of rows) {
     const desiredSlug = row.slug ?? slugify(row.title) ?? `media-item-${row.id}`;
     const slug = await generateUniqueSlug(strapi, 'api::media-item.media-item', desiredSlug, row.id);
-    await strapi.entityService.update('api::media-item.media-item', row.id, {
-      data: {
-        slug,
-        releasedAt: row.releasedAt ?? new Date().toISOString(),
-      },
-    });
+    const data: Record<string, unknown> = {};
+
+    if (row.slug !== slug) {
+      data.slug = slug;
+    }
+
+    if (!row.releasedAt) {
+      data.releasedAt = new Date().toISOString();
+    }
+
+    if (!row.type) {
+      data.type = 'testimony';
+    }
+
+    if (row.featured === null || row.featured === undefined) {
+      data.featured = false;
+    }
+
+    if (Object.keys(data).length) {
+      await strapi.entityService.update('api::media-item.media-item', row.id, { data });
+      updated += 1;
+    }
   }
 
-  strapi.log.info(`Media items backfilled: ${rows.length}`);
+  strapi.log.info(`Media items backfilled: ${updated}`);
 }
 
 async function backfillVideoSlugs(strapi: any) {
@@ -110,6 +130,94 @@ async function backfillGenericSlugs(strapi: any) {
   }
 }
 
+async function backfillImageAltText(strapi: any) {
+  const fallbackAlt = 'Description pending';
+
+  const customImages = await strapi.entityService.findMany('api::image.image', {
+    filters: {
+      $or: [
+        { altText: { $null: true } },
+        { altText: { $eq: '' } },
+      ],
+    },
+    publicationState: 'preview',
+    fields: ['id', 'title'],
+  });
+
+  let updatedCustom = 0;
+
+  for (const image of customImages) {
+    const altText = image.title?.trim() || fallbackAlt;
+    await strapi.entityService.update('api::image.image', image.id, {
+      data: { altText },
+    });
+    updatedCustom += 1;
+  }
+
+  const uploadFiles = await strapi.db.query('plugin::upload.file').findMany({
+    where: {
+      mime: { $startsWith: 'image/' },
+      $or: [
+        { alternativeText: { $null: true } },
+        { alternativeText: { $eq: '' } },
+      ],
+    },
+    select: ['id', 'name'],
+  });
+
+  let updatedUploads = 0;
+
+  for (const file of uploadFiles) {
+    const altText = file.name?.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim() || fallbackAlt;
+    await strapi.db.query('plugin::upload.file').update({
+      where: { id: file.id },
+      data: { alternativeText: altText || fallbackAlt },
+    });
+    updatedUploads += 1;
+  }
+
+  strapi.log.info(`Alt text backfilled: ${updatedCustom} custom images, ${updatedUploads} upload files.`);
+}
+
+async function ensureUserProfiles(strapi: any) {
+  const defaultAvatarRaw = process.env.DEFAULT_AVATAR_ASSET_ID;
+  const defaultAvatarId = defaultAvatarRaw ? Number(defaultAvatarRaw) : undefined;
+  const canPatchAvatar = typeof defaultAvatarId === 'number' && Number.isFinite(defaultAvatarId);
+
+  const users = await strapi.db.query('plugin::users-permissions.user').findMany({
+    populate: ['user_profile'],
+  });
+
+  let created = 0;
+  let avatarPatched = 0;
+
+  for (const user of users) {
+    const userId = user.id;
+    let profile = user.user_profile;
+
+    if (!profile) {
+      profile = await strapi.entityService.create('api::user-profile.user-profile', {
+        data: {
+          fullName: user.username || user.email || `User ${userId}`,
+          users_permissions_user: userId,
+        },
+      });
+      created += 1;
+    }
+
+    if (canPatchAvatar && defaultAvatarId && !profile.profilePicture) {
+      await strapi.entityService.update('api::user-profile.user-profile', profile.id, {
+        data: {
+          profilePicture: defaultAvatarId,
+        },
+      });
+      avatarPatched += 1;
+    }
+  }
+
+  strapi.log.info(`User profiles ensured: ${created} created, ${avatarPatched} avatars patched.`);
+}
+
 async function publishDrafts(strapi: any) {
   const publishable: Array<[string, boolean]> = [
     ['api::media-item.media-item', true],
@@ -150,6 +258,8 @@ export default async ({ strapi }: { strapi: any }) => {
   await backfillMediaItems(strapi);
   await backfillVideoSlugs(strapi);
   await backfillGenericSlugs(strapi);
+  await backfillImageAltText(strapi);
+  await ensureUserProfiles(strapi);
   await publishDrafts(strapi);
 
   strapi.log.info('Backfill complete.');

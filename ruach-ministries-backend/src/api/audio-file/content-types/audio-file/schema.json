@@ -4,7 +4,7 @@
   "info": {
     "singularName": "audio-file",
     "pluralName": "audio-files",
-    "displayName": "Audio file",
+    "displayName": "Audio File (paused)",
     "description": ""
   },
   "options": {

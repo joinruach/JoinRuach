@@ -6,14 +6,23 @@ export const dynamic = "force-static";
 
 export default async function CoursesPage(){
   const items = await getCourses();
-  const courses = items.map((c:any)=>({
-    title:c.attributes.title,
-    slug:c.attributes.slug,
-    description:c.attributes.description,
-    coverUrl:c.attributes.cover?.data?.attributes?.url
-  }));
+  const courses = (items || [])
+    .map((c: any) => {
+      const attributes = c?.attributes;
+      if (!attributes) return null;
 
-  const featuredCourse = items[0]?.attributes;
+      return {
+        title: attributes.title,
+        slug: attributes.slug,
+        description: attributes.description,
+        coverUrl: attributes.cover?.data?.attributes?.url
+      };
+    })
+    .filter(Boolean);
+
+  const featuredCourse = (items || [])
+    .map((c: any) => c?.attributes)
+    .find((attrs: any) => Boolean(attrs));
 
   return (
     <div className="space-y-12">

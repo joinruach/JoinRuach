@@ -2,6 +2,35 @@ import { factories } from '@strapi/strapi';
 import formidable from 'formidable';
 import { uploadToS3 } from '../uploadProvider'; // Ensure correct path
 
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
+const ensureUniqueSlug = async (strapi: any, rawTitle: string) => {
+  const baseTitle = rawTitle.replace(/\.[^.]+$/, '');
+  const normalized = slugify(baseTitle) || 'video';
+  let candidate = normalized;
+  let suffix = 1;
+
+  while (true) {
+    const existing = await strapi.entityService.findMany('api::video.video', {
+      filters: { slug: { $eq: candidate } },
+      fields: ['id'],
+      limit: 1,
+    });
+
+    if (!existing?.length) {
+      return candidate;
+    }
+
+    candidate = `${normalized}-${suffix}`;
+    suffix += 1;
+  }
+};
+
 export default factories.createCoreController('api::video.video', ({ strapi }) => ({
   async upload(ctx) {
     const { files } = ctx.request;
@@ -26,9 +55,10 @@ export default factories.createCoreController('api::video.video', ({ strapi }) =
 
       const uploadResponse = await uploadToS3(fileData);
       const videoUrl = uploadResponse.file.url;
+      const slug = await ensureUniqueSlug(strapi, file.originalFilename);
 
       const video = await strapi.entityService.create('api::video.video', {
-        data: { title: file.originalFilename, videoUrl },
+        data: { title: file.originalFilename, videoUrl, slug },
       });
 
       return { message: 'Video uploaded successfully', data: video };

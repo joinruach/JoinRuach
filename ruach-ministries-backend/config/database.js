@@ -1,10 +1,7 @@
-import path from 'path';
-
-export default ({ env }: { env: any }) => {
-  // Use the same database configuration for both production and development
+module.exports = ({ env }) => {
   const client = env('DATABASE_CLIENT', 'postgres');
 
-  const connections: any = {
+  const connections = {
     postgres: {
       connection: {
         host: env('DATABASE_HOST'),
@@ -19,9 +16,9 @@ export default ({ env }: { env: any }) => {
           : false,
         schema: env('DATABASE_SCHEMA', 'public'),
       },
-      pool: { 
-        min: env.int('DATABASE_POOL_MIN', 2), 
-        max: env.int('DATABASE_POOL_MAX', 10) 
+      pool: {
+        min: env.int('DATABASE_POOL_MIN', 2),
+        max: env.int('DATABASE_POOL_MAX', 10),
       },
     },
   };

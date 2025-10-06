@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
+import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getMediaCategories, getMediaItems } from "@/lib/strapi";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
@@ -16,6 +17,12 @@ const dateOptions = [
   { value: "30", label: "Last 30 Days" },
   { value: "365", label: "Past Year" }
 ];
+
+type MediaCardItem = MediaCardProps & {
+  views: number;
+  durationSec?: number | null;
+  speakers: string[];
+};
 
 function getParamValue(param: string | string[] | undefined, fallback: string) {
   if (Array.isArray(param)) return param[0] ?? fallback;
@@ -84,24 +91,49 @@ export default async function MediaPage({
       }),
   ];
 
-  const items = data.map((m: MediaItemEntity) => {
-    const attributes = m.attributes;
-    const categoryEntity = attributes.category?.data?.attributes;
-    const speakerNames = (attributes.speakers?.data || [])
-      .map((speaker) => speaker.attributes?.name)
-      .filter(Boolean) as string[];
+  const items: MediaCardItem[] = [];
+  const entities = Array.isArray(data) ? data : [];
 
-    return {
-      title: attributes.title,
-      href: `/media/${attributes.slug}`,
-      excerpt: attributes.excerpt ?? attributes.description,
-      category: categoryEntity?.name ?? attributes.legacyCategory ?? undefined,
-      thumbnail: { src: attributes.thumbnail?.data?.attributes?.url },
-      views: attributes.views ?? 0,
-      durationSec: attributes.durationSec ?? undefined,
+  for (const entity of entities) {
+    const attributes = ((entity as MediaItemEntity | undefined)?.attributes ?? (entity as any) ?? {}) as Record<string, any>;
+
+    const slugValue = attributes?.slug;
+    const slug = typeof slugValue === "string" && slugValue.trim().length ? slugValue : undefined;
+    if (!slug) continue;
+
+    const rawTitle = attributes?.title;
+    const title = typeof rawTitle === "string" && rawTitle.trim().length ? rawTitle : "Untitled Media";
+
+    const categoryEntity = attributes?.category?.data?.attributes;
+    const speakerData = Array.isArray(attributes?.speakers?.data)
+      ? (attributes.speakers.data as Array<{ attributes?: { name?: string } }>)
+      : [];
+    const speakerNames = speakerData
+      .map((speaker) => speaker?.attributes?.name)
+      .filter((name): name is string => Boolean(name));
+
+    const thumbnailData = attributes?.thumbnail?.data?.attributes;
+    const thumbnail = thumbnailData?.url
+      ? { src: thumbnailData.url ?? undefined, alt: thumbnailData.alternativeText ?? title }
+      : undefined;
+
+    const excerpt = (typeof attributes?.excerpt === "string" && attributes.excerpt.trim().length
+      ? attributes.excerpt
+      : typeof attributes?.description === "string"
+        ? attributes.description
+        : undefined);
+
+    items.push({
+      title,
+      href: `/media/${slug}`,
+      excerpt,
+      category: categoryEntity?.name ?? attributes?.legacyCategory ?? undefined,
+      thumbnail,
+      views: attributes?.views ?? 0,
+      durationSec: attributes?.durationSec ?? undefined,
       speakers: speakerNames,
-    };
-  });
+    });
+  }
 
   const total = meta?.pagination?.total ?? items.length;
 

@@ -1,6 +1,9 @@
 "use strict";
 
-const { sanitizeEntity } = require("@strapi/utils").default;
+const { sanitize } = require("@strapi/utils");
+
+const sanitizeUser = async (user) =>
+  sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
 
 module.exports = {
   async login(ctx) {
@@ -29,9 +32,11 @@ module.exports = {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week expiration
     });
 
+    const sanitizedUser = await sanitizeUser(response.user);
+
     return ctx.send({
       jwt: response.jwt,
-      user: sanitizeEntity(response.user, { model: strapi.models.user }),
+      user: sanitizedUser,
     });
   },
 

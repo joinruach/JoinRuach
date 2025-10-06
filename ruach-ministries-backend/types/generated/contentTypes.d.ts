@@ -373,7 +373,7 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
   collectionName: 'abouts';
   info: {
     description: 'Write about yourself and the content you create';
-    displayName: 'About';
+    displayName: 'About (legacy)';
     pluralName: 'abouts';
     singularName: 'about';
   };
@@ -400,7 +400,7 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
   collectionName: 'articles';
   info: {
     description: 'Create your blog content';
-    displayName: 'Article';
+    displayName: 'Article (paused)';
     pluralName: 'articles';
     singularName: 'article';
   };
@@ -408,11 +408,13 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    author: Schema.Attribute.Relation<'manyToOne', 'api::author.author'>;
+    author: Schema.Attribute.Relation<'manyToOne', 'api::author.author'> &
+      Schema.Attribute.Required;
     blocks: Schema.Attribute.DynamicZone<
       ['shared.media', 'shared.quote', 'shared.rich-text', 'shared.slider']
     >;
-    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
+    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'> &
+      Schema.Attribute.Required;
     cover: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -428,8 +430,10 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'title'>;
-    title: Schema.Attribute.String;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -440,7 +444,7 @@ export interface ApiAudioFileAudioFile extends Struct.CollectionTypeSchema {
   collectionName: 'audio_files';
   info: {
     description: '';
-    displayName: 'Audio file';
+    displayName: 'Audio File (paused)';
     pluralName: 'audio-files';
     singularName: 'audio-file';
   };
@@ -533,12 +537,14 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     publishedDate: Schema.Attribute.Date;
-    slug: Schema.Attribute.UID;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     team_member: Schema.Attribute.Relation<
       'manyToOne',
       'api::team-member.team-member'
     >;
-    title: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -662,7 +668,7 @@ export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
   collectionName: 'contact_infos';
   info: {
     description: '';
-    displayName: 'Contact Info';
+    displayName: 'Contact Info (legacy)';
     pluralName: 'contact-infos';
     singularName: 'contact-info';
   };
@@ -843,7 +849,7 @@ export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
 export interface ApiGalleryGallery extends Struct.CollectionTypeSchema {
   collectionName: 'galleries';
   info: {
-    displayName: 'Gallery';
+    displayName: 'Gallery (paused)';
     pluralName: 'galleries';
     singularName: 'gallery';
   };
@@ -913,7 +919,7 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
 export interface ApiHeroSectionHeroSection extends Struct.SingleTypeSchema {
   collectionName: 'hero_sections';
   info: {
-    displayName: 'Hero Section';
+    displayName: 'Hero Section (legacy)';
     pluralName: 'hero-sections';
     singularName: 'hero-section';
   };
@@ -1064,7 +1070,8 @@ export interface ApiLessonLesson extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1255,7 +1262,7 @@ export interface ApiProjectProject extends Struct.CollectionTypeSchema {
 export interface ApiReplyReply extends Struct.CollectionTypeSchema {
   collectionName: 'replies';
   info: {
-    displayName: 'Reply';
+    displayName: 'Reply (paused)';
     pluralName: 'replies';
     singularName: 'reply';
   };
@@ -1285,7 +1292,7 @@ export interface ApiReplyReply extends Struct.CollectionTypeSchema {
 export interface ApiSettingSetting extends Struct.CollectionTypeSchema {
   collectionName: 'settings';
   info: {
-    displayName: 'setting';
+    displayName: 'Setting (legacy)';
     pluralName: 'settings';
     singularName: 'setting';
   };
@@ -1342,7 +1349,7 @@ export interface ApiSpeakerSpeaker extends Struct.CollectionTypeSchema {
     >;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     organization: Schema.Attribute.String;
-    photo: Schema.Attribute.Media<'images'>;
+    photo: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'name'> &
       Schema.Attribute.Required &
@@ -1466,7 +1473,7 @@ export interface ApiTeamMemberTeamMember extends Struct.CollectionTypeSchema {
 export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
   collectionName: 'testimonials';
   info: {
-    displayName: 'Testimonial';
+    displayName: 'Testimonial (paused)';
     pluralName: 'testimonials';
     singularName: 'testimonial';
   };
@@ -1501,7 +1508,7 @@ export interface ApiTrendingVideoTrendingVideo
   collectionName: 'trending_videos';
   info: {
     description: '';
-    displayName: 'Trending Video';
+    displayName: 'Trending Video (read-only)';
     pluralName: 'trending-videos';
     singularName: 'trending-video';
   };
@@ -1604,7 +1611,7 @@ export interface ApiVideoVideo extends Struct.CollectionTypeSchema {
   collectionName: 'videos';
   info: {
     description: '';
-    displayName: 'Video';
+    displayName: 'Video (read-only)';
     pluralName: 'videos';
     singularName: 'video';
   };
@@ -1635,7 +1642,7 @@ export interface ApiVideoVideo extends Struct.CollectionTypeSchema {
     title: Schema.Attribute.String & Schema.Attribute.Required;
     trending_video: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
-    uid: Schema.Attribute.UID & Schema.Attribute.Private;
+    uid: Schema.Attribute.UID;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

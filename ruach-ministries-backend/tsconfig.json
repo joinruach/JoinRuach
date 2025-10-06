@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "CommonJS",                        // Module system
     "moduleResolution": "Node",                  // Resolving modules in Node.js style
+    "allowJs": true,                              // Include plain JS files in the build output
     "lib": ["ES2020"],                           // Specify library files to include
     "target": "ES2019",                          // Set the target ECMAScript version
     "strict": false,                             // Disable strict type-checking

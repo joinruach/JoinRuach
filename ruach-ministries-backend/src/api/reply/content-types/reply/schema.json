@@ -4,7 +4,7 @@
   "info": {
     "singularName": "reply",
     "pluralName": "replies",
-    "displayName": "Reply"
+    "displayName": "Reply (paused)"
   },
   "options": {
     "draftAndPublish": true

@@ -1,20 +1,19 @@
-// import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
+import { registerReadOnlyLocks } from './utils/register-read-only-locks';
+import { syncPublicPermissions } from './utils/sync-public-permissions';
 
 export default {
   /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
+   * Register lifecycle hooks and extensions before Strapi initializes.
    */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register({ strapi }: { strapi: Core.Strapi }) {
+    registerReadOnlyLocks(strapi);
+  },
 
   /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
+   * Normalize permissions once Strapi is ready.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    await syncPublicPermissions(strapi);
+  },
 };

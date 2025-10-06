@@ -4,7 +4,7 @@
   "info": {
     "singularName": "setting",
     "pluralName": "settings",
-    "displayName": "setting"
+    "displayName": "Setting (legacy)"
   },
   "options": {
     "draftAndPublish": true
