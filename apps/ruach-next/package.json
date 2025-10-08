@@ -20,7 +20,7 @@
     "@ruach/tailwind-preset": "workspace:*",
     "@upstash/ratelimit": "^1.0.2",
     "@upstash/redis": "^1.30.0",
-    "next": "14.2.5",
+    "next": "15.5.2",
     "next-auth": "^4.24.7",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -35,7 +35,7 @@
     "@types/react-dom": "^18.2.22",
     "autoprefixer": "^10.4.18",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint-config-next": "15.5.2",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.9",
     "typescript": "^5.5.4"
