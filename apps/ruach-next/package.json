@@ -6,13 +6,18 @@
     "dev": "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS=--max-old-space-size=3072 next dev --turbo",
     "build": "NEXT_TELEMETRY_DISABLED=1 pnpm -w --filter @ruach/components build && pnpm -w --filter @ruach/addons build && next build",
     "start": "next start -p 3000",
-    "lint": "eslint ."
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "ci:verify": "pnpm lint && pnpm typecheck && pnpm build"
   },
   "engines": {
     "node": ">=18.18.0"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "@ruach/addons": "workspace:*",
+    "@ruach/components": "workspace:*",
+    "@ruach/tailwind-preset": "workspace:*",
     "@upstash/ratelimit": "^1.0.2",
     "@upstash/redis": "^1.30.0",
     "next": "14.2.5",
@@ -20,10 +25,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "satori": "^0.10.13",
-    "@ruach/components": "workspace:*",
-    "@ruach/addons": "workspace:*",
-    "@ruach/tailwind-preset": "workspace:*",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",
