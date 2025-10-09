@@ -4,3 +4,8 @@
 .git
 .gitignore
 Dockerfile
+!apps/ruach-next/Dockerfile
+!ruach-ministries-backend/Dockerfile
+# Map domains:
+# joinruach.org -> Next.js service
+# api.joinruach.org -> Strapi service
