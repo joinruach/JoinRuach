@@ -3,14 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
-export async function POST(req: NextRequest, { params }:{ params: { id: string }}){
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
-  const email = session?.user?.email;
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }){
+  const session = await getServerSession(authOptions);
+  const jwt = session?.strapiJwt;
+  const email = session?.user?.email ?? undefined;
   const allow = (process.env.MODERATOR_EMAILS||"").split(",").map(s=>s.trim()).filter(Boolean);
-  if (!jwt || !email || !allow.includes(email!)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!jwt || !email || !allow.includes(email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const id = params.id;
+  const { id } = await context.params;
   const r = await fetch(`${STRAPI}/api/lesson-comments/${id}`, {
     method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
     body: JSON.stringify({ data: { approved: true } }), cache: "no-store"

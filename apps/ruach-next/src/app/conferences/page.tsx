@@ -56,11 +56,11 @@ const defaultMerch: MerchBlock[] = [
 
 const fallbackRegistrationUrl = process.env.NEXT_PUBLIC_GIVEBUTTER_REGISTRATION_URL || "https://givebutter.com/ruach-conference";
 
-function pickNonEmpty<T>(...values: (T | null | undefined | "")[]): T | undefined {
+function pickNonEmpty(...values: unknown[]): string | undefined {
   for (const value of values) {
-    if (value === null || value === undefined) continue;
-    if (typeof value === "string" && value.trim() === "") continue;
-    return value as T;
+    if (typeof value !== "string") continue;
+    if (value.trim() === "") continue;
+    return value;
   }
   return undefined;
 }
@@ -88,12 +88,22 @@ function normalizeSchedule(items?: ConferenceScheduleItem[] | null): ScheduleBlo
 
   const normalized = items
     .map((item) => {
-      const data = maybeAttributes(item);
+      const data = maybeAttributes<ConferenceScheduleItem>(item);
       if (!data) return undefined;
 
-      const title = pickNonEmpty(data.title, data.name, data.label);
-      const description = pickNonEmpty(data.description, data.body);
-      const time = pickNonEmpty(data.time, data.label);
+      const title = pickNonEmpty(
+        data.title,
+        data.name,
+        data.label
+      );
+      const description = pickNonEmpty(
+        data.description,
+        data.body
+      );
+      const time = pickNonEmpty(
+        data.time,
+        data.label
+      );
 
       if (!title && !description && !time) return undefined;
 
@@ -114,7 +124,7 @@ function normalizeSpeakers(items?: ConferenceSpeakerItem[] | null): SpeakerBlock
 
   const normalized = items
     .map((item) => {
-      const data = maybeAttributes(item);
+      const data = maybeAttributes<ConferenceSpeakerItem>(item);
       if (!data) return undefined;
 
       const name = pickNonEmpty(data.name, data.title);
@@ -142,7 +152,7 @@ function normalizeMerch(items?: ConferenceMerchItem[] | null): MerchBlock[] | un
 
   const normalized = items
     .map((item) => {
-      const data = maybeAttributes(item);
+      const data = maybeAttributes<ConferenceMerchItem>(item);
       if (!data) return undefined;
 
       const title = pickNonEmpty(data.title, data.name);
@@ -187,11 +197,13 @@ function isExternal(url: string) {
 }
 
 export default async function ConferencesPage(){
-  const [page, events] = await Promise.all([getConferencePage(), getEvents(1)]);
+  const [pageResult, eventsResult] = await Promise.allSettled([getConferencePage(), getEvents(1)]);
+  const page = pageResult.status === "fulfilled" ? pageResult.value : null;
+  const events = eventsResult.status === "fulfilled" ? eventsResult.value : [];
 
-  const pageAttributes = page?.attributes ?? {};
-  const featured = pickFeaturedEvent(page, events?.[0] as EventEntity | undefined) as EventEntity | null;
-  const eventAttributes = featured?.attributes ?? {};
+  const pageAttributes = (page?.attributes ?? {}) as ConferencePageEntity["attributes"];
+  const featured = pickFeaturedEvent(page, events?.[0]) as EventEntity | null;
+  const eventAttributes = (featured?.attributes ?? {}) as EventEntity["attributes"];
 
   const heroImage =
     resolveMediaUrl(pageAttributes.heroImage) ||

@@ -3,6 +3,7 @@ import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
+import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, getMediaByCategory, getFeaturedTestimony, imgUrl, getEvents } from "@/lib/strapi";
 
 export const dynamic = "force-static";
@@ -47,19 +48,25 @@ export default async function Home(){
       .filter(Boolean)
   }));
 
-  const courseList = (courses || [])
-    .map((c: any) => {
+  const courseList: Course[] = (courses || [])
+    .map((c: any): Course | null => {
       const attributes = c?.attributes;
-      if (!attributes) return null;
+      const title = attributes?.title;
+      const slug = attributes?.slug;
+
+      if (typeof title !== "string" || typeof slug !== "string") return null;
+
+      const description = attributes?.description;
+      const coverUrl = attributes?.cover?.data?.attributes?.url;
 
       return {
-        title: attributes.title,
-        slug: attributes.slug,
-        description: attributes.description,
-        coverUrl: attributes.cover?.data?.attributes?.url
+        title,
+        slug,
+        description: typeof description === "string" ? description : undefined,
+        coverUrl: typeof coverUrl === "string" ? coverUrl : undefined
       };
     })
-    .filter(Boolean)
+    .filter((course): course is Course => course !== null)
     .slice(0, 3);
 
   const eventCards = (events || []).map((event: any) => ({

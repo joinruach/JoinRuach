@@ -1,4 +1,5 @@
 import "./globals.css";
+import "@/lib/env";
 import Providers from "./providers";
 import Script from "next/script";
 import Header from "@/components/layout/Header";

@@ -50,10 +50,11 @@ function buildHref(
 }
 
 export default async function MediaPage({
-  searchParams
+  searchParams: searchParamsPromise
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const searchParams = await searchParamsPromise;
   const rawCategory = getParamValue(searchParams.category, "all");
   const category = rawCategory === "all" || rawCategory === "" ? "all" : rawCategory;
 

@@ -52,7 +52,7 @@ export default function About(){
         <span className="text-xs uppercase tracking-[0.35em] text-white/60">Who We Are</span>
         <h1 className="mt-4 text-3xl font-semibold text-white">Ruach Ministries</h1>
         <p className="mt-3 max-w-3xl text-sm text-white/70">
-          Ruach means "breath"—the Spirit of God breathing life into every story we tell, every disciple we equip, and every city we serve.
+          Ruach means “breath”—the Spirit of God breathing life into every story we tell, every disciple we equip, and every city we serve.
         </p>
         <div className="mt-6 flex flex-wrap gap-3 text-sm text-white/70">
           <span>Founded: 2018</span>

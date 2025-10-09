@@ -34,15 +34,16 @@ export async function GET(req: NextRequest){
 
 // POST /api/comments { courseSlug, lessonSlug, text }
 export async function POST(req: NextRequest){
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+  const session = await getServerSession(authOptions);
+  const jwt = session?.strapiJwt;
   if (!jwt) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { courseSlug, lessonSlug, text } = await req.json().catch(()=>({}));
   if (!courseSlug || !lessonSlug || !text) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
   const autoApproveEmails = (process.env.MODERATOR_EMAILS||"").split(",").map(s=>s.trim()).filter(Boolean);
-  const isModerator = session?.user?.email && autoApproveEmails.includes(session.user.email!);
+  const email = session?.user?.email ?? undefined;
+  const isModerator = Boolean(email && autoApproveEmails.includes(email));
 
   const r = await fetch(`${STRAPI}/api/lesson-comments`, {
     method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },

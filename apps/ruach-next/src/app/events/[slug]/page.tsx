@@ -3,8 +3,9 @@ import { getEventBySlug, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-static";
 
-export async function generateMetadata({ params }:{ params: { slug: string } }){
-  const ev = await getEventBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = await params;
+  const ev = await getEventBySlug(slug);
   const a: any = ev?.attributes || {};
   const title = a.seoTitle || a.title || "Event";
   const desc = a.seoDescription || a.description || "";
@@ -12,8 +13,9 @@ export async function generateMetadata({ params }:{ params: { slug: string } }){
   return { title, description: desc, openGraph: { title, description: desc, images: image ? [image] : [] } };
 }
 
-export default async function EventDetail({ params }:{ params: { slug: string } }){
-  const ev = await getEventBySlug(params.slug);
+export default async function EventDetail({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = await params;
+  const ev = await getEventBySlug(slug);
   if (!ev) {
     return <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/70">Event not found.</div>;
   }

@@ -25,15 +25,16 @@ async function getComments(courseSlug: string, lessonSlug: string): Promise<Comm
   }));
 }
 
-export default async function LessonPage({ params }:{ params: { slug: string; lessonSlug: string } }){
-  const course = await getCourseBySlug(params.slug);
+export default async function LessonPage({ params }: { params: Promise<{ slug: string; lessonSlug: string }> }){
+  const { slug, lessonSlug } = await params;
+  const course = await getCourseBySlug(slug);
   const lessonsRaw = (course?.attributes?.lessons?.data ?? []).map((d:any)=>d.attributes).sort((x:any,y:any)=>(x.order||0)-(y.order||0));
-  const lesson = lessonsRaw.find((x:any)=>x.slug===params.lessonSlug);
+  const lesson = lessonsRaw.find((x:any)=>x.slug===lessonSlug);
   if (!course || !lesson) {
     return <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/70">Lesson not found.</div>;
   }
 
-  const comments = await getComments(params.slug, params.lessonSlug);
+  const comments = await getComments(slug, lessonSlug);
   const currentIndex = lessonsRaw.findIndex((l:any)=>l.slug===lesson.slug);
   const prevLesson = currentIndex > 0 ? lessonsRaw[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 && currentIndex < lessonsRaw.length - 1 ? lessonsRaw[currentIndex + 1] : null;
@@ -46,11 +47,11 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
     "@type": "LearningResource",
     name: lesson.title,
     description: lesson.summary || lesson.title,
-    url: `${site}/courses/${params.slug}/${params.lessonSlug}`,
+    url: `${site}/courses/${slug}/${lessonSlug}`,
     isPartOf: {
       "@type": "Course",
       name: course.attributes?.title,
-      url: `${site}/courses/${params.slug}`
+      url: `${site}/courses/${slug}`
     },
     provider: {
       "@type": "Organization",
@@ -65,7 +66,7 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
       <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/50">
         <Link href="/courses" className="text-white/60 transition hover:text-white">Courses</Link>
         <span>/</span>
-        <Link href={`/courses/${params.slug}`} className="text-white/60 transition hover:text-white">{course.attributes?.title}</Link>
+        <Link href={`/courses/${slug}`} className="text-white/60 transition hover:text-white">{course.attributes?.title}</Link>
         <span>/</span>
         <span className="text-white">{lesson.title}</span>
       </nav>
@@ -79,7 +80,7 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
           ) : null}
         </div>
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-          <LessonPlayer src={lesson.video_url || lesson.videoUrl} courseSlug={params.slug} lessonSlug={params.lessonSlug} />
+          <LessonPlayer src={lesson.video_url || lesson.videoUrl} courseSlug={slug} lessonSlug={lessonSlug} />
         </div>
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           {lesson.duration ? (
@@ -90,7 +91,7 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
           <div className="flex gap-3 sm:ml-auto">
             {prevLesson ? (
               <Link
-                href={`/courses/${params.slug}/${prevLesson.slug}`}
+                href={`/courses/${slug}/${prevLesson.slug}`}
                 className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
               >
                 ← Previous Lesson
@@ -98,7 +99,7 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
             ) : null}
             {nextLesson ? (
               <Link
-                href={`/courses/${params.slug}/${nextLesson.slug}`}
+                href={`/courses/${slug}/${nextLesson.slug}`}
                 className="inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
               >
                 Next Lesson →
@@ -116,7 +117,7 @@ export default async function LessonPage({ params }:{ params: { slug: string; le
           const r = await fetch("/api/comments",{
             method:"POST",
             headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({ courseSlug: params.slug, lessonSlug: params.lessonSlug, text })
+            body: JSON.stringify({ courseSlug: slug, lessonSlug, text })
           });
           const j = await r.json().catch(()=>({}));
           if (r.ok && j?.approved) { /* optionally refetch */ }

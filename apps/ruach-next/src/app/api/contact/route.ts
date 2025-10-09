@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { contactLimiter, ipFromHeaders } from "@/lib/ratelimit";
+import {
+  contactLimiter,
+  ipFromHeaders,
+  requireRateLimit,
+  RateLimitError,
+  rateLimitResponse,
+} from "@/lib/ratelimit";
+import { env } from "@/lib/env";
 
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
-const API_TOKEN = process.env.STRAPI_CONTACT_TOKEN || process.env.STRAPI_API_TOKEN;
-const COLLECTION = process.env.STRAPI_CONTACT_COLLECTION || "contact-submissions";
+const STRAPI = env.NEXT_PUBLIC_STRAPI_URL;
+const API_TOKEN = env.STRAPI_CONTACT_TOKEN ?? env.STRAPI_API_TOKEN;
+const COLLECTION = env.STRAPI_CONTACT_COLLECTION ?? "contact-submissions";
 
 export async function POST(req: NextRequest) {
   if (!API_TOKEN) {
@@ -11,9 +18,13 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = ipFromHeaders(req.headers);
-  const limited = await contactLimiter.limit(ip);
-  if (!limited.success) {
-    return NextResponse.json({ error: "Slow down. Please try again soon." }, { status: 429 });
+  try {
+    await requireRateLimit(contactLimiter, ip, "Slow down. Please try again soon.");
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return rateLimitResponse(error);
+    }
+    throw error;
   }
 
   const { name, email, topic, message } = await req.json().catch(() => ({}));

@@ -1,24 +1,35 @@
 import Link from "next/link";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
+import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-static";
 
 export default async function CoursesPage(){
   const items = await getCourses();
-  const courses = (items || [])
+  const courses: Course[] = (items || [])
     .map((c: any) => {
       const attributes = c?.attributes;
       if (!attributes) return null;
 
-      return {
-        title: attributes.title,
-        slug: attributes.slug,
-        description: attributes.description,
-        coverUrl: attributes.cover?.data?.attributes?.url
+      const title = attributes.title;
+      const slug = attributes.slug;
+
+      if (typeof title !== "string" || typeof slug !== "string") return null;
+
+      const description = attributes.description;
+      const coverUrl = attributes.cover?.data?.attributes?.url;
+
+      const course: Course = {
+        title,
+        slug,
+        ...(typeof description === "string" ? { description } : {}),
+        ...(typeof coverUrl === "string" ? { coverUrl } : {})
       };
+
+      return course;
     })
-    .filter(Boolean);
+    .filter((course): course is Course => course !== null);
 
   const featuredCourse = (items || [])
     .map((c: any) => c?.attributes)

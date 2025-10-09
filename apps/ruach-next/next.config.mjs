@@ -8,13 +8,10 @@ const nextConfig = {
   },
   transpilePackages: ["@ruach/components", "@ruach/addons"],
   productionBrowserSourceMaps: false,
+  // CI runs lint/TS ahead of next build, so skip redundant checks here
   eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true }, // keep strict in CI if desired
-  experimental: {
-    turbo: {
-      // using defaults; enables faster dev refresh with lower memory
-    }
-  }
+  typescript: { ignoreBuildErrors: true },
+  serverExternalPackages: ["@resvg/resvg-js"]
 };
 
 export default nextConfig;

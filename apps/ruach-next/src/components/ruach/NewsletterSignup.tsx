@@ -25,12 +25,16 @@ export default function NewsletterSignup({
   buttonLabel = "Join the newsletter",
   id
 }: NewsletterSignupProps) {
+  const isDark = variant === "dark";
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [error, setError] = useState<string | null>(null);
   if (convertKitEmbedHtml) {
     return <EmbedScript html={convertKitEmbedHtml} />;
   }
 
   if (convertKitFormAction) {
-    const isDark = variant === "dark";
     const inputId = id ?? (variant === "dark" ? "newsletter-email-dark" : "newsletter-email-light");
     return (
       <form
@@ -81,11 +85,6 @@ export default function NewsletterSignup({
   }
 
   if (convertKitFormId) {
-    const [email, setEmail] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [status, setStatus] = useState<Status>("idle");
-    const [error, setError] = useState<string | null>(null);
-    const isDark = variant === "dark";
     const emailInputId = id ?? (variant === "dark" ? "newsletter-email-dark" : "newsletter-email-light");
     const nameInputId = `${emailInputId}-name`;
 

@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signupLimiter, ipFromHeaders } from "@/lib/ratelimit";
+import {
+  signupLimiter,
+  ipFromHeaders,
+  requireRateLimit,
+  rateLimitResponse,
+  RateLimitError,
+} from "@/lib/ratelimit";
+import { env } from "@/lib/env";
 
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
-const CONFIRM_REDIRECT = process.env.STRAPI_EMAIL_CONFIRM_REDIRECT || (process.env.NEXTAUTH_URL + "/confirmed");
+const STRAPI = env.NEXT_PUBLIC_STRAPI_URL;
 
 export async function POST(req: NextRequest){
   const ip = ipFromHeaders(req.headers);
-  const { success } = await signupLimiter.limit(ip);
-  if (!success) return NextResponse.json({ error: "Too many signups. Try later." }, { status: 429 });
+  try {
+    await requireRateLimit(signupLimiter, ip, "Too many signups. Try later.");
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return rateLimitResponse(error);
+    }
+    throw error;
+  }
 
   const { email, password, username } = await req.json().catch(()=>({}));
   if (!email || !password) return NextResponse.json({ error: "Missing email/password" }, { status: 400 });

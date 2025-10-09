@@ -129,6 +129,7 @@ export interface EventEntity extends StrapiBase {
     slug: string;
     description?: string;
     location?: string;
+    date?: string;
     startDate?: string;   // required by schema but optional in types for safety
     endDate?: string;
     timezone?: string;
@@ -156,6 +157,7 @@ export interface ConferenceScheduleItem extends Record<string, unknown> {
   id?: number;
   time?: string;
   title?: string;
+  name?: string;
   description?: string;
   label?: string;
   body?: string;

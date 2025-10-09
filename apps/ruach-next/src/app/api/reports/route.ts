@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { ipFromHeaders, reportsLimiter } from "@/lib/ratelimit";
+import {
+  ipFromHeaders,
+  reportsLimiter,
+  requireRateLimit,
+  RateLimitError,
+  rateLimitResponse,
+} from "@/lib/ratelimit";
+import { env } from "@/lib/env";
 
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
+const STRAPI = env.NEXT_PUBLIC_STRAPI_URL;
 
 export async function POST(req: NextRequest){
   const ip = ipFromHeaders(req.headers);
-  const { success } = await reportsLimiter.limit(ip);
-  if (!success) return NextResponse.json({ error: "Too many reports. Try later." }, { status: 429 });
+  try {
+    await requireRateLimit(reportsLimiter, ip, "Too many reports. Try later.");
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return rateLimitResponse(error);
+    }
+    throw error;
+  }
 
   const session = await getServerSession(authOptions as any);
   const jwt = (session as any)?.strapiJwt as string | undefined;

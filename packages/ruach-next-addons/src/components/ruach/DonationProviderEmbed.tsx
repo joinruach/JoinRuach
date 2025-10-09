@@ -1,5 +1,5 @@
 "use client";
-import { getProvider, getProcessorUrl } from "@/lib/donations";
+import { getProvider, getProcessorUrl } from "@ruach/addons/lib/donations";
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
 

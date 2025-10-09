@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ipFromHeaders, volunteerLimiter } from "@/lib/ratelimit";
+import {
+  ipFromHeaders,
+  volunteerLimiter,
+  requireRateLimit,
+  RateLimitError,
+  rateLimitResponse,
+} from "@/lib/ratelimit";
+import { env } from "@/lib/env";
 
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
-const API_TOKEN = process.env.STRAPI_VOLUNTEER_TOKEN || process.env.STRAPI_API_TOKEN;
-const COLLECTION = process.env.STRAPI_VOLUNTEER_COLLECTION || "volunteer-signups";
+const STRAPI = env.NEXT_PUBLIC_STRAPI_URL;
+const API_TOKEN = env.STRAPI_VOLUNTEER_TOKEN ?? env.STRAPI_API_TOKEN;
+const COLLECTION = env.STRAPI_VOLUNTEER_COLLECTION ?? "volunteer-signups";
 
 export async function POST(req: NextRequest) {
   if (!API_TOKEN) {
@@ -11,9 +18,13 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = ipFromHeaders(req.headers);
-  const limited = await volunteerLimiter.limit(ip);
-  if (!limited.success) {
-    return NextResponse.json({ error: "Too many submissions. Please try again soon." }, { status: 429 });
+  try {
+    await requireRateLimit(volunteerLimiter, ip, "Too many submissions. Please try again soon.");
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return rateLimitResponse(error);
+    }
+    throw error;
   }
 
   const { name, email, phone, availability, message } = await req.json().catch(() => ({}));

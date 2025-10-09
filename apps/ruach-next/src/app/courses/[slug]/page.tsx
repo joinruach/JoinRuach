@@ -26,8 +26,9 @@ async function getCompletedLessons(jwt: string, courseSlug: string) {
 
 export const dynamic = "force-static";
 
-export async function generateMetadata({ params }:{ params: { slug: string } }){
-  const course = await getCourseBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
   const a: any = course?.attributes || {};
   const title = a.seoTitle || a.title || "Course";
   const desc = a.seoDescription || a.description || "";
@@ -39,13 +40,14 @@ export async function generateMetadata({ params }:{ params: { slug: string } }){
   };
 }
 
-export default async function CourseDetail({ params }:{ params: { slug: string } }){
-  const course = await getCourseBySlug(params.slug);
+export default async function CourseDetail({ params }: { params: Promise<{ slug: string }> }){
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
   if (!course) return notFound();
 
   const session = await getServerSession(authOptions as any);
   const jwt = (session as any)?.strapiJwt as string | undefined;
-  const completedLessons = jwt ? await getCompletedLessons(jwt, params.slug) : new Set<string>();
+  const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
 
   const a = course.attributes;
   const lessons = (a.lessons?.data ?? [])
@@ -69,7 +71,7 @@ export default async function CourseDetail({ params }:{ params: { slug: string }
       name: "Ruach Ministries",
       url: site
     },
-    url: `${site}/courses/${params.slug}`,
+    url: `${site}/courses/${slug}`,
     numberOfCredits: lessons.length ? String(lessons.length) : undefined
   };
 
@@ -109,7 +111,7 @@ export default async function CourseDetail({ params }:{ params: { slug: string }
             <div className="mt-auto flex flex-wrap gap-3">
               {isAuthenticated && firstLesson ? (
                 <Link
-                  href={`/courses/${params.slug}/${firstLesson.slug}`}
+                  href={`/courses/${slug}/${firstLesson.slug}`}
                   className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
                 >
                   Resume Course
@@ -133,9 +135,9 @@ export default async function CourseDetail({ params }:{ params: { slug: string }
               <CertificateButton
                 completed={completed}
                 total={total}
-                courseSlug={params.slug}
+                courseSlug={slug}
                 courseTitle={a.title}
-                href={`/api/certificate/${params.slug}`}
+                href={`/api/certificate/${slug}`}
               />
             </div>
           </div>
@@ -155,7 +157,7 @@ export default async function CourseDetail({ params }:{ params: { slug: string }
         <ol className="mt-6 space-y-3">
           {lessons.map((lesson:any, index:number)=>(
             <li key={lesson.slug} className="rounded-2xl border border-white/10 bg-white/5 transition hover:border-amber-300/60">
-              <Link href={`/courses/${params.slug}/${lesson.slug}`} className="flex items-center gap-4 p-5">
+              <Link href={`/courses/${slug}/${lesson.slug}`} className="flex items-center gap-4 p-5">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
                   {lesson.order || index + 1}
                 </span>

@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 import satori from "satori";
-import { Resvg } from "@resvg/resvg-js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -25,13 +26,13 @@ async function getCompletedLessonSlugsForUser(jwt: string, courseSlug: string){
   return Array.from(new Set(slugs));
 }
 
-export async function GET(req: NextRequest, { params }:{ params:{ courseSlug: string } }){
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+export async function GET(req: NextRequest, context: { params: Promise<{ courseSlug: string }> }){
+  const { courseSlug } = await context.params;
+  const session = await getServerSession(authOptions);
+  const jwt = session?.strapiJwt;
   const userName = session?.user?.name || session?.user?.email || "Student";
   if (!jwt) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
 
-  const courseSlug = params.courseSlug;
   const course = await getCourseWithLessons(courseSlug);
   if (!course) return new Response(JSON.stringify({ error: "Course not found" }), { status: 404 });
   const totalLessons = course.lessonsSlugs.length;
@@ -44,6 +45,7 @@ export async function GET(req: NextRequest, { params }:{ params:{ courseSlug: st
   const date = new Date().toLocaleDateString();
   const inter = await readFile(path.join(process.cwd(), "public/fonts/Inter-Regular.ttf"));
   const interBold = await readFile(path.join(process.cwd(), "public/fonts/Inter-Bold.ttf"));
+  const { Resvg } = await import("@resvg/resvg-js");
 
   const svg = await satori(
     <div style={{ width:"1123px", height:"794px", display:"flex", background:"#fff", color:"#111", justifyContent:"center", alignItems:"center", padding:"64px" }}>
@@ -68,6 +70,20 @@ export async function GET(req: NextRequest, { params }:{ params:{ courseSlug: st
     </div>,
     { width:1123, height:794, fonts:[ { name:"Inter", data: inter, weight: 400, style: "normal" }, { name:"Inter", data: interBold, weight:700, style:"normal" } ] }
   );
-  const pdf = new Resvg(svg, { fitTo: { mode:"width", value:1123 }, background:"#fff" }).render().asPdf();
-  return new Response(pdf, { status:200, headers:{ "Content-Type":"application/pdf", "Content-Disposition":`inline; filename="ruach-certificate-${courseSlug}.pdf"`, "Cache-Control":"private, no-store" } });
+  const renderResult = new Resvg(svg, {
+    fitTo: { mode: "width", value: 1123 },
+    background: "#fff"
+  }).render();
+
+  const pdf = (renderResult as unknown as { asPdf: () => Uint8Array }).asPdf();
+  const body = Buffer.from(pdf);
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename="ruach-certificate-${courseSlug}.pdf"`,
+      "Cache-Control": "private, no-store"
+    }
+  });
 }

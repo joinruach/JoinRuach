@@ -1,25 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ipFromHeaders, newsletterLimiter } from "@/lib/ratelimit";
-
-const FORM_ID = process.env.NEXT_PUBLIC_CONVERTKIT_FORM_ID;
-const API_KEY = process.env.NEXT_PUBLIC_CONVERTKIT_API_KEY;
-const API_SECRET = process.env.CONVERTKIT_API_SECRET;
+import {
+  ipFromHeaders,
+  newsletterLimiter,
+  requireRateLimit,
+  RateLimitError,
+  rateLimitResponse,
+} from "@/lib/ratelimit";
+import { env } from "@/lib/env";
 
 export async function POST(req: NextRequest) {
-  if (!FORM_ID || !API_SECRET) {
-    return NextResponse.json(
-      { error: "Newsletter form is not configured." },
-      { status: 500 }
-    );
-  }
-
   const ip = ipFromHeaders(req.headers);
-  const rate = await newsletterLimiter.limit(ip);
-  if (!rate.success) {
-    return NextResponse.json(
-      { error: "Too many signups. Please try again later." },
-      { status: 429 }
-    );
+  try {
+    await requireRateLimit(newsletterLimiter, ip, "Too many signups. Please try again later.");
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return rateLimitResponse(error);
+    }
+    throw error;
   }
 
   const { email, firstName, tags } = await req.json().catch(() => ({}));
@@ -31,20 +28,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (!env.CONVERTKIT_API_SECRET || !env.NEXT_PUBLIC_CONVERTKIT_FORM_ID) {
+    return NextResponse.json({
+      ok: true,
+      message:
+        "Thanks for joining! Our team will add you manually while we finish newsletter setup.",
+    });
+  }
+
   const payload: Record<string, unknown> = {
-    api_secret: API_SECRET,
+    api_secret: env.CONVERTKIT_API_SECRET,
     email,
   };
 
-  if (API_KEY) payload.api_key = API_KEY;
+  if (env.NEXT_PUBLIC_CONVERTKIT_API_KEY) {
+    payload.api_key = env.NEXT_PUBLIC_CONVERTKIT_API_KEY;
+  }
   if (firstName && typeof firstName === "string") payload.first_name = firstName;
   if (Array.isArray(tags)) payload.tags = tags.filter((tag) => typeof tag === "number" || typeof tag === "string");
 
-  const response = await fetch(`https://api.convertkit.com/v3/forms/${FORM_ID}/subscribe`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const response = await fetch(
+    `https://api.convertkit.com/v3/forms/${env.NEXT_PUBLIC_CONVERTKIT_FORM_ID}/subscribe`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
 
   const json = await response.json().catch(() => undefined);
 
