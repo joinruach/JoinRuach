@@ -24,6 +24,18 @@ RUN pnpm install --frozen-lockfile
 
 # Now copy the rest of the repo and build
 COPY . .
+
+# Promote build-time env vars so Next.js validates successfully inside Docker
+ARG NEXTAUTH_URL=http://localhost:3000
+ARG NEXTAUTH_SECRET=dev_dev_dev_dev_dev_dev_123456789012
+ARG NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+ARG STRAPI_REVALIDATE_SECRET=dev-revalidate-secret
+
+ENV NEXTAUTH_URL=${NEXTAUTH_URL} \
+    NEXTAUTH_SECRET=${NEXTAUTH_SECRET} \
+    NEXT_PUBLIC_STRAPI_URL=${NEXT_PUBLIC_STRAPI_URL} \
+    STRAPI_REVALIDATE_SECRET=${STRAPI_REVALIDATE_SECRET}
+
 RUN pnpm --filter @ruach/components run build \
  && pnpm --filter @ruach/addons run build \
  && pnpm --filter ruach-next... run build
