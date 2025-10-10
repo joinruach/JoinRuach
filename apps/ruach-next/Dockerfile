@@ -49,6 +49,9 @@ FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
+# Enable pnpm for runtime
+RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+
 # Copy pruned app (code + prod node_modules)
 COPY --from=builder /opt/app/ ./
 
