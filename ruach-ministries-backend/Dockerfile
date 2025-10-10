@@ -32,7 +32,7 @@ RUN pnpm --dir ruach-ministries-backend prune --prod \
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production
-WORKDIR /app
+WORKDIR /opt/strapi
 
 # Enable pnpm for runtime scripts
 RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
