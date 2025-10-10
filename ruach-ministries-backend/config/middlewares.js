@@ -32,19 +32,6 @@ if (!isProduction) {
   connectSrc.push(...developmentOrigins, 'ws://localhost:1337', 'ws://localhost:3000');
 }
 
-const rateLimitMiddlewares = isProduction
-  ? [
-      {
-        name: 'strapi::ratelimit',
-        config: {
-          interval: 60000,
-          max: 100,
-          prefixKey: 'public',
-        },
-      },
-    ]
-  : [];
-
 module.exports = [
   'strapi::logger',
   'strapi::errors',
@@ -110,7 +97,6 @@ module.exports = [
 
   'strapi::poweredBy',
   'strapi::query',
-  ...rateLimitMiddlewares,
 
   {
     name: 'strapi::body',
