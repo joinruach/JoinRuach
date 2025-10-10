@@ -24,10 +24,12 @@ RUN pnpm --dir ruach-ministries-backend install --frozen-lockfile
 COPY . ruach-ministries-backend
 RUN pnpm --dir ruach-ministries-backend run build
 
-# Prune to production dependencies and stage the output bundle
+# Prune to production deps, copy the bundle, and rebuild node_modules for /opt/strapi
 RUN pnpm --dir ruach-ministries-backend prune --prod \
  && mkdir -p /opt/strapi \
- && cp -R ruach-ministries-backend/. /opt/strapi
+ && cp -R ruach-ministries-backend/. /opt/strapi \
+ && rm -rf /opt/strapi/node_modules \
+ && pnpm --dir /opt/strapi install --prod --frozen-lockfile --store-dir /opt/strapi/.pnpm-store
 
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
