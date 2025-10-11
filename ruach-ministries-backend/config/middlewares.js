@@ -26,6 +26,8 @@ const connectSrc = [
   'https://cdn.ruachstudio.com',
   'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
   'https://api.ruachstudio.com',
+  'https://api.github.com',
+  'https://analytics.strapi.io',
 ];
 
 if (!isProduction) {
