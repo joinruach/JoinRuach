@@ -1,3 +1,12 @@
+import type {
+  CategoryEntity,
+  MediaItemEntity,
+  PrayerEntity,
+  StatEntity,
+  EventEntity,
+  ConferencePageEntity,
+} from "@/lib/types/strapi-types";
+
 type FetchOpts = {
   tags?: string[];
   authToken?: string;
@@ -102,6 +111,7 @@ type MediaSort = "latest" | "oldest" | "most-viewed";
 
 type MediaListOptions = {
   categorySlug?: string;
+  type?: string;
   sort?: MediaSort;
   dateRange?: "30" | "365";
   page?: number;
@@ -118,6 +128,37 @@ type StrapiListResponse<T> = {
       total: number;
     };
   };
+};
+
+export type BlogPostEntity = {
+  id: number;
+  attributes?: {
+    title?: string;
+    slug?: string;
+    publishedDate?: string | null;
+    content?: any;
+    featuredImage?: {
+      data?: {
+        attributes?: {
+          url?: string;
+          alternativeText?: string | null;
+        } | null;
+      } | null;
+    } | null;
+    team_member?: {
+      data?: {
+        attributes?: {
+          name?: string | null;
+          title?: string | null;
+        } | null;
+      } | null;
+    } | null;
+  };
+};
+
+type BlogPostListOptions = {
+  page?: number;
+  pageSize?: number;
 };
 
 export async function getCourses() {
@@ -176,6 +217,133 @@ export async function getCourseBySlug(slug: string) {
   }
 }
 
+export async function getBlogPosts(options: BlogPostListOptions = {}) {
+  const page = options.page ?? 1;
+  const pageSize = options.pageSize ?? 12;
+
+  const params = new URLSearchParams();
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "publishedDate");
+  params.set("populate[featuredImage][fields][0]", "url");
+  params.set("populate[featuredImage][fields][1]", "alternativeText");
+  params.set("populate[team_member][fields][0]", "name");
+  params.set("populate[team_member][fields][1]", "title");
+  params.set("sort[0]", "publishedDate:desc");
+  params.set("sort[1]", "createdAt:desc");
+  params.set("pagination[pageSize]", String(pageSize));
+  params.set("pagination[page]", String(page));
+
+  try {
+    const j = await getJSON<StrapiListResponse<BlogPostEntity>>(`/api/blog-posts?${params.toString()}`, {
+      tags: [`blog-posts:p${page}:s${pageSize}`],
+      revalidate: 300,
+    });
+    return {
+      data: j.data || [],
+      meta: j.meta,
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return { data: [], meta: undefined };
+    }
+
+    throw error;
+  }
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  const params = new URLSearchParams();
+  params.set("filters[slug][$eq]", slug);
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "publishedDate");
+  params.set("populate[content]", "*");
+  params.set("populate[featuredImage][fields][0]", "url");
+  params.set("populate[featuredImage][fields][1]", "alternativeText");
+  params.set("populate[team_member][fields][0]", "name");
+  params.set("populate[team_member][fields][1]", "title");
+  params.set("populate[team_member][populate][photo][fields][0]", "url");
+  params.set("pagination[pageSize]", "1");
+
+  try {
+    const j = await getJSON<{ data: BlogPostEntity[] }>(`/api/blog-posts?${params.toString()}`, {
+      tags: [`blog-post:${slug}`],
+      revalidate: 300,
+    });
+    return j.data?.[0] ?? null;
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+type DownloadableMediaOptions = {
+  page?: number;
+  pageSize?: number;
+  type?: string;
+};
+
+export async function getDownloadableMediaItems(options: DownloadableMediaOptions = {}) {
+  const page = options.page ?? 1;
+  const pageSize = Math.min(options.pageSize ?? 24, 50);
+
+  const params = new URLSearchParams();
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "description");
+  params.set("fields[3]", "ctaLabel");
+  params.set("fields[4]", "ctaUrl");
+  params.set("fields[5]", "releasedAt");
+  params.set("fields[6]", "type");
+  params.set("populate[source][fields][0]", "kind");
+  params.set("populate[source][fields][1]", "url");
+  params.set("populate[source][fields][2]", "title");
+  params.set("populate[source][populate][file][fields][0]", "url");
+  params.set("populate[thumbnail][fields][0]", "url");
+  params.set("populate[thumbnail][fields][1]", "alternativeText");
+  params.set("sort[0]", "releasedAt:desc");
+  params.set("pagination[pageSize]", String(pageSize));
+  params.set("pagination[page]", String(page));
+
+  if (options.type) {
+    params.set("filters[type][$eq]", options.type);
+  }
+
+  try {
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(`/api/media-items?${params.toString()}`, {
+      tags: [
+        `downloadables:${options.type ?? "all"}:p${page}:s${pageSize}`,
+      ],
+      revalidate: 300,
+    });
+
+    const data = (j.data || []).filter((item) => {
+      const attributes = item?.attributes;
+      if (!attributes) return false;
+      const source = attributes.source;
+      const fileUrl = source?.file?.data?.attributes?.url;
+      const directUrl = source?.url;
+      const ctaUrl = attributes.ctaUrl;
+      return Boolean(fileUrl || directUrl || ctaUrl);
+    });
+
+    return {
+      data,
+      meta: j.meta,
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return { data: [], meta: undefined };
+    }
+
+    throw error;
+  }
+}
+
 async function fetchMediaItems(options: MediaListOptions = {}) {
   const params = new URLSearchParams();
   params.set("fields[0]", "title");
@@ -195,6 +363,10 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
 
   if (options.categorySlug && options.categorySlug !== "all") {
     params.set("filters[category][slug][$eq]", options.categorySlug);
+  }
+
+  if (options.type) {
+    params.set("filters[type][$eq]", options.type);
   }
 
   if (options.dateRange) {
@@ -217,7 +389,9 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
       params.set("sort[0]", "releasedAt:desc");
   }
 
-  const tag = `media-items:${options.categorySlug ?? "all"}:${sort}:${options.dateRange ?? "all"}:p${
+  const tag = `media-items:${options.categorySlug ?? "all"}:${options.type ?? "all-types"}:${sort}:${
+    options.dateRange ?? "all"
+  }:p${
     options.page ?? 1
   }:s${pageSize}`;
   const endpoint = `/api/media-items?${params.toString()}`;
@@ -255,6 +429,10 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
     params.set("filters[category][$eqi]", legacyName || options.categorySlug);
   }
 
+  if (options.type) {
+    params.set("filters[type][$eq]", options.type);
+  }
+
   if (options.dateRange) {
     const now = new Date();
     const days = options.dateRange === "30" ? 30 : 365;
@@ -274,7 +452,9 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
       params.set("sort[0]", "releasedAt:desc");
   }
 
-  const tag = `media-items:legacy:${options.categorySlug ?? "all"}:${sort}:${options.dateRange ?? "all"}:p${
+  const tag = `media-items:legacy:${options.categorySlug ?? "all"}:${options.type ?? "all-types"}:${sort}:${
+    options.dateRange ?? "all"
+  }:p${
     options.page ?? 1
   }:s${pageSize}`;
 
@@ -388,14 +568,6 @@ export function imgUrl(path?: string) {
 // ------------------------------
 // Additional endpoints (homepage)
 // ------------------------------
-import type {
-  CategoryEntity,
-  MediaItemEntity,
-  PrayerEntity,
-  StatEntity,
-  EventEntity,
-  ConferencePageEntity,
-} from "@/lib/types/strapi-types";
 
 async function fetchMediaByCategory(categorySlug: string, limit = 12) {
   const params = new URLSearchParams();

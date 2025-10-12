@@ -3,21 +3,21 @@ import { useState } from "react";
 import Link from "next/link";
 import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import EmbedScript from "@/components/ruach/embeds/EmbedScript";
+import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";
 
 interface DonationEmbedSwitcherProps {
   givebutterUrl: string;
   givebutterEmbedHtml?: string;
-  memberfulUrl?: string;
 }
 
 const TABS = [
   { id: "givebutter", label: "Givebutter" },
-  { id: "memberful", label: "Memberful" }
+  { id: "partners", label: "Monthly partners" }
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
-export default function DonationEmbedSwitcher({ givebutterUrl, givebutterEmbedHtml, memberfulUrl }: DonationEmbedSwitcherProps){
+export default function DonationEmbedSwitcher({ givebutterUrl, givebutterEmbedHtml }: DonationEmbedSwitcherProps){
   const [tab, setTab] = useState<TabId>("givebutter");
 
   return (
@@ -55,22 +55,23 @@ export default function DonationEmbedSwitcher({ givebutterUrl, givebutterEmbedHt
       ) : (
         <div className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
           <p>
-            Memberful partners receive bonus content, live Q&As, and digital resources. Use the link below to manage your membership.
+            Become a monthly partner through Stripe to receive discipleship resources, partner-only livestreams, and behind-the-scenes updates. Use the billing portal if
+            you&rsquo;re already giving monthly.
           </p>
-          {memberfulUrl ? (
-            <Link
-              href={memberfulUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-            >
-              Open Memberful Portal
+          <StripeSubscriptionButtons
+            checkoutLabel="Become a monthly partner"
+            manageLabel="Manage billing"
+            manageVariant="white"
+            className="space-y-3"
+            manageUnauthorizedMessage="Sign in to your Ruach account to manage billing."
+          />
+          <p className="text-xs text-white/60">
+            Need help with your partnership?{" "}
+            <Link href="/contact" className="text-amber-300 hover:text-amber-200">
+              Contact our team
             </Link>
-          ) : (
-            <p className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs text-white/60">
-              Set `NEXT_PUBLIC_MEMBERFUL_URL` to enable the membership portal link.
-            </p>
-          )}
+            .
+          </p>
         </div>
       )}
     </div>

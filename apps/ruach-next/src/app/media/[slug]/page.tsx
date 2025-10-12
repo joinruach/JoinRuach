@@ -30,16 +30,23 @@ export async function generateMetadata({ params }: Props){
 export default async function MediaDetail({ params }: Props){
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
-  if (!data) return <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/80">Media not found.</div>;
+  if (!data || !data.attributes) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/80">
+        Media not found.
+      </div>
+    );
+  }
   const a = data.attributes;
   const categoryEntity = a.category?.data?.attributes;
   const categorySlug = categoryEntity?.slug;
   const categoryName = categoryEntity?.name ?? a.legacyCategory ?? undefined;
   const relatedRaw = categorySlug ? await getMediaByCategory(categorySlug, 4) : [];
   const related = (relatedRaw || [])
-    .filter((item: MediaItemEntity) => item.attributes.slug !== slug)
-    .map((item: MediaItemEntity) => {
-      const attr = item.attributes;
+    .filter((item: MediaItemEntity | null | undefined): item is MediaItemEntity => Boolean(item && item.attributes))
+    .filter((item) => item.attributes.slug !== slug)
+    .map((item) => {
+      const attr = item.attributes!;
       const relCategory = attr.category?.data?.attributes?.name ?? attr.legacyCategory ?? undefined;
       const speakerNames = (attr.speakers?.data || [])
         .map((speaker) => speaker.attributes?.name)

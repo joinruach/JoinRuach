@@ -88,6 +88,36 @@
       "relation": "oneToMany",
       "target": "api::comment-report.comment-report",
       "mappedBy": "user"
+    },
+    "stripeCustomerId": {
+      "type": "string"
+    },
+    "stripeSubscriptionId": {
+      "type": "string"
+    },
+    "membershipStatus": {
+      "type": "enumeration",
+      "enum": [
+        "incomplete",
+        "incomplete_expired",
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "unpaid",
+        "paused"
+      ],
+      "default": "incomplete"
+    },
+    "membershipPlanName": {
+      "type": "string"
+    },
+    "membershipCurrentPeriodEnd": {
+      "type": "datetime"
+    },
+    "activeMembership": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
