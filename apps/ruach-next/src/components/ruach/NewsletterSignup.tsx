@@ -201,15 +201,13 @@ export default function NewsletterSignup({
   }
 
   return (
-    <p
+    <div
       className={cn(
-        "text-sm",
-        variant === "dark" ? "text-white/60" : "text-neutral-500"
+        "space-y-2 rounded-xl border border-dashed px-4 py-3 text-sm",
+        variant === "dark" ? "border-white/15 text-white/60" : "border-neutral-300 text-neutral-600"
       )}
     >
-      Configure your ConvertKit embed by setting `NEXT_PUBLIC_CONVERTKIT_EMBED_HTML`,
-      `NEXT_PUBLIC_CONVERTKIT_FORM_ACTION`, or the API credentials
-      (`NEXT_PUBLIC_CONVERTKIT_FORM_ID`, `NEXT_PUBLIC_CONVERTKIT_API_KEY`, `CONVERTKIT_API_SECRET`).
-    </p>
+      <p>We&rsquo;re preparing a brand-new newsletter experience. In the meantime, follow Ruach on social to stay updated.</p>
+    </div>
   );
 }

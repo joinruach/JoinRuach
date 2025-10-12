@@ -9,7 +9,7 @@ const quickLinks = [
   { label: "Contact", href: "/contact" }
 ];
 
-const socialLinks = [
+const resolveSocialLinks = () => [
   { label: "Instagram", href: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM, icon: "instagram" },
   { label: "YouTube", href: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE, icon: "youtube" },
   { label: "Facebook", href: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK, icon: "facebook" },
@@ -52,6 +52,7 @@ function SocialIcon({ name }:{ name: string }) {
 }
 
 export default function Footer(){
+  const socialLinks = resolveSocialLinks();
   return (
     <footer className="border-t border-white/10 bg-black text-white">
       <div className="mx-auto max-w-6xl px-4 py-12">
@@ -90,24 +91,22 @@ export default function Footer(){
             <p className="text-sm text-white/70">
               Follow Ruach Studios for behind-the-scenes stories and livestreams.
             </p>
-            <div className="flex flex-wrap gap-3">
-              {socialLinks.length ? socialLinks.map((social) => (
-                <Link
-                  key={social.label}
-                  href={social.href as string}
-                  target="_blank"
-                  rel="noopener noreferrer"
+            {socialLinks.length ? (
+              <div className="flex flex-wrap gap-3">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.label}
+                    href={social.href as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   aria-label={social.label}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
-                >
-                  <SocialIcon name={social.icon} />
-                </Link>
-              )) : (
-                <p className="text-sm text-white/50">
-                  Add social links via environment variables.
-                </p>
-              )}
-            </div>
+                  >
+                    <SocialIcon name={social.icon} />
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
 
