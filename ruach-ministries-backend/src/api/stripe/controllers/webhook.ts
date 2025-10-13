@@ -1,5 +1,4 @@
 import Stripe from "stripe";
-import type { Context } from "koa";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
@@ -14,6 +13,32 @@ const ACTIVE_STATUSES = new Set<Stripe.Subscription.Status>([
 ]);
 
 let stripeClient: Stripe | null = null;
+
+type WebhookContext = {
+  req: NodeJS.ReadableStream & { setEncoding(encoding: string): void };
+  request: { headers: Record<string, string | string[] | undefined> };
+  throw(status: number, message: string): never;
+  status?: number;
+  body?: unknown;
+};
+
+const isStripeProduct = (
+  product: Stripe.Product | Stripe.DeletedProduct
+): product is Stripe.Product => {
+  return !("deleted" in product && product.deleted === true);
+};
+
+const resolveProductName = (
+  product: Stripe.Product | Stripe.DeletedProduct | string | null | undefined
+): string | null => {
+  if (!product || typeof product === "string") {
+    return null;
+  }
+  if (!isStripeProduct(product)) {
+    return null;
+  }
+  return product.name ?? null;
+};
 
 const ensureStripe = () => {
   if (!STRIPE_SECRET_KEY) {
@@ -30,7 +55,7 @@ const ensureStripe = () => {
   return stripeClient;
 };
 
-async function readRawBody(ctx: Context): Promise<string> {
+async function readRawBody(ctx: WebhookContext): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = "";
     ctx.req.setEncoding("utf8");
@@ -149,11 +174,9 @@ async function applySubscriptionToUser(
     return;
   }
 
-  const planNickname =
-    subscription.items?.data?.[0]?.price?.nickname ||
-    subscription.plan?.nickname ||
-    subscription.items?.data?.[0]?.price?.product?.name ||
-    null;
+  const firstItem = subscription.items?.data?.[0] ?? null;
+  const price = firstItem?.price ?? null;
+  const planNickname = price?.nickname ?? resolveProductName(price?.product ?? null);
 
   const currentPeriodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000).toISOString()
@@ -188,7 +211,7 @@ async function applySubscriptionToUser(
   }
 
   await strapi.entityService.update("plugin::users-permissions.user", user.id, {
-    data: updateData,
+    data: updateData as any,
   });
 
   await updateUserRole(user, isActive);
@@ -225,7 +248,7 @@ async function handleSubscriptionEvent(subscription: Stripe.Subscription) {
 }
 
 export default {
-  async handle(ctx: Context) {
+  async handle(ctx: WebhookContext) {
     try {
       const stripe = ensureStripe();
       const signature = ctx.request.headers["stripe-signature"];
@@ -275,7 +298,7 @@ export default {
                 {
                   data: {
                     stripeCustomerId: customer.id,
-                  },
+                  } as any,
                 }
               );
             }

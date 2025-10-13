@@ -11,12 +11,20 @@ export default factories.createCoreController('api::lesson-comment.lesson-commen
       return ctx.unauthorized('Authentication required');
     }
 
-    const body = ctx.request.body?.data ?? {};
+    const request = ctx.request as typeof ctx.request & {
+      body?: { data?: Record<string, unknown> };
+    };
+
+    const body = request.body?.data ?? {};
     if (!body.courseSlug || !body.lessonSlug || !body.text) {
       return ctx.badRequest('courseSlug, lessonSlug and text are required');
     }
 
-    ctx.request.body.data = {
+    if (!request.body) {
+      request.body = { data: {} };
+    }
+
+    request.body.data = {
       ...body,
       user: user.id,
     };
