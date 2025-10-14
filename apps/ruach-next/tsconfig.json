@@ -35,6 +35,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
+    "../../types/**/*.d.ts",
     "../../packages/ruach-components/src/**/*.ts",
     "../../packages/ruach-components/src/**/*.tsx",
     "../../packages/ruach-next-addons/src/**/*.ts",
