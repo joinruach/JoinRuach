@@ -20,6 +20,13 @@ declare module "next-auth/react" {
     redirect?: boolean;
   }
 
+  interface SignInResponse {
+    error?: string | null;
+    status: number;
+    ok: boolean;
+    url?: string | null;
+  }
+
   interface SignOutParams {
     callbackUrl?: string;
     redirect?: boolean;
@@ -35,7 +42,7 @@ declare module "next-auth/react" {
     provider?: string,
     options?: SignInOptions,
     authorizationParams?: Record<string, string>
-  ): Promise<unknown>;
+  ): Promise<SignInResponse | undefined>;
   export function signOut(options?: SignOutParams): Promise<unknown>;
   export function getSession(): Promise<Session | null>;
   export const SessionProvider: ComponentType<SessionProviderProps>;

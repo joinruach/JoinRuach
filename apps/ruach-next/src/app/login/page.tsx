@@ -7,7 +7,7 @@ export default function LoginPage(){
   const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [err,setErr]=useState<string|null>(null);
   async function submit(e:React.FormEvent){e.preventDefault(); setErr(null);
     const res = await signIn("credentials",{ email,password, redirect:false });
-    if (!res || res.error) setErr(res?.error || "Login failed"); else window.location.href = "/";
+    if (!res || res?.error) setErr(res?.error || "Login failed"); else window.location.href = res?.url || "/";
   }
   return (<div className="max-w-md space-y-4">
     <h1 className="text-2xl font-bold">Sign in</h1>

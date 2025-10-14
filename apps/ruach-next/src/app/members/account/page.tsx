@@ -157,7 +157,7 @@ async function fetchCourseDetail(slug: string): Promise<CourseDetail | null> {
     };
   });
 
-  lessons.sort((a, b) => {
+  lessons.sort((a: CourseLesson, b: CourseLesson) => {
     if (a.order == null && b.order == null) return a.slug.localeCompare(b.slug);
     if (a.order == null) return 1;
     if (b.order == null) return -1;
