@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # ---- Better layer caching: copy manifests first ----
-COPY package.json ruach-ministries-backend/package.json
-COPY pnpm-lock.yaml ruach-ministries-backend/pnpm-lock.yaml
-COPY .pnpmfile.cjs ruach-ministries-backend/.pnpmfile.cjs
-COPY scripts ruach-ministries-backend/scripts
+COPY ruach-ministries-backend/package.json ruach-ministries-backend/package.json
+COPY ruach-ministries-backend/pnpm-lock.yaml ruach-ministries-backend/pnpm-lock.yaml
+COPY ruach-ministries-backend/.pnpmfile.cjs ruach-ministries-backend/.pnpmfile.cjs
+COPY ruach-ministries-backend/scripts ruach-ministries-backend/scripts
 
 # Install WITH devDependencies for build step
 RUN pnpm --dir ruach-ministries-backend install --frozen-lockfile

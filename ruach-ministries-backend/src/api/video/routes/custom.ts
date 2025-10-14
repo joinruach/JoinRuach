@@ -5,8 +5,8 @@ export default {
       path: '/videos/upload',
       handler: 'video.upload',
       config: {
-        auth: false, // Make the route public if needed
-        policies: [],
+        auth: true,
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },

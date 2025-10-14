@@ -1,6 +1,5 @@
 import { factories } from '@strapi/strapi';
 import formidable from 'formidable';
-import { uploadToS3 } from '../uploadProvider'; // Ensure correct path
 
 const slugify = (value: string) =>
   value
@@ -46,15 +45,30 @@ export default factories.createCoreController('api::video.video', ({ strapi }) =
     }
 
     try {
-      // Map the formidable file properties to match the expected structure
-      const fileData = {
-        name: file.originalFilename,
-        type: file.mimetype,
-        filepath: file.filepath,
-      };
+      const uploadService = strapi.plugin('upload').service('upload');
+      const uploadedFiles = await uploadService.upload({
+        data: {
+          fileInfo: {
+            name: file.originalFilename,
+          },
+        },
+        files: {
+          path: file.filepath,
+          name: file.originalFilename,
+          type: file.mimetype,
+          size: file.size,
+        },
+      });
 
-      const uploadResponse = await uploadToS3(fileData);
-      const videoUrl = uploadResponse.file.url;
+      const uploadedFile = Array.isArray(uploadedFiles)
+        ? uploadedFiles[0]
+        : uploadedFiles;
+
+      if (!uploadedFile?.url) {
+        throw new Error('Upload service did not return a file URL');
+      }
+
+      const videoUrl = uploadedFile.url;
       const slug = await ensureUniqueSlug(strapi, file.originalFilename);
 
       const video = await strapi.entityService.create('api::video.video', {

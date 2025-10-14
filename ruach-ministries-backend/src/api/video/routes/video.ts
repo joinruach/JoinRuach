@@ -2,10 +2,30 @@ import { factories } from '@strapi/strapi';
 
 export default factories.createCoreRouter('api::video.video', {
   config: {
-    find: { auth: false, policies: [], middlewares: [] },
-    findOne: { auth: false, policies: [], middlewares: [] },
-    create: { auth: false, policies: [], middlewares: [] },
-    update: { auth: false, policies: [], middlewares: [] },
-    delete: { auth: false, policies: [], middlewares: [] },
+    find: {
+      auth: true,
+      policies: ['global::is-authenticated-or-admin'],
+      middlewares: [],
+    },
+    findOne: {
+      auth: true,
+      policies: ['global::is-authenticated-or-admin'],
+      middlewares: [],
+    },
+    create: {
+      auth: true,
+      policies: ['global::is-authenticated-or-admin'],
+      middlewares: [],
+    },
+    update: {
+      auth: true,
+      policies: ['global::is-authenticated-or-admin'],
+      middlewares: [],
+    },
+    delete: {
+      auth: true,
+      policies: ['global::is-authenticated-or-admin'],
+      middlewares: [],
+    },
   },
 });
