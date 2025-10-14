@@ -29,7 +29,15 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-function extractText(node: any): string {
+type BlockNode = {
+  type?: string;
+  level?: number;
+  format?: string;
+  text?: string;
+  children?: BlockNode[];
+};
+
+function extractText(node: BlockNode | string | null | undefined): string {
   if (!node) return "";
   if (typeof node === "string") return node;
   if (typeof node.text === "string") return node.text;
@@ -39,19 +47,19 @@ function extractText(node: any): string {
   return "";
 }
 
-function extractSummary(blocks: any): string | undefined {
+function extractSummary(blocks: unknown): string | undefined {
   if (!Array.isArray(blocks)) return undefined;
-  for (const block of blocks) {
+  for (const block of blocks as BlockNode[]) {
     const text = extractText(block);
     if (text.trim()) return text.trim();
   }
   return undefined;
 }
 
-function renderBlocks(blocks: any) {
+function renderBlocks(blocks: unknown) {
   if (!Array.isArray(blocks)) return null;
 
-  return blocks.map((block, index) => {
+  return (blocks as BlockNode[]).map((block, index) => {
     const key = `${block?.type ?? "block"}-${index}`;
     const text = extractText(block).trim();
     if (!text) return null;
@@ -95,20 +103,20 @@ function renderBlocks(blocks: any) {
       case "list": {
         const items = Array.isArray(block.children)
           ? block.children
-              .map((child: any) => extractText(child).trim())
-              .filter((value: string) => Boolean(value))
+              .map((child) => extractText(child).trim())
+              .filter((value) => Boolean(value))
           : [];
         if (!items.length) return null;
         const isOrdered = block.format === "ordered";
         return isOrdered ? (
           <ol key={key} className="mt-4 list-decimal space-y-2 pl-5 text-white/80">
-            {items.map((item, itemIndex) => (
+            {items.map((item: string, itemIndex: number) => (
               <li key={`${key}-${itemIndex}`}>{item}</li>
             ))}
           </ol>
         ) : (
           <ul key={key} className="mt-4 list-disc space-y-2 pl-5 text-white/80">
-            {items.map((item, itemIndex) => (
+            {items.map((item: string, itemIndex: number) => (
               <li key={`${key}-${itemIndex}`}>{item}</li>
             ))}
           </ul>

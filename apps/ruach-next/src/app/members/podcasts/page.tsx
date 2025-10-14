@@ -16,39 +16,38 @@ export default async function MemberPodcastsPage() {
     pageSize: 18,
   });
 
-  const items: MediaCardProps[] = (data || [])
-    .map((entity: MediaItemEntity | undefined | null) => {
-      if (!entity?.attributes) return null;
-      const attr = entity.attributes;
-      const slug = attr.slug;
-      if (!slug) return null;
-      const title = attr.title ?? "Podcast";
-      const thumbnailData = attr.thumbnail?.data?.attributes;
-      const thumbnail = thumbnailData?.url
-        ? { src: thumbnailData.url, alt: thumbnailData.alternativeText ?? title }
-        : undefined;
-      const excerpt =
-        attr.excerpt && attr.excerpt.trim().length
-          ? attr.excerpt
-          : attr.description ?? undefined;
-      const speakers = Array.isArray(attr.speakers?.data)
-        ? attr.speakers.data
-            .map((speaker) => speaker?.attributes?.name)
-            .filter((value): value is string => Boolean(value))
-        : [];
+  const items = (data || []).reduce<MediaCardProps[]>((acc, entity: MediaItemEntity | undefined | null) => {
+    if (!entity?.attributes) return acc;
+    const attr = entity.attributes;
+    const slug = attr.slug;
+    if (!slug) return acc;
+    const title = attr.title ?? "Podcast";
+    const thumbnailData = attr.thumbnail?.data?.attributes;
+    const thumbnail = thumbnailData?.url
+      ? { src: thumbnailData.url, alt: thumbnailData.alternativeText ?? title }
+      : undefined;
+    const excerpt =
+      attr.excerpt && attr.excerpt.trim().length ? attr.excerpt : attr.description ?? undefined;
+    const speakers = Array.isArray(attr.speakers?.data)
+      ? attr.speakers.data
+          .map((speaker) => speaker?.attributes?.name)
+          .filter((value): value is string => Boolean(value))
+      : [];
 
-      return {
-        title,
-        href: `/members/podcasts/${slug}`,
-        excerpt,
-        category: "Podcast",
-        thumbnail,
-        views: attr.views ?? 0,
-        durationSec: attr.durationSec ?? undefined,
-        speakers,
-      } satisfies MediaCardProps;
-    })
-    .filter((item): item is MediaCardProps => Boolean(item));
+    const card: MediaCardProps = {
+      title,
+      href: `/members/podcasts/${slug}`,
+      excerpt,
+      category: "Podcast",
+      thumbnail,
+      views: attr.views ?? 0,
+      durationSec: attr.durationSec ?? undefined,
+      speakers,
+    };
+
+    acc.push(card);
+    return acc;
+  }, []);
 
   return (
     <div className="space-y-10">

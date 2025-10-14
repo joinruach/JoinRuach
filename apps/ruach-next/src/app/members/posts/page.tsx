@@ -6,17 +6,32 @@ import TrackedLink from "@/components/ruach/TrackedLink";
 
 export const dynamic = "force-dynamic";
 
-function extractText(node: any): string {
-  if (!node) return "";
+interface RichTextElement {
+  text?: unknown;
+  children?: Array<RichTextElement | string>;
+}
+
+function isRichTextElement(value: unknown): value is RichTextElement {
+  return typeof value === "object" && value !== null;
+}
+
+function hasRichTextChildren(
+  value: RichTextElement
+): value is RichTextElement & { children: Array<RichTextElement | string> } {
+  return Array.isArray(value.children);
+}
+
+function extractText(node: unknown): string {
   if (typeof node === "string") return node;
+  if (!isRichTextElement(node)) return "";
   if (typeof node.text === "string") return node.text;
-  if (Array.isArray(node.children)) {
+  if (hasRichTextChildren(node)) {
     return node.children.map((child) => extractText(child)).join("");
   }
   return "";
 }
 
-function summarizeBlocks(blocks: any): string | undefined {
+function summarizeBlocks(blocks: unknown): string | undefined {
   if (!Array.isArray(blocks)) return undefined;
   for (const block of blocks) {
     const text = extractText(block);

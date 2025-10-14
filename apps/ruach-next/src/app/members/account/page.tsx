@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
+import { getServerSession, type Session } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { imgUrl } from "@/lib/strapi";
@@ -58,6 +58,10 @@ type CourseDetail = {
   title: string;
   coverUrl?: string;
   lessons: CourseLesson[];
+};
+
+type StrapiSession = Session & {
+  strapiJwt?: string | null;
 };
 
 async function fetchStrapiPrivate<T>(path: string, jwt: string): Promise<T> {
@@ -135,12 +139,23 @@ async function fetchCourseDetail(slug: string): Promise<CourseDetail | null> {
   if (!row) return null;
 
   const attributes = row.attributes ?? {};
-  const lessons = (attributes.lessons?.data ?? []).map((item: any) => ({
-    slug: item?.attributes?.slug ?? "",
-    title: item?.attributes?.title ?? item?.attributes?.slug ?? "Lesson",
-    order:
-      typeof item?.attributes?.order === "number" ? item?.attributes?.order : item?.attributes?.order ?? null,
-  }));
+  const lessons: CourseLesson[] = (attributes.lessons?.data ?? []).map((item: any) => {
+    const rawOrder = item?.attributes?.order;
+    let order: number | null = null;
+
+    if (typeof rawOrder === "number") {
+      order = rawOrder;
+    } else if (rawOrder !== null && rawOrder !== undefined) {
+      const parsed = Number(rawOrder);
+      order = Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return {
+      slug: item?.attributes?.slug ?? "",
+      title: item?.attributes?.title ?? item?.attributes?.slug ?? "Lesson",
+      order,
+    };
+  });
 
   lessons.sort((a, b) => {
     if (a.order == null && b.order == null) return a.slug.localeCompare(b.slug);
@@ -242,8 +257,8 @@ function membershipStatusBadgeClasses(status?: string | null): string {
 }
 
 export default async function AccountPage() {
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+  const session = (await getServerSession(authOptions as any)) as StrapiSession | null;
+  const jwt = session?.strapiJwt ?? undefined;
 
   if (!jwt) {
     redirect(`/login?callbackUrl=${encodeURIComponent("/members/account")}`);
