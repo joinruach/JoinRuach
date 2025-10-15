@@ -149,6 +149,9 @@ importers:
         specifier: ^3.4.10
         version: 3.4.17
     devDependencies:
+      next-auth:
+        specifier: ^4.24.7
+        version: 4.24.11(next@15.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsup:
         specifier: ^8.1.0
         version: 8.5.0(@swc/core@1.13.19)(jiti@1.21.7)(postcss@8.5.6)(typescript@5.9.2)(yaml@2.8.1)
