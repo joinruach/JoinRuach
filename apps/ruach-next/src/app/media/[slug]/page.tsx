@@ -54,6 +54,113 @@ function extractMediaUrl(value: any) {
   return media?.url;
 }
 
+function parseYouTubeTimestamp(value: string | null | undefined): number | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (/^\d+$/.test(trimmed)) {
+    return Number(trimmed);
+  }
+
+  const isoMatch = trimmed.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i);
+  if (isoMatch) {
+    const [, hIso, mIso, sIso] = isoMatch;
+    const hours = hIso ? Number(hIso) : 0;
+    const minutes = mIso ? Number(mIso) : 0;
+    const seconds = sIso ? Number(sIso) : 0;
+    const totalIso = hours * 3600 + minutes * 60 + seconds;
+    return Number.isNaN(totalIso) ? undefined : totalIso;
+  }
+
+  const hMatch = trimmed.match(/(\d+)\s*h/i);
+  const mMatch = trimmed.match(/(\d+)\s*m/i);
+  const sMatch = trimmed.match(/(\d+)\s*s/i);
+  if (hMatch || mMatch || sMatch) {
+    const hours = hMatch ? Number(hMatch[1]) : 0;
+    const minutes = mMatch ? Number(mMatch[1]) : 0;
+    const seconds = sMatch ? Number(sMatch[1]) : 0;
+    const totalHms = hours * 3600 + minutes * 60 + seconds;
+    return Number.isNaN(totalHms) ? undefined : totalHms;
+  }
+
+  return undefined;
+}
+
+function normalizeVideoUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  const normalizedHost = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+  const pathSegments = parsed.pathname.split("/").filter(Boolean);
+
+  const isYouTubeHost =
+    normalizedHost === "youtu.be" ||
+    normalizedHost === "youtube.com" ||
+    normalizedHost === "m.youtube.com" ||
+    normalizedHost === "music.youtube.com" ||
+    normalizedHost === "youtube-nocookie.com";
+
+  if (!isYouTubeHost) {
+    return url;
+  }
+
+  let videoId: string | undefined;
+  if (normalizedHost === "youtu.be") {
+    videoId = pathSegments[0];
+  } else if (parsed.pathname.startsWith("/watch")) {
+    videoId = parsed.searchParams.get("v") ?? undefined;
+  } else if (parsed.pathname.startsWith("/shorts/")) {
+    videoId = pathSegments[1] ?? pathSegments[0];
+  } else if (parsed.pathname.startsWith("/live/")) {
+    videoId = pathSegments[1] ?? pathSegments[0];
+  } else if (parsed.pathname.startsWith("/embed/")) {
+    videoId = pathSegments[1] ?? pathSegments[0];
+  }
+
+  if (!videoId) {
+    return url;
+  }
+
+  const embedUrl = new URL(`https://www.youtube-nocookie.com/embed/${videoId}`);
+
+  const list = parsed.searchParams.get("list");
+  if (list) {
+    embedUrl.searchParams.set("list", list);
+  }
+
+  const start =
+    parseYouTubeTimestamp(parsed.searchParams.get("start")) ??
+    parseYouTubeTimestamp(parsed.searchParams.get("t")) ??
+    parseYouTubeTimestamp(parsed.hash.startsWith("#t=") ? parsed.hash.slice(3) : undefined);
+
+  if (typeof start === "number" && start > 0) {
+    embedUrl.searchParams.set("start", String(start));
+  }
+
+  const end = parseYouTubeTimestamp(parsed.searchParams.get("end"));
+  if (typeof end === "number" && end > 0) {
+    embedUrl.searchParams.set("end", String(end));
+  }
+
+  if (parsed.searchParams.get("loop") === "1") {
+    embedUrl.searchParams.set("loop", "1");
+  }
+
+  const autoplay = parsed.searchParams.get("autoplay");
+  if (autoplay === "1") {
+    embedUrl.searchParams.set("autoplay", "1");
+  }
+
+  return embedUrl.toString();
+}
+
 export async function generateMetadata({ params }: Props){
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
@@ -128,6 +235,10 @@ export default async function MediaDetail({ params }: Props){
     const looksLikeFile = legacyUrl ? /(\.mp4|\.mov|\.webm)$/i.test(legacyUrl) : false;
     videoUrl = looksLikeFile ? imgUrl(legacyUrl) : legacyUrl;
     isFileVideo = looksLikeFile;
+  }
+
+  if (videoUrl && !isFileVideo) {
+    videoUrl = normalizeVideoUrl(videoUrl);
   }
 
   const thumbUrl = imgUrl(extractMediaUrl(a.thumbnail));

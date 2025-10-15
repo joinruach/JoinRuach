@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/media", label: "Media & Testimonies" },
   { href: "/courses", label: "Courses" },
+  { href: "/resources", label: "Resources" },
   { href: "/conferences", label: "Conferences" },
   { href: "/community-outreach", label: "Community Outreach" },
   { href: "/give", label: "Give", highlight: true },
