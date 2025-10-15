@@ -1,6 +1,14 @@
 import Link from "next/link";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 
+type SocialPlatform = "instagram" | "youtube" | "facebook" | "spotify";
+
+type SocialLink = {
+  label: string;
+  href: string;
+  icon: SocialPlatform;
+};
+
 const quickLinks = [
   { label: "Home", href: "/" },
   { label: "Media", href: "/media" },
@@ -9,14 +17,41 @@ const quickLinks = [
   { label: "Contact", href: "/contact" }
 ];
 
-const resolveSocialLinks = () => [
-  { label: "Instagram", href: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM, icon: "instagram" },
-  { label: "YouTube", href: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE, icon: "youtube" },
-  { label: "Facebook", href: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK, icon: "facebook" },
-  { label: "Spotify", href: process.env.NEXT_PUBLIC_SOCIAL_SPOTIFY, icon: "spotify" }
-].filter((link) => Boolean(link.href));
+const defaultSocialLinks: SocialLink[] = [
+  { label: "Instagram", href: "https://www.instagram.com/joinruach/", icon: "instagram" },
+  { label: "YouTube", href: "https://www.youtube.com/@JoinRuach", icon: "youtube" },
+  { label: "Facebook", href: "https://www.facebook.com/joinruach/", icon: "facebook" },
+  { label: "Spotify", href: "https://open.spotify.com/show/2A0pJE9naftDgX5nGooy6C", icon: "spotify" }
+];
 
-function SocialIcon({ name }:{ name: string }) {
+function resolveSocialLinks(): SocialLink[] {
+  const links = [
+    {
+      label: "Instagram",
+      href: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM || process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+      icon: "instagram" as const
+    },
+    {
+      label: "YouTube",
+      href: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE || process.env.NEXT_PUBLIC_YOUTUBE_URL,
+      icon: "youtube" as const
+    },
+    {
+      label: "Facebook",
+      href: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK || process.env.NEXT_PUBLIC_FACEBOOK_URL,
+      icon: "facebook" as const
+    },
+    {
+      label: "Spotify",
+      href: process.env.NEXT_PUBLIC_SOCIAL_SPOTIFY || process.env.NEXT_PUBLIC_SPOTIFY_URL,
+      icon: "spotify" as const
+    }
+  ].filter((link): link is SocialLink => typeof link.href === "string" && link.href.trim().length > 0);
+
+  return links.length ? links : defaultSocialLinks;
+}
+
+function SocialIcon({ name }:{ name: SocialPlatform }) {
   switch (name) {
     case "instagram":
       return (
@@ -96,11 +131,11 @@ export default function Footer(){
                 {socialLinks.map((social) => (
                   <Link
                     key={social.label}
-                    href={social.href as string}
+                    href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
+                    aria-label={social.label}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
                   >
                     <SocialIcon name={social.icon} />
                   </Link>

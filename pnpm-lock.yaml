@@ -18,6 +18,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.44.1
         version: 8.44.1(eslint@8.57.1)(typescript@5.9.2)
+      '@types/node':
+        specifier: ^20.19.11
+        version: 20.19.11
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.21(postcss@8.5.6)
