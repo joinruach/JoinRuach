@@ -25,6 +25,7 @@ export interface CategoryEntity extends StrapiBase {
 export interface SpeakerEntity extends StrapiBase {
   attributes: {
     name: string;
+    displayName?: string;
     slug: string;
     title?: string;
     organization?: string;
@@ -179,6 +180,7 @@ export interface ConferenceScheduleItem extends Record<string, unknown> {
 export interface ConferenceSpeakerItem extends Record<string, unknown> {
   id?: number;
   name?: string;
+  displayName?: string;
   role?: string;
   title?: string;
   bio?: string;

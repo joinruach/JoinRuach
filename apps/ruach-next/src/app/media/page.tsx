@@ -107,10 +107,14 @@ export default async function MediaPage({
 
     const categoryEntity = attributes?.category?.data?.attributes;
     const speakerData = Array.isArray(attributes?.speakers?.data)
-      ? (attributes.speakers.data as Array<{ attributes?: { name?: string } }>)
+      ? (attributes.speakers.data as Array<{ attributes?: { name?: string; displayName?: string } }>)
       : [];
     const speakerNames = speakerData
-      .map((speaker) => speaker?.attributes?.name)
+      .map((speaker) => {
+        const attr = speaker?.attributes;
+        if (!attr) return undefined;
+        return attr.displayName?.trim() || attr.name;
+      })
       .filter((name): name is string => Boolean(name));
 
     const thumbnailData = attributes?.thumbnail?.data?.attributes;

@@ -5,7 +5,9 @@ export default {
       path: '/videos/upload',
       handler: 'video.upload',
       config: {
-        auth: true,
+        auth: {
+          scope: ['api::video.video.upload'],
+        },
         policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },

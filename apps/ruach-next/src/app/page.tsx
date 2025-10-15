@@ -44,7 +44,11 @@ export default async function Home(){
     views: m.attributes.views ?? 0,
     durationSec: m.attributes.durationSec ?? undefined,
     speakers: (m.attributes.speakers?.data || [])
-      .map((speaker: any) => speaker.attributes?.name)
+      .map((speaker: any) => {
+        const attrs = speaker?.attributes;
+        if (!attrs) return undefined;
+        return attrs.displayName?.trim() || attrs.name;
+      })
       .filter(Boolean)
   }));
 

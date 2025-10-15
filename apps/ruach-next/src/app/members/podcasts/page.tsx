@@ -30,7 +30,11 @@ export default async function MemberPodcastsPage() {
       attr.excerpt && attr.excerpt.trim().length ? attr.excerpt : attr.description ?? undefined;
     const speakers = Array.isArray(attr.speakers?.data)
       ? attr.speakers.data
-          .map((speaker) => speaker?.attributes?.name)
+          .map((speaker) => {
+            const attributes = speaker?.attributes;
+            if (!attributes) return undefined;
+            return attributes.displayName?.trim() || attributes.name;
+          })
           .filter((value): value is string => Boolean(value))
       : [];
 

@@ -40,7 +40,11 @@ export default async function CommunityOutreachPage(){
         views: item.attributes.views ?? 0,
         durationSec: item.attributes.durationSec ?? undefined,
         speakers: (item.attributes.speakers?.data || [])
-          .map((speaker: any) => speaker.attributes?.name)
+          .map((speaker: any) => {
+            const attrs = speaker?.attributes;
+            if (!attrs) return undefined;
+            return attrs.displayName?.trim() || attrs.name;
+          })
           .filter(Boolean)
       }))
     : fallbackStories;

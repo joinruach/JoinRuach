@@ -199,9 +199,9 @@ export default async function MediaDetail({ params }: Props){
       const attr = extractAttributes(item);
       if (!attr || attr.slug === slug) return null;
       const relCategory = extractSingleRelation<{ name?: string }>(attr.category)?.name ?? attr.legacyCategory ?? undefined;
-      const speakerNames = extractManyRelation<{ name?: string }>(attr.speakers)
-        .map((speaker) => speaker.name)
-        .filter(Boolean) as string[];
+    const speakerNames = extractManyRelation<{ name?: string; displayName?: string }>(attr.speakers)
+      .map((speaker) => speaker.displayName || speaker.name)
+      .filter(Boolean) as string[];
 
       return {
         title: attr.title ?? "Untitled Media",

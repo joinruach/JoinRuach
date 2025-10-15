@@ -356,6 +356,9 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
   params.set("populate[thumbnail][fields][1]", "alternativeText");
   params.set("populate[category][fields][0]", "name");
   params.set("populate[category][fields][1]", "slug");
+  params.set("populate[speakers][fields][0]", "name");
+  params.set("populate[speakers][fields][1]", "displayName");
+  params.set("populate[speakers][fields][2]", "title");
 
   const pageSize = options.pageSize ?? 20;
   params.set("pagination[pageSize]", String(pageSize));
@@ -501,14 +504,15 @@ async function fetchMediaBySlug(slug: string) {
   params.set("populate[thumbnail][fields][1]", "alternativeText");
   params.set("populate[category][fields][0]", "name");
   params.set("populate[category][fields][1]", "slug");
+  params.set("populate[speakers][fields][0]", "name");
+  params.set("populate[speakers][fields][1]", "displayName");
+  params.set("populate[speakers][fields][2]", "title");
   params.set("populate[source][fields][0]", "kind");
   params.set("populate[source][fields][1]", "url");
   params.set("populate[source][fields][2]", "embedId");
   params.set("populate[source][fields][3]", "startSeconds");
   params.set("populate[source][fields][4]", "title");
   params.set("populate[source][populate][file][fields][0]", "url");
-  params.set("populate[speakers][fields][0]", "name");
-  params.set("populate[speakers][fields][1]", "title");
   params.set("populate[gallery][fields][0]", "url");
   params.set("populate[seoImage][fields][0]", "url");
   params.set("pagination[pageSize]", "1");
@@ -581,6 +585,9 @@ async function fetchMediaByCategory(categorySlug: string, limit = 12) {
   params.set("populate[thumbnail][fields][1]", "alternativeText");
   params.set("populate[category][fields][0]", "name");
   params.set("populate[category][fields][1]", "slug");
+  params.set("populate[speakers][fields][0]", "name");
+  params.set("populate[speakers][fields][1]", "displayName");
+  params.set("populate[speakers][fields][2]", "title");
   params.set("sort[0]", "releasedAt:desc");
   params.set("pagination[pageSize]", String(limit));
 

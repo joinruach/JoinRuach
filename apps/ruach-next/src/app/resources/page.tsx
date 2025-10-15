@@ -66,7 +66,11 @@ function mapMediaItem(entity: MediaItemEntity | null | undefined): MediaCardProp
 
   const speakers = Array.isArray(attributes.speakers?.data)
     ? attributes.speakers.data
-        .map((speaker) => speaker?.attributes?.name)
+        .map((speaker) => {
+          const attr = speaker?.attributes;
+          if (!attr) return undefined;
+          return attr.displayName?.trim() || attr.name;
+        })
         .filter((name): name is string => Boolean(name && name.trim()))
     : undefined;
 

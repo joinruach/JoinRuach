@@ -1348,6 +1348,7 @@ export interface ApiSpeakerSpeaker extends Struct.CollectionTypeSchema {
       'api::media-item.media-item'
     >;
     name: Schema.Attribute.String & Schema.Attribute.Required;
+    displayName: Schema.Attribute.String;
     organization: Schema.Attribute.String;
     photo: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;

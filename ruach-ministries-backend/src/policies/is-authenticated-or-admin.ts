@@ -1,6 +1,12 @@
-import type { Policy } from '@strapi/strapi';
+type PolicyContext = {
+  state?: {
+    user?: unknown;
+    admin?: unknown;
+  };
+  unauthorized(message?: string): never;
+};
 
-const isAuthenticatedOrAdmin: Policy = async (ctx) => {
+const isAuthenticatedOrAdmin = async (ctx: PolicyContext) => {
   if (ctx.state?.user || ctx.state?.admin) {
     return true;
   }

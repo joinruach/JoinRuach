@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EmbedScript from "@/components/ruach/embeds/EmbedScript";
+import SpeakerCard from "@/components/ruach/SpeakerCard";
 import { getConferencePage, getEvents, imgUrl } from "@/lib/strapi";
 import type {
   ConferenceMerchItem,
@@ -22,6 +23,7 @@ type ScheduleBlock = {
 type SpeakerBlock = {
   id?: number | string;
   name: string;
+  displayName?: string;
   role?: string;
   bio?: string;
   photo?: string;
@@ -44,7 +46,7 @@ const defaultSchedule: ScheduleBlock[] = [
 ];
 
 const defaultSpeakers: SpeakerBlock[] = [
-  { name: "Marc Seals", role: "Co-Founder & Film Director", bio: "Marc releases cinematic testimonies that stir faith for deliverance and healing." },
+  { name: "Marc Christopher Seals", displayName: "Marc C. Seals", role: "Co-Founder & Film Director", bio: "Marc releases cinematic testimonies that stir faith for deliverance and healing." },
   { name: "Jonathan Seals", role: "Bible Teacher", bio: "Jonathan equips believers to walk in holiness, power, and prophetic clarity." },
   { name: "Guest Revivalist", role: "Special Guest", bio: "Friends of Ruach carry the fire of awakening to every gathering." }
 ];
@@ -127,6 +129,10 @@ function normalizeSpeakers(items?: ConferenceSpeakerItem[] | null): SpeakerBlock
       const data = maybeAttributes<ConferenceSpeakerItem>(item);
       if (!data) return undefined;
 
+      const displayName = pickNonEmpty(
+        data.displayName,
+        (data as { display_name?: string }).display_name,
+      );
       const name = pickNonEmpty(data.name, data.title);
       const role = pickNonEmpty(data.role, data.title);
       const bio = pickNonEmpty(data.bio, data.description, data.body);
@@ -137,6 +143,7 @@ function normalizeSpeakers(items?: ConferenceSpeakerItem[] | null): SpeakerBlock
       return {
         id: item?.id,
         name,
+        displayName: displayName ?? undefined,
         role: role ?? undefined,
         bio: bio ?? undefined,
         photo: photo ?? undefined,
@@ -390,21 +397,15 @@ export default async function ConferencesPage(){
           {speakers.map((speaker, index) => {
             const key = speaker.id ?? `${speaker.name}-${index}`;
             return (
-              <div key={key} className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
-                {speaker.photo ? (
-                  <div className="mb-4 overflow-hidden rounded-2xl bg-neutral-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={speaker.photo} alt={speaker.name} className="h-40 w-full object-cover" />
-                  </div>
-                ) : null}
-                <div className="text-lg font-semibold text-neutral-900">{speaker.name}</div>
-                {speaker.role ? (
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">{speaker.role}</div>
-                ) : null}
-                {speaker.bio ? (
-                  <p className="mt-3 text-sm text-neutral-600">{speaker.bio}</p>
-                ) : null}
-              </div>
+              <SpeakerCard
+                key={key}
+                name={speaker.name}
+                displayName={speaker.displayName}
+                role={speaker.role}
+                bio={speaker.bio}
+                photoUrl={speaker.photo}
+                photoAlt={speaker.displayName || speaker.name}
+              />
             );
           })}
         </div>

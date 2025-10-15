@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 
+declare const strapi: any;
+
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const ACTIVE_ROLE_NAME = process.env.STRIPE_ACTIVE_ROLE_NAME || "Partner";
