@@ -10,6 +10,11 @@ export const runtime = "nodejs";
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+async function readFontBuffer(filePath: string): Promise<Buffer> {
+  const data = await readFile(filePath);
+  return typeof data === "string" ? Buffer.from(data) : data;
+}
+
 async function getCourseWithLessons(slug: string){
   const qs = new URLSearchParams({ "filters[slug][$eq]": slug, "populate": "lessons", "pagination[pageSize]": "1" }).toString();
   const r = await fetch(`${STRAPI}/api/courses?${qs}`, { cache: "no-store" });
@@ -43,8 +48,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ courseS
   if (!allCompleted) return new Response(JSON.stringify({ error: "Course not fully completed", details: { completed: completedSlugs.length, total: totalLessons } }), { status: 403 });
 
   const date = new Date().toLocaleDateString();
-  const inter = await readFile(path.join(process.cwd(), "public/fonts/Inter-Regular.ttf"));
-  const interBold = await readFile(path.join(process.cwd(), "public/fonts/Inter-Bold.ttf"));
+  const inter = await readFontBuffer(path.join(process.cwd(), "public/fonts/Inter-Regular.ttf"));
+  const interBold = await readFontBuffer(path.join(process.cwd(), "public/fonts/Inter-Bold.ttf"));
   const { Resvg } = await import("@resvg/resvg-js");
 
   const svg = await satori(

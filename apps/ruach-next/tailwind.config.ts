@@ -1,8 +1,12 @@
 import preset from "@ruach/tailwind-preset";
+import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
+
 const config: Config = {
   content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
+  presets: [preset],
   theme: { extend: {} },
-  plugins: [require("@tailwindcss/typography")]
+  plugins: [typography],
 };
+
 export default config;
