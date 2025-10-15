@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "series",
+  "info": {
+    "singularName": "series",
+    "pluralName": "series",
+    "displayName": "Series",
+    "description": "Organize related media items into thematic collections."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "unique": true,
+      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "mediaItems": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::media-item.media-item",
+      "mappedBy": "series"
+    }
+  }
+}

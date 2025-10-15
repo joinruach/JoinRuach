@@ -40,6 +40,16 @@ export interface SpeakerEntity extends StrapiBase {
   };
 }
 
+export interface SeriesEntity extends StrapiBase {
+  attributes: {
+    title: string;
+    slug: string;
+    description?: string;
+    coverImage?: { data?: { attributes?: Media } };
+    mediaItems?: { data?: MediaItemEntity[] };
+  };
+}
+
 export interface VideoSource {
   kind?: 'youtube' | 'vimeo' | 'file' | 'rumble' | 'custom';
   title?: string;
@@ -61,10 +71,13 @@ export interface MediaItemEntity extends StrapiBase {
     releasedAt?: string | null;
     featured?: boolean;
     category?: { data?: CategoryEntity | null };
+    series?: { data?: SeriesEntity | null };
     legacyCategory?: string | null;
     source?: VideoSource | null;
     speakers?: { data?: SpeakerEntity[] };
     tags?: { data?: TagEntity[] };
+    weekNumber?: number | null;
+    episodeNumber?: number | null;
     ctaLabel?: string;
     ctaUrl?: string;
     video_url?: string;
