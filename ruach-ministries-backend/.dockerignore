@@ -1,0 +1,12 @@
+/node_modules
+/.pnpm-store
+/build
+/dist
+/coverage
+/.cache
+/.tmp
+/strapi_backup.dump
+/strapi_db_backup.dump
+*.log
+Dockerfile.local
+.DS_Store

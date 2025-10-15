@@ -12,22 +12,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # ---- Better layer caching: copy manifests first ----
-COPY ruach-ministries-backend/package.json ruach-ministries-backend/package.json
-COPY ruach-ministries-backend/pnpm-lock.yaml ruach-ministries-backend/pnpm-lock.yaml
-COPY ruach-ministries-backend/.pnpmfile.cjs ruach-ministries-backend/.pnpmfile.cjs
-COPY ruach-ministries-backend/scripts ruach-ministries-backend/scripts
+COPY package.json package.json
+COPY pnpm-lock.yaml pnpm-lock.yaml
+COPY .pnpmfile.cjs .pnpmfile.cjs
+COPY scripts ./scripts
 
 # Install WITH devDependencies for build step
-RUN pnpm --dir ruach-ministries-backend install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the backend source and build Strapi admin
-COPY . ruach-ministries-backend
-RUN pnpm --dir ruach-ministries-backend run build
+COPY . .
+RUN pnpm run build
 
 # Prune to production deps, copy the bundle, and rebuild node_modules for /opt/strapi
-RUN pnpm --dir ruach-ministries-backend prune --prod \
+RUN pnpm prune --prod \
  && mkdir -p /opt/strapi \
- && cp -R ruach-ministries-backend/. /opt/strapi \
+ && tar -C . -cf - . | tar -C /opt/strapi -xf - \
  && rm -rf /opt/strapi/node_modules \
  && pnpm --dir /opt/strapi install --prod --frozen-lockfile --store-dir /opt/strapi/.pnpm-store
 
