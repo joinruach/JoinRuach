@@ -30,6 +30,14 @@ export default function NewsletterSignup({
   const [firstName, setFirstName] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const manualMode = !convertKitFormId;
+  const manualSuccessFallback =
+    "Thanks for joining! Our team will add you manually while the newsletter finishes setup.";
+  const directSuccessFallback = "Thanks for joining! Check your inbox to confirm.";
+  const [successMessage, setSuccessMessage] = useState(
+    manualMode ? manualSuccessFallback : directSuccessFallback
+  );
+
   if (convertKitEmbedHtml) {
     return <EmbedScript html={convertKitEmbedHtml} />;
   }
@@ -84,130 +92,125 @@ export default function NewsletterSignup({
     );
   }
 
-  if (convertKitFormId) {
-    const emailInputId = id ?? (variant === "dark" ? "newsletter-email-dark" : "newsletter-email-light");
-    const nameInputId = `${emailInputId}-name`;
+  const emailInputId = id ?? (variant === "dark" ? "newsletter-email-dark" : "newsletter-email-light");
+  const nameInputId = `${emailInputId}-name`;
 
-    async function submit(e: FormEvent<HTMLFormElement>) {
-      e.preventDefault();
-      if (!email) return;
-      setStatus("loading");
-      setError(null);
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!email) return;
 
-      try {
-        const res = await fetch("/api/newsletter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email.trim(),
-            firstName: firstName.trim() || undefined,
-          }),
-        });
+    setStatus("loading");
+    setError(null);
+    setSuccessMessage(manualMode ? manualSuccessFallback : directSuccessFallback);
 
-        const json = await res.json().catch(() => ({}));
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          firstName: firstName.trim() || undefined,
+        }),
+      });
 
-        if (res.ok) {
-          setStatus("success");
-          setEmail("");
-          setFirstName("");
-        } else {
-          setStatus("error");
-          setError((json as { error?: string }).error || "Unable to subscribe right now.");
+      const json = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+        setFirstName("");
+        const message = (json as { message?: string }).message;
+        if (message) {
+          setSuccessMessage(message);
         }
-      } catch {
+      } else {
         setStatus("error");
-        setError("Network error. Please try again in a moment.");
+        setError((json as { error?: string }).error || "Unable to subscribe right now.");
       }
+    } catch {
+      setStatus("error");
+      setError("Network error. Please try again in a moment.");
     }
-
-    return (
-      <form onSubmit={submit} className={cn("space-y-3", className)}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor={nameInputId}
-              className={cn(
-                "text-xs uppercase tracking-wide",
-                isDark ? "text-white/60" : "text-neutral-500"
-              )}
-            >
-              Name (optional)
-            </label>
-            <input
-              id={nameInputId}
-              name="firstName"
-              type="text"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-              placeholder="Your first name"
-              className={cn(
-                "mt-2 w-full rounded-lg border px-3 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400",
-                isDark
-                  ? "border-white/10 bg-white/10 text-white"
-                  : "border-neutral-200 bg-white text-neutral-900"
-              )}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor={emailInputId}
-              className={cn(
-                "text-xs uppercase tracking-wide",
-                isDark ? "text-white/60" : "text-neutral-500"
-              )}
-            >
-              Email address
-            </label>
-            <input
-              id={emailInputId}
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              className={cn(
-                "mt-2 w-full rounded-lg border px-3 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400",
-                isDark
-                  ? "border-white/10 bg-white/10 text-white"
-                  : "border-neutral-200 bg-white text-neutral-900"
-              )}
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className={cn(
-            "flex w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition",
-            status === "loading"
-              ? "cursor-wait bg-neutral-500 text-white"
-              : isDark
-                ? "bg-amber-500 text-black hover:bg-amber-400"
-                : "bg-neutral-900 text-white hover:bg-neutral-800"
-          )}
-        >
-          {status === "loading" ? "Submitting..." : buttonLabel}
-        </button>
-        {status === "success" ? (
-          <p className={cn("text-xs", isDark ? "text-emerald-300" : "text-emerald-600")}>Thanks for joining! Check your inbox to confirm.</p>
-        ) : error ? (
-          <p className={cn("text-xs", isDark ? "text-red-300" : "text-red-600")}>{error}</p>
-        ) : (
-          <p className={cn("text-xs", isDark ? "text-white/50" : "text-neutral-500")}>We respect your inbox. Unsubscribe anytime.</p>
-        )}
-      </form>
-    );
   }
 
   return (
-    <div
-      className={cn(
-        "space-y-2 rounded-xl border border-dashed px-4 py-3 text-sm",
-        variant === "dark" ? "border-white/15 text-white/60" : "border-neutral-300 text-neutral-600"
+    <form onSubmit={submit} className={cn("space-y-3", className)}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label
+            htmlFor={nameInputId}
+            className={cn(
+              "text-xs uppercase tracking-wide",
+              isDark ? "text-white/60" : "text-neutral-500"
+            )}
+          >
+            Name (optional)
+          </label>
+          <input
+            id={nameInputId}
+            name="firstName"
+            type="text"
+            value={firstName}
+            onChange={(event) => setFirstName(event.target.value)}
+            placeholder="Your first name"
+            className={cn(
+              "mt-2 w-full rounded-lg border px-3 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400",
+              isDark
+                ? "border-white/10 bg-white/10 text-white"
+                : "border-neutral-200 bg-white text-neutral-900"
+            )}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor={emailInputId}
+            className={cn(
+              "text-xs uppercase tracking-wide",
+              isDark ? "text-white/60" : "text-neutral-500"
+            )}
+          >
+            Email address
+          </label>
+          <input
+            id={emailInputId}
+            name="email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            className={cn(
+              "mt-2 w-full rounded-lg border px-3 py-2 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400",
+              isDark
+                ? "border-white/10 bg-white/10 text-white"
+                : "border-neutral-200 bg-white text-neutral-900"
+            )}
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className={cn(
+          "flex w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition",
+          status === "loading"
+            ? "cursor-wait bg-neutral-500 text-white"
+            : isDark
+              ? "bg-amber-500 text-black hover:bg-amber-400"
+              : "bg-neutral-900 text-white hover:bg-neutral-800"
+        )}
+      >
+        {status === "loading" ? "Submitting..." : buttonLabel}
+      </button>
+      {status === "success" ? (
+        <p className={cn("text-xs", isDark ? "text-emerald-300" : "text-emerald-600")}>{successMessage}</p>
+      ) : error ? (
+        <p className={cn("text-xs", isDark ? "text-red-300" : "text-red-600")}>{error}</p>
+      ) : (
+        <p className={cn("text-xs", isDark ? "text-white/50" : "text-neutral-500")}>
+          {manualMode ? "We’ll add you manually and follow up by email." : "We respect your inbox. Unsubscribe anytime."}
+        </p>
       )}
-    >
-      <p>We&rsquo;re preparing a brand-new newsletter experience. In the meantime, follow Ruach on social to stay updated.</p>
-    </div>
+    </form>
   );
 }
