@@ -3,7 +3,7 @@ import type { Schema, Struct } from '@strapi/strapi';
 export interface ApiSeriesSeries extends Struct.CollectionTypeSchema {
   collectionName: 'series';
   info: {
-    singularName: 'series';
+    singularName: 'series-item';
     pluralName: 'series';
     displayName: 'Series';
     description: 'Organize related media items into thematic collections.';
