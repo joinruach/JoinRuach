@@ -5,7 +5,7 @@ const securityHeaders = [
       default-src 'self';
       img-src 'self' https://cdn.joinruach.org data:;
       media-src 'self' https://cdn.joinruach.org data:;
-      script-src 'self';
+      script-src 'self' 'unsafe-inline';
       style-src 'self' 'unsafe-inline';
       connect-src *;
     `
