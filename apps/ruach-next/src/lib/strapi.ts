@@ -22,6 +22,7 @@ type StrapiRequestError = Error & {
 };
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
+const MEDIA_CDN = process.env.NEXT_PUBLIC_MEDIA_CDN_URL || 'https://cdn.joinruach.org';
 
 function resolveUrl(path: string) {
   return path.startsWith("http") ? path : `${STRAPI}${path}`;
@@ -564,9 +565,15 @@ export async function getMediaBySlug(slug: string) {
   }
 }
 
-export function imgUrl(path?: string) {
-  if (!path) return undefined;
-  return path.startsWith("http") ? path : `${STRAPI}${path}`;
+export function getMediaUrl(url?: string | null) {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  return trimmed.startsWith("http") ? trimmed : `${MEDIA_CDN}${trimmed}`;
+}
+
+export function imgUrl(path?: string | null) {
+  return getMediaUrl(path);
 }
 
 // ------------------------------

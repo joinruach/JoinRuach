@@ -3,6 +3,7 @@ module.exports = ({ env }) => ({
     config: {
       provider: 'aws-s3',
       providerOptions: {
+        baseUrl: env('UPLOAD_CDN_URL', 'https://cdn.joinruach.org'),
         s3Options: {
           endpoint: env('R2_ENDPOINT'),
           forcePathStyle: true,
