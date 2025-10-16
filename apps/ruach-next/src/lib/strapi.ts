@@ -394,7 +394,7 @@ export async function getBlogPosts(options: BlogPostListOptions = {}) {
       meta: j.meta,
     };
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundError(error) || isBadRequest(error)) {
       return { data: [], meta: undefined };
     }
 
