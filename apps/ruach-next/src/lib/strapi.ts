@@ -999,23 +999,29 @@ function mapSectionEntry(section: ResourceCardComponent | undefined, index: numb
   const categoryAttributes = section.category?.data?.attributes;
   const imageAttributes = section.image?.data?.attributes;
 
-  const customResources = Array.isArray(section.customResources)
-    ? section.customResources
-        .map((resource) => {
-          if (!resource) return null;
-          const label = typeof resource.label === "string" ? resource.label.trim() : "";
-          const url = typeof resource.url === "string" ? resource.url.trim() : "";
-          if (!label || !url) return null;
-          return {
-            id: typeof resource.id === "number" ? resource.id : undefined,
-            label,
-            url,
-            requiresLogin: typeof resource.requiresLogin === "boolean" ? resource.requiresLogin : false,
-            type: resource.type,
-          } satisfies ResourceLinkComponent;
-        })
-        .filter((resource): resource is ResourceLinkComponent => Boolean(resource))
-    : [];
+  const customResources: ResourceLinkComponent[] = [];
+  if (Array.isArray(section.customResources)) {
+    for (const resource of section.customResources) {
+      if (!resource) continue;
+      const label = typeof resource.label === "string" ? resource.label.trim() : "";
+      const url = typeof resource.url === "string" ? resource.url.trim() : "";
+      if (!label || !url) continue;
+      const requiresLogin =
+        typeof resource.requiresLogin === "boolean" ? resource.requiresLogin : false;
+      const linkType =
+        typeof resource.type === "string"
+          ? (resource.type as ResourceLinkComponent["type"] | undefined)
+          : undefined;
+
+      customResources.push({
+        id: typeof resource.id === "number" ? resource.id : undefined,
+        label,
+        url,
+        requiresLogin,
+        ...(linkType ? { type: linkType } : {}),
+      });
+    }
+  }
 
   return {
     id: typeof section.id === "number" ? section.id : index,
