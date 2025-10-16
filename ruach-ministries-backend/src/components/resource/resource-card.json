@@ -1,0 +1,81 @@
+{
+  "collectionName": "components_resource_resource_cards",
+  "info": {
+    "displayName": "Resource Card",
+    "icon": "grid"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "ctaLabel": {
+      "type": "string"
+    },
+    "ctaUrl": {
+      "type": "string"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ]
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "media",
+        "lesson",
+        "article",
+        "course",
+        "custom"
+      ],
+      "default": "media",
+      "required": true
+    },
+    "highlightedMediaItems": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::media-item.media-item"
+    },
+    "highlightedLessons": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::lesson.lesson"
+    },
+    "highlightedArticles": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::article.article"
+    },
+    "highlightedCourses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course.course"
+    },
+    "highlightedBlogPosts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-post.blog-post"
+    },
+    "customResources": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.resource-link"
+    }
+  }
+}

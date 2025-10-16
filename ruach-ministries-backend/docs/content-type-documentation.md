@@ -193,6 +193,7 @@ Not yet surfaced in either frontend; reserved for the upcoming resource or blog 
 **Relations:**  
 - `author`: manyToOne → Author (inverse `articles`)
 - `category`: manyToOne → Category (inverse `articles`)
+- `featuredInResources`: manyToMany → Resource Directory (mapped `featuredArticles`)
 
 **Endpoints:**  
 - `GET /api/articles`
@@ -285,6 +286,8 @@ Frontend components currently show placeholder data; wiring to this collection i
 
 **Relations:**  
 - `team_member`: manyToOne → Team Member (inverse `blog_posts`)
+- `category`: manyToOne → Category
+- `featuredInResources`: manyToMany → Resource Directory (mapped `featuredBlogPosts`)
 
 **Endpoints:**  
 - `GET /api/blog-posts`
@@ -414,6 +417,39 @@ Loaded by the legacy site footer (`Footer.tsx`) to render email, phone, address,
 **Endpoints:**  
 - `GET /api/contact-info`
 - `PUT /api/contact-info`
+
+
+<a id="resource-directory"></a>
+## Resource Directory
+**Purpose:**  
+Centralizes copy, highlights, and curated content for the `/resources` landing page.
+
+**Usage:**  
+Editors manage the hero copy, featured callouts, and per-section configuration from this singleton. The Next.js app consumes the record to render dynamic grids and CTAs.
+
+**Change Guidelines:**  
+- Keep `title` aligned with the on-page hero headline; update `heroCopy` for body text and supporting paragraphs.
+- Use `highlights` for short callouts or stat blocks and link them with the inline CTA fields when relevant.
+- Configure each entry in `sections` with the desired `type`, optional category/tag filters, and manual overrides via highlighted relations.
+- Attach featured Media Items, Lessons, Articles, or Blog Posts when you need universal fallbacks regardless of section order.
+
+**Best Practices:**  
+- Favor the `category` relation on sections so filters stay in sync with `/media` and future blog tooling.
+- Limit manual overrides to a handful of items per card to keep the UI balanced and avoid performance hits.
+- Populate the `seo` component before launch to keep previews consistent across social platforms.
+
+**Required Fields:**  
+- `title`
+
+**Relations:**  
+- `featuredMediaItems`: manyToMany → Media Item (inverse `featuredInResources`)
+- `featuredLessons`: manyToMany → Lesson (inverse `featuredInResources`)
+- `featuredArticles`: manyToMany → Article (inverse `featuredInResources`)
+- `featuredBlogPosts`: manyToMany → Blog Post (inverse `featuredInResources`)
+
+**Endpoints:**  
+- `GET /api/resource-directory`
+- `PUT /api/resource-directory`
 
 
 <a id="contactmessage"></a>
@@ -679,7 +715,9 @@ Fetched by the new app in course detail and lesson routes; feeds player configur
 
 **Relations:**  
 - `course`: manyToOne → Course (inverse `lessons`)
+- `category`: manyToOne → Category
 - `speakers`: manyToMany → Speaker (mapped `lessons`)
+- `featuredInResources`: manyToMany → Resource Directory (mapped `featuredLessons`)
 
 **Endpoints:**  
 - `GET /api/lessons`

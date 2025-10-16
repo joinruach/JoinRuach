@@ -138,6 +138,12 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "featuredInResources": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::resource-directory.resource-directory",
+      "mappedBy": "featuredMediaItems"
     }
   }
 }

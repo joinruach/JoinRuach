@@ -59,6 +59,11 @@
       "inversedBy": "lessons",
       "required": true
     },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category"
+    },
     "speakers": {
       "type": "relation",
       "relation": "manyToMany",
@@ -73,6 +78,12 @@
     "previewAvailable": {
       "type": "boolean",
       "default": false
+    },
+    "featuredInResources": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::resource-directory.resource-directory",
+      "mappedBy": "featuredLessons"
     }
   }
 }

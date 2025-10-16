@@ -11,6 +11,7 @@ Article (article) - collectionType
  - author: relation (manyToOne, api::author.author, inverse:articles)
  - category: relation (manyToOne, api::category.category, inverse:articles)
  - blocks: dynamiczone (components=shared.media,shared.quote,shared.rich-text,shared.slider)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredArticles)
 ================================================================================
 Audio file (audio-file) - collectionType
  - title: string ()
@@ -33,7 +34,9 @@ Blog Post (blog-post) - collectionType
  - content: blocks ()
  - publishedDate: date ()
  - featuredImage: media (single, types=images|files|videos|audios)
+ - category: relation (manyToOne, api::category.category)
  - team_member: relation (manyToOne, api::team-member.team-member, inverse:blog_posts)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredBlogPosts)
 ================================================================================
 Category (category) - collectionType
  - name: string (required, unique)
@@ -85,6 +88,7 @@ Course (course) - collectionType
  - seoTitle: string ()
  - seoDescription: text ()
  - seoImage: media (single, types=images)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredMediaItems)
 ================================================================================
 Event (event) - collectionType
  - title: string (required)
@@ -103,6 +107,7 @@ Event (event) - collectionType
  - seoTitle: string ()
  - seoDescription: text ()
  - seoImage: media (single, types=images)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredMediaItems)
 ================================================================================
 FAQ (faq) - collectionType
  - question: text ()
@@ -150,9 +155,11 @@ Lesson (lesson) - collectionType
  - transcript: richtext ()
  - transcriptFile: media (single, types=files)
  - course: relation (manyToOne, api::course.course, inverse:lessons)
+ - category: relation (manyToOne, api::category.category)
  - speakers: relation (manyToMany, api::speaker.speaker, mapped:lessons)
  - resources: component (repeatable, shared.resource-link)
  - previewAvailable: boolean (default=False)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredLessons)
 ================================================================================
 Lesson Comment (lesson-comment) - collectionType
  - courseSlug: string (required)
@@ -192,6 +199,7 @@ Media Item (media-item) - collectionType
  - seoTitle: string ()
  - seoDescription: text ()
  - seoImage: media (single, types=images)
+ - featuredInResources: relation (manyToMany, api::resource-directory.resource-directory, mapped:featuredMediaItems)
 ================================================================================
 Prayer (prayer) - collectionType
  - name: string ()
@@ -218,6 +226,17 @@ Reply (reply) - collectionType
  - content: text ()
  - author: relation (oneToOne, api::user-profile.user-profile, inverse:reply)
  - prayer: relation (manyToOne, api::prayer.prayer, inverse:replies)
+================================================================================
+Resource Directory (resource-directory) - singleType
+ - title: string (required)
+ - heroCopy: richtext ()
+ - seo: component (shared.seo)
+ - highlights: component (repeatable, shared.highlight)
+ - sections: component (repeatable, resource.resource-card)
+ - featuredMediaItems: relation (manyToMany, api::media-item.media-item, inverse:featuredInResources)
+ - featuredLessons: relation (manyToMany, api::lesson.lesson, inverse:featuredInResources)
+ - featuredArticles: relation (manyToMany, api::article.article, inverse:featuredInResources)
+ - featuredBlogPosts: relation (manyToMany, api::blog-post.blog-post, inverse:featuredInResources)
 ================================================================================
 setting (setting) - collectionType
  - siteName: string ()

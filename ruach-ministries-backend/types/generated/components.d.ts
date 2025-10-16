@@ -79,6 +79,49 @@ export interface MediaVideoSource extends Struct.ComponentSchema {
   };
 }
 
+export interface ResourceResourceCard extends Struct.ComponentSchema {
+  collectionName: 'components_resource_resource_cards';
+  info: {
+    displayName: 'Resource Card';
+    icon: 'grid';
+  };
+  attributes: {
+    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
+    ctaLabel: Schema.Attribute.String;
+    ctaUrl: Schema.Attribute.String;
+    customResources: Schema.Attribute.Component<'shared.resource-link', true>;
+    description: Schema.Attribute.Text;
+    highlightedArticles: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::article.article'
+    >;
+    highlightedBlogPosts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::blog-post.blog-post'
+    >;
+    highlightedCourses: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::course.course'
+    >;
+    highlightedLessons: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::lesson.lesson'
+    >;
+    highlightedMediaItems: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::media-item.media-item'
+    >;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos'>;
+    tag: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['media', 'lesson', 'article', 'course', 'custom']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'media'>;
+  };
+}
+
 export interface SharedCoreBeliefs extends Struct.ComponentSchema {
   collectionName: 'components_shared_core_beliefs';
   info: {
@@ -90,6 +133,22 @@ export interface SharedCoreBeliefs extends Struct.ComponentSchema {
     image: Schema.Attribute.Component<'shared.media', false>;
     title: Schema.Attribute.String;
     videoURL: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
+export interface SharedHighlight extends Struct.ComponentSchema {
+  collectionName: 'components_shared_highlights';
+  info: {
+    displayName: 'Highlight';
+    icon: 'star';
+  };
+  attributes: {
+    accentColor: Schema.Attribute.String;
+    ctaLabel: Schema.Attribute.String;
+    ctaUrl: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    eyebrow: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -203,7 +262,9 @@ declare module '@strapi/strapi' {
       'general.social-links': GeneralSocialLinks;
       'impact.metric': ImpactMetric;
       'media.video-source': MediaVideoSource;
+      'resource.resource-card': ResourceResourceCard;
       'shared.core-beliefs': SharedCoreBeliefs;
+      'shared.highlight': SharedHighlight;
       'shared.media': SharedMedia;
       'shared.quote': SharedQuote;
       'shared.resource-link': SharedResourceLink;

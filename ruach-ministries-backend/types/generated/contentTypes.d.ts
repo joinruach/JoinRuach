@@ -423,6 +423,10 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 80;
       }>;
+    featuredInResources: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::resource-directory.resource-directory'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -522,12 +526,17 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
     content: Schema.Attribute.Blocks;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     featuredImage: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
+    >;
+    featuredInResources: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::resource-directory.resource-directory'
     >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1070,6 +1079,7 @@ export interface ApiLessonLesson extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
     course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
       Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
@@ -1082,6 +1092,10 @@ export interface ApiLessonLesson extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    featuredInResources: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::resource-directory.resource-directory'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1142,8 +1156,19 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    episodeNumber: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     excerpt: Schema.Attribute.Text;
     featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    featuredInResources: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::resource-directory.resource-directory'
+    >;
     gallery: Schema.Attribute.Media<'images', true>;
     legacyCategory: Schema.Attribute.String & Schema.Attribute.Private;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1157,6 +1182,7 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
+    series: Schema.Attribute.Relation<'manyToOne', 'api::series.series'>;
     slug: Schema.Attribute.UID<'title'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -1183,6 +1209,13 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+    weekNumber: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
   };
 }
 
@@ -1289,6 +1322,93 @@ export interface ApiReplyReply extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiResourceDirectoryResourceDirectory
+  extends Struct.SingleTypeSchema {
+  collectionName: 'resource_directories';
+  info: {
+    displayName: 'Resource Directory';
+    pluralName: 'resource-directories';
+    singularName: 'resource-directory';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    featuredArticles: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::article.article'
+    >;
+    featuredBlogPosts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::blog-post.blog-post'
+    >;
+    featuredLessons: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::lesson.lesson'
+    >;
+    featuredMediaItems: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::media-item.media-item'
+    >;
+    heroCopy: Schema.Attribute.RichText;
+    highlights: Schema.Attribute.Component<'shared.highlight', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::resource-directory.resource-directory'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sections: Schema.Attribute.Component<'resource.resource-card', true>;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSeriesSeries extends Struct.CollectionTypeSchema {
+  collectionName: 'series';
+  info: {
+    description: 'Organize related media items into thematic collections.';
+    displayName: 'Series';
+    pluralName: 'series-collection';
+    singularName: 'series';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    coverImage: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::series.series'
+    > &
+      Schema.Attribute.Private;
+    mediaItems: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::media-item.media-item'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSettingSetting extends Struct.CollectionTypeSchema {
   collectionName: 'settings';
   info: {
@@ -1335,6 +1455,7 @@ export interface ApiSpeakerSpeaker extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    displayName: Schema.Attribute.String;
     featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     lessons: Schema.Attribute.Relation<'manyToMany', 'api::lesson.lesson'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1348,7 +1469,6 @@ export interface ApiSpeakerSpeaker extends Struct.CollectionTypeSchema {
       'api::media-item.media-item'
     >;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    displayName: Schema.Attribute.String;
     organization: Schema.Attribute.String;
     photo: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
@@ -2109,6 +2229,8 @@ export interface PluginUsersPermissionsUser
     timestamps: true;
   };
   attributes: {
+    activeMembership: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     comment_reports: Schema.Attribute.Relation<
       'oneToMany',
@@ -2138,6 +2260,21 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    membershipCurrentPeriodEnd: Schema.Attribute.DateTime;
+    membershipPlanName: Schema.Attribute.String;
+    membershipStatus: Schema.Attribute.Enumeration<
+      [
+        'incomplete',
+        'incomplete_expired',
+        'trialing',
+        'active',
+        'past_due',
+        'canceled',
+        'unpaid',
+        'paused',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'incomplete'>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
@@ -2150,6 +2287,8 @@ export interface PluginUsersPermissionsUser
       'manyToOne',
       'plugin::users-permissions.role'
     >;
+    stripeCustomerId: Schema.Attribute.String;
+    stripeSubscriptionId: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2200,6 +2339,8 @@ declare module '@strapi/strapi' {
       'api::prayer.prayer': ApiPrayerPrayer;
       'api::project.project': ApiProjectProject;
       'api::reply.reply': ApiReplyReply;
+      'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
+      'api::series.series': ApiSeriesSeries;
       'api::setting.setting': ApiSettingSetting;
       'api::speaker.speaker': ApiSpeakerSpeaker;
       'api::stat.stat': ApiStatStat;

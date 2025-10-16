@@ -5,6 +5,7 @@ import type {
   StatEntity,
   EventEntity,
   ConferencePageEntity,
+  CourseEntity,
 } from "@/lib/types/strapi-types";
 
 type FetchOpts = {
@@ -157,6 +158,154 @@ export type BlogPostEntity = {
   };
 };
 
+export type ResourceLinkComponent = {
+  id?: number;
+  label?: string;
+  url?: string;
+  requiresLogin?: boolean;
+  type?: "notes" | "download" | "registration" | "external" | "assignment";
+};
+
+export type LessonEntity = {
+  id: number;
+  attributes?: {
+    title?: string;
+    slug?: string;
+    summary?: string | null;
+    previewAvailable?: boolean;
+    category?: { data?: CategoryEntity | null };
+    course?: { data?: { attributes?: { title?: string | null } } | null };
+    resources?: ResourceLinkComponent[];
+  };
+};
+
+export type ArticleEntity = {
+  id: number;
+  attributes?: {
+    title?: string;
+    slug?: string;
+    description?: string | null;
+    cover?: {
+      data?: {
+        attributes?: {
+          url?: string;
+          alternativeText?: string | null;
+        } | null;
+      } | null;
+    } | null;
+    category?: { data?: CategoryEntity | null };
+  };
+};
+
+export type ResourceSectionType = "media" | "lesson" | "article" | "course" | "custom";
+
+export type ResourceHighlight = {
+  id: number;
+  eyebrow?: string | null;
+  title: string;
+  description?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  accentColor?: string | null;
+};
+
+type ResourceCardComponent = {
+  id?: number;
+  title?: string;
+  description?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  type?: string | null;
+  tag?: string | null;
+  image?: {
+    data?: {
+      attributes?: {
+        url?: string;
+        alternativeText?: string | null;
+      } | null;
+    } | null;
+  } | null;
+  category?: { data?: CategoryEntity | null };
+  highlightedMediaItems?: { data?: MediaItemEntity[] };
+  highlightedLessons?: { data?: LessonEntity[] };
+  highlightedArticles?: { data?: ArticleEntity[] };
+  highlightedCourses?: { data?: CourseEntity[] };
+  highlightedBlogPosts?: { data?: BlogPostEntity[] };
+  customResources?: ResourceLinkComponent[];
+};
+
+type ResourceDirectoryEntity = {
+  id?: number;
+  attributes?: {
+    title?: string | null;
+    heroCopy?: string | null;
+    seo?: {
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+      shareImage?: {
+        data?: {
+          attributes?: {
+            url?: string | null;
+          } | null;
+        } | null;
+      } | null;
+    } | null;
+    highlights?: Array<{
+      id?: number;
+      eyebrow?: string | null;
+      title?: string;
+      description?: string | null;
+      ctaLabel?: string | null;
+      ctaUrl?: string | null;
+      accentColor?: string | null;
+    }>;
+    sections?: ResourceCardComponent[];
+    featuredMediaItems?: { data?: MediaItemEntity[] };
+    featuredLessons?: { data?: LessonEntity[] };
+    featuredArticles?: { data?: ArticleEntity[] };
+    featuredBlogPosts?: { data?: BlogPostEntity[] };
+  };
+};
+
+export type ResourceSection = {
+  id: number;
+  title: string;
+  description?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  type: ResourceSectionType;
+  tag?: string | null;
+  categoryName?: string | null;
+  categorySlug?: string | null;
+  image?: {
+    url?: string;
+    alternativeText?: string | null;
+  } | null;
+  highlightedMediaItems: MediaItemEntity[];
+  highlightedLessons: LessonEntity[];
+  highlightedArticles: ArticleEntity[];
+  highlightedBlogPosts: BlogPostEntity[];
+  highlightedCourses: CourseEntity[];
+  customResources: ResourceLinkComponent[];
+};
+
+export type ResourceDirectory = {
+  id: number | null;
+  title?: string | null;
+  heroCopy?: string | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    shareImageUrl?: string | null;
+  } | null;
+  highlights: ResourceHighlight[];
+  sections: ResourceSection[];
+  featuredMediaItems: MediaItemEntity[];
+  featuredLessons: LessonEntity[];
+  featuredArticles: ArticleEntity[];
+  featuredBlogPosts: BlogPostEntity[];
+};
+
 type BlogPostListOptions = {
   page?: number;
   pageSize?: number;
@@ -282,6 +431,44 @@ export async function getBlogPostBySlug(slug: string) {
   }
 }
 
+type ArticleListOptions = {
+  categorySlug?: string;
+  limit?: number;
+};
+
+export async function getArticles(options: ArticleListOptions = {}) {
+  const limit = Math.min(options.limit ?? 12, 50);
+  const params = new URLSearchParams();
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "description");
+  params.set("populate[cover][fields][0]", "url");
+  params.set("populate[cover][fields][1]", "alternativeText");
+  params.set("populate[category][fields][0]", "name");
+  params.set("populate[category][fields][1]", "slug");
+  params.set("sort[0]", "publishedAt:desc");
+  params.set("sort[1]", "updatedAt:desc");
+  params.set("pagination[pageSize]", String(limit));
+
+  if (options.categorySlug) {
+    params.set("filters[category][slug][$eq]", options.categorySlug);
+  }
+
+  try {
+    const j = await getJSON<{ data: ArticleEntity[] }>(`/api/articles?${params.toString()}`, {
+      tags: [`articles:${options.categorySlug ?? "all"}:l${limit}`],
+      revalidate: 300,
+    });
+    return j.data || [];
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return [] as ArticleEntity[];
+    }
+
+    throw error;
+  }
+}
+
 type DownloadableMediaOptions = {
   page?: number;
   pageSize?: number;
@@ -339,6 +526,55 @@ export async function getDownloadableMediaItems(options: DownloadableMediaOption
   } catch (error) {
     if (isNotFoundError(error)) {
       return { data: [], meta: undefined };
+    }
+
+    throw error;
+  }
+}
+
+type LessonListOptions = {
+  categorySlug?: string;
+  courseSlug?: string;
+  limit?: number;
+};
+
+export async function getLessons(options: LessonListOptions = {}) {
+  const params = new URLSearchParams();
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "summary");
+  params.set("fields[3]", "previewAvailable");
+  params.set("populate[resources]", "*");
+  params.set("populate[category][fields][0]", "name");
+  params.set("populate[category][fields][1]", "slug");
+  params.set("populate[course][fields][0]", "title");
+  params.set("populate[course][fields][1]", "slug");
+  params.set("sort[0]", "order:asc");
+  params.set("sort[1]", "publishedAt:desc");
+
+  const pageSize = Math.min(options.limit ?? 20, 50);
+  params.set("pagination[pageSize]", String(pageSize));
+  params.set("pagination[page]", "1");
+
+  if (options.categorySlug) {
+    params.set("filters[category][slug][$eq]", options.categorySlug);
+  }
+
+  if (options.courseSlug) {
+    params.set("filters[course][slug][$eq]", options.courseSlug);
+  }
+
+  try {
+    const j = await getJSON<{ data: LessonEntity[] }>(`/api/lessons?${params.toString()}`, {
+      tags: [
+        `lessons:${options.categorySlug ?? "all"}:${options.courseSlug ?? "all"}:l${pageSize}`,
+      ],
+      revalidate: 300,
+    });
+    return j.data || [];
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return [] as LessonEntity[];
     }
 
     throw error;
@@ -722,6 +958,141 @@ export async function getMediaCategories(includeEmpty = false) {
   } catch (error) {
     if (isBadRequest(error)) {
       return fetchMediaCategoriesLegacy(includeEmpty);
+    }
+
+    throw error;
+  }
+}
+
+function relationToArray<T>(relation: { data?: unknown } | null | undefined): T[] {
+  const data = relation?.data;
+  if (!Array.isArray(data)) return [];
+  return data.filter((item): item is T => Boolean(item));
+}
+
+function mapHighlightEntry(entry: any, index: number): ResourceHighlight | null {
+  if (!entry) return null;
+  const title = typeof entry.title === "string" ? entry.title.trim() : "";
+  if (!title) return null;
+
+  return {
+    id: typeof entry.id === "number" ? entry.id : index,
+    eyebrow: typeof entry.eyebrow === "string" ? entry.eyebrow : null,
+    title,
+    description: typeof entry.description === "string" ? entry.description : null,
+    ctaLabel: typeof entry.ctaLabel === "string" ? entry.ctaLabel : null,
+    ctaUrl: typeof entry.ctaUrl === "string" ? entry.ctaUrl : null,
+    accentColor: typeof entry.accentColor === "string" ? entry.accentColor : null,
+  };
+}
+
+function mapSectionEntry(section: ResourceCardComponent | undefined, index: number): ResourceSection | null {
+  if (!section) return null;
+  const title = typeof section.title === "string" ? section.title.trim() : "";
+  if (!title) return null;
+
+  const allowedTypes: ResourceSectionType[] = ["media", "lesson", "article", "course", "custom"];
+  const type = allowedTypes.includes(section.type as ResourceSectionType)
+    ? (section.type as ResourceSectionType)
+    : "custom";
+
+  const categoryAttributes = section.category?.data?.attributes;
+  const imageAttributes = section.image?.data?.attributes;
+
+  const customResources = Array.isArray(section.customResources)
+    ? section.customResources
+        .map((resource) => {
+          if (!resource) return null;
+          const label = typeof resource.label === "string" ? resource.label.trim() : "";
+          const url = typeof resource.url === "string" ? resource.url.trim() : "";
+          if (!label || !url) return null;
+          return {
+            id: typeof resource.id === "number" ? resource.id : undefined,
+            label,
+            url,
+            requiresLogin: typeof resource.requiresLogin === "boolean" ? resource.requiresLogin : false,
+            type: resource.type,
+          } satisfies ResourceLinkComponent;
+        })
+        .filter((resource): resource is ResourceLinkComponent => Boolean(resource))
+    : [];
+
+  return {
+    id: typeof section.id === "number" ? section.id : index,
+    title,
+    description: typeof section.description === "string" ? section.description : null,
+    ctaLabel: typeof section.ctaLabel === "string" ? section.ctaLabel : null,
+    ctaUrl: typeof section.ctaUrl === "string" ? section.ctaUrl : null,
+    type,
+    tag: typeof section.tag === "string" ? section.tag : null,
+    categoryName: typeof categoryAttributes?.name === "string" ? categoryAttributes.name : null,
+    categorySlug: typeof categoryAttributes?.slug === "string" ? categoryAttributes.slug : null,
+    image: imageAttributes
+      ? {
+          url: imageAttributes.url ?? undefined,
+          alternativeText: imageAttributes.alternativeText ?? null,
+        }
+      : null,
+    highlightedMediaItems: relationToArray<MediaItemEntity>(section.highlightedMediaItems),
+    highlightedLessons: relationToArray<LessonEntity>(section.highlightedLessons),
+    highlightedArticles: relationToArray<ArticleEntity>(section.highlightedArticles),
+    highlightedCourses: relationToArray<CourseEntity>(section.highlightedCourses),
+    highlightedBlogPosts: relationToArray<BlogPostEntity>(section.highlightedBlogPosts),
+    customResources,
+  };
+}
+
+export async function getResourceDirectory(): Promise<ResourceDirectory | null> {
+  const params = new URLSearchParams();
+  params.set("populate", "deep,4");
+
+  try {
+    const j = await getJSON<{ data: ResourceDirectoryEntity | null }>(`/api/resource-directory?${params.toString()}`, {
+      tags: ["resource-directory"],
+      revalidate: 180,
+    });
+
+    const entity = j.data;
+    const attributes = entity?.attributes;
+    if (!attributes) {
+      return null;
+    }
+
+    const highlights = Array.isArray(attributes.highlights)
+      ? attributes.highlights
+          .map((entry, index) => mapHighlightEntry(entry, index))
+          .filter((highlight): highlight is ResourceHighlight => Boolean(highlight))
+      : [];
+
+    const sections = Array.isArray(attributes.sections)
+      ? attributes.sections
+          .map((section, index) => mapSectionEntry(section, index))
+          .filter((section): section is ResourceSection => Boolean(section))
+      : [];
+
+    const seo = attributes.seo
+      ? {
+          metaTitle: attributes.seo.metaTitle ?? null,
+          metaDescription: attributes.seo.metaDescription ?? null,
+          shareImageUrl: attributes.seo.shareImage?.data?.attributes?.url ?? null,
+        }
+      : null;
+
+    return {
+      id: typeof entity?.id === "number" ? entity.id : null,
+      title: attributes.title ?? null,
+      heroCopy: attributes.heroCopy ?? null,
+      seo,
+      highlights,
+      sections,
+      featuredMediaItems: relationToArray<MediaItemEntity>(attributes.featuredMediaItems),
+      featuredLessons: relationToArray<LessonEntity>(attributes.featuredLessons),
+      featuredArticles: relationToArray<ArticleEntity>(attributes.featuredArticles),
+      featuredBlogPosts: relationToArray<BlogPostEntity>(attributes.featuredBlogPosts),
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null;
     }
 
     throw error;

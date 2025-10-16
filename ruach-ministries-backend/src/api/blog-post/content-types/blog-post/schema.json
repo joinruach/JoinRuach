@@ -45,6 +45,17 @@
       "relation": "manyToOne",
       "target": "api::team-member.team-member",
       "inversedBy": "blog_posts"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category"
+    },
+    "featuredInResources": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::resource-directory.resource-directory",
+      "mappedBy": "featuredBlogPosts"
     }
   }
 }

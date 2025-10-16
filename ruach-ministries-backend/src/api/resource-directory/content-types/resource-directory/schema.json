@@ -1,0 +1,60 @@
+{
+  "kind": "singleType",
+  "collectionName": "resource_directories",
+  "info": {
+    "singularName": "resource-directory",
+    "pluralName": "resource-directories",
+    "displayName": "Resource Directory"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "heroCopy": {
+      "type": "richtext"
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    },
+    "highlights": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.highlight"
+    },
+    "sections": {
+      "type": "component",
+      "repeatable": true,
+      "component": "resource.resource-card"
+    },
+    "featuredMediaItems": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::media-item.media-item",
+      "inversedBy": "featuredInResources"
+    },
+    "featuredLessons": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::lesson.lesson",
+      "inversedBy": "featuredInResources"
+    },
+    "featuredArticles": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::article.article",
+      "inversedBy": "featuredInResources"
+    },
+    "featuredBlogPosts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-post.blog-post",
+      "inversedBy": "featuredInResources"
+    }
+  }
+}

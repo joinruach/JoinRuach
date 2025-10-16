@@ -59,6 +59,12 @@
         "shared.rich-text",
         "shared.slider"
       ]
+    },
+    "featuredInResources": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::resource-directory.resource-directory",
+      "mappedBy": "featuredArticles"
     }
   }
 }
