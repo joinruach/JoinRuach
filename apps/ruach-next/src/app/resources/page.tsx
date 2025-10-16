@@ -40,13 +40,21 @@ export const metadata = {
   },
 };
 
+type LessonResourceLink = {
+  id?: number;
+  label?: string | null;
+  url: string;
+  requiresLogin: boolean;
+  type?: ResourceLinkComponent["type"] | null;
+};
+
 type LessonDownload = {
   id: number;
   title: string;
   summary?: string | null;
   courseTitle?: string | null;
   categoryName?: string | null;
-  resources: ResourceLinkComponent[];
+  resources: LessonResourceLink[];
 };
 
 type ArticleCard = {
@@ -63,7 +71,7 @@ type CustomResourceCard = {
   label: string;
   url: string;
   requiresLogin: boolean;
-  type?: string | null;
+  type?: ResourceLinkComponent["type"] | null;
 };
 
 type BaseSectionData = {
@@ -194,6 +202,24 @@ const DEFAULT_SECTIONS: ResourceSection[] = [
   },
   {
     id: 4,
+    title: "Ruach blog insights",
+    description: "Stories, guides, and testimonies from the field to help you lead Spirit-filled communities.",
+    ctaLabel: "Read the blog →",
+    ctaUrl: "/blog",
+    type: "article",
+    categoryName: null,
+    categorySlug: null,
+    tag: "blog",
+    image: null,
+    highlightedMediaItems: [],
+    highlightedLessons: [],
+    highlightedArticles: [],
+    highlightedCourses: [],
+    highlightedBlogPosts: [],
+    customResources: [],
+  },
+  {
+    id: 5,
     title: "Downloads & toolkits",
     description: "Printable study guides, outreach prompts, and planning checklists you can hand to your teams today.",
     ctaLabel: "Partner login →",
@@ -495,6 +521,7 @@ async function resolveArticleCards(
   }
 ): Promise<ArticleCard[]> {
   const collected: ArticleCard[] = [];
+  const preferBlogPosts = section.tag === "blog";
 
   const highlightedArticles = section.highlightedArticles
     .map((article) => mapArticleEntity(article))
@@ -523,24 +550,45 @@ async function resolveArticleCards(
   }
 
   if (!collected.length) {
-    const fetchedArticles = await getArticles({
-      categorySlug: section.categorySlug ?? undefined,
-      limit: 6,
-    }).catch(() => [] as ArticleEntity[]);
-    collected.push(
-      ...fetchedArticles
-        .map((article) => mapArticleEntity(article))
-        .filter((article): article is ArticleCard => Boolean(article))
-    );
+    if (!preferBlogPosts) {
+      const fetchedArticles = await getArticles({
+        categorySlug: section.categorySlug ?? undefined,
+        limit: 6,
+      }).catch(() => [] as ArticleEntity[]);
+      collected.push(
+        ...fetchedArticles
+          .map((article) => mapArticleEntity(article))
+          .filter((article): article is ArticleCard => Boolean(article))
+      );
+    } else {
+      const posts = await loaders.getBlogPosts();
+      collected.push(
+        ...posts
+          .map((post) => mapBlogPostEntity(post))
+          .filter((post): post is ArticleCard => Boolean(post))
+      );
+    }
   }
 
   if (!collected.length) {
-    const posts = await loaders.getBlogPosts();
-    collected.push(
-      ...posts
-        .map((post) => mapBlogPostEntity(post))
-        .filter((post): post is ArticleCard => Boolean(post))
-    );
+    if (preferBlogPosts) {
+      const fallbackArticles = await getArticles({
+        categorySlug: section.categorySlug ?? undefined,
+        limit: 6,
+      }).catch(() => [] as ArticleEntity[]);
+      collected.push(
+        ...fallbackArticles
+          .map((article) => mapArticleEntity(article))
+          .filter((article): article is ArticleCard => Boolean(article))
+      );
+    } else {
+      const posts = await loaders.getBlogPosts();
+      collected.push(
+        ...posts
+          .map((post) => mapBlogPostEntity(post))
+          .filter((post): post is ArticleCard => Boolean(post))
+      );
+    }
   }
 
   const unique = new Map<string, ArticleCard>();
@@ -566,20 +614,25 @@ async function resolveCourseCards(
 }
 
 function resolveCustomResources(section: ResourceSection): CustomResourceCard[] {
-  return (section.customResources || [])
-    .map((resource) => {
-      const label = typeof resource.label === "string" ? resource.label.trim() : "";
-      const url = typeof resource.url === "string" ? resource.url.trim() : "";
-      if (!label || !url) return null;
-      return {
-        id: resource.id,
-        label,
-        url,
-        requiresLogin: Boolean(resource.requiresLogin),
-        type: resource.type ?? null,
-      };
-    })
-    .filter((resource): resource is CustomResourceCard => Boolean(resource));
+  const customResources = section.customResources ?? [];
+  const cards: CustomResourceCard[] = [];
+
+  for (const resource of customResources) {
+    if (!resource) continue;
+    const label = typeof resource.label === "string" ? resource.label.trim() : "";
+    const url = typeof resource.url === "string" ? resource.url.trim() : "";
+    if (!label || !url) continue;
+
+    cards.push({
+      id: typeof resource.id === "number" ? resource.id : undefined,
+      label,
+      url,
+      requiresLogin: Boolean(resource.requiresLogin),
+      type: resource.type ?? null,
+    });
+  }
+
+  return cards;
 }
 
 function renderSection(section: SectionRenderData) {
@@ -868,13 +921,41 @@ function normalizeCourses(items: unknown[]): Course[] {
 function mapLessonDownload(lesson: LessonEntity | null | undefined): LessonDownload | null {
   if (!lesson?.attributes) return null;
   const resourcesArray = Array.isArray(lesson.attributes.resources) ? lesson.attributes.resources : [];
+
+  const lessonResources: LessonResourceLink[] = [];
+  for (const resource of resourcesArray) {
+    if (!resource || typeof resource.url !== "string") continue;
+    const url = resource.url.trim();
+    if (!url) continue;
+
+    const rawLabel =
+      typeof resource.label === "string"
+        ? resource.label.trim()
+        : typeof resource.label === "number"
+        ? String(resource.label)
+        : null;
+    const label = rawLabel && rawLabel.length ? rawLabel : null;
+
+    const normalized: LessonResourceLink = {
+      id: typeof resource.id === "number" ? resource.id : undefined,
+      url,
+      requiresLogin: Boolean(resource.requiresLogin),
+      type: resource.type ?? null,
+    };
+    if (label !== null) {
+      normalized.label = label;
+    }
+
+    lessonResources.push(normalized);
+  }
+
   return {
     id: lesson.id,
     title: lesson.attributes.title ?? "Discipleship resource",
     summary: lesson.attributes.summary ?? null,
     courseTitle: lesson.attributes.course?.data?.attributes?.title ?? null,
     categoryName: lesson.attributes.category?.data?.attributes?.name ?? null,
-    resources: resourcesArray,
+    resources: lessonResources,
   };
 }
 
