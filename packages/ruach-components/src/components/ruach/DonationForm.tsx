@@ -1,17 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useState, type FormEvent, type ReactElement } from "react";
 import RecurringToggle from "./RecurringToggle";
 import { Button } from "./../ruach/ui/Button";
 import { track } from "../../utils/analytics";
 
-export default function DonationForm({ processorUrl="https://givebutter.com/ruach-studios" }:{ processorUrl?: string }) {
+export type DonationFormProps = {
+  processorUrl?: string;
+};
+
+export default function DonationForm({ processorUrl="https://givebutter.com/ruach-studios" }: DonationFormProps): ReactElement {
   const [amount, setAmount] = useState<number | "">("");
   const [monthly, setMonthly] = useState(false);
-  function submit(e: React.FormEvent) {
+  function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const a = typeof amount === "number" ? amount : 0;
     track("GiveClick", { placement:"donation_form", amount: a, monthly });
-    window.open(processorUrl, "_blank");
+    const newWindow = window.open(processorUrl, "_blank", "noopener,noreferrer");
+    if (newWindow) newWindow.opener = null;
   }
   return (
     <form onSubmit={submit} className="space-y-3 rounded-xl border border-black/10 p-4">

@@ -1,19 +1,28 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, type JSX } from "react";
 import { markProgress } from "../../utils/progress";
 import { track } from "../../utils/analytics";
 
-export default function LessonPlayer({ src, courseSlug, lessonSlug }:{ src?: string; courseSlug: string; lessonSlug: string; }) {
+type LessonPlayerProps = {
+  src?: string;
+  courseSlug: string;
+  lessonSlug: string;
+};
+
+export default function LessonPlayer({ src, courseSlug, lessonSlug }: LessonPlayerProps): JSX.Element {
   const ref = useRef<HTMLVideoElement | null>(null);
-  const [seconds, setSeconds] = useState(0);
+  const lastKnownPosition = useRef(0);
+  const lastPersistedPosition = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const onTime = () => setSeconds(Math.floor(el.currentTime));
+    const onTime = () => { lastKnownPosition.current = Math.floor(el.currentTime); };
     const onPlay = () => track("LessonVideoPlay", { course: courseSlug, lesson: lessonSlug });
     const onEnded = async () => {
-      try { await markProgress({ courseSlug, lessonSlug, secondsWatched: Math.floor(el.duration), completed: true }); } catch {}
+      const duration = Math.floor(el.duration);
+      try { await markProgress({ courseSlug, lessonSlug, secondsWatched: duration, completed: true }); } catch {}
+      lastPersistedPosition.current = duration;
       track("LessonVideoComplete", { course: courseSlug, lesson: lessonSlug });
     };
     el.addEventListener("timeupdate", onTime);
@@ -27,10 +36,19 @@ export default function LessonPlayer({ src, courseSlug, lessonSlug }:{ src?: str
   }, [courseSlug, lessonSlug]);
 
   useEffect(() => {
-    if (!seconds) return;
-    const id = setInterval(() => { markProgress({ courseSlug, lessonSlug, secondsWatched: seconds }).catch(()=>{}); }, 15000);
+    lastKnownPosition.current = 0;
+    lastPersistedPosition.current = 0;
+    if (!src) return;
+    const id = setInterval(() => {
+      const el = ref.current;
+      if (!el) return;
+      const currentTime = lastKnownPosition.current || Math.floor(el.currentTime);
+      if (!currentTime || currentTime === lastPersistedPosition.current) return;
+      lastPersistedPosition.current = currentTime;
+      markProgress({ courseSlug, lessonSlug, secondsWatched: currentTime }).catch(() => {});
+    }, 15000);
     return () => clearInterval(id);
-  }, [seconds, courseSlug, lessonSlug]);
+  }, [courseSlug, lessonSlug, src]);
 
   if (!src) return <div className="p-8 text-center text-neutral-500">Video coming soon.</div>;
   const isIframe = src.includes("youtube.com") || src.includes("youtu.be") || src.includes("vimeo.com");
