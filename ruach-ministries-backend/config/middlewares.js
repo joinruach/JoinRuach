@@ -1,12 +1,12 @@
 const isProduction = process.env.NODE_ENV === 'production';
 
 const productionOrigins = [
-  'https://ruachstudio.com',
-  'https://www.ruachstudio.com',
+  'https://joinruach.org',
+  'https://www.joinruach.org',
 ];
 
 const sharedOrigins = [
-  'https://cdn.ruachstudio.com',
+  'https://cdn.joinruach.org',
 ];
 
 const developmentOrigins = [
@@ -22,10 +22,10 @@ const corsOrigins = isProduction
 
 const connectSrc = [
   "'self'",
-  'wss://ruachstudio.com',
-  'https://cdn.ruachstudio.com',
+  'wss://joinruach.org',
+  'https://cdn.joinruach.org',
   'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
-  'https://api.ruachstudio.com',
+  'https://api.joinruach.org',
   'https://api.github.com',
   'https://analytics.strapi.io',
 ];
@@ -49,14 +49,14 @@ module.exports = [
             "'self'",
             'data:',
             'blob:',
-            'https://cdn.ruachstudio.com',
+            'https://cdn.joinruach.org',
             'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
           ],
           'media-src': [
             "'self'",
             'data:',
             'blob:',
-            'https://cdn.ruachstudio.com',
+            'https://cdn.joinruach.org',
             'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
             'https://www.youtube.com',
             'https://player.vimeo.com',
@@ -69,7 +69,7 @@ module.exports = [
           'script-src': [
             "'self'",
             "'unsafe-inline'",
-            'https://cdn.ruachstudio.com',
+            'https://cdn.joinruach.org',
           ],
           'font-src': [
             "'self'",
