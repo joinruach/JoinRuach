@@ -1,5 +1,5 @@
 {
-  "extends": "../../../ruach-monorepo/tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
