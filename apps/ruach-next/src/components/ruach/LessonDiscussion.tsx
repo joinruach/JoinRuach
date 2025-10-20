@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ruach/ui/Button";
 import CommentActions from "@/components/ruach/CommentActions";
 
@@ -14,6 +14,10 @@ export default function LessonDiscussion({ comments = [], onSubmit }: Props){
   const [text,setText]=useState("");
   const [loading,setLoading]=useState(false);
   const [success,setSuccess]=useState<null|"approved"|"queued">(null);
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat("en-US",{ dateStyle:"medium", timeStyle:"short", timeZone:"UTC" }),
+    []
+  );
 
   async function post(e:React.FormEvent){
     e.preventDefault();
@@ -59,7 +63,10 @@ export default function LessonDiscussion({ comments = [], onSubmit }: Props){
         {comments.map((c)=>(
           <li key={c.id} className="rounded-2xl border border-white/10 bg-white p-4 text-neutral-900">
             <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              {c.author} • {new Date(c.createdAt).toLocaleString()}
+              {c.author} •{" "}
+              <time dateTime={c.createdAt} suppressHydrationWarning>
+                {dateFormatter.format(new Date(c.createdAt))}
+              </time>
             </div>
             <p className="mt-2 leading-relaxed text-neutral-800">{c.text}</p>
             <div className="mt-3">

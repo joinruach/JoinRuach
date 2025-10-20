@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "./ui/Button";
 
 export type Comment = { id: string|number; author: string; text: string; createdAt: string };
@@ -14,6 +14,10 @@ export default function LessonDiscussion({
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<null | "approved" | "queued">(null);
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }),
+    []
+  );
 
   async function post(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +65,10 @@ export default function LessonDiscussion({
         {comments.map((c) => (
           <li key={c.id} className="rounded-lg border border-black/10 p-3">
             <div className="text-sm text-neutral-500">
-              {c.author} • {new Date(c.createdAt).toLocaleString()}
+              {c.author} •{" "}
+              <time dateTime={c.createdAt} suppressHydrationWarning>
+                {dateFormatter.format(new Date(c.createdAt))}
+              </time>
             </div>
             <p className="mt-1">{c.text}</p>
           </li>

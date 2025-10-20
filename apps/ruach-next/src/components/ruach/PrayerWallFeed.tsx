@@ -1,5 +1,11 @@
 import { getPrayers } from "@/lib/strapi";
 
+const createdAtFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
+
 export default async function PrayerWallFeed() {
   const prayers = await getPrayers(6);
   if (!prayers?.length) return null;
@@ -10,7 +16,13 @@ export default async function PrayerWallFeed() {
         {prayers.map((p:any) => (
           <li key={p.id} className="rounded-xl border border-black/5 bg-white p-4">
             <div className="mb-1 text-xs text-neutral-500">
-              {p.attributes?.createdAt ? new Date(p.attributes.createdAt).toLocaleString() : ""}
+              {p.attributes?.createdAt ? (
+                <time dateTime={p.attributes.createdAt} suppressHydrationWarning>
+                  {createdAtFormatter.format(new Date(p.attributes.createdAt))}
+                </time>
+              ) : (
+                ""
+              )}
             </div>
             <div className="leading-relaxed">{p.attributes?.body}</div>
           </li>
@@ -20,4 +32,3 @@ export default async function PrayerWallFeed() {
     </div>
   );
 }
-
