@@ -5,8 +5,12 @@ const getEnv = (name, fallback) => {
   return value && value.trim().length ? value : fallback;
 };
 
-export default async ({ strapi }) => {
+export default async ({ strapi } = {}) => {
   dotenv.config();
+
+  if (!strapi || typeof strapi.store !== "function") {
+    return;
+  }
 
   const pluginStore = strapi.store({ type: "plugin", name: "users-permissions" });
 
