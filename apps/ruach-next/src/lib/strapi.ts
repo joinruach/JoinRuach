@@ -805,7 +805,26 @@ export function getMediaUrl(url?: string | null) {
   if (!url) return undefined;
   const trimmed = url.trim();
   if (!trimmed) return undefined;
-  return trimmed.startsWith("http") ? trimmed : `${MEDIA_CDN}${trimmed}`;
+  if (trimmed.startsWith("http")) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.hostname.endsWith(".r2.cloudflarestorage.com")) {
+        const segments = parsed.pathname.split("/").filter(Boolean);
+        const filename = segments[segments.length - 1];
+        if (filename) {
+          const base = MEDIA_CDN.endsWith("/") ? MEDIA_CDN.slice(0, -1) : MEDIA_CDN;
+          return `${base}/${filename}`;
+        }
+      }
+    } catch {
+      // ignore parsing issues and fall back to the raw value
+    }
+    return trimmed;
+  }
+
+  const base = MEDIA_CDN.endsWith("/") ? MEDIA_CDN.slice(0, -1) : MEDIA_CDN;
+  const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${base}${path}`;
 }
 
 export function imgUrl(path?: string | null) {

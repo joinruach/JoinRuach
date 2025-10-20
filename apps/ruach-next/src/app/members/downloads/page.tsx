@@ -1,5 +1,6 @@
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getDownloadableMediaItems, imgUrl } from "@/lib/strapi";
+import { extractAttributes, extractMediaUrl, extractSingleRelation } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 import TrackedLink from "@/components/ruach/TrackedLink";
 
@@ -19,11 +20,12 @@ type DownloadResource = {
   };
 };
 
-function normalizeDownload(entity: MediaItemEntity): DownloadResource | null {
-  const attr = entity.attributes;
+function normalizeDownload(entity: MediaItemEntity | Record<string, any>): DownloadResource | null {
+  const attr = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
   if (!attr) return null;
 
-  const fileUrl = attr.source?.file?.data?.attributes?.url;
+  const sourceFile = extractSingleRelation<{ url?: string }>(attr.source?.file);
+  const fileUrl = extractMediaUrl(attr.source?.file) ?? sourceFile?.url;
   const directUrl = attr.source?.url;
   const ctaUrl = attr.ctaUrl;
 
@@ -31,19 +33,22 @@ function normalizeDownload(entity: MediaItemEntity): DownloadResource | null {
   if (!href) return null;
 
   return {
-    id: entity.id,
+    id: (entity as MediaItemEntity)?.id ?? 0,
     title: attr.title ?? "Downloadable resource",
     description: attr.description ?? attr.excerpt ?? undefined,
     href,
     label: attr.ctaLabel ?? (ctaUrl ? "Open product" : "Download"),
     releasedAt: attr.releasedAt,
     type: attr.type,
-    thumbnail: attr.thumbnail?.data?.attributes?.url
-      ? {
-          src: imgUrl(attr.thumbnail.data.attributes.url),
-          alt: attr.thumbnail.data.attributes.alternativeText ?? attr.title ?? "Download",
-        }
-      : undefined,
+    thumbnail: (() => {
+      const thumbnailUrl = extractMediaUrl(attr.thumbnail);
+      if (!thumbnailUrl) return undefined;
+      const thumbnailMedia = extractSingleRelation<{ alternativeText?: string }>(attr.thumbnail);
+      return {
+        src: imgUrl(thumbnailUrl),
+        alt: thumbnailMedia?.alternativeText ?? attr.title ?? "Download",
+      };
+    })(),
   };
 }
 

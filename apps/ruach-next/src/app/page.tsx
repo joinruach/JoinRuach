@@ -5,9 +5,19 @@ import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
 import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, getMediaByCategory, getFeaturedTestimony, imgUrl, getEvents } from "@/lib/strapi";
+import {
+  extractAttributes,
+  extractManyRelation,
+  extractSingleRelation,
+} from "@/lib/strapi-normalize";
+import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-static";
 export const revalidate = 60;
+
+type MediaAttributes = MediaItemEntity["attributes"];
+type CourseAttributes = CourseEntity["attributes"];
+type EventAttributes = EventEntity["attributes"];
 
 export default async function Home(){
   const [courses, testimonies, featured, events] = await Promise.all([
@@ -35,52 +45,86 @@ export default async function Home(){
     description: "Ruach Ministries tells testimonies, disciples believers, and mobilizes outreach teams to release the breath of God."
   };
 
-  const testimonyList = (testimonies || []).slice(0, 4).map((m:any) => ({
-    title: m.attributes.title,
-    href: `/media/${m.attributes.slug}`,
-    excerpt: m.attributes.description,
-    category: m.attributes.category?.data?.attributes?.name ?? m.attributes.legacyCategory,
-    thumbnail: { src: m.attributes.thumbnail?.data?.attributes?.url },
-    views: m.attributes.views ?? 0,
-    durationSec: m.attributes.durationSec ?? undefined,
-    speakers: (m.attributes.speakers?.data || [])
-      .map((speaker: any) => {
-        const attrs = speaker?.attributes;
-        if (!attrs) return undefined;
-        return attrs.displayName?.trim() || attrs.name;
-      })
-      .filter(Boolean)
-  }));
+  const testimonyList = (testimonies || [])
+    .slice(0, 4)
+    .map((entity: any) => {
+      const attributes = extractAttributes<MediaAttributes>(entity);
+      if (!attributes?.slug) return null;
+
+      const thumbnailMedia = extractSingleRelation<{ url?: string; alternativeText?: string }>(attributes.thumbnail);
+      const speakers = extractManyRelation<{ name?: string; displayName?: string }>(attributes.speakers)
+        .map((speaker) => speaker.displayName?.trim() || speaker.name)
+        .filter((name): name is string => Boolean(name && name.trim()));
+      const categorySource =
+        extractSingleRelation<{ name?: string }>(attributes.category)?.name ?? attributes.legacyCategory ?? undefined;
+      const category =
+        typeof categorySource === "string" && categorySource.trim().length ? categorySource : undefined;
+
+      return {
+        title: attributes.title ?? "Untitled Media",
+        href: `/media/${attributes.slug}`,
+        excerpt: attributes.description ?? attributes.excerpt,
+        category,
+        thumbnail: thumbnailMedia?.url
+          ? { src: thumbnailMedia.url, alt: thumbnailMedia.alternativeText ?? attributes.title }
+          : undefined,
+        views: attributes.views ?? 0,
+        durationSec: attributes.durationSec ?? undefined,
+        speakers,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   const courseList: Course[] = (courses || [])
     .map((c: any): Course | null => {
-      const attributes = c?.attributes;
-      const title = attributes?.title;
-      const slug = attributes?.slug;
+      const attributes = extractAttributes<CourseAttributes>(c);
+      if (!attributes) return null;
 
-      if (typeof title !== "string" || typeof slug !== "string") return null;
+      const title = typeof attributes.title === "string" ? attributes.title : undefined;
+      const slug = typeof attributes.slug === "string" ? attributes.slug : undefined;
+      if (!title || !slug) return null;
 
-      const description = attributes?.description;
-      const coverUrl = attributes?.cover?.data?.attributes?.url;
+      const coverMedia = extractSingleRelation<{ url?: string }>(attributes.cover);
 
       return {
         title,
         slug,
-        description: typeof description === "string" ? description : undefined,
-        coverUrl: typeof coverUrl === "string" ? coverUrl : undefined
+        description: typeof attributes.description === "string" ? attributes.description : undefined,
+        coverUrl: typeof coverMedia?.url === "string" ? coverMedia.url : undefined,
       };
     })
     .filter((course): course is Course => course !== null)
     .slice(0, 3);
 
-  const eventCards = (events || []).map((event: any) => ({
-    title: event.attributes.title,
-    slug: event.attributes.slug,
-    description: event.attributes.description,
-    location: event.attributes.location,
-    date: event.attributes.date || event.attributes.startDate,
-    cover: event.attributes.cover?.data?.attributes?.url
-  }));
+  const eventCards = (events || []).map((event: any) => {
+    const attributes = extractAttributes<EventAttributes>(event);
+    if (!attributes) {
+      return {
+        title: "Untitled Event",
+        slug: "",
+        description: undefined,
+        location: undefined,
+        date: undefined,
+        cover: undefined,
+      };
+    }
+
+    const coverMedia = extractSingleRelation<{ url?: string }>(attributes.cover);
+
+    return {
+      title: attributes.title ?? "Untitled Event",
+      slug: attributes.slug ?? "",
+      description: attributes.description,
+      location: attributes.location,
+      date: attributes.date || attributes.startDate,
+      cover: typeof coverMedia?.url === "string" ? coverMedia.url : undefined,
+    };
+  });
+
+  const featuredAttributes = extractAttributes<MediaAttributes>(featured as any);
+  const featuredThumbnail = featuredAttributes
+    ? extractSingleRelation<{ url?: string; alternativeText?: string }>(featuredAttributes.thumbnail)
+    : undefined;
 
   return (
     <div className="space-y-16">
@@ -150,26 +194,26 @@ export default async function Home(){
         </div>
       </section>
 
-      {featured ? (
+      {featuredAttributes ? (
         <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-white text-neutral-900 shadow-xl">
             <div className="relative aspect-video bg-neutral-200">
-              {featured.attributes.thumbnail?.data?.attributes?.url ? (
+              {featuredThumbnail?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={imgUrl(featured.attributes.thumbnail?.data?.attributes?.url)}
-                  alt={featured.attributes.title}
+                  src={imgUrl(featuredThumbnail.url)}
+                  alt={featuredThumbnail.alternativeText ?? featuredAttributes.title ?? "Featured testimony"}
                   className="h-full w-full object-cover"
                 />
               ) : null}
             </div>
             <div className="space-y-3 p-8">
               <span className="text-xs font-semibold uppercase tracking-wide text-amber-600">Spotlight Testimony</span>
-              <h2 className="text-2xl font-semibold text-neutral-900">{featured.attributes.title}</h2>
-              {featured.attributes.description ? (
-                <p className="text-neutral-600">{featured.attributes.description}</p>
+              <h2 className="text-2xl font-semibold text-neutral-900">{featuredAttributes.title}</h2>
+              {featuredAttributes.description ? (
+                <p className="text-neutral-600">{featuredAttributes.description}</p>
               ) : null}
-              <Link href={`/media/${featured.attributes.slug}`} className="inline-flex items-center text-sm font-semibold text-amber-700 hover:text-amber-600">
+              <Link href={`/media/${featuredAttributes.slug}`} className="inline-flex items-center text-sm font-semibold text-amber-700 hover:text-amber-600">
                 Watch the story →
               </Link>
             </div>

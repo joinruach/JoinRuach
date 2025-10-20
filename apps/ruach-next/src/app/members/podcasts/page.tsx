@@ -3,6 +3,7 @@ import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCar
 import Link from "next/link";
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getMediaItems } from "@/lib/strapi";
+import { extractAttributes, extractManyRelation, extractSingleRelation } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-dynamic";
@@ -17,26 +18,20 @@ export default async function MemberPodcastsPage() {
   });
 
   const items = (data || []).reduce<MediaCardProps[]>((acc, entity: MediaItemEntity | undefined | null) => {
-    if (!entity?.attributes) return acc;
-    const attr = entity.attributes;
+    const attr = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+    if (!attr) return acc;
     const slug = attr.slug;
     if (!slug) return acc;
     const title = attr.title ?? "Podcast";
-    const thumbnailData = attr.thumbnail?.data?.attributes;
-    const thumbnail = thumbnailData?.url
-      ? { src: thumbnailData.url, alt: thumbnailData.alternativeText ?? title }
+    const thumbnailMedia = extractSingleRelation<{ url?: string; alternativeText?: string }>(attr.thumbnail);
+    const thumbnail = thumbnailMedia?.url
+      ? { src: thumbnailMedia.url, alt: thumbnailMedia.alternativeText ?? title }
       : undefined;
     const excerpt =
       attr.excerpt && attr.excerpt.trim().length ? attr.excerpt : attr.description ?? undefined;
-    const speakers = Array.isArray(attr.speakers?.data)
-      ? attr.speakers.data
-          .map((speaker) => {
-            const attributes = speaker?.attributes;
-            if (!attributes) return undefined;
-            return attributes.displayName?.trim() || attributes.name;
-          })
-          .filter((value): value is string => Boolean(value))
-      : [];
+    const speakers = extractManyRelation<{ name?: string; displayName?: string }>(attr.speakers)
+      .map((speaker) => speaker.displayName?.trim() || speaker.name)
+      .filter((value): value is string => Boolean(value));
 
     const card: MediaCardProps = {
       title,

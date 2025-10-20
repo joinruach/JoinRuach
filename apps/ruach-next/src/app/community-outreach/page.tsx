@@ -1,13 +1,16 @@
 import Link from "next/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
+import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import VolunteerSignupForm from "@/components/ruach/VolunteerSignupForm";
 import { getMediaByCategory } from "@/lib/strapi";
+import { extractAttributes, extractManyRelation, extractSingleRelation } from "@/lib/strapi-normalize";
+import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-static";
 export const revalidate = 300;
 
-const fallbackStories = [
+const fallbackStories: MediaCardProps[] = [
   {
     title: "Deliverance on the Streets",
     href: "/media",
@@ -30,23 +33,34 @@ const fallbackStories = [
 
 export default async function CommunityOutreachPage(){
   const outreachMedia = await getMediaByCategory("outreach", 6).catch(() => [] as any[]);
-  const stories = outreachMedia.length
-    ? outreachMedia.map((item: any) => ({
-        title: item.attributes.title,
-        href: `/media/${item.attributes.slug}`,
-        excerpt: item.attributes.description,
-        category: item.attributes.category?.data?.attributes?.name ?? item.attributes.legacyCategory,
-        thumbnail: { src: item.attributes.thumbnail?.data?.attributes?.url },
-        views: item.attributes.views ?? 0,
-        durationSec: item.attributes.durationSec ?? undefined,
-        speakers: (item.attributes.speakers?.data || [])
-          .map((speaker: any) => {
-            const attrs = speaker?.attributes;
-            if (!attrs) return undefined;
-            return attrs.displayName?.trim() || attrs.name;
-          })
-          .filter(Boolean)
-      }))
+  const stories: MediaCardProps[] = outreachMedia.length
+    ? outreachMedia
+        .map((item: MediaItemEntity | Record<string, any>) => {
+          const attributes = extractAttributes<MediaItemEntity["attributes"]>(item as any);
+          if (!attributes?.slug) return null;
+
+          const thumbnailMedia = extractSingleRelation<{ url?: string; alternativeText?: string }>(attributes.thumbnail);
+          const speakers = extractManyRelation<{ name?: string; displayName?: string }>(attributes.speakers)
+            .map((speaker) => speaker.displayName?.trim() || speaker.name)
+            .filter((name): name is string => Boolean(name && name.trim()));
+          const categorySource =
+            extractSingleRelation<{ name?: string }>(attributes.category)?.name ?? attributes.legacyCategory ?? undefined;
+          const category = typeof categorySource === "string" && categorySource.trim().length ? categorySource : undefined;
+
+          return {
+            title: attributes.title ?? "Untitled Media",
+            href: `/media/${attributes.slug}`,
+            excerpt: attributes.description ?? attributes.excerpt ?? undefined,
+            category,
+            thumbnail: thumbnailMedia?.url
+              ? { src: thumbnailMedia.url, alt: thumbnailMedia.alternativeText ?? attributes.title }
+              : undefined,
+            views: attributes.views ?? 0,
+            durationSec: attributes.durationSec ?? undefined,
+            speakers,
+          } as MediaCardProps;
+        })
+        .filter((story): story is MediaCardProps => Boolean(story))
     : fallbackStories;
 
   return (

@@ -25,6 +25,11 @@ import {
   type ResourceSectionType,
 } from "@/lib/strapi";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
+import {
+  extractAttributes,
+  extractManyRelation,
+  extractSingleRelation,
+} from "@/lib/strapi-normalize";
 
 export const dynamic = "force-static";
 export const revalidate = 180;
@@ -845,7 +850,7 @@ function CustomResourceCardView({ resource }: { resource: CustomResourceCard }) 
 }
 
 function mapMediaItem(entity: MediaItemEntity | null | undefined): MediaCardProps | null {
-  const attributes = entity?.attributes;
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
   if (!attributes) return null;
 
   const slug = attributes.slug;
@@ -862,33 +867,27 @@ function mapMediaItem(entity: MediaItemEntity | null | undefined): MediaCardProp
         ? attributes.description
         : undefined;
 
-  const thumbnailAttributes = attributes.thumbnail?.data?.attributes;
+  const thumbnailAttributes = extractSingleRelation<{ url?: string; alternativeText?: string }>(attributes.thumbnail);
   const thumbnail = thumbnailAttributes?.url
     ? {
-        src: thumbnailAttributes.url ?? undefined,
+        src: thumbnailAttributes.url,
         alt: thumbnailAttributes.alternativeText ?? title,
       }
     : undefined;
 
-  const speakers = Array.isArray(attributes.speakers?.data)
-    ? attributes.speakers.data
-        .map((speaker) => {
-          const attr = speaker?.attributes;
-          if (!attr) return undefined;
-          return attr.displayName?.trim() || attr.name;
-        })
-        .filter((name): name is string => Boolean(name && name.trim()))
-    : undefined;
+  const speakers = extractManyRelation<{ name?: string; displayName?: string }>(attributes.speakers)
+    .map((speaker) => speaker.displayName?.trim() || speaker.name)
+    .filter((name): name is string => Boolean(name && name.trim()));
 
   return {
     title,
     href: `/media/${slug}`,
     excerpt,
-    category: attributes.category?.data?.attributes?.name ?? attributes.legacyCategory ?? undefined,
+    category: extractSingleRelation<{ name?: string }>(attributes.category)?.name ?? attributes.legacyCategory ?? undefined,
     thumbnail,
     views: typeof attributes.views === "number" ? attributes.views : undefined,
     durationSec: typeof attributes.durationSec === "number" ? attributes.durationSec : undefined,
-    speakers,
+    speakers: speakers.length ? speakers : undefined,
   };
 }
 

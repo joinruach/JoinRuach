@@ -3,56 +3,18 @@ import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
+import {
+  extractAttributes,
+  extractManyRelation,
+  extractMediaUrl,
+  extractSingleRelation,
+} from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-static";
 
 type Props = { params: Promise<{ slug: string }> };
-
 type MediaAttributes = MediaItemEntity["attributes"];
-
-function extractAttributes(entity: MediaItemEntity | (Partial<MediaAttributes> & Record<string, any>) | null | undefined) {
-  if (!entity || typeof entity !== "object") return undefined;
-  if ("attributes" in entity && entity.attributes) {
-    return entity.attributes;
-  }
-  const { id: _id, documentId: _documentId, ...rest } = entity as Record<string, any>;
-  return rest as Partial<MediaAttributes>;
-}
-
-function extractSingleRelation<T extends Record<string, any>>(value: any): (T & { id?: number }) | undefined {
-  if (!value) return undefined;
-  const data = (typeof value === "object" && value !== null && "data" in value) ? (value as any).data : value;
-  if (!data || typeof data !== "object") return undefined;
-  const attributes = extractAttributes(data as any) as T | undefined;
-  if (!attributes) return undefined;
-  return {
-    id: (data as any).id,
-    ...attributes,
-  };
-}
-
-function extractManyRelation<T extends Record<string, any>>(value: any): Array<T & { id?: number }> {
-  if (!value) return [];
-  const raw = (typeof value === "object" && value !== null && "data" in value) ? (value as any).data : value;
-  const list = Array.isArray(raw) ? raw : [raw];
-  return list
-    .map((item) => {
-      if (!item || typeof item !== "object") return undefined;
-      const attributes = extractAttributes(item as any) as T | undefined;
-      if (!attributes) return undefined;
-      return {
-        id: (item as any).id,
-        ...attributes,
-      };
-    })
-    .filter(Boolean) as Array<T & { id?: number }>;
-}
-
-function extractMediaUrl(value: any) {
-  const media = extractSingleRelation<{ url?: string }>(value);
-  return media?.url;
-}
 
 function parseYouTubeTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;

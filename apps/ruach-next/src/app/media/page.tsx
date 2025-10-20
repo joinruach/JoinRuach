@@ -2,6 +2,11 @@ import Link from "next/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getMediaCategories, getMediaItems } from "@/lib/strapi";
+import {
+  extractAttributes,
+  extractManyRelation,
+  extractSingleRelation,
+} from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-dynamic";
@@ -78,7 +83,7 @@ export default async function MediaPage({
     { value: "all", label: "All" },
     ...categories
       .map((c) => {
-        const attrs = c?.attributes;
+        const attrs = extractAttributes<{ name?: string; slug?: string }>(c as any);
         const slug = attrs?.slug;
         const name = attrs?.name;
         if (!slug || !name) return null;
@@ -94,48 +99,44 @@ export default async function MediaPage({
 
   const items: MediaCardItem[] = [];
   const entities = Array.isArray(data) ? data : [];
+  type MediaAttributes = MediaItemEntity["attributes"];
 
   for (const entity of entities) {
-    const attributes = ((entity as MediaItemEntity | undefined)?.attributes ?? (entity as any) ?? {}) as Record<string, any>;
+    const attributes = extractAttributes<MediaAttributes>(entity as any);
+    if (!attributes) continue;
 
-    const slugValue = attributes?.slug;
+    const slugValue = attributes.slug;
     const slug = typeof slugValue === "string" && slugValue.trim().length ? slugValue : undefined;
     if (!slug) continue;
 
-    const rawTitle = attributes?.title;
+    const rawTitle = attributes.title;
     const title = typeof rawTitle === "string" && rawTitle.trim().length ? rawTitle : "Untitled Media";
 
-    const categoryEntity = attributes?.category?.data?.attributes;
-    const speakerData = Array.isArray(attributes?.speakers?.data)
-      ? (attributes.speakers.data as Array<{ attributes?: { name?: string; displayName?: string } }>)
-      : [];
-    const speakerNames = speakerData
-      .map((speaker) => {
-        const attr = speaker?.attributes;
-        if (!attr) return undefined;
-        return attr.displayName?.trim() || attr.name;
-      })
-      .filter((name): name is string => Boolean(name));
+    const categoryEntity = extractSingleRelation<{ name?: string; slug?: string }>(attributes.category);
+    const speakerNames = extractManyRelation<{ name?: string; displayName?: string }>(attributes.speakers)
+      .map((speaker) => speaker.displayName?.trim() || speaker.name)
+      .filter((name): name is string => Boolean(name && name.trim()));
 
-    const thumbnailData = attributes?.thumbnail?.data?.attributes;
-    const thumbnail = thumbnailData?.url
-      ? { src: thumbnailData.url ?? undefined, alt: thumbnailData.alternativeText ?? title }
+    const thumbnailAttributes = extractSingleRelation<{ url?: string; alternativeText?: string }>(attributes.thumbnail);
+    const thumbnail = thumbnailAttributes?.url
+      ? { src: thumbnailAttributes.url, alt: thumbnailAttributes.alternativeText ?? title }
       : undefined;
 
-    const excerpt = (typeof attributes?.excerpt === "string" && attributes.excerpt.trim().length
-      ? attributes.excerpt
-      : typeof attributes?.description === "string"
-        ? attributes.description
-        : undefined);
+    const excerpt =
+      typeof attributes.excerpt === "string" && attributes.excerpt.trim().length
+        ? attributes.excerpt
+        : typeof attributes.description === "string"
+          ? attributes.description
+          : undefined;
 
     items.push({
       title,
       href: `/media/${slug}`,
       excerpt,
-      category: categoryEntity?.name ?? attributes?.legacyCategory ?? undefined,
+      category: categoryEntity?.name ?? attributes.legacyCategory ?? undefined,
       thumbnail,
-      views: attributes?.views ?? 0,
-      durationSec: attributes?.durationSec ?? undefined,
+      views: attributes.views ?? 0,
+      durationSec: attributes.durationSec ?? undefined,
       speakers: speakerNames,
     });
   }

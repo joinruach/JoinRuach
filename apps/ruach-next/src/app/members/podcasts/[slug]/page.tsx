@@ -5,6 +5,7 @@ import MediaPlayer from "@/components/ruach/MediaPlayer";
 import SEOHead from "@/components/ruach/SEOHead";
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
+import { extractAttributes, extractMediaUrl, extractSingleRelation } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-dynamic";
@@ -30,22 +31,24 @@ function getExtension(url?: string) {
 function resolvePlayback(attributes: MediaItemEntity["attributes"]) {
   const source = attributes.source;
 
-  if (source?.kind === "file" && source.file?.data?.attributes?.url) {
-    const rawUrl = source.file.data.attributes.url;
-    const url = imgUrl(rawUrl);
-    const extension = getExtension(rawUrl);
-    if (url && extension && AUDIO_EXTENSIONS.has(extension)) {
-      return { kind: "audio" as const, url };
-    }
-    if (url) {
-      return { kind: "video" as const, url, isFile: true };
+  if (source?.kind === "file") {
+    const rawUrl = extractMediaUrl(source.file);
+    if (rawUrl) {
+      const url = imgUrl(rawUrl);
+      const extension = getExtension(rawUrl);
+      if (url && extension && AUDIO_EXTENSIONS.has(extension)) {
+        return { kind: "audio" as const, url };
+      }
+      if (url) {
+        return { kind: "video" as const, url, isFile: true };
+      }
     }
   }
 
   if (source?.url) {
     const url = source.url;
     const extension = getExtension(url);
-    if (extension && AUDIO_EXTENSIONS.has(extension)) {
+    if (url && extension && AUDIO_EXTENSIONS.has(extension)) {
       return { kind: "audio" as const, url };
     }
     return { kind: "embed" as const, url };
@@ -66,7 +69,7 @@ function resolvePlayback(attributes: MediaItemEntity["attributes"]) {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
-  const attributes = data?.attributes;
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(data as any);
   if (!attributes) {
     return {
       title: "Member Podcast",
@@ -76,9 +79,7 @@ export async function generateMetadata({ params }: Props) {
 
   const title = attributes.title ?? "Member Podcast";
   const description = attributes.excerpt ?? attributes.description ?? "Partner-exclusive podcast episode.";
-  const image =
-    attributes.thumbnail?.data?.attributes?.url ??
-    attributes.seoImage?.data?.attributes?.url;
+  const image = extractMediaUrl(attributes.thumbnail) ?? extractMediaUrl(attributes.seoImage);
 
   return {
     title,
@@ -97,23 +98,28 @@ export default async function MemberPodcastDetail({ params }: Props) {
   await requireActiveMembership(path);
 
   const entity = await getMediaBySlug(slug);
-  if (!entity?.attributes) {
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+  if (!attributes) {
     notFound();
   }
 
-  const attributes = entity.attributes;
-  const categorySlug = attributes.category?.data?.attributes?.slug;
+  const categorySlug = extractSingleRelation<{ slug?: string }>(attributes.category)?.slug;
   const related =
     categorySlug && attributes.slug
-      ? (
-          await getMediaByCategory(categorySlug, 5)
-        )
-          .filter((item) => item?.attributes?.slug && item.attributes.slug !== attributes.slug)
+      ? (await getMediaByCategory(categorySlug, 5))
+          .map((item) => {
+            const attr = extractAttributes<MediaItemEntity["attributes"]>(item as any);
+            if (!attr || attr.slug === attributes.slug) return null;
+            return attr;
+          })
+          .filter((attr): attr is NonNullable<typeof attr> => Boolean(attr))
           .slice(0, 4)
       : [];
 
+  const mediaId = (entity as MediaItemEntity | null)?.id ?? 0;
   const playback = resolvePlayback(attributes);
-  const poster = imgUrl(attributes.thumbnail?.data?.attributes?.url);
+  const posterUrl = extractMediaUrl(attributes.thumbnail);
+  const poster = posterUrl ? imgUrl(posterUrl) : undefined;
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -146,10 +152,10 @@ export default async function MemberPodcastDetail({ params }: Props) {
 
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-black p-6 text-white">
         {playback.kind === "audio" && playback.url ? (
-          <AudioPlayer mediaId={entity.id} src={playback.url} title={attributes.title ?? ""} />
+          <AudioPlayer mediaId={mediaId} src={playback.url} title={attributes.title ?? ""} />
         ) : playback.kind === "video" && playback.url ? (
           <MediaPlayer
-            mediaId={entity.id}
+            mediaId={mediaId}
             videoUrl={playback.url}
             isFileVideo={true}
             poster={poster}
@@ -179,9 +185,8 @@ export default async function MemberPodcastDetail({ params }: Props) {
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {related.map((item) => {
-              const attrs = item?.attributes;
-              if (!attrs?.slug) return null;
+            {related.map((attrs) => {
+              if (!attrs.slug) return null;
               return (
                 <Link
                   key={attrs.slug}
