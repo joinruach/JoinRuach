@@ -18,6 +18,15 @@ module.exports = {
         auth: false, // No auth required since it's using the refresh token
       },
     },
+    {
+      method: "POST",
+      path: "/auth/logout",
+      handler: "custom-auth.logout",
+      config: {
+        policies: [],
+        auth: false, // No auth required, uses refresh token from cookie
+      },
+    },
   ],
 };
 
