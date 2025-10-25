@@ -144,6 +144,36 @@
       "relation": "manyToMany",
       "target": "api::resource-directory.resource-directory",
       "mappedBy": "featuredMediaItems"
+    },
+    "autoPublish": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically post to connected social platforms when published"
+    },
+    "platforms": {
+      "type": "json",
+      "description": "Target platforms for auto-publishing (Facebook, YouTube, Instagram, X, Patreon, Rumble, Locals, Truth Social)"
+    },
+    "publishStatus": {
+      "type": "json",
+      "description": "Per-platform publishing status with timestamps and error messages"
+    },
+    "shortDescription": {
+      "type": "text",
+      "maxLength": 500,
+      "description": "Social media-ready caption (shorter than full description)"
+    },
+    "hashtags": {
+      "type": "string",
+      "description": "Hashtags for social media posts (e.g., #Faith #Ministry #Testimony)"
+    },
+    "socialThumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "description": "Optional custom thumbnail optimized for social media (1200x630 recommended)"
     }
   }
 }

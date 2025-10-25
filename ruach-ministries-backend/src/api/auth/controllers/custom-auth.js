@@ -4,6 +4,7 @@ const { sanitize } = require("@strapi/utils");
 const { tokenBlacklist } = require("../../../services/token-blacklist");
 const { refreshTokenStore } = require("../../../services/refresh-token-store");
 const { rateLimiter } = require("../../../services/rate-limiter");
+const logger = require("../../../config/logger");
 
 const sanitizeUser = async (user) =>
   sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
@@ -29,7 +30,11 @@ module.exports = {
     if (!ipLimit.allowed) {
       const retryAfter = Math.ceil((ipLimit.resetAt - Date.now()) / 1000);
       ctx.set("Retry-After", String(retryAfter));
-      strapi.log.warn(`Login rate limit exceeded for IP: ${clientIp}`);
+      logger.logSecurity('Login rate limit exceeded (IP)', {
+        ip: clientIp,
+        retryAfter,
+        resetAt: new Date(ipLimit.resetAt).toISOString(),
+      });
       return ctx.tooManyRequests("Too many login attempts. Please try again later.");
     }
 
@@ -40,7 +45,12 @@ module.exports = {
     if (!usernameLimit.allowed) {
       const retryAfter = Math.ceil((usernameLimit.resetAt - Date.now()) / 1000);
       ctx.set("Retry-After", String(retryAfter));
-      strapi.log.warn(`Login rate limit exceeded for user: ${identifier}`);
+      logger.logSecurity('Login rate limit exceeded (Username)', {
+        identifier,
+        ip: clientIp,
+        retryAfter,
+        resetAt: new Date(usernameLimit.resetAt).toISOString(),
+      });
       return ctx.tooManyRequests("Too many login attempts for this account. Please try again later.");
     }
 
@@ -96,14 +106,22 @@ module.exports = {
 
       const sanitizedUser = await sanitizeUser(response.user);
 
-      strapi.log.info(`User ${response.user.id} logged in successfully`);
+      logger.logAuth('Login successful', {
+        userId: response.user.id,
+        username: response.user.username,
+        ip: clientIp,
+      });
 
       return ctx.send({
         jwt: accessToken,
         user: sanitizedUser,
       });
     } catch (err) {
-      strapi.log.error("Login error:", err);
+      logger.logAuth('Login failed', {
+        identifier,
+        ip: clientIp,
+        error: err.message,
+      });
       return ctx.badRequest("Invalid credentials");
     }
   },
@@ -126,7 +144,10 @@ module.exports = {
       // Check if token is blacklisted
       const tokenId = decoded.jti || oldRefreshToken.substring(0, 32);
       if (tokenBlacklist.isBlacklisted(tokenId)) {
-        strapi.log.warn(`Blacklisted refresh token attempted for user ${decoded.id}`);
+        logger.logSecurity('Blacklisted token attempted', {
+          userId: decoded.id,
+          tokenId: tokenId.substring(0, 16),
+        });
         return ctx.unauthorized("Token has been revoked");
       }
 
@@ -140,7 +161,10 @@ module.exports = {
 
       // Verify user ID matches
       if (tokenData.userId !== decoded.id) {
-        strapi.log.error("User ID mismatch in refresh token");
+        logger.logSecurity('User ID mismatch in refresh token', {
+          tokenUserId: tokenData.userId,
+          decodedUserId: decoded.id,
+        });
         return ctx.unauthorized("Invalid token");
       }
 
@@ -177,13 +201,17 @@ module.exports = {
         maxAge: REFRESH_TOKEN_EXPIRY * 1000,
       });
 
-      strapi.log.info(`Tokens refreshed successfully for user ${decoded.id}`);
+      logger.logAuth('Token refresh successful', {
+        userId: decoded.id,
+      });
 
       return ctx.send({
         jwt: newAccessToken
       });
     } catch (err) {
-      strapi.log.error("Refresh token error:", err);
+      logger.logAuth('Token refresh failed', {
+        error: err.message,
+      });
       return ctx.unauthorized("Invalid refresh token");
     }
   },
@@ -204,7 +232,9 @@ module.exports = {
         // Revoke refresh token from store
         refreshTokenStore.revoke(refreshToken);
 
-        strapi.log.info(`User ${decoded.id} logged out successfully`);
+        logger.logAuth('Logout successful', {
+          userId: decoded.id,
+        });
       }
 
       // Clear refresh token cookie
@@ -219,7 +249,9 @@ module.exports = {
         message: "Logged out successfully"
       });
     } catch (err) {
-      strapi.log.error("Logout error:", err);
+      logger.logAuth('Logout error', {
+        error: err.message,
+      });
 
       // Still clear the cookie even if verification fails
       ctx.cookies.set("refreshToken", null, {

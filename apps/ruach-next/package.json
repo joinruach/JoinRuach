@@ -8,9 +8,9 @@
     "start": "next start -p 3000",
     "lint": "eslint . --ext .ts,.tsx --report-unused-disable-directives --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "echo 'No tests configured yet. Run: pnpm add -D jest @testing-library/react @testing-library/jest-dom'",
-    "test:watch": "echo 'No tests configured yet'",
-    "test:coverage": "echo 'No tests configured yet'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "ci:verify": "pnpm run lint && pnpm run typecheck && pnpm run build"
   },
   "engines": {

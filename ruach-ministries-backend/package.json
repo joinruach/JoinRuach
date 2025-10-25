@@ -9,7 +9,10 @@
     "develop": "node scripts/run-strapi.js develop",
     "start": "node scripts/run-strapi.js start",
     "strapi": "node scripts/run-strapi.js",
-    "postinstall": "node scripts/link-dependencies.js"
+    "postinstall": "node scripts/link-dependencies.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.758.0",
@@ -33,7 +36,9 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.0",
     "strapi-provider-upload-cloudflare-r2": "^1.0.2",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "winston": "^3.11.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/formidable": "^3.4.5",

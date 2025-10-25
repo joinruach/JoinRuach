@@ -8,6 +8,8 @@
  * optional Redis support for production.
  */
 
+const logger = require('../config/logger');
+
 class RateLimiter {
   constructor() {
     // In-memory storage for rate limit tracking
@@ -53,7 +55,12 @@ class RateLimiter {
     const remaining = Math.max(0, maxAttempts - record.count);
 
     if (!allowed) {
-      strapi.log.warn(`Rate limit exceeded for key: ${key.substring(0, 20)}...`);
+      logger.logRateLimit('Limit exceeded', {
+        key: key.substring(0, 30),
+        attempts: record.count,
+        maxAttempts,
+        resetAt: new Date(record.resetAt).toISOString(),
+      });
     }
 
     return {
@@ -70,7 +77,10 @@ class RateLimiter {
   reset(key) {
     const deleted = this.attempts.delete(key);
     if (deleted) {
-      strapi.log.info(`Rate limit reset for key: ${key.substring(0, 20)}...`);
+      logger.logRateLimit('Limit reset', {
+        key: key.substring(0, 30),
+        reason: 'successful_authentication',
+      });
     }
     return deleted;
   }
@@ -111,7 +121,11 @@ class RateLimiter {
     }
 
     if (removed > 0) {
-      strapi.log.info(`Cleaned up ${removed} expired rate limit records`);
+      logger.debug('Rate limit cleanup completed', {
+        category: 'rate_limit',
+        removedCount: removed,
+        remainingCount: this.attempts.size,
+      });
     }
   }
 
