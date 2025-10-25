@@ -6,6 +6,15 @@
 
 import { validateEnvironment } from '../validate-env';
 
+type NodeEnvironment = 'development' | 'production' | 'test';
+type MutableProcessEnv = Omit<NodeJS.ProcessEnv, 'NODE_ENV'> & {
+  NODE_ENV: NodeEnvironment;
+};
+
+const setNodeEnv = (value: NodeEnvironment) => {
+  (process.env as MutableProcessEnv).NODE_ENV = value;
+};
+
 describe('validateEnvironment', () => {
   const originalEnv = process.env;
 
@@ -14,7 +23,7 @@ describe('validateEnvironment', () => {
     jest.resetModules();
     process.env = { ...originalEnv };
     // Set to development to avoid strict production checks
-    process.env.NODE_ENV = 'development';
+    setNodeEnv('development');
   });
 
   afterAll(() => {
@@ -173,7 +182,7 @@ describe('validateEnvironment', () => {
 
   describe('Production vs Development behavior', () => {
     it('should be more strict in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      setNodeEnv('production');
       process.env.NEXTAUTH_SECRET = 'short'; // Too short
       process.env.NEXTAUTH_URL = 'http://localhost:3000';
       process.env.NEXT_PUBLIC_STRAPI_URL = 'http://localhost:1337';
@@ -185,7 +194,7 @@ describe('validateEnvironment', () => {
     });
 
     it('should provide warnings in development mode for weak secrets', () => {
-      process.env.NODE_ENV = 'development';
+      setNodeEnv('development');
       process.env.NEXTAUTH_SECRET = 'short'; // Too short
       process.env.NEXTAUTH_URL = 'http://localhost:3000';
       process.env.NEXT_PUBLIC_STRAPI_URL = 'http://localhost:1337';
@@ -199,7 +208,7 @@ describe('validateEnvironment', () => {
 
   describe('Multiple validation errors', () => {
     it('should report all validation errors at once', () => {
-      process.env.NODE_ENV = 'production';
+      setNodeEnv('production');
       delete process.env.NEXTAUTH_SECRET;
       delete process.env.NEXTAUTH_URL;
       delete process.env.NEXT_PUBLIC_STRAPI_URL;

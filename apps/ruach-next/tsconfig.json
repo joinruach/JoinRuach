@@ -18,6 +18,15 @@
     "tsBuildInfoFile": ".tsbuildinfo",
     "esModuleInterop": true,
     "isolatedModules": true,
+    "typeRoots": [
+      "../../types",
+      "../../node_modules/@types",
+      "./node_modules/@types"
+    ],
+    "types": [
+      "jest",
+      "node"
+    ],
     "plugins": [
       {
         "name": "next"
@@ -42,6 +51,7 @@
     "../../packages/ruach-next-addons/src/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "jest.config.ts"
   ]
 }

@@ -6,11 +6,20 @@
 
 import '@testing-library/jest-dom';
 
+type NodeEnvironment = 'development' | 'production' | 'test';
+type MutableProcessEnv = Omit<NodeJS.ProcessEnv, 'NODE_ENV'> & {
+  NODE_ENV: NodeEnvironment;
+};
+
+const setNodeEnv = (value: NodeEnvironment) => {
+  (process.env as MutableProcessEnv).NODE_ENV = value;
+};
+
 // Mock environment variables for tests
 process.env.NEXTAUTH_URL = 'http://localhost:3000';
 process.env.NEXTAUTH_SECRET = 'test-secret-min-32-characters-long-for-testing-purposes';
 process.env.NEXT_PUBLIC_STRAPI_URL = 'http://localhost:1337';
-process.env.NODE_ENV = 'test';
+setNodeEnv('test');
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -78,7 +87,7 @@ afterAll(() => {
 });
 
 // Global test utilities
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 // Reset mocks between tests
 afterEach(() => {

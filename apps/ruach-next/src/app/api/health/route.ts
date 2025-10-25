@@ -8,11 +8,13 @@ import { NextResponse } from "next/server";
  */
 export async function GET() {
   try {
+    const uptime =
+      (process as NodeJS.Process & { uptime?: () => number }).uptime?.() ?? 0;
     // Basic health check - verify the application is responding
     const health = {
       status: "healthy",
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
+      uptime,
       environment: process.env.NODE_ENV,
     };
 

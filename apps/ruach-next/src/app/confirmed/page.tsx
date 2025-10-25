@@ -65,7 +65,7 @@ function ConfirmedContent() {
           </div>
           <Button
             onClick={() => router.push("/login")}
-            variant="primary"
+            variant="gold"
             className="w-full"
           >
             Go to Sign In

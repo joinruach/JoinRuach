@@ -10,6 +10,18 @@ const SENTRY_DSN = process.env.SENTRY_DSN;
 const ENVIRONMENT = process.env.NODE_ENV || 'development';
 const RELEASE = process.env.APP_VERSION || 'unknown';
 
+const beforeSend = ((
+  event,
+) => {
+  // Don't send development errors
+  if (ENVIRONMENT === 'development') {
+    console.error('Sentry would send:', event);
+    return null;
+  }
+
+  return event;
+}) satisfies NonNullable<Sentry.NodeOptions['beforeSend']>;
+
 if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,
@@ -21,19 +33,11 @@ if (SENTRY_DSN) {
     tracesSampleRate: ENVIRONMENT === 'production' ? 0.1 : 1.0,
 
     // Error filtering
-    beforeSend(event) {
-      // Don't send development errors
-      if (ENVIRONMENT === 'development') {
-        console.error('Sentry would send:', event);
-        return null;
-      }
-
-      return event;
-    },
+    beforeSend,
 
     // Integrations
     integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
+      Sentry.httpIntegration(),
     ],
 
     // Ignore certain errors

@@ -17,6 +17,7 @@
     "node": ">=18.18.0"
   },
   "dependencies": {
+    "@sentry/nextjs": "^8.40.0",
     "@resvg/resvg-js": "^2.6.2",
     "@ruach/addons": "workspace:*",
     "@ruach/components": "workspace:*",
@@ -33,6 +34,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@tailwindcss/typography": "^0.5.13",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.65",
@@ -40,6 +42,7 @@
     "autoprefixer": "^10.4.18",
     "eslint": "^8.57.0",
     "eslint-config-next": "15.5.2",
+    "jest": "^29.7.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.9",
     "typescript": "^5.5.4"
