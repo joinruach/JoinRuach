@@ -9,11 +9,13 @@ const MINIMUM_SECRET_LENGTH = 32;
 const INSECURE_PATTERNS = [
   /change_me/i,
   /tobemodified/i,
-  /example/i,
-  /test/i,
-  /password/i,
-  /secret/i,
-  /^(12345|abcdef|qwerty)/i
+  /^example/i, // Only flag if starts with "example"
+  /^test/i, // Only flag if starts with "test"
+  /^password/i, // Only flag if starts with "password"
+  /^secret$/i, // Only flag if exactly "secret"
+  /^(12345|abcdef|qwerty)/i,
+  /REPLACE_WITH/i, // Flag placeholder format
+  /^[a-z]{8,}$/i // Flag all lowercase simple words
 ];
 
 interface ValidationResult {

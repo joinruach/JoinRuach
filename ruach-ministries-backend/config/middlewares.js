@@ -1,14 +1,17 @@
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Production-only origins (HTTPS required)
 const productionOrigins = [
   'https://joinruach.org',
   'https://www.joinruach.org',
 ];
 
+// Shared origins (accessible from all environments)
 const sharedOrigins = [
   'https://cdn.joinruach.org',
 ];
 
+// Development-only origins (HTTP allowed)
 const developmentOrigins = [
   'http://localhost:1337',
   'http://127.0.0.1:1337',
@@ -16,9 +19,40 @@ const developmentOrigins = [
   'http://127.0.0.1:3000',
 ];
 
-const corsOrigins = isProduction
-  ? [...productionOrigins, ...sharedOrigins]
-  : [...productionOrigins, ...sharedOrigins, ...developmentOrigins];
+// Environment variable override (optional)
+// Format: CORS_ALLOWED_ORIGINS=https://example.com,https://app.example.com
+// SECURITY: Only use in development or with explicit production domains
+const envOrigins = process.env.CORS_ALLOWED_ORIGINS
+  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : [];
+
+// Validate environment origins in production
+if (isProduction && envOrigins.length > 0) {
+  const invalidOrigins = envOrigins.filter(origin => !origin.startsWith('https://'));
+  if (invalidOrigins.length > 0) {
+    console.error('❌ SECURITY ERROR: Non-HTTPS origins not allowed in production:', invalidOrigins);
+    throw new Error('Production CORS origins must use HTTPS');
+  }
+  console.log('✅ Using custom CORS origins from environment:', envOrigins);
+}
+
+// Build final CORS origin list
+// Priority: environment variable > hardcoded origins
+const corsOrigins = envOrigins.length > 0
+  ? envOrigins
+  : isProduction
+    ? [...productionOrigins, ...sharedOrigins]
+    : [...productionOrigins, ...sharedOrigins, ...developmentOrigins];
+
+// Log CORS configuration on startup
+console.log(`🔒 CORS Configuration (${isProduction ? 'production' : 'development'}):`);
+console.log('  Allowed origins:', corsOrigins.join(', '));
+
+// SECURITY: Fail-safe check - never allow wildcard in production
+if (isProduction && (corsOrigins.includes('*') || corsOrigins.length === 0)) {
+  console.error('❌ SECURITY ERROR: CORS wildcard or empty origins not allowed in production');
+  throw new Error('Production CORS must have explicit origins');
+}
 
 const connectSrc = [
   "'self'",

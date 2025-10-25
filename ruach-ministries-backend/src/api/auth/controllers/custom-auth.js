@@ -3,6 +3,7 @@
 const { sanitize } = require("@strapi/utils");
 const { tokenBlacklist } = require("../../../services/token-blacklist");
 const { refreshTokenStore } = require("../../../services/refresh-token-store");
+const { rateLimiter } = require("../../../services/rate-limiter");
 
 const sanitizeUser = async (user) =>
   sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
@@ -11,9 +12,41 @@ const sanitizeUser = async (user) =>
 const ACCESS_TOKEN_EXPIRY = 60 * 60; // 1 hour
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
 
+// Rate limiting configuration
+const LOGIN_MAX_ATTEMPTS_IP = 5; // 5 attempts per IP per 15 minutes
+const LOGIN_MAX_ATTEMPTS_USERNAME = 3; // 3 attempts per username per 15 minutes
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
 module.exports = {
   async login(ctx) {
     const { identifier, password } = ctx.request.body;
+
+    // Rate limiting by IP
+    const clientIp = rateLimiter.getClientIp(ctx);
+    const ipKey = `login:ip:${clientIp}`;
+    const ipLimit = rateLimiter.check(ipKey, LOGIN_MAX_ATTEMPTS_IP, LOGIN_WINDOW_MS);
+
+    if (!ipLimit.allowed) {
+      const retryAfter = Math.ceil((ipLimit.resetAt - Date.now()) / 1000);
+      ctx.set("Retry-After", String(retryAfter));
+      strapi.log.warn(`Login rate limit exceeded for IP: ${clientIp}`);
+      return ctx.tooManyRequests("Too many login attempts. Please try again later.");
+    }
+
+    // Rate limiting by username/email
+    const usernameKey = `login:user:${identifier}`;
+    const usernameLimit = rateLimiter.check(usernameKey, LOGIN_MAX_ATTEMPTS_USERNAME, LOGIN_WINDOW_MS);
+
+    if (!usernameLimit.allowed) {
+      const retryAfter = Math.ceil((usernameLimit.resetAt - Date.now()) / 1000);
+      ctx.set("Retry-After", String(retryAfter));
+      strapi.log.warn(`Login rate limit exceeded for user: ${identifier}`);
+      return ctx.tooManyRequests("Too many login attempts for this account. Please try again later.");
+    }
+
+    // Set rate limit headers
+    ctx.set("X-RateLimit-Limit", String(LOGIN_MAX_ATTEMPTS_IP));
+    ctx.set("X-RateLimit-Remaining", String(Math.min(ipLimit.remaining, usernameLimit.remaining)));
 
     try {
       const response = await strapi.plugins["users-permissions"].services.auth.callback(
@@ -24,6 +57,9 @@ module.exports = {
       if (!response.jwt) {
         return ctx.badRequest("Invalid credentials");
       }
+
+      // On successful login, reset rate limits for this user
+      rateLimiter.reset(usernameKey);
 
       // Generate access token with explicit expiration
       const accessToken = strapi.plugins["users-permissions"].services.jwt.issue(

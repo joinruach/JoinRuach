@@ -34,6 +34,11 @@ function createLimiter(
   return new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(count, window), prefix });
 }
 
+// Authentication rate limiters
+export const loginLimiter = createLimiter(5, "15 m", "rl:login"); // 5 attempts per 15 minutes per IP
+export const loginUsernameLimiter = createLimiter(3, "15 m", "rl:login:user"); // 3 attempts per 15 minutes per username
+
+// Form submission rate limiters
 export const signupLimiter = createLimiter(5, "10 m", "rl:signup");
 export const resendLimiter = createLimiter(8, "10 m", "rl:resend");
 export const reportsLimiter = createLimiter(5, "10 m", "rl:reports");

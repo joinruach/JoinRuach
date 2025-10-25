@@ -49,11 +49,29 @@ FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
 # Enable pnpm for runtime
 RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+
+# Create non-root user for security
+RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
 
 # Copy pruned app (code + prod node_modules)
 COPY --from=builder /opt/app/ ./
 
+# Change ownership to non-root user
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
 EXPOSE 3000
+
+# Healthcheck - verify Next.js is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
 CMD ["pnpm","start"]
