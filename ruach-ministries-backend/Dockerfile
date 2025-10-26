@@ -3,8 +3,8 @@ FROM node:20-bookworm-slim AS builder
 ENV NODE_ENV=development
 WORKDIR /repo
 
-# Enable pnpm
-RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+# Install pnpm globally (avoid runtime Corepack downloads)
+RUN npm install -g pnpm@9.9.0
 
 # Native build tools (for any deps like sharp, bcrypt, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -40,8 +40,8 @@ WORKDIR /opt/strapi
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Enable pnpm for runtime scripts
-RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+# Install pnpm globally for runtime
+RUN npm install -g pnpm@9.9.0
 
 # Create non-root user for security
 RUN groupadd -r strapi && useradd -r -g strapi -s /bin/false strapi
