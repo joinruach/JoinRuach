@@ -1,6 +1,16 @@
 import createSlugFreezeLifecycle from '../../../../utils/freeze-slug';
 
-const slugLifecycle = createSlugFreezeLifecycle('api::media-item.media-item');
+type LifecycleEvent = {
+  result: Record<string, any>;
+  params: Record<string, any>;
+};
+
+type SlugLifecycle = ReturnType<typeof createSlugFreezeLifecycle> & {
+  afterUpdate?: (event: LifecycleEvent) => Promise<void>;
+  afterCreate?: (event: LifecycleEvent) => Promise<void>;
+};
+
+const slugLifecycle = createSlugFreezeLifecycle('api::media-item.media-item') as SlugLifecycle;
 
 export default {
   ...slugLifecycle,
@@ -9,13 +19,13 @@ export default {
    * After Update Hook
    * Triggered when a media-item is published or updated
    */
-  async afterUpdate(event) {
+  async afterUpdate(event: LifecycleEvent) {
     // Call slug freeze lifecycle if it exists
     if (slugLifecycle?.afterUpdate) {
       await slugLifecycle.afterUpdate(event);
     }
 
-    const { result, params } = event;
+    const { result } = event;
 
     // Check if the media item was just published AND has autoPublish enabled
     if (result.publishedAt && result.autoPublish && result.platforms) {
@@ -41,7 +51,7 @@ export default {
    * After Create Hook
    * Triggered when a new media-item is created and published immediately
    */
-  async afterCreate(event) {
+  async afterCreate(event: LifecycleEvent) {
     // Call slug freeze lifecycle if it exists
     if (slugLifecycle?.afterCreate) {
       await slugLifecycle.afterCreate(event);
