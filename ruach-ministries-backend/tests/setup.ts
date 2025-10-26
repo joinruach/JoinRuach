@@ -11,17 +11,20 @@ process.env.ADMIN_JWT_SECRET = 'test-admin-jwt-secret-min-32-characters';
 process.env.API_TOKEN_SALT = 'test-api-token-salt';
 process.env.TRANSFER_TOKEN_SALT = 'test-transfer-token-salt';
 process.env.APP_KEYS = 'test-app-key-1,test-app-key-2';
+declare const global: typeof globalThis;
 
 // Mock console methods to reduce noise during tests (optional)
+const originalConsole = global.console;
 global.console = {
-  ...console,
+  ...originalConsole,
   // Uncomment to suppress logs during tests
   // log: jest.fn(),
   // debug: jest.fn(),
   // info: jest.fn(),
   // warn: jest.fn(),
-  error: jest.fn(), // Keep error logging
+  error: jest.fn(),
 };
 
-// Increase test timeout for database operations
-jest.setTimeout(15000);
+if (typeof jest !== 'undefined') {
+  jest.setTimeout(15000);
+}

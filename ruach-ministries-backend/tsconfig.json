@@ -18,7 +18,11 @@
     "baseUrl": "./",                             // Base directory for non-relative imports
     "paths": {                                   // Configure path mappings
       "@/*": ["src/*"]                           // Allow '@' to refer to the 'src' directory
-    }
+    },
+    "types": [
+      "node",
+      "jest"
+    ]
   },
   "include": [
     "./",                                      // Include root directory files
