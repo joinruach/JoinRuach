@@ -8,6 +8,7 @@
 'use strict';
 
 const services = require('./server/services');
+const controllers = require('./server/controllers');
 const routes = require('./server/routes');
 const bootstrap = require('./server/bootstrap');
 
@@ -18,5 +19,6 @@ module.exports = () => ({
 
   bootstrap,
   services,
+  controllers,
   routes,
 });

@@ -39,7 +39,11 @@
     "stripe": "^16.9.0",
     "styled-components": "^6.1.15",
     "uuid": "^9.0.1",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "bullmq": "^5.0.0",
+    "googleapis": "^140.0.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@types/formidable": "^3.4.5",
