@@ -49,19 +49,53 @@ module.exports = (plugin) => {
       });
 
       const template = emailSettings.email_confirmation.options;
-      const confirmationUrl = advancedSettings.email_confirmation_redirection || 'http://localhost:3000/confirmed';
+      const confirmationUrlSetting =
+        advancedSettings.email_confirmation_redirection || 'http://localhost:3000/confirmed';
+      let normalizedConfirmationUrl = confirmationUrlSetting.replace(/\/$/, '');
+      if (!normalizedConfirmationUrl) {
+        normalizedConfirmationUrl = confirmationUrlSetting;
+      }
+      const confirmationLink = `${normalizedConfirmationUrl}${
+        normalizedConfirmationUrl.includes('?') ? '&' : '?'
+      }confirmation=${confirmationToken}`;
 
-      const message = template.message
-        .replace(/<%= URL %>/g, confirmationUrl)
-        .replace(/<%= CODE %>/g, confirmationToken)
-        .replace(/<%= USER.username %>/g, user.username || user.email);
+      const replacements = {
+        '<%= URL %>': normalizedConfirmationUrl,
+        '<%= CODE %>': confirmationToken,
+        '<%= USER.username %>': user.username || user.email,
+        '{{ URL }}': normalizedConfirmationUrl,
+        '{{ CODE }}': confirmationToken,
+        '{{ USER.username }}': user.username || user.email,
+        '{{ CONFIRMATION_LINK }}': confirmationLink,
+        '<%= CONFIRMATION_LINK %>': confirmationLink,
+      };
+
+      const replacePlaceholders = (input = '') =>
+        Object.entries(replacements).reduce(
+          (acc, [placeholder, value]) => acc.replace(new RegExp(placeholder, 'g'), value),
+          input
+        );
+
+      let message = replacePlaceholders(template.message);
+
+      if (!message || !message.includes(confirmationToken)) {
+        message = [
+          `<p>Welcome to Ruach!</p>`,
+          `<p>To finish setting up your account, please confirm your email.</p>`,
+          `<p><a href="${confirmationLink}">Confirm My Email</a></p>`,
+          `<p>If the button does not work, copy and paste this link into your browser:</p>`,
+          `<p>${confirmationLink}</p>`,
+          `<p>With gratitude,<br />The Ruach Team</p>`,
+        ].join('\n\n');
+      }
 
       logger.info('Attempting to send confirmation email', {
         category: 'authentication',
         userId: user.id,
         to: user.email,
         from: template.from?.email || 'no-reply@updates.joinruach.org',
-        confirmationUrl,
+        confirmationUrl: normalizedConfirmationUrl,
+        confirmationLink,
       });
 
       await emailService.send({
