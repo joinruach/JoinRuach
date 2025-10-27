@@ -12,10 +12,20 @@ export default function LoginPage(){
   return (<div className="max-w-md space-y-4">
     <h1 className="text-2xl font-bold">Sign in</h1>
     <form onSubmit={submit} className="space-y-3">
-      <input className="w-full rounded border px-3 py-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-      <input className="w-full rounded border px-3 py-2" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
+      <input className="w-full rounded border px-3 py-2 text-black" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
+      <input className="w-full rounded border px-3 py-2 text-black" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
       {err && <p className="text-sm text-red-600">{err}</p>}
-      <Button type="submit" variant="black">Login</Button>
+      <div className="flex items-center justify-between gap-3">
+        <Button type="submit" variant="black">Login</Button>
+        <Button
+          as="a"
+          href="/reset-password"
+          variant="white"
+          className="text-sm font-normal underline-offset-2 hover:underline"
+        >
+          Forgot password?
+        </Button>
+      </div>
     </form>
     <p className="text-sm text-neutral-600">No account? <a href="/signup" className="text-amber-700 underline">Create one</a></p>
   </div>);

@@ -4,6 +4,7 @@ const DEFAULT_FROM_EMAIL = "no-reply@updates.joinruach.org";
 const DEFAULT_FROM_NAME = "Ruach";
 const DEFAULT_REPLY_TO = "support@updates.joinruach.org";
 const DEFAULT_CONFIRM_REDIRECT = "https://joinruach.org/confirmed";
+const DEFAULT_RESET_REDIRECT = "https://joinruach.org/reset-password";
 
 const getEnv = (name, fallback) => {
   const value = process.env[name];
@@ -21,6 +22,7 @@ export default async ({ strapi } = {}) => {
 
   const emailTemplates = (await pluginStore.get({ key: "email" })) ?? {};
   const confirmationTemplate = emailTemplates.email_confirmation ?? { options: {} };
+  const resetTemplate = emailTemplates.reset_password ?? { options: {} };
 
   const defaultFromEmail = getEnv("EMAIL_DEFAULT_FROM", DEFAULT_FROM_EMAIL);
   const defaultFromName = getEnv("EMAIL_DEFAULT_FROM_NAME", DEFAULT_FROM_NAME);
@@ -28,6 +30,10 @@ export default async ({ strapi } = {}) => {
   const confirmationRedirect = getEnv(
     "STRAPI_EMAIL_CONFIRM_REDIRECT",
     getEnv("FRONTEND_URL", DEFAULT_CONFIRM_REDIRECT.replace(/\/confirmed$/, "")) + "/confirmed"
+  ).replace(/\/$/, "");
+  const resetRedirect = getEnv(
+    "STRAPI_RESET_PASSWORD_REDIRECT",
+    getEnv("FRONTEND_URL", DEFAULT_RESET_REDIRECT.replace(/\/reset-password$/, "")) + "/reset-password"
   ).replace(/\/$/, "");
 
   emailTemplates.email_confirmation = {
@@ -51,11 +57,33 @@ export default async ({ strapi } = {}) => {
     },
   };
 
+  emailTemplates.reset_password = {
+    ...resetTemplate,
+    options: {
+      ...(resetTemplate.options ?? {}),
+      from: {
+        name: defaultFromName,
+        email: defaultFromEmail,
+      },
+      response_email: defaultReplyTo,
+      object: resetTemplate.options?.object ?? "Reset your password",
+      message: [
+        "<p>We received a request to reset your password.</p>",
+        "<p>Click the button below to choose a new password.</p>",
+        `<p><a href="${resetRedirect}?code=<%= TOKEN %>">Reset my password</a></p>`,
+        "<p>If the button does not work, copy and paste this link into your browser:</p>",
+        `<p>${resetRedirect}?code=<%= TOKEN %></p>`,
+        "<p>If you didn&apos;t request this, you can safely ignore this email.</p>",
+      ].join("\n\n"),
+    },
+  };
+
   await pluginStore.set({ key: "email", value: emailTemplates });
 
   const advancedSettings = (await pluginStore.get({ key: "advanced" })) ?? {};
   advancedSettings.email_confirmation = true;
   advancedSettings.email_confirmation_redirection = confirmationRedirect;
+  advancedSettings.email_reset_password = resetRedirect;
 
   await pluginStore.set({ key: "advanced", value: advancedSettings });
 };

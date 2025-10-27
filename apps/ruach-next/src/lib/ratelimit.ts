@@ -41,6 +41,8 @@ export const loginUsernameLimiter = createLimiter(3, "15 m", "rl:login:user"); /
 // Form submission rate limiters
 export const signupLimiter = createLimiter(5, "10 m", "rl:signup");
 export const resendLimiter = createLimiter(8, "10 m", "rl:resend");
+export const forgotPasswordLimiter = createLimiter(5, "10 m", "rl:forgot");
+export const resetPasswordLimiter = createLimiter(8, "10 m", "rl:reset");
 export const reportsLimiter = createLimiter(5, "10 m", "rl:reports");
 export const volunteerLimiter = createLimiter(5, "10 m", "rl:volunteer");
 export const contactLimiter = createLimiter(6, "10 m", "rl:contact");
