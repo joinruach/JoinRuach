@@ -21,32 +21,32 @@ When you publish a media item in Strapi, it automatically distributes to all con
 
 ### Components
 
-```
+```diagram
 ┌─────────────────────────────────────────────────────────────┐
-│                    Strapi Media Item                         │
-│  (title, description, shortDescription, hashtags, etc.)      │
+│                    Strapi Media Item                        │
+│  (title, description, shortDescription, hashtags, etc.)     │
 └──────────────────────┬──────────────────────────────────────┘
                        │
                        │ Lifecycle Hook (afterUpdate/afterCreate)
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Ruach Publisher Plugin                          │
-│                                                              │
-│  ┌──────────────┐      ┌──────────────┐                    │
-│  │   Publisher  │─────▶│   Providers  │                    │
-│  │   Service    │      │   Service    │                    │
-│  └──────────────┘      └──────────────┘                    │
+│              Ruach Publisher Plugin                         │
+│                                                             │
+│  ┌──────────────┐      ┌──────────────┐                     │
+│  │   Publisher  │─────▶│   Providers  │                     │
+│  │   Service    │      │   Service    │                     │
+│  └──────────────┘      └──────────────┘                     │
 │         │                      │                            │
 │         ▼                      ▼                            │
-│  ┌──────────────────────────────────────┐                  │
-│  │       BullMQ Job Queue (Redis)       │                  │
-│  └──────────────────────────────────────┘                  │
+│  ┌──────────────────────────────────────┐                   │
+│  │       BullMQ Job Queue (Redis)       │                   │
+│  └──────────────────────────────────────┘                   │
 │         │                                                   │
 │         ▼                                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐       │
-│  │  YouTube    │  │  Facebook   │  │  Instagram  │  ...  │
-│  │  Provider   │  │  Provider   │  │  Provider   │       │
-│  └─────────────┘  └─────────────┘  └─────────────┘       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │  YouTube    │  │  Facebook   │  │  Instagram  │  ...     │
+│  │  Provider   │  │  Provider   │  │  Provider   │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -181,6 +181,7 @@ TRUTH_SOCIAL_ACCESS_TOKEN=your_access_token
 6. Add credentials to `.env`
 
 **Required Scopes:**
+
 - `https://www.googleapis.com/auth/youtube.upload`
 - `https://www.googleapis.com/auth/youtube.force-ssl`
 
@@ -209,6 +210,7 @@ TRUTH_SOCIAL_ACCESS_TOKEN=your_access_token
 5. Add `X_API_BEARER_TOKEN` to `.env`
 
 **Required Permissions:**
+
 - Tweet read and write
 - Users read
 
@@ -247,6 +249,7 @@ POST /api/ruach-publisher/publish/:id
 Queues publishing jobs for all enabled platforms.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -266,6 +269,7 @@ POST /api/ruach-publisher/retry/:id/:platform
 Retries publishing to a specific platform.
 
 **Example:**
+
 ```bash
 POST /api/ruach-publisher/retry/1/instagram
 ```
@@ -279,6 +283,7 @@ GET /api/ruach-publisher/status/:id
 Returns publishing status for all platforms.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -384,6 +389,7 @@ pnpm install @bull-board/api @bull-board/koa
 **Cause:** Redis is not running or can't connect.
 
 **Solution:**
+
 ```bash
 # Check Redis status
 redis-cli ping
@@ -400,6 +406,7 @@ docker start redis
 **Cause:** Platform name mismatch or typo.
 
 **Solution:** Ensure platform names match exactly:
+
 - `youtube`, `facebook`, `instagram`, `x`, `patreon`, `rumble`, `locals`, `truthsocial`
 
 ### "Invalid credentials" or API errors
@@ -407,6 +414,7 @@ docker start redis
 **Cause:** Missing or expired API tokens.
 
 **Solution:**
+
 1. Check `.env` file has all required credentials
 2. Verify tokens haven't expired
 3. Check API quotas/limits on platform dashboards
@@ -417,6 +425,7 @@ docker start redis
 **Cause:** Worker not processing jobs.
 
 **Solution:**
+
 1. Restart Strapi to reinitialize workers
 2. Check Redis connection
 3. Check worker logs for errors

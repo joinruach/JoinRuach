@@ -13,14 +13,6 @@ function normalizeBaseUrl(value?: string | null) {
   return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
-function buildConfirmRedirect() {
-  if (env.STRAPI_EMAIL_CONFIRM_REDIRECT) {
-    return env.STRAPI_EMAIL_CONFIRM_REDIRECT;
-  }
-  const base = normalizeBaseUrl(env.NEXTAUTH_URL);
-  return base ? `${base}/confirmed` : undefined;
-}
-
 export async function POST(req: NextRequest) {
   const ip = ipFromHeaders(req.headers);
   try {
@@ -48,15 +40,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const confirmRedirect = buildConfirmRedirect();
-
   try {
     const res = await fetch(`${baseUrl}/api/auth/send-email-confirmation`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        confirmRedirect ? { email, url: confirmRedirect } : { email }
-      ),
+      // Strapi only accepts the email field; redirect URL comes from backend config.
+      body: JSON.stringify({ email }),
     });
 
     if (!res.ok) {
