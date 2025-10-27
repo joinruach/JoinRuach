@@ -3,8 +3,8 @@ FROM node:20-bookworm-slim AS builder
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /repo
 
-# Enable pnpm
-RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+# Install pnpm globally (avoid runtime Corepack downloads)
+RUN npm install -g pnpm@9.9.0
 
 # Native deps helpers (safe & small)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -46,15 +46,15 @@ RUN pnpm deploy --filter ruach-next /opt/app
 
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 COREPACK_HOME=/tmp/corepack
 WORKDIR /app
 
 # Install curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Enable pnpm for runtime
-RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
+# Install pnpm globally for runtime
+RUN npm install -g pnpm@9.9.0
 
 # Create non-root user for security
 RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
