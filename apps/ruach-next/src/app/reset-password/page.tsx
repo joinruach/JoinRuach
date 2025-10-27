@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ruach/ui/Button";
 
 const SUCCESS_MESSAGE =
-  "If an account exists for that email, you'll receive a password reset link shortly.";
+  "If an account exists for that email, you\u2019ll receive a password reset link shortly.";
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -47,7 +47,7 @@ function ForgotPasswordForm() {
     <div className="max-w-md space-y-4">
       <h1 className="text-2xl font-bold">Reset your password</h1>
       <p className="text-sm text-neutral-600">
-        Enter the email associated with your account. We'll send you a link to reset your
+        Enter the email associated with your account. We{"'"}ll send you a link to reset your
         password.
       </p>
       <form onSubmit={submit} className="space-y-3">
