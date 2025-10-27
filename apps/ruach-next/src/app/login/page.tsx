@@ -16,7 +16,6 @@ export default function LoginPage(){
       <input className="w-full rounded border px-3 py-2 text-black" placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
       {err && <p className="text-sm text-red-600">{err}</p>}
       <div className="flex items-center justify-between gap-3">
-        <Button type="submit" variant="black">Login</Button>
         <Button
           as="a"
           href="/reset-password"
@@ -25,6 +24,7 @@ export default function LoginPage(){
         >
           Forgot password?
         </Button>
+        <Button type="submit" variant="black">Login</Button>
       </div>
     </form>
     <p className="text-sm text-neutral-600">No account? <a href="/signup" className="text-amber-700 underline">Create one</a></p>
