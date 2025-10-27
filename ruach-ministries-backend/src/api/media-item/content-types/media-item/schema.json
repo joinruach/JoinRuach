@@ -150,9 +150,45 @@
       "default": false,
       "description": "Automatically post to connected social platforms when published"
     },
-    "platforms": {
-      "type": "json",
-      "description": "Target platforms for auto-publishing (Facebook, YouTube, Instagram, X, Patreon, Rumble, Locals, Truth Social)"
+    "publishYouTube": {
+      "type": "boolean",
+      "default": false,
+      "description": "▶️ Publish to YouTube"
+    },
+    "publishFacebook": {
+      "type": "boolean",
+      "default": false,
+      "description": "📘 Publish to Facebook Page"
+    },
+    "publishInstagram": {
+      "type": "boolean",
+      "default": false,
+      "description": "📸 Publish to Instagram"
+    },
+    "publishX": {
+      "type": "boolean",
+      "default": false,
+      "description": "🐦 Publish to X (Twitter)"
+    },
+    "publishPatreon": {
+      "type": "boolean",
+      "default": false,
+      "description": "💰 Publish to Patreon"
+    },
+    "publishRumble": {
+      "type": "boolean",
+      "default": false,
+      "description": "📺 Publish to Rumble"
+    },
+    "publishLocals": {
+      "type": "boolean",
+      "default": false,
+      "description": "🌐 Publish to Locals"
+    },
+    "publishTruthSocial": {
+      "type": "boolean",
+      "default": false,
+      "description": "✝️ Publish to Truth Social"
     },
     "publishStatus": {
       "type": "json",

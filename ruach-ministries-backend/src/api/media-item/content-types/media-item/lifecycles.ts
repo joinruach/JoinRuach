@@ -28,21 +28,28 @@ export default {
     const { result } = event;
 
     // Check if the media item was just published AND has autoPublish enabled
-    if (result.publishedAt && result.autoPublish && result.platforms) {
-      try {
-        // Get the publisher plugin service
-        const publisherService = strapi.plugin('ruach-publisher')?.service('publisher');
+    if (result.publishedAt && result.autoPublish) {
+      // Check if at least one platform is enabled
+      const hasEnabledPlatform = result.publishYouTube || result.publishFacebook ||
+        result.publishInstagram || result.publishX || result.publishPatreon ||
+        result.publishRumble || result.publishLocals || result.publishTruthSocial;
 
-        if (publisherService) {
-          // Queue the distribution job
-          await publisherService.distribute(result);
+      if (hasEnabledPlatform) {
+        try {
+          // Get the publisher plugin service
+          const publisherService = strapi.plugin('ruach-publisher')?.service('publisher');
 
-          strapi.log.info(`Auto-publish queued for media-item: ${result.id} (${result.title})`);
-        } else {
-          strapi.log.warn('ruach-publisher plugin not found. Auto-publish skipped.');
+          if (publisherService) {
+            // Queue the distribution job
+            await publisherService.distribute(result);
+
+            strapi.log.info(`Auto-publish queued for media-item: ${result.id} (${result.title})`);
+          } else {
+            strapi.log.warn('ruach-publisher plugin not found. Auto-publish skipped.');
+          }
+        } catch (error) {
+          strapi.log.error('Error triggering auto-publish:', error);
         }
-      } catch (error) {
-        strapi.log.error('Error triggering auto-publish:', error);
       }
     }
   },
@@ -60,16 +67,23 @@ export default {
     const { result } = event;
 
     // Check if created as published with autoPublish enabled
-    if (result.publishedAt && result.autoPublish && result.platforms) {
-      try {
-        const publisherService = strapi.plugin('ruach-publisher')?.service('publisher');
+    if (result.publishedAt && result.autoPublish) {
+      // Check if at least one platform is enabled
+      const hasEnabledPlatform = result.publishYouTube || result.publishFacebook ||
+        result.publishInstagram || result.publishX || result.publishPatreon ||
+        result.publishRumble || result.publishLocals || result.publishTruthSocial;
 
-        if (publisherService) {
-          await publisherService.distribute(result);
-          strapi.log.info(`Auto-publish queued for new media-item: ${result.id} (${result.title})`);
+      if (hasEnabledPlatform) {
+        try {
+          const publisherService = strapi.plugin('ruach-publisher')?.service('publisher');
+
+          if (publisherService) {
+            await publisherService.distribute(result);
+            strapi.log.info(`Auto-publish queued for new media-item: ${result.id} (${result.title})`);
+          }
+        } catch (error) {
+          strapi.log.error('Error triggering auto-publish on create:', error);
         }
-      } catch (error) {
-        strapi.log.error('Error triggering auto-publish on create:', error);
       }
     }
   },

@@ -16,11 +16,30 @@ module.exports = ({ strapi }) => ({
    * @returns {Promise<object>} - Summary of queued jobs
    */
   async distribute(mediaItem) {
+    // Build enabled platforms list from individual boolean fields
+    const platformMapping = {
+      publishYouTube: 'youtube',
+      publishFacebook: 'facebook',
+      publishInstagram: 'instagram',
+      publishX: 'x',
+      publishPatreon: 'patreon',
+      publishRumble: 'rumble',
+      publishLocals: 'locals',
+      publishTruthSocial: 'truthsocial',
+    };
+
+    const enabledPlatforms = [];
+    for (const [field, platform] of Object.entries(platformMapping)) {
+      if (mediaItem[field] === true) {
+        enabledPlatforms.push(platform);
+      }
+    }
+
     logger.info('Distributing media item to platforms', {
       category: 'publisher',
       mediaItemId: mediaItem.id,
       mediaItemTitle: mediaItem.title,
-      platforms: mediaItem.platforms,
+      platforms: enabledPlatforms,
     });
 
     const { queue } = strapi.ruachPublisher || {};
@@ -29,9 +48,9 @@ module.exports = ({ strapi }) => ({
       throw new Error('Publisher queue not initialized. Is Redis running?');
     }
 
-    // Validate platforms array
-    if (!mediaItem.platforms || !Array.isArray(mediaItem.platforms) || mediaItem.platforms.length === 0) {
-      logger.warn('No platforms configured for media item', {
+    // Validate at least one platform is enabled
+    if (enabledPlatforms.length === 0) {
+      logger.warn('No platforms enabled for media item', {
         category: 'publisher',
         mediaItemId: mediaItem.id,
       });
@@ -39,20 +58,14 @@ module.exports = ({ strapi }) => ({
     }
 
     const jobPromises = [];
-    const enabledPlatforms = [];
 
-    // Queue a job for each platform
-    for (const platformConfig of mediaItem.platforms) {
-      const { platform, enabled } = platformConfig;
-
-      if (!enabled) {
-        logger.debug(`Platform ${platform} is disabled, skipping`, {
-          category: 'publisher',
-          mediaItemId: mediaItem.id,
-          platform,
-        });
-        continue;
-      }
+    // Queue a job for each enabled platform
+    for (const platform of enabledPlatforms) {
+      logger.debug(`Queueing job for platform: ${platform}`, {
+        category: 'publisher',
+        mediaItemId: mediaItem.id,
+        platform,
+      });
 
       // Add job to queue
       const jobPromise = queue.add(
@@ -76,7 +89,6 @@ module.exports = ({ strapi }) => ({
       );
 
       jobPromises.push(jobPromise);
-      enabledPlatforms.push(platform);
     }
 
     // Wait for all jobs to be queued

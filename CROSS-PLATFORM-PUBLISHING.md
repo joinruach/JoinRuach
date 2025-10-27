@@ -67,24 +67,20 @@ The `media-item` content type has been extended with these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `autoPublish` | Boolean | Enable automatic posting when published |
-| `platforms` | JSON | Array of platform configs: `[{platform: "youtube", enabled: true}]` |
+| `autoPublish` | Boolean | Master switch to enable automatic posting |
+| **Platform Toggles:** | | **Easy on/off switches for each platform:** |
+| `publishYouTube` | Boolean | ▶️ Publish to YouTube |
+| `publishFacebook` | Boolean | 📘 Publish to Facebook Page |
+| `publishInstagram` | Boolean | 📸 Publish to Instagram |
+| `publishX` | Boolean | 🐦 Publish to X (Twitter) |
+| `publishPatreon` | Boolean | 💰 Publish to Patreon |
+| `publishRumble` | Boolean | 📺 Publish to Rumble |
+| `publishLocals` | Boolean | 🌐 Publish to Locals |
+| `publishTruthSocial` | Boolean | ✝️ Publish to Truth Social |
 | `publishStatus` | JSON | Per-platform status with timestamps and errors |
 | `shortDescription` | Text | Social media-ready caption (max 500 chars) |
 | `hashtags` | String | Hashtags for social posts (e.g., "#Faith #Ministry") |
 | `socialThumbnail` | Media | Optional custom thumbnail for social (1200x630) |
-
-### Example `platforms` JSON:
-
-```json
-[
-  { "platform": "youtube", "enabled": true },
-  { "platform": "facebook", "enabled": true },
-  { "platform": "instagram", "enabled": true },
-  { "platform": "x", "enabled": true },
-  { "platform": "patreon", "enabled": false }
-]
-```
 
 ### Example `publishStatus` JSON:
 
@@ -322,11 +318,18 @@ Returns list of all supported platforms with metadata.
    - **shortDescription** (for social captions)
    - **hashtags** (e.g., "#Faith #Ministry #Testimony")
    - Upload thumbnail (or **socialThumbnail** for custom)
-4. Check **autoPublish** checkbox
-5. Configure **platforms** JSON array
+4. **Check the master switch:** `autoPublish` ✅
+5. **Toggle on your desired platforms:**
+   - ✅ publishYouTube
+   - ✅ publishFacebook
+   - ✅ publishInstagram
+   - ✅ publishX
+   - etc.
 6. Click "Publish"
 
 The plugin will automatically queue jobs for all enabled platforms!
+
+**The UI will show clean toggle switches for each platform - no JSON editing required!**
 
 ### Check Publishing Status
 
