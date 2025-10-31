@@ -1,116 +1,32 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ruach/ui/Button";
+import { useSearchParams } from "next/navigation";
 
-function ConfirmedContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
+export default function ConfirmedPage() {
+  const params = useSearchParams();
+  const status = params.get("status");
 
-  useEffect(() => {
-    const confirmation = searchParams.get("confirmation");
-
-    if (!confirmation) {
-      setStatus("error");
-      setMessage("No confirmation code provided.");
-      return;
-    }
-
-    // Call Strapi's confirmation endpoint
-    const confirmEmail = async () => {
-      try {
-        const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-        const response = await fetch(
-          `${strapiUrl}/api/auth/email-confirmation?confirmation=${confirmation}`
-        );
-
-        if (response.ok) {
-          setStatus("success");
-          setMessage("Your email has been confirmed! You can now sign in.");
-        } else {
-          const error = await response.json().catch(() => ({}));
-          setStatus("error");
-          setMessage(
-            error?.error?.message ||
-            error?.message ||
-            "Confirmation failed. The link may have expired or already been used."
-          );
-        }
-      } catch (err) {
-        setStatus("error");
-        setMessage("Network error. Please try again later.");
-      }
-    };
-
-    confirmEmail();
-  }, [searchParams]);
+  const showSuccess = status === "success";
 
   return (
-    <div className="max-w-md mx-auto space-y-6 p-6">
-      {status === "loading" && (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      {showSuccess && (
         <>
-          <h1 className="text-2xl font-bold">Confirming your email...</h1>
-          <p className="text-gray-600">Please wait while we verify your account.</p>
+          <h1 className="text-2xl font-semibold text-green-600">✅ Confirmation Successful</h1>
+          <p className="text-gray-600 mt-2">
+            Your email has been verified. You can now sign in and start your journey.
+          </p>
         </>
       )}
 
-      {status === "success" && (
+      {!showSuccess && (
         <>
-          <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-            <h1 className="text-2xl font-bold text-green-900 mb-2">✓ Email Confirmed!</h1>
-            <p className="text-green-800">{message}</p>
-          </div>
-          <Button
-            onClick={() => router.push("/login")}
-            variant="gold"
-            className="w-full"
-          >
-            Go to Sign In
-          </Button>
-        </>
-      )}
-
-      {status === "error" && (
-        <>
-          <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-            <h1 className="text-2xl font-bold text-red-900 mb-2">✗ Confirmation Failed</h1>
-            <p className="text-red-800">{message}</p>
-          </div>
-          <div className="space-y-2">
-            <Button
-              onClick={() => router.push("/check-email")}
-              variant="white"
-              className="w-full"
-            >
-              Resend Confirmation Email
-            </Button>
-            <Button
-              onClick={() => router.push("/signup")}
-              variant="white"
-              className="w-full"
-            >
-              Back to Sign Up
-            </Button>
-          </div>
+          <h1 className="text-2xl font-semibold text-red-600">✗ Confirmation Failed</h1>
+          <p className="text-gray-600 mt-2">
+            No confirmation status provided. Please check your email link or request a new one.
+          </p>
         </>
       )}
     </div>
-  );
-}
-
-export default function ConfirmedPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="max-w-md mx-auto space-y-6 p-6">
-          <h1 className="text-2xl font-bold">Loading...</h1>
-        </div>
-      }
-    >
-      <ConfirmedContent />
-    </Suspense>
   );
 }

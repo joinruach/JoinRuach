@@ -34,6 +34,9 @@ module.exports = ({ env }) => ({
         defaultFrom: 'Ruach <no-reply@updates.joinruach.org>',
         defaultReplyTo: 'support@updates.joinruach.org',
       },
+      emailConfirmation: {
+        redirectUrl: 'https://joinruach.org/confirmed?status=success',
+      },
     },
   },
   'users-permissions': {
