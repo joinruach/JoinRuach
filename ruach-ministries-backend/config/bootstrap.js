@@ -1,9 +1,10 @@
-import dotenv from "dotenv";
+const dotenv = require("dotenv");
 
 const DEFAULT_FROM_EMAIL = "no-reply@updates.joinruach.org";
 const DEFAULT_FROM_NAME = "Ruach";
 const DEFAULT_REPLY_TO = "support@updates.joinruach.org";
 const DEFAULT_CONFIRM_REDIRECT = "https://joinruach.org/confirmed";
+const DEFAULT_CONFIRM_LINK_BASE = "http://localhost:1337/api/auth/email-confirmation";
 const DEFAULT_RESET_REDIRECT = "https://joinruach.org/reset-password";
 
 const getEnv = (name, fallback) => {
@@ -11,7 +12,31 @@ const getEnv = (name, fallback) => {
   return typeof value === "string" && value.trim().length ? value.trim() : fallback;
 };
 
-export default async ({ strapi } = {}) => {
+const trimTrailingSlash = (value = "") => value.replace(/\/$/, "");
+
+const appendQueryParam = (base, key, value) => {
+  if (!base) {
+    return base;
+  }
+
+  const hasQuery = base.includes("?");
+  const separator = hasQuery ? (base.endsWith("?") || base.endsWith("&") ? "" : "&") : "?";
+  return `${base}${separator}${key}=${value}`;
+};
+
+const ensureConfirmationLinkPath = (base) => {
+  const normalized = trimTrailingSlash(base || "");
+
+  if (!normalized) {
+    return DEFAULT_CONFIRM_LINK_BASE;
+  }
+
+  return normalized.includes("/api/auth/email-confirmation")
+    ? normalized
+    : `${normalized}/api/auth/email-confirmation`;
+};
+
+module.exports = async ({ strapi } = {}) => {
   dotenv.config();
 
   if (!strapi || typeof strapi.store !== "function") {
@@ -27,10 +52,35 @@ export default async ({ strapi } = {}) => {
   const defaultFromEmail = getEnv("EMAIL_DEFAULT_FROM", DEFAULT_FROM_EMAIL);
   const defaultFromName = getEnv("EMAIL_DEFAULT_FROM_NAME", DEFAULT_FROM_NAME);
   const defaultReplyTo = getEnv("EMAIL_DEFAULT_REPLY_TO", DEFAULT_REPLY_TO);
-  const confirmationRedirect = getEnv(
-    "STRAPI_EMAIL_CONFIRM_REDIRECT",
-    getEnv("FRONTEND_URL", DEFAULT_CONFIRM_REDIRECT.replace(/\/confirmed$/, "")) + "/confirmed"
-  ).replace(/\/$/, "");
+  const frontendBase = trimTrailingSlash(
+    getEnv(
+      "FRONTEND_URL",
+      DEFAULT_CONFIRM_REDIRECT.replace(/\/confirmed$/, "") || "http://localhost:3000"
+    )
+  );
+  const fallbackRedirectBase = trimTrailingSlash(
+    `${frontendBase || "http://localhost:3000"}/confirmed`
+  );
+  const rawRedirectInput = trimTrailingSlash(
+    getEnv("STRAPI_EMAIL_CONFIRM_REDIRECT", fallbackRedirectBase)
+  );
+  const confirmationRedirectBase = rawRedirectInput?.includes("/api/auth/email-confirmation")
+    ? fallbackRedirectBase
+    : rawRedirectInput || fallbackRedirectBase;
+  const confirmationRedirect =
+    confirmationRedirectBase.includes("?") || confirmationRedirectBase.endsWith("&")
+      ? confirmationRedirectBase
+      : appendQueryParam(confirmationRedirectBase, "status", "success");
+  const confirmationLinkBase = trimTrailingSlash(
+    ensureConfirmationLinkPath(
+      getEnv("STRAPI_EMAIL_CONFIRM_LINK", getEnv("STRAPI_BACKEND_URL", DEFAULT_CONFIRM_LINK_BASE))
+    )
+  );
+  const confirmationLinkUrl = appendQueryParam(
+    confirmationLinkBase || DEFAULT_CONFIRM_LINK_BASE,
+    "confirmation",
+    "<%= CODE %>"
+  );
   const resetRedirect = getEnv(
     "STRAPI_RESET_PASSWORD_REDIRECT",
     getEnv("FRONTEND_URL", DEFAULT_RESET_REDIRECT.replace(/\/reset-password$/, "")) + "/reset-password"
@@ -49,9 +99,9 @@ export default async ({ strapi } = {}) => {
       message: [
         "<p>Thank you for registering!</p>",
         "<p>You have to confirm your email address. Please click on the button below.</p>",
-        `<p><a href="${confirmationRedirect}?confirmation=<%= CODE %>">Confirm my email address</a></p>`,
+        `<p><a href="${confirmationLinkUrl}">Confirm my email address</a></p>`,
         "<p>If the button does not work, copy and paste this link into your browser:</p>",
-        `<p>${confirmationRedirect}?confirmation=<%= CODE %></p>`,
+        `<p>${confirmationLinkUrl}</p>`,
         "<p>Thanks.</p>",
       ].join("\n\n"),
     },

@@ -8,10 +8,61 @@
 
 const logger = require('../../config/logger');
 
+const DEFAULT_CONFIRM_LINK_BASE = 'http://localhost:1337/api/auth/email-confirmation';
+const DEFAULT_CONFIRM_REDIRECT = 'http://localhost:3000/confirmed?status=success';
+
+const getEnv = (name, fallback) => {
+  const value = process.env[name];
+  return typeof value === 'string' && value.trim().length ? value.trim() : fallback;
+};
+
+const trimTrailingSlash = (value = '') => value.replace(/\/$/, '');
+
+const appendQueryParam = (base, key, value) => {
+  if (!base) {
+    return base;
+  }
+
+  const hasQuery = base.includes('?');
+  const separator = hasQuery ? (base.endsWith('?') || base.endsWith('&') ? '' : '&') : '?';
+  return `${base}${separator}${key}=${value}`;
+};
+
+const ensureConfirmationLinkPath = (base) => {
+  const normalized = trimTrailingSlash(base || '');
+
+  if (!normalized) {
+    return DEFAULT_CONFIRM_LINK_BASE;
+  }
+
+  return normalized.includes('/api/auth/email-confirmation')
+    ? normalized
+    : `${normalized}/api/auth/email-confirmation`;
+};
+
+const resolveConfirmationLinkBase = (strapiInstance) => {
+  const configuredBase = getEnv(
+    'STRAPI_EMAIL_CONFIRM_LINK',
+    getEnv('STRAPI_BACKEND_URL', '')
+  );
+
+  if (configuredBase) {
+    return ensureConfirmationLinkPath(configuredBase);
+  }
+
+  const serverUrl =
+    trimTrailingSlash(strapiInstance?.config?.get('server.url')) ||
+    trimTrailingSlash(getEnv('PUBLIC_URL', ''));
+
+  if (serverUrl) {
+    return ensureConfirmationLinkPath(serverUrl);
+  }
+
+  return DEFAULT_CONFIRM_LINK_BASE;
+};
+
 module.exports = (plugin) => {
   // Wrap the email service to add logging
-  const originalEmailService = plugin.services.user;
-
   plugin.services.user.sendConfirmationEmail = async function (user) {
     logger.info('Sending confirmation email', {
       category: 'authentication',
@@ -49,23 +100,19 @@ module.exports = (plugin) => {
       });
 
       const template = emailSettings.email_confirmation.options;
-      const confirmationUrlSetting =
-        advancedSettings.email_confirmation_redirection || 'http://localhost:3000/confirmed';
-      let normalizedConfirmationUrl = confirmationUrlSetting.replace(/\/$/, '');
-      if (!normalizedConfirmationUrl) {
-        normalizedConfirmationUrl = confirmationUrlSetting;
-      }
-      const confirmationLink = `${normalizedConfirmationUrl}${
-        normalizedConfirmationUrl.includes('?') ? '&' : '?'
-      }confirmation=${confirmationToken}`;
+      const confirmationRedirect =
+        advancedSettings.email_confirmation_redirection || DEFAULT_CONFIRM_REDIRECT;
+      const confirmationLinkBase = resolveConfirmationLinkBase(strapi);
+      const confirmationLink = appendQueryParam(confirmationLinkBase, 'confirmation', confirmationToken);
 
       const replacements = {
-        '<%= URL %>': normalizedConfirmationUrl,
+        '<%= URL %>': confirmationRedirect,
+        '{{ URL }}': confirmationRedirect,
         '<%= CODE %>': confirmationToken,
         '<%= USER.username %>': user.username || user.email,
-        '{{ URL }}': normalizedConfirmationUrl,
         '{{ CODE }}': confirmationToken,
         '{{ USER.username }}': user.username || user.email,
+        '{{ CONFIRMATION_REDIRECT }}': confirmationRedirect,
         '{{ CONFIRMATION_LINK }}': confirmationLink,
         '<%= CONFIRMATION_LINK %>': confirmationLink,
       };
@@ -94,7 +141,7 @@ module.exports = (plugin) => {
         userId: user.id,
         to: user.email,
         from: template.from?.email || 'no-reply@updates.joinruach.org',
-        confirmationUrl: normalizedConfirmationUrl,
+        confirmationRedirect,
         confirmationLink,
       });
 
