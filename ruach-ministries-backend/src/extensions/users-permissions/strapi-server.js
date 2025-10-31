@@ -8,8 +8,9 @@
 
 const logger = require('../../config/logger');
 
-const DEFAULT_CONFIRM_LINK_BASE = 'http://localhost:1337/api/auth/email-confirmation';
-const DEFAULT_CONFIRM_REDIRECT = 'http://localhost:3000/confirmed?status=success';
+const DEFAULT_BACKEND_URL = 'http://localhost:1337';
+const DEFAULT_PUBLIC_URL = 'http://localhost:3000';
+const DEFAULT_CONFIRM_REDIRECT = `${DEFAULT_PUBLIC_URL}/confirmed?status=success`;
 
 const getEnv = (name, fallback) => {
   const value = process.env[name];
@@ -28,37 +29,21 @@ const appendQueryParam = (base, key, value) => {
   return `${base}${separator}${key}=${value}`;
 };
 
-const ensureConfirmationLinkPath = (base) => {
-  const normalized = trimTrailingSlash(base || '');
-
-  if (!normalized) {
-    return DEFAULT_CONFIRM_LINK_BASE;
-  }
-
-  return normalized.includes('/api/auth/email-confirmation')
-    ? normalized
-    : `${normalized}/api/auth/email-confirmation`;
-};
+const joinPath = (base, path) => `${trimTrailingSlash(base)}${path}`;
 
 const resolveConfirmationLinkBase = (strapiInstance) => {
-  const configuredBase = getEnv(
-    'STRAPI_EMAIL_CONFIRM_LINK',
-    getEnv('STRAPI_BACKEND_URL', '')
-  );
-
-  if (configuredBase) {
-    return ensureConfirmationLinkPath(configuredBase);
+  const overrideLink = getEnv('STRAPI_EMAIL_CONFIRM_LINK', '');
+  if (overrideLink) {
+    return trimTrailingSlash(overrideLink);
   }
 
-  const serverUrl =
+  const backendBase =
+    trimTrailingSlash(getEnv('STRAPI_BACKEND_URL', '')) ||
     trimTrailingSlash(strapiInstance?.config?.get('server.url')) ||
-    trimTrailingSlash(getEnv('PUBLIC_URL', ''));
+    trimTrailingSlash(getEnv('PUBLIC_URL', '')) ||
+    DEFAULT_BACKEND_URL;
 
-  if (serverUrl) {
-    return ensureConfirmationLinkPath(serverUrl);
-  }
-
-  return DEFAULT_CONFIRM_LINK_BASE;
+  return joinPath(backendBase, '/api/auth/email-confirmation');
 };
 
 module.exports = (plugin) => {
@@ -100,8 +85,13 @@ module.exports = (plugin) => {
       });
 
       const template = emailSettings.email_confirmation.options;
+      const publicBase =
+        trimTrailingSlash(getEnv('STRAPI_PUBLIC_URL', getEnv('FRONTEND_URL', ''))) ||
+        DEFAULT_PUBLIC_URL;
       const confirmationRedirect =
-        advancedSettings.email_confirmation_redirection || DEFAULT_CONFIRM_REDIRECT;
+        advancedSettings.email_confirmation_redirection ||
+        getEnv('STRAPI_EMAIL_CONFIRM_REDIRECT', `${publicBase}/confirmed?status=success`) ||
+        DEFAULT_CONFIRM_REDIRECT;
       const confirmationLinkBase = resolveConfirmationLinkBase(strapi);
       const confirmationLink = appendQueryParam(confirmationLinkBase, 'confirmation', confirmationToken);
 

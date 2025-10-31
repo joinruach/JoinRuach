@@ -1,52 +1,21 @@
 const trimTrailingSlash = (value = '') => value.replace(/\/$/, '');
 
-const ensureConfirmationLinkPath = (base) => {
-  const normalized = trimTrailingSlash(base || '');
-
-  if (!normalized) {
-    return 'http://localhost:1337/api/auth/email-confirmation';
-  }
-
-  return normalized.includes('/api/auth/email-confirmation')
-    ? normalized
-    : `${normalized}/api/auth/email-confirmation`;
-};
-
-const appendQueryParam = (base, key, value) => {
-  if (!base) {
-    return base;
-  }
-
-  const hasQuery = base.includes('?');
-  const separator = hasQuery ? (base.endsWith('?') || base.endsWith('&') ? '' : '&') : '?';
-  return `${base}${separator}${key}=${value}`;
-};
+const joinPath = (base, path) => `${trimTrailingSlash(base)}${path}`;
 
 module.exports = ({ env }) => {
-  const backendBase =
-    env('STRAPI_EMAIL_CONFIRM_LINK', env('STRAPI_BACKEND_URL', env('PUBLIC_URL'))) ||
-    'http://localhost:1337';
-  const confirmEmailUrl = ensureConfirmationLinkPath(backendBase);
+  const backendBase = trimTrailingSlash(env('STRAPI_BACKEND_URL', 'http://localhost:1337'));
+  const publicBase = trimTrailingSlash(
+    env('STRAPI_PUBLIC_URL', env('FRONTEND_URL', 'http://localhost:3000'))
+  );
 
-  const frontendBase = trimTrailingSlash(
-    env(
-      'FRONTEND_URL',
-      'https://joinruach.org'
-    )
+  const confirmEmailUrl = trimTrailingSlash(
+    env('STRAPI_EMAIL_CONFIRM_LINK', joinPath(backendBase, '/api/auth/email-confirmation'))
   );
-  const fallbackRedirectBase = trimTrailingSlash(
-    `${frontendBase || 'http://localhost:3000'}/confirmed`
+
+  const redirectUrl = env(
+    'STRAPI_EMAIL_CONFIRM_REDIRECT',
+    `${publicBase}/confirmed?status=success`
   );
-  const rawRedirectInput = trimTrailingSlash(
-    env('STRAPI_EMAIL_CONFIRM_REDIRECT', fallbackRedirectBase)
-  );
-  const redirectBase = rawRedirectInput?.includes('/api/auth/email-confirmation')
-    ? fallbackRedirectBase
-    : rawRedirectInput || fallbackRedirectBase;
-  const redirectUrl =
-    redirectBase.includes('?') || redirectBase.endsWith('&')
-      ? redirectBase
-      : appendQueryParam(redirectBase, 'status', 'success');
 
   return {
     upload: {
@@ -81,10 +50,10 @@ module.exports = ({ env }) => {
           apiKey: env('RESEND_API_KEY'),
         },
         settings: {
-          defaultFrom: 'Ruach <no-reply@updates.joinruach.org>',
-          defaultReplyTo: 'support@updates.joinruach.org',
-          confirmEmailUrl,
+          defaultFrom: env('EMAIL_DEFAULT_FROM', 'no-reply@updates.joinruach.org'),
+          defaultReplyTo: env('EMAIL_DEFAULT_REPLY_TO', 'support@ruachstudio.com'),
         },
+        confirmEmailUrl,
         emailConfirmation: {
           redirectUrl,
         },
