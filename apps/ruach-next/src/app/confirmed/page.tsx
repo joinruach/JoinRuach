@@ -1,8 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function ConfirmedPage() {
+function ConfirmedContent() {
   const params = useSearchParams();
   const status = params.get("status");
 
@@ -28,5 +29,13 @@ export default function ConfirmedPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function ConfirmedPage() {
+  return (
+    <Suspense fallback={<div className="py-24 text-center text-lg">Loading confirmation…</div>}>
+      <ConfirmedContent />
+    </Suspense>
   );
 }
