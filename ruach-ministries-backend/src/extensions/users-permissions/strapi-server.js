@@ -47,6 +47,12 @@ const resolveConfirmationLinkBase = (strapiInstance) => {
 };
 
 module.exports = (plugin) => {
+  // Register custom auth controller for email confirmation
+  const authController = require('./controllers/auth');
+  if (authController.default) {
+    plugin.controllers.auth = authController.default({ strapi });
+  }
+
   // Wrap the email service to add logging
   plugin.services.user.sendConfirmationEmail = async function (user) {
     logger.info('Sending confirmation email', {
