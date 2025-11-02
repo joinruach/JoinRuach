@@ -47,11 +47,12 @@ const resolveConfirmationLinkBase = (strapiInstance) => {
 };
 
 module.exports = (plugin) => {
-  // Register custom auth controller for email confirmation
-  const authController = require('./controllers/auth');
-  if (authController.default) {
-    plugin.controllers.auth = authController.default({ strapi });
-  }
+  // Override only the emailConfirmation method in the auth controller
+  const customAuthMethods = require('./controllers/auth');
+  const originalEmailConfirmation = plugin.controllers.auth.emailConfirmation;
+
+  // Override emailConfirmation while keeping all other auth methods
+  plugin.controllers.auth.emailConfirmation = customAuthMethods.default({ strapi }).emailConfirmation;
 
   // Wrap the email service to add logging
   plugin.services.user.sendConfirmationEmail = async function (user) {
