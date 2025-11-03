@@ -28,7 +28,7 @@ function isLegacyToken(token) {
 }
 
 async function migrateUsers(strapi) {
-  const logger = strapi.log || console;
+  const logger = strapi?.log ?? console;
 
   logger.info('🔍 Starting legacy token migration...');
 
