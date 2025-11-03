@@ -299,6 +299,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.DO_API_TOKEN }}" \
             -H "Content-Type: application/json"
 
+  notify-failure:
     name: Notify on Failure
     runs-on: ubuntu-latest
     needs: [lint-and-typecheck, test, build-frontend, build-backend, security-scan]
