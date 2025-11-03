@@ -12,7 +12,6 @@
  * Run: node database/migrations/fix-legacy-confirmation-tokens.js
  */
 
-const Strapi = require('@strapi/strapi');
 const crypto = require('crypto');
 
 // Detect if token is legacy hex format (not JWT)
@@ -110,34 +109,14 @@ async function migrateUsers(strapi) {
   }
 }
 
-// Standalone execution
-if (require.main === module) {
-  (async () => {
-    let appContext;
-    try {
-      console.log('🚀 Bootstrapping Strapi...');
-      appContext = await Strapi().load();
-      const app = appContext;
-
-      console.log('✅ Strapi loaded successfully\n');
-
-      const result = await migrateUsers(app);
-
-      console.log('\n✅ Migration completed successfully');
-      console.log(`   Auto-confirmed: ${result.migrated} users`);
-      console.log(`   Resent confirmations: ${result.resent} users`);
-      console.log(`   Skipped: ${result.skipped} users`);
-
-      process.exit(0);
-    } catch (error) {
-      console.error('❌ Migration script failed:', error);
-      process.exit(1);
-    } finally {
-      if (appContext) {
-        await appContext.destroy();
-      }
-    }
-  })();
-}
-
-module.exports = { migrateUsers, isLegacyToken };
+module.exports = {
+  isLegacyToken,
+  migrateUsers,
+  async up({ strapi }) {
+    const result = await migrateUsers(strapi);
+    return result;
+  },
+  async down() {
+    // no-op: auto-confirmed users remain confirmed
+  },
+};

@@ -44,7 +44,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl libvips \
 RUN npm install -g pnpm@9.9.0
 
 # Create non-root user for security
-RUN groupadd -r strapi && useradd -r -g strapi -s /bin/false strapi
+RUN groupadd -r strapi \
+ && useradd -r -g strapi -d /home/strapi -s /bin/false strapi \
+ && mkdir -p /home/strapi \
+ && chown strapi:strapi /home/strapi
+
+ENV HOME=/home/strapi
 
 # Copy pruned backend (code + prod node_modules + built admin)
 COPY --from=builder /opt/strapi/ ./
