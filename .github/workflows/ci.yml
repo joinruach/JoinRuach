@@ -112,6 +112,7 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'build-time-secret-min-32-chars-long' }}
           NEXT_PUBLIC_STRAPI_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337' }}
+          STRAPI_REVALIDATE_SECRET: ${{ secrets.STRAPI_REVALIDATE_SECRET || 'dev-revalidate-secret' }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
