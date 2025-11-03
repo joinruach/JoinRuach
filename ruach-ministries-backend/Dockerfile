@@ -8,7 +8,7 @@ RUN npm install -g pnpm@9.9.0
 
 # Native build tools (for any deps like sharp, bcrypt, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates git python3 make g++ \
+    ca-certificates git python3 make g++ pkg-config libvips-dev \
  && rm -rf /var/lib/apt/lists/*
 
 # ---- Better layer caching: copy manifests first ----
@@ -37,7 +37,7 @@ ENV NODE_ENV=production
 WORKDIR /opt/strapi
 
 # Install curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
+RUN apt-get update && apt-get install -y --no-install-recommends curl libvips \
  && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally for runtime
