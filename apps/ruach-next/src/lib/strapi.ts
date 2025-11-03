@@ -47,6 +47,30 @@ function isNotFoundError(error: unknown): error is StrapiRequestError {
   );
 }
 
+function isNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  if (typeof error.message === "string" && error.message.toLowerCase().includes("fetch failed")) {
+    return true;
+  }
+
+  const cause = (error as { cause?: unknown }).cause;
+  if (cause && typeof cause === "object") {
+    const code = (cause as { code?: unknown }).code;
+    if (typeof code === "string") {
+      return ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "EAI_AGAIN"].includes(code);
+    }
+  }
+
+  return false;
+}
+
+function isNotFoundOrNetwork(error: unknown): boolean {
+  return isNotFoundError(error) || isNetworkError(error);
+}
+
 export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
   const res = await fetch(url, {
@@ -323,7 +347,7 @@ export async function getCourses() {
     const j = await getJSON<{ data: any[] }>(`/api/courses?${q}`, { tags: ["courses"] });
     return j.data || [];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [];
     }
 
@@ -359,7 +383,7 @@ export async function getCourseBySlug(slug: string) {
     });
     return j.data?.[0];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return undefined;
     }
 
@@ -394,7 +418,7 @@ export async function getBlogPosts(options: BlogPostListOptions = {}) {
       meta: j.meta,
     };
   } catch (error) {
-    if (isNotFoundError(error) || isBadRequest(error)) {
+    if (isNotFoundOrNetwork(error) || isBadRequest(error)) {
       return { data: [], meta: undefined };
     }
 
@@ -423,7 +447,7 @@ export async function getBlogPostBySlug(slug: string) {
     });
     return j.data?.[0] ?? null;
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return null;
     }
 
@@ -461,7 +485,7 @@ export async function getArticles(options: ArticleListOptions = {}) {
     });
     return j.data || [];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [] as ArticleEntity[];
     }
 
@@ -524,7 +548,7 @@ export async function getDownloadableMediaItems(options: DownloadableMediaOption
       meta: j.meta,
     };
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return { data: [], meta: undefined };
     }
 
@@ -573,7 +597,7 @@ export async function getLessons(options: LessonListOptions = {}) {
     });
     return j.data || [];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [] as LessonEntity[];
     }
 
@@ -643,7 +667,7 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
       meta: j.meta,
     };
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return { data: [], meta: undefined };
     }
 
@@ -706,7 +730,7 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
       meta: j.meta,
     };
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return { data: [], meta: undefined };
     }
 
@@ -760,7 +784,7 @@ async function fetchMediaBySlug(slug: string) {
     });
     return j.data?.[0];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return undefined;
     }
 
@@ -781,7 +805,7 @@ async function fetchMediaBySlugLegacy(slug: string) {
     });
     return j.data?.[0];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return undefined;
     }
 
@@ -859,7 +883,7 @@ async function fetchMediaByCategory(categorySlug: string, limit = 12) {
     });
     return j.data || [];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [];
     }
 
@@ -894,7 +918,7 @@ async function fetchMediaByCategoryLegacy(category: string, limit = 12) {
     if (isBadRequest(error)) {
       return [];
     }
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [];
     }
 
@@ -941,7 +965,7 @@ async function fetchMediaCategories(includeEmpty = false) {
     });
     return j.data || [];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return [];
     }
 
@@ -963,7 +987,7 @@ async function fetchMediaCategoriesLegacy(includeEmpty = false) {
     const data = j.data || [];
     return includeEmpty ? data : data.filter((category) => Boolean(category?.attributes?.name));
   } catch (error) {
-    if (isBadRequest(error) || isNotFoundError(error)) {
+    if (isBadRequest(error) || isNotFoundOrNetwork(error)) {
       return [];
     }
 
@@ -1116,7 +1140,7 @@ export async function getResourceDirectory(): Promise<ResourceDirectory | null> 
       featuredBlogPosts: relationToArray<BlogPostEntity>(attributes.featuredBlogPosts),
     };
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return null;
     }
 
@@ -1201,7 +1225,7 @@ export async function getEventBySlug(slug: string) {
     });
     return j.data?.[0];
   } catch (error) {
-    if (isNotFoundError(error)) {
+    if (isNotFoundOrNetwork(error)) {
       return undefined;
     }
 
@@ -1233,7 +1257,7 @@ export async function getConferencePage() {
         return j.data;
       }
     } catch (error) {
-      if (isNotFoundError(error)) {
+      if (isNotFoundOrNetwork(error)) {
         continue;
       }
 
