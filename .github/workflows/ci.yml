@@ -115,10 +115,11 @@ jobs:
           STRAPI_REVALIDATE_SECRET: ${{ secrets.STRAPI_REVALIDATE_SECRET || 'dev-revalidate-secret' }}
 
       - name: Upload build artifacts
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: apps/ruach-next/.next
+          path: ruach-monorepo/apps/ruach-next/.next
           retention-days: 7
 
   # Job 4: Build Backend
@@ -155,7 +156,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-build
-          path: ruach-ministries-backend/dist
+          path: ruach-ministries-backend/build
           retention-days: 7
 
   # Job 5: Security Scan
