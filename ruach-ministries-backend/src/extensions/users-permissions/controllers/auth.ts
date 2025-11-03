@@ -4,6 +4,8 @@
  * Handles email confirmation with proper redirect URLs including status query params
  */
 
+const crypto = require('crypto');
+
 const getEnv = (name: string, fallback: string = ''): string => {
   const value = process.env[name];
   return typeof value === 'string' && value.trim().length ? value.trim() : fallback;
@@ -19,7 +21,7 @@ const appendQueryParam = (base: string, key: string, value: string): string => {
   return `${base}${separator}${key}=${encodeURIComponent(value)}`;
 };
 
-const getRedirectUrl = (status: 'success' | 'error'): string => {
+const getRedirectUrl = (status: 'success' | 'error', reason?: string): string => {
   const publicBase = trimTrailingSlash(
     getEnv('STRAPI_PUBLIC_URL', getEnv('FRONTEND_URL', 'http://localhost:3000'))
   );
@@ -29,7 +31,28 @@ const getRedirectUrl = (status: 'success' | 'error'): string => {
     `${publicBase}/confirmed`
   );
 
-  return appendQueryParam(baseRedirect, 'status', status);
+  let url = appendQueryParam(baseRedirect, 'status', status);
+
+  if (reason && status === 'error') {
+    url = appendQueryParam(url, 'reason', reason);
+  }
+
+  return url;
+};
+
+/**
+ * Detect if token is JWT format vs legacy hex token
+ */
+const isJWTFormat = (token: string): boolean => {
+  // JWT format: xxx.yyy.zzz (base64url encoded parts separated by dots)
+  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
+};
+
+/**
+ * Create a safe hash of token for logging (never log full token)
+ */
+const hashToken = (token: string): string => {
+  return crypto.createHash('sha256').update(token).digest('hex').slice(0, 8);
 };
 
 export default ({ strapi }) => ({
@@ -51,7 +74,18 @@ export default ({ strapi }) => ({
             category: 'authentication',
             ip: ctx.request.ip,
           });
-          return ctx.redirect(getRedirectUrl('error'));
+          return ctx.redirect(getRedirectUrl('error', 'missing_token'));
+        }
+
+        // Check token format - detect legacy hex tokens
+        if (!isJWTFormat(confirmationToken)) {
+          strapi.log.warn('Non-JWT confirmation token detected (legacy format)', {
+            category: 'authentication',
+            tokenHash: hashToken(confirmationToken),
+            tokenLength: confirmationToken.length,
+            ip: ctx.request.ip,
+          });
+          return ctx.redirect(getRedirectUrl('error', 'legacy_token'));
         }
 
         // Verify and decode the JWT token
@@ -63,9 +97,15 @@ export default ({ strapi }) => ({
         } catch (err) {
           strapi.log.warn('Invalid confirmation token', {
             category: 'authentication',
-            error: err.message,
+            tokenHash: hashToken(confirmationToken),
+            error: err.name || 'VerificationError',
+            message: err.message,
+            ip: ctx.request.ip,
           });
-          return ctx.redirect(getRedirectUrl('error'));
+
+          // Provide specific error reasons
+          const reason = err.name === 'TokenExpiredError' ? 'expired_token' : 'invalid_token';
+          return ctx.redirect(getRedirectUrl('error', reason));
         }
 
         // Find user by ID from token
@@ -77,8 +117,9 @@ export default ({ strapi }) => ({
           strapi.log.warn('User not found for confirmation token', {
             category: 'authentication',
             userId: decoded.id,
+            ip: ctx.request.ip,
           });
-          return ctx.redirect(getRedirectUrl('error'));
+          return ctx.redirect(getRedirectUrl('error', 'user_not_found'));
         }
 
         // Check if already confirmed
@@ -87,6 +128,7 @@ export default ({ strapi }) => ({
             category: 'authentication',
             userId: user.id,
             email: user.email,
+            ip: ctx.request.ip,
           });
           return ctx.redirect(getRedirectUrl('success'));
         }
@@ -101,6 +143,7 @@ export default ({ strapi }) => ({
           category: 'authentication',
           userId: user.id,
           email: user.email,
+          ip: ctx.request.ip,
         });
 
         return ctx.redirect(getRedirectUrl('success'));
@@ -109,8 +152,9 @@ export default ({ strapi }) => ({
           category: 'authentication',
           error: error.message,
           stack: error.stack,
+          ip: ctx.request.ip,
         });
-        return ctx.redirect(getRedirectUrl('error'));
+        return ctx.redirect(getRedirectUrl('error', 'server_error'));
       }
     },
   });
