@@ -156,7 +156,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-build
-          path: ruach-ministries-backend/build
+          path: ruach-ministries-backend/dist
           retention-days: 7
 
   # Job 5: Security Scan
