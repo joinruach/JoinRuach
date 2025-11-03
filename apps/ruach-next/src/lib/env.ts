@@ -13,6 +13,8 @@ const Strict = z.object({
   STRAPI_CONTACT_COLLECTION: z.string().optional(),
   STRAPI_VOLUNTEER_TOKEN: z.string().optional(),
   STRAPI_VOLUNTEER_COLLECTION: z.string().optional(),
+  STRAPI_TESTIMONY_TOKEN: z.string().optional(),
+  STRAPI_TESTIMONY_COLLECTION: z.string().optional(),
 
   // Optional integrations
   STRAPI_API_TOKEN: z.string().optional(),

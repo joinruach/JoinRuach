@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@ruach/addons/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

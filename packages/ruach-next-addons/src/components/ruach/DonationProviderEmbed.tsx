@@ -1,7 +1,7 @@
 "use client";
 import { getProvider, getProcessorUrl, getStripeCheckoutPath, getStripePortalPath } from "@ruach/addons/lib/donations";
 import { useEffect, useState } from "react";
-import { track } from "@/lib/analytics";
+import { track } from "@ruach/addons/lib/analytics";
 
 export default function DonationProviderEmbed() {
   const provider = getProvider();

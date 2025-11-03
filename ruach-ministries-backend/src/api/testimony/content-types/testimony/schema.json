@@ -1,0 +1,85 @@
+{
+  "kind": "collectionType",
+  "collectionName": "testimonies",
+  "info": {
+    "singularName": "testimony",
+    "pluralName": "testimonies",
+    "displayName": "Testimony",
+    "description": "Stories of transformation shared through Ruach Studios"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "ageRange": {
+      "type": "enumeration",
+      "enum": ["Under 18", "18–24", "25–34", "35–44", "45–54", "55+"]
+    },
+    "socialHandles": {
+      "type": "string"
+    },
+    "story_before": {
+      "type": "text",
+      "required": true
+    },
+    "story_encounter": {
+      "type": "text",
+      "required": true
+    },
+    "story_after": {
+      "type": "text",
+      "required": true
+    },
+    "scripture_anchor": {
+      "type": "string"
+    },
+    "core_message": {
+      "type": "text"
+    },
+    "on_camera": {
+      "type": "boolean",
+      "default": false
+    },
+    "media_consent": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "media_upload": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "videos"]
+    },
+    "referral_source": {
+      "type": "enumeration",
+      "enum": ["Friend", "Church", "Social Media", "Event", "Other"]
+    },
+    "join_future_projects": {
+      "type": "boolean",
+      "default": false
+    },
+    "prayer_request": {
+      "type": "text"
+    },
+    "contact_preference": {
+      "type": "enumeration",
+      "enum": ["Email", "Phone", "Text", "None"]
+    }
+  }
+}

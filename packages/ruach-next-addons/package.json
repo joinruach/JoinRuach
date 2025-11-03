@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm,cjs"
+    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "typecheck": "tsc --noEmit"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -46,6 +46,7 @@ export const resetPasswordLimiter = createLimiter(8, "10 m", "rl:reset");
 export const reportsLimiter = createLimiter(5, "10 m", "rl:reports");
 export const volunteerLimiter = createLimiter(5, "10 m", "rl:volunteer");
 export const contactLimiter = createLimiter(6, "10 m", "rl:contact");
+export const testimonyLimiter = createLimiter(3, "15 m", "rl:testimony");
 export const newsletterLimiter = createLimiter(10, "10 m", "rl:newsletter");
 
 export function ipFromHeaders(h: Headers) {
