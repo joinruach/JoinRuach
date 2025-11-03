@@ -110,11 +110,8 @@ async function migrateUsers(strapi) {
 }
 
 module.exports = {
-  isLegacyToken,
-  migrateUsers,
   async up({ strapi }) {
-    const result = await migrateUsers(strapi);
-    return result;
+    await migrateUsers(strapi);
   },
   async down() {
     // no-op: auto-confirmed users remain confirmed
