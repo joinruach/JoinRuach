@@ -27,21 +27,95 @@ function isLegacyToken(token) {
   return isHex && token.length === 64;
 }
 
-async function migrateUsers(strapi) {
-  const logger = strapi?.log ?? console;
+function createLogger(logger) {
+  const fallback = {
+    info: (...args) => console.log(...args),
+    debug: (...args) => (console.debug ? console.debug(...args) : console.log(...args)),
+    error: (...args) => console.error(...args),
+  };
+
+  if (!logger) {
+    return fallback;
+  }
+
+  return {
+    info: (...args) => (typeof logger.info === 'function' ? logger.info(...args) : fallback.info(...args)),
+    debug: (...args) => (typeof logger.debug === 'function' ? logger.debug(...args) : fallback.debug(...args)),
+    error: (...args) => (typeof logger.error === 'function' ? logger.error(...args) : fallback.error(...args)),
+  };
+}
+
+function resolveKnex(input) {
+  if (input && typeof input === 'function' && typeof input.raw === 'function') {
+    return input;
+  }
+
+  if (input?.knex && typeof input.knex.raw === 'function') {
+    return input.knex;
+  }
+
+  if (input?.connection && typeof input.connection.raw === 'function') {
+    return input.connection;
+  }
+
+  throw new Error('Unable to resolve knex instance for migration');
+}
+
+async function resolveUserColumns(knex) {
+  const columnInfo = await knex('up_users').columnInfo();
+  const columnNames = Object.keys(columnInfo);
+
+  const pickColumn = (...candidates) => candidates.find((name) => columnNames.includes(name));
+
+  const confirmationToken = pickColumn('confirmation_token', 'confirmationtoken', 'confirmationToken');
+  if (!confirmationToken) {
+    throw new Error('Could not locate confirmation token column on up_users table');
+  }
+
+  const confirmed = pickColumn('confirmed');
+  if (!confirmed) {
+    throw new Error('Could not locate confirmed column on up_users table');
+  }
+
+  const id = pickColumn('id');
+  if (!id) {
+    throw new Error('Could not locate id column on up_users table');
+  }
+
+  const email = pickColumn('email');
+  if (!email) {
+    throw new Error('Could not locate email column on up_users table');
+  }
+
+  const username = pickColumn('username');
+  if (!username) {
+    throw new Error('Could not locate username column on up_users table');
+  }
+
+  return {
+    table: 'up_users',
+    columns: { confirmationToken, confirmed, id, email, username },
+  };
+}
+
+async function migrateUsers(knexInstance, optionalLogger) {
+  const knex = resolveKnex(knexInstance);
+  const logger = createLogger(optionalLogger);
 
   logger.info('🔍 Starting legacy token migration...');
 
   try {
-    // Find all users with confirmation tokens
-    const usersWithTokens = await strapi.db
-      .query('plugin::users-permissions.user')
-      .findMany({
-        where: {
-          confirmationToken: { $notNull: true },
-        },
-        select: ['id', 'email', 'username', 'confirmed', 'confirmationToken'],
-      });
+    const { table, columns } = await resolveUserColumns(knex);
+
+    const usersWithTokens = await knex(table)
+      .select({
+        id: columns.id,
+        email: columns.email,
+        username: columns.username,
+        confirmed: columns.confirmed,
+        confirmationToken: columns.confirmationToken,
+      })
+      .whereNotNull(columns.confirmationToken);
 
     logger.info(`Found ${usersWithTokens.length} users with confirmation tokens`);
 
@@ -57,7 +131,6 @@ async function migrateUsers(strapi) {
     for (const user of usersWithTokens) {
       const token = user.confirmationToken;
 
-      // Check if token is legacy format
       if (!isLegacyToken(token)) {
         logger.debug(`⏩ Skipping user ${user.email} - already has JWT token`);
         skippedCount++;
@@ -67,15 +140,12 @@ async function migrateUsers(strapi) {
       logger.info(`🔧 Migrating user: ${user.email} (ID: ${user.id})`);
       logger.debug(`  Legacy token hash: ${crypto.createHash('sha256').update(token).digest('hex').slice(0, 8)}...`);
 
-      // Strategy A: Auto-confirm (safest for existing users)
-      // Assumption: If they have a legacy token, the old system was working
-      await strapi.db.query('plugin::users-permissions.user').update({
-        where: { id: user.id },
-        data: {
-          confirmed: true,
-          confirmationToken: null,
-        },
-      });
+      await knex(table)
+        .where(columns.id, user.id)
+        .update({
+          [columns.confirmed]: true,
+          [columns.confirmationToken]: null,
+        });
 
       logger.info(`  ✅ Auto-confirmed user ${user.email}`);
       migratedCount++;
@@ -110,10 +180,32 @@ async function migrateUsers(strapi) {
 }
 
 module.exports = {
-  async up({ strapi }) {
-    await migrateUsers(strapi);
+  async up(knex) {
+    await migrateUsers(knex);
   },
   async down() {
     // no-op: auto-confirmed users remain confirmed
   },
 };
+
+if (require.main === module) {
+  (async () => {
+    const Strapi = require('@strapi/strapi');
+    let app;
+
+    try {
+      console.log('🚀 Bootstrapping Strapi...');
+      app = await Strapi().load();
+      await migrateUsers(app.db.connection, app.log);
+      console.log('✅ Legacy confirmation token migration completed successfully');
+      process.exit(0);
+    } catch (error) {
+      console.error('❌ Migration failed:', error);
+      process.exit(1);
+    } finally {
+      if (app) {
+        await app.destroy();
+      }
+    }
+  })();
+}
