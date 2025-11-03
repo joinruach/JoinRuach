@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "volunteer_signups",
+  "info": {
+    "singularName": "volunteer-signup",
+    "pluralName": "volunteer-signups",
+    "displayName": "Volunteer Signup",
+    "description": "Volunteer signup submissions from the website"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "availability": {
+      "type": "string"
+    },
+    "message": {
+      "type": "text"
+    }
+  }
+}
