@@ -4,7 +4,7 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreController('api::testimony.testimony' as any, ({ strapi }) => ({
+export default factories.createCoreController('api::testimony.testimony', ({ strapi }) => ({
   /**
    * Custom submit action for testimony form
    * Validates required fields and creates testimony entry
@@ -37,7 +37,7 @@ export default factories.createCoreController('api::testimony.testimony' as any,
       }
 
       // Create testimony entry
-      const entry = await strapi.entityService.create('api::testimony.testimony' as any, {
+      const entry = await strapi.entityService.create('api::testimony.testimony', {
         data: {
           name: body.name,
           email: body.email,
