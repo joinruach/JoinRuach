@@ -4,7 +4,7 @@
  * This file runs before each test suite to configure the testing environment.
  */
 
-import '@testing-library/jest-dom';
+import type { ReactNode } from 'react';
 
 type NodeEnvironment = 'development' | 'production' | 'test';
 type MutableProcessEnv = Omit<NodeJS.ProcessEnv, 'NODE_ENV'> & {
@@ -64,7 +64,7 @@ jest.mock('next-auth/react', () => {
     })),
     signIn: jest.fn(),
     signOut: jest.fn(),
-    SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+    SessionProvider: ({ children }: { children: ReactNode }) => children,
   };
 });
 

@@ -40,6 +40,15 @@ function isSecureSecret(value: string | undefined, name: string): { valid: boole
     };
   }
 
+  // Check for low entropy (too repetitive)
+  const uniqueChars = new Set(value).size;
+  if (uniqueChars < 10) {
+    return {
+      valid: false,
+      message: `${name} has low entropy (only ${uniqueChars} unique characters). Use a cryptographically random string.`
+    };
+  }
+
   // Check for insecure patterns
   for (const pattern of INSECURE_PATTERNS) {
     if (pattern.test(value)) {
@@ -48,15 +57,6 @@ function isSecureSecret(value: string | undefined, name: string): { valid: boole
         message: `${name} contains insecure pattern. Generate a secure random string using: openssl rand -base64 32`
       };
     }
-  }
-
-  // Check for low entropy (too repetitive)
-  const uniqueChars = new Set(value).size;
-  if (uniqueChars < 10) {
-    return {
-      valid: false,
-      message: `${name} has low entropy (only ${uniqueChars} unique characters). Use a cryptographically random string.`
-    };
   }
 
   return { valid: true };
@@ -77,9 +77,8 @@ export function validateEnvironment(): ValidationResult {
   const secretCheck = isSecureSecret(nextAuthSecret, "NEXTAUTH_SECRET");
 
   if (!secretCheck.valid) {
-    if (isProduction) {
-      errors.push(secretCheck.message!);
-    } else {
+    errors.push(secretCheck.message!);
+    if (!isProduction) {
       warnings.push(`[Development] ${secretCheck.message!}`);
     }
   }
