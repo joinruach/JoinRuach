@@ -4,7 +4,7 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreController('api::testimony.testimony', ({ strapi }) => ({
+export default factories.createCoreController('api::testimony.testimony' as any, ({ strapi }) => ({
   /**
    * Custom submit action for testimony form
    * Validates required fields and creates testimony entry
@@ -15,7 +15,9 @@ export default factories.createCoreController('api::testimony.testimony', ({ str
 
       // Validate required fields
       if (!body.name || !body.email || !body.story_before || !body.story_encounter || !body.story_after) {
-        return ctx.badRequest('Missing required fields: name, email, story_before, story_encounter, story_after', {
+        ctx.status = 400;
+        return ctx.send({
+          error: 'Missing required fields: name, email, story_before, story_encounter, story_after',
           code: 'VALIDATION_ERROR',
           details: {
             received: Object.keys(body),
@@ -27,13 +29,15 @@ export default factories.createCoreController('api::testimony.testimony', ({ str
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(body.email)) {
-        return ctx.badRequest('Invalid email address', {
+        ctx.status = 400;
+        return ctx.send({
+          error: 'Invalid email address',
           code: 'INVALID_EMAIL'
         });
       }
 
       // Create testimony entry
-      const entry = await strapi.entityService.create('api::testimony.testimony', {
+      const entry = await strapi.entityService.create('api::testimony.testimony' as any, {
         data: {
           name: body.name,
           email: body.email,
@@ -65,15 +69,17 @@ export default factories.createCoreController('api::testimony.testimony', ({ str
         message: 'Testimony submitted successfully',
         data: { id: entry.id }
       });
-    } catch (err) {
+    } catch (err: any) {
       strapi.log.error('Failed to submit testimony:', {
         error: err.message,
         timestamp: new Date().toISOString()
       });
 
-      return ctx.internalServerError('Failed to submit testimony', {
+      ctx.status = 500;
+      return ctx.send({
+        error: 'Failed to submit testimony',
         code: 'SUBMISSION_ERROR',
-        error: err.message
+        message: err.message
       });
     }
   }

@@ -4,4 +4,4 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreService('api::testimony.testimony');
+export default factories.createCoreService('api::testimony.testimony' as any);
