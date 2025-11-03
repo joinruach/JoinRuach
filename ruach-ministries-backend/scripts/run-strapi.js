@@ -6,7 +6,7 @@ const path = require('node:path');
 const projectRoot = path.resolve(__dirname, '..');
 const strapiPackageDir = path.dirname(require.resolve('@strapi/strapi/package.json'));
 const registerPath = require.resolve('esbuild-register/dist/node', { paths: [strapiPackageDir] });
-// eslint-disable-next-line import/no-dynamic-require, global-require
+// eslint-disable-next-line global-require
 const { register } = require(registerPath);
 
 register();
