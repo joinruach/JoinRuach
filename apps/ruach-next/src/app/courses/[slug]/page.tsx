@@ -50,9 +50,15 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
 
   const a = course.attributes;
-  const lessons = (a.lessons?.data ?? [])
-    .map((d:any)=>d.attributes)
-    .sort((x:any,y:any)=>(x.order||0)-(y.order||0));
+  if (!a) {
+    return notFound();
+  }
+
+  const lessonsRaw = Array.isArray(a.lessons?.data) ? a.lessons.data : [];
+  const lessons = lessonsRaw
+    .map((d: any) => d?.attributes)
+    .filter(Boolean)
+    .sort((x: any, y: any) => (x.order || 0) - (y.order || 0));
 
   const total = lessons.length;
   const completed = lessons.filter((lesson:any)=>completedLessons.has(lesson.slug)).length;
