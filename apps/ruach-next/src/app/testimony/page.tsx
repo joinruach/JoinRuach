@@ -92,7 +92,7 @@ export default function TestimonyPage() {
             Our team will review it prayerfully and reach out if it fits a current Ruach Studio series or story campaign.
           </p>
           <p className="text-md text-gray-700 mb-8">
-            Your testimony releases truth — and someone's freedom may begin because of what you've shared.
+            Your testimony releases truth — and someone&apos;s freedom may begin because of what you&apos;ve shared.
           </p>
           <button
             onClick={() => setStatus('idle')}
@@ -117,7 +117,7 @@ export default function TestimonyPage() {
             Every story has power. When you share what Jesus has done in your life, you release hope and truth to others.
           </p>
           <p className="text-md text-gray-600 italic">
-            "Let the redeemed of the Lord tell their story." — Psalm 107:2
+            &ldquo;Let the redeemed of the Lord tell their story.&rdquo; — Psalm 107:2
           </p>
         </div>
 
@@ -266,7 +266,7 @@ export default function TestimonyPage() {
                   name="scripture_anchor"
                   value={formData.scripture_anchor}
                   onChange={handleChange}
-                  placeholder='Example: Isaiah 61:3 — "To give them beauty for ashes..."'
+                  placeholder='Example: Isaiah 61:3 — &quot;To give them beauty for ashes...&quot;'
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -305,7 +305,7 @@ export default function TestimonyPage() {
                     onChange={handleChange}
                     className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="text-gray-700">Yes, I'm interested in being featured on camera</span>
+                  <span className="text-gray-700">Yes, I&apos;m interested in being featured on camera</span>
                 </div>
               </div>
 
@@ -379,7 +379,7 @@ export default function TestimonyPage() {
                     onChange={handleChange}
                     className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">I'd like to be part of future recordings or events</span>
+                  <span className="text-sm text-gray-700">I&apos;d like to be part of future recordings or events</span>
                 </label>
               </div>
 
