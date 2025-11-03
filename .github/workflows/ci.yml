@@ -114,7 +114,7 @@ jobs:
           NEXT_PUBLIC_STRAPI_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337' }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: apps/ruach-next/.next
@@ -151,7 +151,7 @@ jobs:
           NODE_ENV: production
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-build
           path: ruach-ministries-backend/dist
