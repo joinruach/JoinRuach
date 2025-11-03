@@ -736,6 +736,39 @@ export interface ApiContactMessageContactMessage
   };
 }
 
+export interface ApiContactSubmissionContactSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'contact_submissions';
+  info: {
+    description: 'Contact form submissions from the website';
+    displayName: 'Contact Submission';
+    pluralName: 'contact-submissions';
+    singularName: 'contact-submission';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-submission.contact-submission'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    topic: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
   collectionName: 'courses';
   info: {
@@ -1142,6 +1175,7 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    autoPublish: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1170,6 +1204,7 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
       'api::resource-directory.resource-directory'
     >;
     gallery: Schema.Attribute.Media<'images', true>;
+    hashtags: Schema.Attribute.String;
     legacyCategory: Schema.Attribute.String & Schema.Attribute.Private;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1178,14 +1213,33 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    publishFacebook: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    publishInstagram: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    publishLocals: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    publishPatreon: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    publishRumble: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    publishStatus: Schema.Attribute.JSON;
+    publishTruthSocial: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    publishX: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    publishYouTube: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     releasedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
     series: Schema.Attribute.Relation<'manyToOne', 'api::series.series'>;
+    shortDescription: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     slug: Schema.Attribute.UID<'title'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    socialThumbnail: Schema.Attribute.Media<'images'>;
     source: Schema.Attribute.Component<'media.video-source', false>;
     speakers: Schema.Attribute.Relation<'manyToMany', 'api::speaker.speaker'>;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
@@ -1624,6 +1678,68 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiTestimonyTestimony extends Struct.CollectionTypeSchema {
+  collectionName: 'testimonies';
+  info: {
+    description: 'Stories of transformation shared through Ruach Studios';
+    displayName: 'Testimony';
+    pluralName: 'testimonies';
+    singularName: 'testimony';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ageRange: Schema.Attribute.Enumeration<
+      [
+        'Under 18',
+        'Age 18-24',
+        'Age 25-34',
+        'Age 35-44',
+        'Age 45-54',
+        'Age 55+',
+      ]
+    >;
+    contact_preference: Schema.Attribute.Enumeration<
+      ['Email', 'Phone', 'Text', 'None']
+    >;
+    core_message: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    join_future_projects: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::testimony.testimony'
+    > &
+      Schema.Attribute.Private;
+    location: Schema.Attribute.String;
+    media_consent: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
+    media_upload: Schema.Attribute.Media<'images' | 'videos'>;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    on_camera: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    phone: Schema.Attribute.String;
+    prayer_request: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    referral_source: Schema.Attribute.Enumeration<
+      ['Friend', 'Church', 'Social Media', 'Event', 'Other']
+    >;
+    scripture_anchor: Schema.Attribute.String;
+    socialHandles: Schema.Attribute.String;
+    story_after: Schema.Attribute.Text & Schema.Attribute.Required;
+    story_before: Schema.Attribute.Text & Schema.Attribute.Required;
+    story_encounter: Schema.Attribute.Text & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiTrendingVideoTrendingVideo
   extends Struct.CollectionTypeSchema {
   collectionName: 'trending_videos';
@@ -1768,6 +1884,40 @@ export interface ApiVideoVideo extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     videoUrl: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiVolunteerSignupVolunteerSignup
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'volunteer_signups';
+  info: {
+    description: 'Volunteer signup submissions from the website';
+    displayName: 'Volunteer Signup';
+    pluralName: 'volunteer-signups';
+    singularName: 'volunteer-signup';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    availability: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::volunteer-signup.volunteer-signup'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    phone: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -2325,6 +2475,7 @@ declare module '@strapi/strapi' {
       'api::comment-report.comment-report': ApiCommentReportCommentReport;
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::contact-message.contact-message': ApiContactMessageContactMessage;
+      'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::course.course': ApiCourseCourse;
       'api::event.event': ApiEventEvent;
       'api::faq.faq': ApiFaqFaq;
@@ -2347,10 +2498,12 @@ declare module '@strapi/strapi' {
       'api::tag.tag': ApiTagTag;
       'api::team-member.team-member': ApiTeamMemberTeamMember;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
+      'api::testimony.testimony': ApiTestimonyTestimony;
       'api::trending-video.trending-video': ApiTrendingVideoTrendingVideo;
       'api::user-profile.user-profile': ApiUserProfileUserProfile;
       'api::video-hero.video-hero': ApiVideoHeroVideoHero;
       'api::video.video': ApiVideoVideo;
+      'api::volunteer-signup.volunteer-signup': ApiVolunteerSignupVolunteerSignup;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
