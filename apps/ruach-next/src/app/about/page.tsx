@@ -36,7 +36,9 @@ function Section({ title, description, children }:{ title: string; description?:
 
 export default function About(){
   const board = parseBoard();
-  const storyImage = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE ? imgUrl(process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE) : null;
+  const storyImage = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE
+    ? imgUrl(process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE)
+    : "/story_image_620x240_c05617fa54.png";
 
   const statementOfFaith = [
     "We believe the Scriptures are the inspired Word of God—authoritative for faith and life.",
