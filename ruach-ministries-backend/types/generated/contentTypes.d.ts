@@ -673,6 +673,163 @@ export interface ApiCommentReportCommentReport
   };
 }
 
+export interface ApiCommunityOutreachPageCommunityOutreachPage
+  extends Struct.SingleTypeSchema {
+  collectionName: 'community_outreach_page';
+  info: {
+    description: 'Landing page content for Ruach Community Outreach';
+    displayName: 'Community Outreach Page';
+    pluralName: 'community-outreach-pages';
+    singularName: 'community-outreach-page';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    donationFormUrl: Schema.Attribute.String;
+    featuredStories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::outreach-story.outreach-story'
+    >;
+    featuredStoriesCtaLabel: Schema.Attribute.String;
+    featuredStoriesCtaUrl: Schema.Attribute.String;
+    featuredStoriesHeading: Schema.Attribute.String;
+    givingCtaLabel: Schema.Attribute.String;
+    givingCtaUrl: Schema.Attribute.String;
+    givingHighlights: Schema.Attribute.Component<
+      'outreach.giving-highlight',
+      true
+    >;
+    givingSectionBody: Schema.Attribute.RichText;
+    givingSectionTitle: Schema.Attribute.String;
+    heroDescription: Schema.Attribute.Text;
+    heroEyebrow: Schema.Attribute.String;
+    heroPrimaryCtaLabel: Schema.Attribute.String;
+    heroPrimaryCtaUrl: Schema.Attribute.String;
+    heroSecondaryCtaLabel: Schema.Attribute.String;
+    heroSecondaryCtaUrl: Schema.Attribute.String;
+    heroTitle: Schema.Attribute.String & Schema.Attribute.Required;
+    highlightedCampaigns: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::outreach-campaign.outreach-campaign'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::community-outreach-page.community-outreach-page'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    subscriptionBanner: Schema.Attribute.Component<
+      'outreach.subscription-banner',
+      false
+    >;
+    subscriptionBannerEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    volunteerFormEmbed: Schema.Attribute.Text;
+    volunteerFormProvider: Schema.Attribute.String;
+    volunteerHighlights: Schema.Attribute.Component<
+      'outreach.volunteer-point',
+      true
+    >;
+    volunteerSectionBody: Schema.Attribute.RichText;
+    volunteerSectionTitle: Schema.Attribute.String;
+  };
+}
+
+export interface ApiOutreachCampaignOutreachCampaign
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'outreach_campaigns';
+  info: {
+    description: 'Recurring outreach initiatives that can be linked from stories or the outreach page';
+    displayName: 'Outreach Campaign';
+    pluralName: 'outreach-campaigns';
+    singularName: 'outreach-campaign';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
+    donationLink: Schema.Attribute.String;
+    endDate: Schema.Attribute.Date;
+    giveCode: Schema.Attribute.String;
+    impactMetrics: Schema.Attribute.Component<'impact.metric', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-campaign.outreach-campaign'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    startDate: Schema.Attribute.Date;
+    stories: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-story.outreach-story'
+    >;
+    summary: Schema.Attribute.Text;
+    supportingMedia: Schema.Attribute.Media<'images' | 'videos', true>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiOutreachStoryOutreachStory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'outreach_stories';
+  info: {
+    description: 'Stories and testimonies from community outreach';
+    displayName: 'Outreach Story';
+    pluralName: 'outreach-stories';
+    singularName: 'outreach-story';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    body: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-story.outreach-story'
+    > &
+      Schema.Attribute.Private;
+    media: Schema.Attribute.Media<'images' | 'videos' | 'files', true>;
+    publishedAt: Schema.Attribute.DateTime;
+    relatedCampaign: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::outreach-campaign.outreach-campaign'
+    >;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    storyDate: Schema.Attribute.Date;
+    summary: Schema.Attribute.Text;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
   collectionName: 'contact_infos';
   info: {
@@ -2473,6 +2630,7 @@ declare module '@strapi/strapi' {
       'api::category.category': ApiCategoryCategory;
       'api::channel.channel': ApiChannelChannel;
       'api::comment-report.comment-report': ApiCommentReportCommentReport;
+      'api::community-outreach-page.community-outreach-page': ApiCommunityOutreachPageCommunityOutreachPage;
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::contact-message.contact-message': ApiContactMessageContactMessage;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
@@ -2487,6 +2645,8 @@ declare module '@strapi/strapi' {
       'api::lesson-progress.lesson-progress': ApiLessonProgressLessonProgress;
       'api::lesson.lesson': ApiLessonLesson;
       'api::media-item.media-item': ApiMediaItemMediaItem;
+      'api::outreach-campaign.outreach-campaign': ApiOutreachCampaignOutreachCampaign;
+      'api::outreach-story.outreach-story': ApiOutreachStoryOutreachStory;
       'api::prayer.prayer': ApiPrayerPrayer;
       'api::project.project': ApiProjectProject;
       'api::reply.reply': ApiReplyReply;
