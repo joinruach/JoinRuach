@@ -4,4 +4,4 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreService('api::outreach-campaign.outreach-campaign');
+export default factories.createCoreService('api::outreach-campaign.outreach-campaign' as any);
