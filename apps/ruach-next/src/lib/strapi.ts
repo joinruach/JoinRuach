@@ -1178,15 +1178,20 @@ type OutreachStoryQueryOptions = {
   featured?: boolean;
   includeDraft?: boolean;
   excludeIds?: number[];
+  page?: number;
 };
 
 export async function getOutreachStories(options: OutreachStoryQueryOptions = {}) {
-  const { limit = 6, featured, includeDraft = false, excludeIds } = options;
+  const { limit = 6, featured, includeDraft = false, excludeIds, page } = options;
   const params = new URLSearchParams();
   params.set("sort[0]", "storyDate:desc");
   params.set("sort[1]", "publishedAt:desc");
   params.set("pagination[pageSize]", String(limit));
   params.set("populate", "deep,2");
+
+  if (typeof page === "number" && Number.isFinite(page) && page > 0) {
+    params.set("pagination[page]", String(page));
+  }
 
   if (typeof featured === "boolean") {
     params.set("filters[featured][$eq]", featured ? "true" : "false");

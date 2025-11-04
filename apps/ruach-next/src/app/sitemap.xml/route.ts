@@ -1,4 +1,4 @@
-import { getCourses, getEvents, getMediaItems } from "@/lib/strapi";
+import { getCourses, getEvents, getMediaItems, getOutreachStorySlugs } from "@/lib/strapi";
 
 const escapeXml = (value: string) =>
   value
@@ -10,10 +10,11 @@ const escapeXml = (value: string) =>
 
 export async function GET() {
   const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const [courses, events, mediaResult] = await Promise.all([
+  const [courses, events, mediaResult, outreachSlugs] = await Promise.all([
     getCourses().catch(()=>[]),
     getEvents(50).catch(()=>[]),
-    getMediaItems({ pageSize: 200 }).catch(()=>({ data: [] }))
+    getMediaItems({ pageSize: 200 }).catch(()=>({ data: [] })),
+    getOutreachStorySlugs(150).catch(()=>[])
   ]);
   const media = Array.isArray(mediaResult?.data) ? mediaResult.data : [];
   const courseUrls = (Array.isArray(courses) ? courses : [])
@@ -28,11 +29,15 @@ export async function GET() {
     .map((e: any) => e?.attributes?.slug)
     .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
     .map((slug) => `events/${slug}`);
+  const outreachStoryUrls = (Array.isArray(outreachSlugs) ? outreachSlugs : [])
+    .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
+    .map((slug) => `community-outreach/stories/${slug}`);
   const urls = [
-    "", "media", "courses", "conferences", "community-outreach", "give", "about", "contact",
+    "", "media", "courses", "conferences", "community-outreach", "community-outreach/stories", "give", "about", "contact",
     ...courseUrls,
     ...mediaUrls,
-    ...eventUrls
+    ...eventUrls,
+    ...outreachStoryUrls
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
     urls

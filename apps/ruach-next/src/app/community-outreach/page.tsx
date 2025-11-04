@@ -14,19 +14,19 @@ export const revalidate = 300;
 const fallbackStories: MediaCardProps[] = [
   {
     title: "Deliverance on the Streets",
-    href: "/media",
+    href: "/community-outreach/stories",
     excerpt: "Testimonies from downtown outreach nights.",
     category: "Outreach"
   },
   {
     title: "Feeding Families",
-    href: "/media",
+    href: "/community-outreach/stories",
     excerpt: "Weekly grocery deliveries and prayer appointments.",
     category: "Community"
   },
   {
     title: "Youth on Fire",
-    href: "/media",
+    href: "/community-outreach/stories",
     excerpt: "Teens leading worship in the city park.",
     category: "Youth"
   }
@@ -210,7 +210,7 @@ export default async function CommunityOutreachPage() {
 
   const storiesHeading = attributes?.featuredStoriesHeading ?? "Stories from the Streets";
   const storiesCtaLabel = attributes?.featuredStoriesCtaLabel ?? "View all testimonies →";
-  const storiesCtaUrl = attributes?.featuredStoriesCtaUrl ?? "/media?category=outreach";
+  const storiesCtaUrl = attributes?.featuredStoriesCtaUrl ?? "/community-outreach/stories";
 
   const volunteerSectionTitle = attributes?.volunteerSectionTitle ?? "Volunteer Sign-Up";
   const givingSectionTitle = attributes?.givingSectionTitle ?? "Support Outreach Campaigns";

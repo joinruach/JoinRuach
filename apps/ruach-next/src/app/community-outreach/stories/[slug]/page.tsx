@@ -152,7 +152,7 @@ export default async function OutreachStoryPage({ params }: Props) {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">More outreach impact</h2>
-            <Link href="/community-outreach" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
+            <Link href="/community-outreach/stories" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
               View all stories →
             </Link>
           </div>
