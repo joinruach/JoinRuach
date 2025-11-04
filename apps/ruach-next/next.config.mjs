@@ -8,7 +8,7 @@ const securityHeaders = [
       script-src 'self' 'unsafe-inline' https://plausible.io;
       style-src 'self' 'unsafe-inline';
       frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.tiktok.com;
-      connect-src *;
+      connect-src 'self' https://cdn.joinruach.org https://*.r2.cloudflarestorage.com https://api.convertkit.com https://plausible.io https://*.upstash.io;
     `
       .replace(/\s{2,}/g, " ")
       .trim(),

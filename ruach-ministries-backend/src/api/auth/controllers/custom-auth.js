@@ -18,6 +18,20 @@ const LOGIN_MAX_ATTEMPTS_IP = 5; // 5 attempts per IP per 15 minutes
 const LOGIN_MAX_ATTEMPTS_USERNAME = 3; // 3 attempts per username per 15 minutes
 const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
+// Cookie security configuration
+// COOKIE_SECURE env var takes precedence, otherwise check NODE_ENV
+const COOKIE_SECURE = process.env.COOKIE_SECURE
+  ? process.env.COOKIE_SECURE === "true"
+  : process.env.NODE_ENV === "production";
+
+// Validate secure cookie configuration in production
+if (process.env.NODE_ENV === "production" && !COOKIE_SECURE) {
+  logger.logSecurity("WARNING: Refresh tokens will be sent over HTTP in production! Set COOKIE_SECURE=true", {
+    NODE_ENV: process.env.NODE_ENV,
+    COOKIE_SECURE: process.env.COOKIE_SECURE,
+  });
+}
+
 module.exports = {
   async login(ctx) {
     const { identifier, password } = ctx.request.body;
@@ -99,7 +113,7 @@ module.exports = {
       // Store refresh token in a secure, HttpOnly cookie
       ctx.cookies.set("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: COOKIE_SECURE,
         sameSite: "Strict",
         maxAge: REFRESH_TOKEN_EXPIRY * 1000,
       });
@@ -196,7 +210,7 @@ module.exports = {
       // Update cookie with new refresh token
       ctx.cookies.set("refreshToken", newRefreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: COOKIE_SECURE,
         sameSite: "Strict",
         maxAge: REFRESH_TOKEN_EXPIRY * 1000,
       });
@@ -240,7 +254,7 @@ module.exports = {
       // Clear refresh token cookie
       ctx.cookies.set("refreshToken", null, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: COOKIE_SECURE,
         sameSite: "Strict",
         maxAge: 0,
       });
@@ -256,7 +270,7 @@ module.exports = {
       // Still clear the cookie even if verification fails
       ctx.cookies.set("refreshToken", null, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: COOKIE_SECURE,
         sameSite: "Strict",
         maxAge: 0,
       });
