@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_outreach_subscription_banners",
+  "info": {
+    "displayName": "Subscription banner",
+    "icon": "megaphone",
+    "description": "Optional email or SMS banner for the outreach page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "ctaLabel": {
+      "type": "string"
+    },
+    "ctaUrl": {
+      "type": "string"
+    }
+  }
+}

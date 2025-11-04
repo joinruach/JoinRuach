@@ -59,12 +59,12 @@ export default function About(){
   ];
 
   const statementOfFaith = [
-    "The Scriptures are the inspired, infallible Word of God—the plumbline for faith and life.",
-    "There is one God: Father, Son, and Holy Spirit—co-eternal and co-equal.",
-    "Salvation is by grace through faith in Jesus Christ, evidenced by repentance, transformation, and sanctification.",
-    "The baptism of the Holy Spirit empowers believers for witness, with gifts of the Spirit active today.",
-    "Deliverance, healing, and holiness are the ongoing ministry of Christ through His Church.",
-    "The Body of Christ is called to make disciples of all nations until the Lord’s return.",
+    "The Scriptures are the inspired and infallible Word of Elohim—the plumbline for faith, character, and daily life.",
+    "There is one Elohim: the Father, the Son (Yeshua the Messiah), and the Ruach Ha’Kodesh—eternal, holy, and perfectly one.",
+    "Salvation is by grace through faith in Yeshua the Messiah, revealed through repentance, renewal, and a life set apart in righteousness.",
+    "The Ruach Ha’Kodesh empowers believers to bear witness, with the gifts of the Spirit continuing as expressions of Elohim’s power and love today.",
+    "Healing, deliverance, and holiness are the continuing works of Messiah through His body on earth.",
+    "The Body of Messiah is called to make disciples of all nations until His glorious return.",
   ];
 
   return (

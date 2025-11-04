@@ -1,0 +1,108 @@
+{
+  "kind": "singleType",
+  "collectionName": "community_outreach_page",
+  "info": {
+    "singularName": "community-outreach-page",
+    "pluralName": "community-outreach-pages",
+    "displayName": "Community Outreach Page",
+    "description": "Landing page content for Ruach Community Outreach"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heroEyebrow": {
+      "type": "string"
+    },
+    "heroTitle": {
+      "type": "string",
+      "required": true
+    },
+    "heroDescription": {
+      "type": "text"
+    },
+    "heroPrimaryCtaLabel": {
+      "type": "string"
+    },
+    "heroPrimaryCtaUrl": {
+      "type": "string"
+    },
+    "heroSecondaryCtaLabel": {
+      "type": "string"
+    },
+    "heroSecondaryCtaUrl": {
+      "type": "string"
+    },
+    "featuredStoriesHeading": {
+      "type": "string"
+    },
+    "featuredStoriesCtaLabel": {
+      "type": "string"
+    },
+    "featuredStoriesCtaUrl": {
+      "type": "string"
+    },
+    "featuredStories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::outreach-story.outreach-story"
+    },
+    "highlightedCampaigns": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::outreach-campaign.outreach-campaign"
+    },
+    "volunteerSectionTitle": {
+      "type": "string"
+    },
+    "volunteerSectionBody": {
+      "type": "richtext"
+    },
+    "volunteerHighlights": {
+      "type": "component",
+      "repeatable": true,
+      "component": "outreach.volunteer-point"
+    },
+    "volunteerFormEmbed": {
+      "type": "text"
+    },
+    "volunteerFormProvider": {
+      "type": "string"
+    },
+    "givingSectionTitle": {
+      "type": "string"
+    },
+    "givingSectionBody": {
+      "type": "richtext"
+    },
+    "givingHighlights": {
+      "type": "component",
+      "repeatable": true,
+      "component": "outreach.giving-highlight"
+    },
+    "givingCtaLabel": {
+      "type": "string"
+    },
+    "givingCtaUrl": {
+      "type": "string"
+    },
+    "donationFormUrl": {
+      "type": "string"
+    },
+    "subscriptionBannerEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "subscriptionBanner": {
+      "type": "component",
+      "repeatable": false,
+      "component": "outreach.subscription-banner"
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

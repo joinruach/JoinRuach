@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_outreach_volunteer_points",
+  "info": {
+    "displayName": "Volunteer point",
+    "icon": "check",
+    "description": "Short highlight describing a volunteer opportunity or focus area"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

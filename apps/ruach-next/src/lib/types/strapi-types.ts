@@ -256,3 +256,105 @@ export interface ConferencePageEntity extends StrapiBase {
     event_location?: string;
   };
 }
+
+export interface SeoComponent extends Record<string, unknown> {
+  id?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  shareImage?: { data?: { attributes?: Media } };
+}
+
+export interface OutreachVolunteerPointComponent extends Record<string, unknown> {
+  id?: number;
+  title?: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface OutreachGivingHighlightComponent extends Record<string, unknown> {
+  id?: number;
+  label?: string;
+  amount?: string;
+  description?: string;
+  badge?: string;
+}
+
+export interface OutreachSubscriptionBannerComponent extends Record<string, unknown> {
+  id?: number;
+  title?: string;
+  body?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  image?: { data?: { attributes?: Media } };
+}
+
+export interface ImpactMetricComponent extends Record<string, unknown> {
+  id?: number;
+  label?: string;
+  value?: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface OutreachCampaignEntity extends StrapiBase {
+  attributes: {
+    name: string;
+    slug: string;
+    summary?: string;
+    description?: string;
+    donationLink?: string;
+    giveCode?: string;
+    active?: boolean;
+    startDate?: string | null;
+    endDate?: string | null;
+    impactMetrics?: ImpactMetricComponent[];
+    supportingMedia?: { data?: { attributes?: Media }[] };
+    stories?: { data?: OutreachStoryEntity[] };
+  };
+}
+
+export interface OutreachStoryEntity extends StrapiBase {
+  attributes: {
+    title: string;
+    slug: string;
+    storyDate?: string | null;
+    summary?: string;
+    body?: string;
+    featured?: boolean;
+    media?: { data?: { attributes?: Media }[] };
+    tags?: { data?: TagEntity[] };
+    relatedCampaign?: { data?: OutreachCampaignEntity | null };
+    seo?: SeoComponent | null;
+  };
+}
+
+export interface CommunityOutreachPageEntity extends StrapiBase {
+  attributes: {
+    heroEyebrow?: string;
+    heroTitle: string;
+    heroDescription?: string;
+    heroPrimaryCtaLabel?: string;
+    heroPrimaryCtaUrl?: string;
+    heroSecondaryCtaLabel?: string;
+    heroSecondaryCtaUrl?: string;
+    featuredStoriesHeading?: string;
+    featuredStoriesCtaLabel?: string;
+    featuredStoriesCtaUrl?: string;
+    featuredStories?: { data?: OutreachStoryEntity[] };
+    highlightedCampaigns?: { data?: OutreachCampaignEntity[] };
+    volunteerSectionTitle?: string;
+    volunteerSectionBody?: string;
+    volunteerHighlights?: OutreachVolunteerPointComponent[];
+    volunteerFormEmbed?: string;
+    volunteerFormProvider?: string;
+    givingSectionTitle?: string;
+    givingSectionBody?: string;
+    givingHighlights?: OutreachGivingHighlightComponent[];
+    givingCtaLabel?: string;
+    givingCtaUrl?: string;
+    donationFormUrl?: string;
+    subscriptionBannerEnabled?: boolean;
+    subscriptionBanner?: OutreachSubscriptionBannerComponent | null;
+    seo?: SeoComponent | null;
+  };
+}

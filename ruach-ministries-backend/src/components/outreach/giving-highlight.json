@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_outreach_giving_highlights",
+  "info": {
+    "displayName": "Giving highlight",
+    "icon": "donate",
+    "description": "Callout card for a giving option or campaign focus"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "amount": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "badge": {
+      "type": "string"
+    }
+  }
+}

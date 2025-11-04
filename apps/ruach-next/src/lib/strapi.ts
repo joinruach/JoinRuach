@@ -6,6 +6,9 @@ import type {
   EventEntity,
   ConferencePageEntity,
   CourseEntity,
+  CommunityOutreachPageEntity,
+  OutreachStoryEntity,
+  OutreachCampaignEntity,
 } from "@/lib/types/strapi-types";
 
 type FetchOpts = {
@@ -1142,6 +1145,121 @@ export async function getResourceDirectory(): Promise<ResourceDirectory | null> 
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
       return null;
+    }
+
+    throw error;
+  }
+}
+
+export async function getCommunityOutreachPage() {
+  const params = new URLSearchParams();
+  params.set("populate", "deep,4");
+
+  try {
+    const j = await getJSON<{ data: CommunityOutreachPageEntity | null }>(
+      `/api/community-outreach-page?${params.toString()}`,
+      {
+        tags: ["community-outreach-page"],
+        revalidate: 300,
+      }
+    );
+    return j.data ?? null;
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+type OutreachStoryQueryOptions = {
+  limit?: number;
+  featured?: boolean;
+  includeDraft?: boolean;
+  excludeIds?: number[];
+};
+
+export async function getOutreachStories(options: OutreachStoryQueryOptions = {}) {
+  const { limit = 6, featured, includeDraft = false, excludeIds } = options;
+  const params = new URLSearchParams();
+  params.set("sort[0]", "storyDate:desc");
+  params.set("sort[1]", "publishedAt:desc");
+  params.set("pagination[pageSize]", String(limit));
+  params.set("populate", "deep,2");
+
+  if (typeof featured === "boolean") {
+    params.set("filters[featured][$eq]", featured ? "true" : "false");
+  }
+
+  if (Array.isArray(excludeIds) && excludeIds.length > 0) {
+    excludeIds.forEach((id, index) => {
+      params.set(`filters[id][$ne][${index}]`, String(id));
+    });
+  }
+
+  const tags = ["outreach-stories", `outreach-stories:limit:${limit}`];
+  if (typeof featured === "boolean") {
+    tags.push(`outreach-stories:featured:${featured ? "1" : "0"}`);
+  }
+  if (includeDraft) {
+    params.set("publicationState", "preview");
+    tags.push("outreach-stories:draft");
+  }
+
+  try {
+    const j = await getJSON<{ data: OutreachStoryEntity[] }>(`/api/outreach-stories?${params.toString()}`, {
+      tags,
+      revalidate: 300,
+    });
+    return j.data || [];
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [] as OutreachStoryEntity[];
+    }
+
+    throw error;
+  }
+}
+
+export async function getOutreachStoryBySlug(slug: string) {
+  const params = new URLSearchParams();
+  params.set("filters[slug][$eq]", slug);
+  params.set("populate", "deep,3");
+  params.set("pagination[pageSize]", "1");
+
+  try {
+    const j = await getJSON<{ data: OutreachStoryEntity[] }>(`/api/outreach-stories?${params.toString()}`, {
+      tags: [`outreach-story:${slug}`],
+      revalidate: 300,
+    });
+    return j.data?.[0] ?? null;
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+export async function getOutreachStorySlugs(limit = 50) {
+  const params = new URLSearchParams();
+  params.set("fields[0]", "slug");
+  params.set("pagination[pageSize]", String(limit));
+  params.set("sort[0]", "publishedAt:desc");
+
+  try {
+    const j = await getJSON<{ data: OutreachStoryEntity[] }>(`/api/outreach-stories?${params.toString()}`, {
+      tags: ["outreach-stories:slugs"],
+      revalidate: 300,
+    });
+    return (j.data || [])
+      .map((entity) => entity?.attributes?.slug)
+      .filter((slug): slug is string => typeof slug === "string" && slug.trim().length > 0);
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [] as string[];
     }
 
     throw error;

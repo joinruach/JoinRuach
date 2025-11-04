@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "outreach_campaigns",
+  "info": {
+    "singularName": "outreach-campaign",
+    "pluralName": "outreach-campaigns",
+    "displayName": "Outreach Campaign",
+    "description": "Recurring outreach initiatives that can be linked from stories or the outreach page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "summary": {
+      "type": "text"
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "impactMetrics": {
+      "type": "component",
+      "repeatable": true,
+      "component": "impact.metric"
+    },
+    "supportingMedia": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ]
+    },
+    "donationLink": {
+      "type": "string"
+    },
+    "giveCode": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "startDate": {
+      "type": "date"
+    },
+    "endDate": {
+      "type": "date"
+    },
+    "stories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::outreach-story.outreach-story",
+      "mappedBy": "relatedCampaign"
+    }
+  }
+}
