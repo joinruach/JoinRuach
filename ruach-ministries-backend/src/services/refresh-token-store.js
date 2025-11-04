@@ -1,23 +1,39 @@
 "use strict";
 
 const crypto = require("crypto");
+const { redisClient } = require("./redis-client");
 
 /**
  * Refresh Token Store Service
  *
  * Manages refresh tokens with rotation support.
- * Stores tokens in-memory with optional database persistence.
+ * Uses Redis for persistence with fallback to in-memory storage.
  */
 
 class RefreshTokenStore {
   constructor() {
-    // In-memory storage for refresh tokens
+    // In-memory storage for refresh tokens (fallback)
     // Format: { tokenHash: { userId, expiresAt, used: boolean, createdAt } }
     this.tokens = new Map();
+
+    // Redis key prefix
+    this.keyPrefix = "refresh:";
 
     // Cleanup interval (every 10 minutes)
     this.cleanupInterval = 10 * 60 * 1000;
     this.startCleanup();
+  }
+
+  /**
+   * Initialize Redis connection
+   */
+  async init() {
+    await redisClient.connect();
+    if (redisClient.isAvailable()) {
+      strapi.log.info("[RefreshTokenStore] Using Redis for persistence");
+    } else {
+      strapi.log.warn("[RefreshTokenStore] Redis not available, using in-memory storage");
+    }
   }
 
   /**
@@ -36,17 +52,34 @@ class RefreshTokenStore {
    * @param {number} expiresAt - Unix timestamp when token expires
    * @returns {string} - Token hash
    */
-  store(token, userId, expiresAt) {
+  async store(token, userId, expiresAt) {
     const tokenHash = this.hashToken(token);
-
-    this.tokens.set(tokenHash, {
+    const tokenData = {
       userId,
       expiresAt,
       used: false,
       createdAt: Date.now()
-    });
+    };
 
-    strapi.log.info(`Refresh token stored for user ${userId}`);
+    const ttl = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+
+    // Try Redis first
+    if (redisClient.isAvailable()) {
+      const key = `${this.keyPrefix}${tokenHash}`;
+      const success = await redisClient.set(key, JSON.stringify(tokenData), ttl);
+
+      if (success) {
+        strapi.log.info(`[RefreshTokenStore] Refresh token stored in Redis for user ${userId}`);
+        return tokenHash;
+      }
+
+      // Redis failed, fall back to in-memory
+      strapi.log.warn("[RefreshTokenStore] Redis set failed, falling back to in-memory");
+    }
+
+    // In-memory fallback
+    this.tokens.set(tokenHash, tokenData);
+    strapi.log.info(`[RefreshTokenStore] Refresh token stored in memory for user ${userId}`);
     return tokenHash;
   }
 
@@ -55,33 +88,63 @@ class RefreshTokenStore {
    * @param {string} token - The refresh token
    * @returns {object|null} - Token data if valid, null otherwise
    */
-  validate(token) {
+  async validate(token) {
     const tokenHash = this.hashToken(token);
-    const tokenData = this.tokens.get(tokenHash);
+    let tokenData = null;
+
+    // Try Redis first
+    if (redisClient.isAvailable()) {
+      const key = `${this.keyPrefix}${tokenHash}`;
+      const data = await redisClient.get(key);
+
+      if (data) {
+        tokenData = JSON.parse(data);
+      }
+    }
+
+    // Fallback to in-memory
+    if (!tokenData) {
+      tokenData = this.tokens.get(tokenHash);
+    }
 
     if (!tokenData) {
-      strapi.log.warn("Refresh token not found in store");
+      strapi.log.warn("[RefreshTokenStore] Refresh token not found in store");
       return null;
     }
 
     // Check if already used (token reuse detection)
     if (tokenData.used) {
-      strapi.log.error(`Refresh token reuse detected for user ${tokenData.userId}!`);
+      strapi.log.error(`[RefreshTokenStore] Refresh token reuse detected for user ${tokenData.userId}!`);
       // Invalidate all tokens for this user (security measure)
-      this.revokeAllForUser(tokenData.userId);
+      await this.revokeAllForUser(tokenData.userId);
       return null;
     }
 
     // Check if expired
     const now = Date.now();
     if (now > tokenData.expiresAt) {
-      strapi.log.warn("Refresh token expired");
+      strapi.log.warn("[RefreshTokenStore] Refresh token expired");
+
+      // Delete from both stores
+      if (redisClient.isAvailable()) {
+        const key = `${this.keyPrefix}${tokenHash}`;
+        await redisClient.del(key);
+      }
       this.tokens.delete(tokenHash);
       return null;
     }
 
     // Mark as used (rotation)
     tokenData.used = true;
+
+    // Update in Redis
+    if (redisClient.isAvailable()) {
+      const key = `${this.keyPrefix}${tokenHash}`;
+      const ttl = Math.max(0, Math.floor((tokenData.expiresAt - Date.now()) / 1000));
+      await redisClient.set(key, JSON.stringify(tokenData), ttl);
+    }
+
+    // Update in-memory
     this.tokens.set(tokenHash, tokenData);
 
     return tokenData;
@@ -91,12 +154,20 @@ class RefreshTokenStore {
    * Revoke a specific refresh token
    * @param {string} token - The refresh token
    */
-  revoke(token) {
+  async revoke(token) {
     const tokenHash = this.hashToken(token);
+
+    // Delete from Redis
+    if (redisClient.isAvailable()) {
+      const key = `${this.keyPrefix}${tokenHash}`;
+      await redisClient.del(key);
+    }
+
+    // Delete from in-memory
     const deleted = this.tokens.delete(tokenHash);
 
-    if (deleted) {
-      strapi.log.info("Refresh token revoked");
+    if (deleted || redisClient.isAvailable()) {
+      strapi.log.info("[RefreshTokenStore] Refresh token revoked");
     }
 
     return deleted;
@@ -106,9 +177,31 @@ class RefreshTokenStore {
    * Revoke all refresh tokens for a user
    * @param {number} userId - User ID
    */
-  revokeAllForUser(userId) {
+  async revokeAllForUser(userId) {
     let count = 0;
 
+    // Revoke from Redis
+    if (redisClient.isAvailable()) {
+      try {
+        const pattern = `${this.keyPrefix}*`;
+        const keys = await redisClient.keys(pattern);
+
+        for (const key of keys) {
+          const data = await redisClient.get(key);
+          if (data) {
+            const tokenData = JSON.parse(data);
+            if (tokenData.userId === userId) {
+              await redisClient.del(key);
+              count++;
+            }
+          }
+        }
+      } catch (error) {
+        strapi.log.error("[RefreshTokenStore] Error revoking user tokens from Redis:", error.message);
+      }
+    }
+
+    // Revoke from in-memory
     for (const [tokenHash, tokenData] of this.tokens.entries()) {
       if (tokenData.userId === userId) {
         this.tokens.delete(tokenHash);
@@ -117,7 +210,7 @@ class RefreshTokenStore {
     }
 
     if (count > 0) {
-      strapi.log.info(`Revoked ${count} refresh tokens for user ${userId}`);
+      strapi.log.info(`[RefreshTokenStore] Revoked ${count} refresh tokens for user ${userId}`);
     }
 
     return count;

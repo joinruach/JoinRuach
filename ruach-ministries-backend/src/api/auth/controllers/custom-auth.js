@@ -108,7 +108,7 @@ module.exports = {
 
       // Store refresh token in the token store
       const expiresAt = Date.now() + REFRESH_TOKEN_EXPIRY * 1000;
-      refreshTokenStore.store(refreshToken, response.user.id, expiresAt);
+      await refreshTokenStore.store(refreshToken, response.user.id, expiresAt);
 
       // Store refresh token in a secure, HttpOnly cookie
       ctx.cookies.set("refreshToken", refreshToken, {
@@ -157,7 +157,8 @@ module.exports = {
 
       // Check if token is blacklisted
       const tokenId = decoded.jti || oldRefreshToken.substring(0, 32);
-      if (tokenBlacklist.isBlacklisted(tokenId)) {
+      const isBlacklisted = await tokenBlacklist.isBlacklisted(tokenId);
+      if (isBlacklisted) {
         logger.logSecurity('Blacklisted token attempted', {
           userId: decoded.id,
           tokenId: tokenId.substring(0, 16),
@@ -166,7 +167,7 @@ module.exports = {
       }
 
       // Validate and mark old token as used (rotation)
-      const tokenData = refreshTokenStore.validate(oldRefreshToken);
+      const tokenData = await refreshTokenStore.validate(oldRefreshToken);
 
       if (!tokenData) {
         // Token not found, expired, or already used
@@ -205,7 +206,7 @@ module.exports = {
 
       // Store new refresh token
       const expiresAt = Date.now() + REFRESH_TOKEN_EXPIRY * 1000;
-      refreshTokenStore.store(newRefreshToken, decoded.id, expiresAt);
+      await refreshTokenStore.store(newRefreshToken, decoded.id, expiresAt);
 
       // Update cookie with new refresh token
       ctx.cookies.set("refreshToken", newRefreshToken, {
@@ -241,10 +242,10 @@ module.exports = {
         // Add refresh token to blacklist
         const tokenId = decoded.jti || refreshToken.substring(0, 32);
         const expiresAt = (decoded.exp || Math.floor(Date.now() / 1000) + REFRESH_TOKEN_EXPIRY) * 1000;
-        tokenBlacklist.add(tokenId, expiresAt);
+        await tokenBlacklist.add(tokenId, expiresAt);
 
         // Revoke refresh token from store
-        refreshTokenStore.revoke(refreshToken);
+        await refreshTokenStore.revoke(refreshToken);
 
         logger.logAuth('Logout successful', {
           userId: decoded.id,
