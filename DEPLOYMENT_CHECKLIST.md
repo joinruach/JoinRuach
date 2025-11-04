@@ -256,12 +256,24 @@ Configure in Strapi:
 - [ ] Access keys generated
 - [ ] `CLOUDFLARE_R2_*` variables configured in Strapi
 
-### **6.2 CDN Testing**
+### **6.2 DigitalOcean Spaces Configuration**
+
+- [ ] Spaces bucket created: `appbuild-logs`
+- [ ] Access keys generated (API > Spaces Keys)
+- [ ] Bucket region selected (e.g., `nyc3`)
+- [ ] `DO_SPACES_*` variables configured in deployment platform
+- [ ] Lifecycle policy configured (delete logs after 30 days)
+- [ ] Verify bucket access with AWS CLI
+
+**See `docs/DIGITALOCEAN_SPACES_SETUP.md` for detailed setup instructions**
+
+### **6.3 CDN Testing**
 
 - [ ] Upload test image to Strapi
 - [ ] Verify image accessible via `https://cdn.joinruach.org/...`
 - [ ] Check image loads on Next.js site
 - [ ] Verify CORS headers present
+- [ ] Test build log upload to `appbuild-logs` bucket
 
 ---
 
