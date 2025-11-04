@@ -32,7 +32,7 @@ const fallbackStories: MediaCardProps[] = [
   }
 ];
 
-const fallbackVolunteerHighlights = [
+const fallbackVolunteerHighlights: Array<{ title: string; description?: string; icon?: string }> = [
   { title: "Street evangelism & prayer tents" },
   { title: "Food distributions & compassion projects" },
   { title: "Follow-up discipleship and small groups" }
@@ -94,14 +94,16 @@ function mapCampaign(campaign: OutreachCampaignEntity): CampaignSummary | null {
   };
 }
 
-function normalizeVolunteerHighlights(entity?: CommunityOutreachPageEntity["attributes"]["volunteerHighlights"]) {
+function normalizeVolunteerHighlights(
+  entity?: CommunityOutreachPageEntity["attributes"]["volunteerHighlights"]
+): Array<{ title: string; description?: string; icon?: string }> {
   if (!Array.isArray(entity) || entity.length === 0) {
     return fallbackVolunteerHighlights;
   }
 
   const normalized = entity
     .map((item) => ({
-      title: item?.title,
+      title: item?.title ?? "",
       description: item?.description,
       icon: item?.icon
     }))
