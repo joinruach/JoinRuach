@@ -72,6 +72,12 @@ module.exports = [
   'strapi::logger',
   'strapi::errors',
 
+  // Custom HTTPS enforcement middleware (before other middleware)
+  {
+    name: 'global::https-enforce',
+    config: {},
+  },
+
   {
     name: 'strapi::security',
     config: {

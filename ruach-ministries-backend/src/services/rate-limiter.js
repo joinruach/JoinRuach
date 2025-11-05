@@ -8,8 +8,8 @@
  * fallback to in-memory storage.
  */
 
-const logger = require('../config/logger');
-const { redisClient } = require('./redis-client');
+const logger = require("../config/logger");
+const { redisClient } = require("./redis-client");
 
 class RateLimiter {
   constructor() {
@@ -46,66 +46,80 @@ class RateLimiter {
    */
   async check(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
     const now = Date.now();
-    let record = null;
 
     // Try Redis first
     if (redisClient.isAvailable()) {
-      const redisKey = `${this.keyPrefix}${key}`;
-      const data = await redisClient.get(redisKey);
+      return await this._checkRedis(key, maxAttempts, windowMs, now);
+    }
 
-      if (data) {
-        record = JSON.parse(data);
+    // Fallback to in-memory
+    return this._checkInMemory(key, maxAttempts, windowMs, now);
+  }
+
+  /**
+   * Check rate limit using Redis
+   */
+  async _checkRedis(key, maxAttempts, windowMs, now) {
+    const redisKey = `${this.keyPrefix}${key}`;
+    const resetAt = now + windowMs;
+
+    try {
+      // Increment counter
+      const count = await redisClient.incr(redisKey);
+
+      // Set expiry on first request
+      if (count === 1) {
+        const ttl = Math.ceil(windowMs / 1000);
+        await redisClient.expire(redisKey, ttl);
       }
-    }
 
-    // Fallback to in-memory if Redis not available or no record found
-    if (!record && !redisClient.isAvailable()) {
-      record = this.attempts.get(key);
+      const allowed = count <= maxAttempts;
+      const remaining = Math.max(0, maxAttempts - count);
+
+      if (!allowed) {
+        logger.logRateLimit("Limit exceeded (Redis)", {
+          key: key.substring(0, 30),
+          attempts: count,
+          maxAttempts,
+          resetAt: new Date(resetAt).toISOString(),
+        });
+      }
+
+      return { allowed, remaining, resetAt };
+    } catch (error) {
+      logger.logSecurity("Redis rate limit check failed, falling back to in-memory", {
+        error: error.message,
+        key: key.substring(0, 30),
+      });
+
+      return this._checkInMemory(key, maxAttempts, windowMs, now);
     }
+  }
+
+  /**
+   * Check rate limit using in-memory storage
+   */
+  _checkInMemory(key, maxAttempts, windowMs, now) {
+    const record = this.attempts.get(key);
 
     // No previous attempts or window expired
     if (!record || now > record.resetAt) {
       const resetAt = now + windowMs;
-      const newRecord = {
-        count: 1,
-        resetAt
-      };
-
-      // Store in Redis
-      if (redisClient.isAvailable()) {
-        const redisKey = `${this.keyPrefix}${key}`;
-        const ttl = Math.ceil(windowMs / 1000);
-        await redisClient.set(redisKey, JSON.stringify(newRecord), ttl);
-      }
-
-      // Store in-memory fallback
+      const newRecord = { count: 1, resetAt };
       this.attempts.set(key, newRecord);
 
-      return {
-        allowed: true,
-        remaining: maxAttempts - 1,
-        resetAt
-      };
+      return { allowed: true, remaining: maxAttempts - 1, resetAt };
     }
 
     // Increment attempt count
     record.count++;
-
-    // Update in Redis
-    if (redisClient.isAvailable()) {
-      const redisKey = `${this.keyPrefix}${key}`;
-      const ttl = Math.ceil((record.resetAt - now) / 1000);
-      await redisClient.set(redisKey, JSON.stringify(record), ttl);
-    }
-
-    // Update in-memory
     this.attempts.set(key, record);
 
     const allowed = record.count <= maxAttempts;
     const remaining = Math.max(0, maxAttempts - record.count);
 
     if (!allowed) {
-      logger.logRateLimit('Limit exceeded', {
+      logger.logRateLimit("Limit exceeded (in-memory)", {
         key: key.substring(0, 30),
         attempts: record.count,
         maxAttempts,
@@ -113,11 +127,7 @@ class RateLimiter {
       });
     }
 
-    return {
-      allowed,
-      remaining,
-      resetAt: record.resetAt
-    };
+    return { allowed, remaining, resetAt: record.resetAt };
   }
 
   /**
@@ -127,23 +137,37 @@ class RateLimiter {
   async reset(key) {
     let deleted = false;
 
-    // Delete from Redis
+    // Try Redis first
     if (redisClient.isAvailable()) {
-      const redisKey = `${this.keyPrefix}${key}`;
-      await redisClient.del(redisKey);
-      deleted = true;
+      try {
+        const redisKey = `${this.keyPrefix}${key}`;
+        const success = await redisClient.del(redisKey);
+        if (success) {
+          deleted = true;
+          logger.logRateLimit("Limit reset (Redis)", {
+            key: key.substring(0, 30),
+            reason: "successful_authentication",
+          });
+        }
+      } catch (error) {
+        logger.logSecurity("Redis rate limit reset failed, falling back to in-memory", {
+          error: error.message,
+          key: key.substring(0, 30),
+        });
+      }
     }
 
-    // Delete from in-memory
+    // Fallback to in-memory
     const memDeleted = this.attempts.delete(key);
     deleted = deleted || memDeleted;
 
     if (deleted) {
-      logger.logRateLimit('Limit reset', {
+      logger.logRateLimit("Limit reset (in-memory)", {
         key: key.substring(0, 30),
-        reason: 'successful_authentication',
+        reason: "successful_authentication",
       });
     }
+
     return deleted;
   }
 
@@ -153,18 +177,12 @@ class RateLimiter {
    * @returns {string} - IP address
    */
   getClientIp(ctx) {
-    // Check common proxy headers
     const forwarded = ctx.get("x-forwarded-for");
-    if (forwarded) {
-      return forwarded.split(",")[0].trim();
-    }
+    if (forwarded) return forwarded.split(",")[0].trim();
 
     const realIp = ctx.get("x-real-ip");
-    if (realIp) {
-      return realIp;
-    }
+    if (realIp) return realIp;
 
-    // Fallback to direct connection
     return ctx.ip || ctx.request.ip || "unknown";
   }
 
@@ -183,8 +201,8 @@ class RateLimiter {
     }
 
     if (removed > 0) {
-      logger.debug('Rate limit cleanup completed', {
-        category: 'rate_limit',
+      logger.debug("Rate limit cleanup completed", {
+        category: "rate_limit",
         removedCount: removed,
         remainingCount: this.attempts.size,
       });
@@ -195,9 +213,7 @@ class RateLimiter {
    * Start periodic cleanup of expired records
    */
   startCleanup() {
-    setInterval(() => {
-      this.cleanup();
-    }, this.cleanupInterval);
+    setInterval(() => this.cleanup(), this.cleanupInterval);
   }
 
   /**
@@ -213,7 +229,6 @@ class RateLimiter {
   async clear() {
     this.attempts.clear();
 
-    // Also clear from Redis
     if (redisClient.isAvailable()) {
       const keys = await redisClient.keys(`${this.keyPrefix}*`);
       for (const key of keys) {
@@ -229,34 +244,25 @@ const rateLimiter = new RateLimiter();
 /**
  * Rate limit middleware factory
  * @param {object} options - Configuration options
- * @param {number} options.maxAttempts - Maximum attempts allowed
- * @param {number} options.windowMs - Time window in milliseconds
- * @param {string} options.keyPrefix - Prefix for rate limit key
- * @param {function} options.keyGenerator - Custom key generator function
  * @returns {function} - Koa middleware
  */
 function createRateLimitMiddleware(options = {}) {
   const {
     maxAttempts = 5,
-    windowMs = 15 * 60 * 1000, // 15 minutes
+    windowMs = 15 * 60 * 1000,
     keyPrefix = "rl",
-    keyGenerator = null
+    keyGenerator = null,
   } = options;
 
   return async (ctx, next) => {
-    // Generate rate limit key
-    let key;
-    if (keyGenerator && typeof keyGenerator === "function") {
-      key = keyGenerator(ctx);
-    } else {
-      const ip = rateLimiter.getClientIp(ctx);
-      key = `${keyPrefix}:${ip}`;
-    }
+    const ip = rateLimiter.getClientIp(ctx);
+    const key =
+      keyGenerator && typeof keyGenerator === "function"
+        ? keyGenerator(ctx)
+        : `${keyPrefix}:${ip}`;
 
-    // Check rate limit (now async)
     const result = await rateLimiter.check(key, maxAttempts, windowMs);
 
-    // Set rate limit headers
     ctx.set("X-RateLimit-Limit", String(maxAttempts));
     ctx.set("X-RateLimit-Remaining", String(result.remaining));
     ctx.set("X-RateLimit-Reset", String(result.resetAt));
@@ -265,13 +271,10 @@ function createRateLimitMiddleware(options = {}) {
       const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
       ctx.set("Retry-After", String(retryAfter));
 
-      return ctx.tooManyRequests(
-        "Too many requests. Please try again later.",
-        {
-          retryAfter,
-          resetAt: result.resetAt
-        }
-      );
+      return ctx.tooManyRequests("Too many requests. Please try again later.", {
+        retryAfter,
+        resetAt: result.resetAt,
+      });
     }
 
     await next();
@@ -281,5 +284,5 @@ function createRateLimitMiddleware(options = {}) {
 module.exports = {
   rateLimiter,
   RateLimiter,
-  createRateLimitMiddleware
+  createRateLimitMiddleware,
 };
