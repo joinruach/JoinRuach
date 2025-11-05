@@ -11,7 +11,7 @@ export async function POST(req: NextRequest){
     if (!jwt) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Rate limit by user email
-    const email = session?.user?.email;
+    const email = (session as any)?.user?.email as string | undefined;
     if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     await requireRateLimit(progressLimiter, email, "Too many progress updates");
 
