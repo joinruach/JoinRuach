@@ -83,7 +83,7 @@ module.exports = {
       }
 
       // On successful login, reset rate limits for this user
-      rateLimiter.reset(usernameKey);
+      await rateLimiter.reset(usernameKey);
 
       // Generate access token with explicit expiration
       const accessToken = strapi.plugins["users-permissions"].services.jwt.issue(

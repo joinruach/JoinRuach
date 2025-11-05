@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # Better layer caching: copy manifests first
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY .npmrc .npmrc
 COPY apps/ruach-next/package.json apps/ruach-next/package.json
 COPY packages/ruach-components/package.json packages/ruach-components/package.json
@@ -20,7 +21,7 @@ COPY packages/ruach-next-addons/package.json packages/ruach-next-addons/package.
 COPY packages/tailwind-preset/package.json packages/tailwind-preset/package.json
 
 # Install with devDependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Now copy the rest of the repo and build
 COPY . .
