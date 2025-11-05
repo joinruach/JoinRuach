@@ -48,9 +48,17 @@ function Section({ title, description, children }:{ title: string; description?:
 
 export default function About(){
   const board = parseBoard();
-  const storyImage = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE
+  const storyImageDesktop = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE
     ? imgUrl(process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE)
     : "/story_image_620x240_c05617fa54.png";
+
+  const storyImageMobile = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE_MOBILE
+    ? imgUrl(process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE_MOBILE)
+    : storyImageDesktop;
+
+  const storyImageAlt =
+    process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE_ALT ??
+    "Jonathan and Marc Seals building and filming at Ruach Studios";
 
   const mandate = [
     "Media that breathes — storytelling that restores identity and glorifies Christ, not celebrity.",
@@ -178,9 +186,21 @@ export default function About(){
             </div>
           </div>
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
-            {storyImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={storyImage} alt="Marc & Jonathan Seals" className="h-full w-full object-cover" />
+            {storyImageDesktop ? (
+              <figure className="relative w-full">
+                <picture className="block w-full">
+                  {storyImageMobile && storyImageMobile !== storyImageDesktop ? (
+                    <source media="(max-width: 768px)" srcSet={storyImageMobile} />
+                  ) : null}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={storyImageDesktop}
+                    alt={storyImageAlt}
+                    className="block w-full object-cover object-[center_28%] aspect-[5/4] md:aspect-[31/12] md:object-center"
+                    loading="lazy"
+                  />
+                </picture>
+              </figure>
             ) : (
               <div className="flex h-full min-h-[240px] items-center justify-center text-sm text-white/50">
                 Add `NEXT_PUBLIC_ABOUT_STORY_IMAGE` to display a photo of Marc & Jonathan.
