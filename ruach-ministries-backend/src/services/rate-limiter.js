@@ -4,21 +4,37 @@
  * Rate Limiter Service for Strapi Backend
  *
  * Provides rate limiting functionality for authentication endpoints
- * to prevent brute force attacks. Uses in-memory storage with
- * optional Redis support for production.
+ * to prevent brute force attacks. Uses Redis for persistence with
+ * fallback to in-memory storage.
  */
 
 const logger = require('../config/logger');
+const { redisClient } = require('./redis-client');
 
 class RateLimiter {
   constructor() {
-    // In-memory storage for rate limit tracking
+    // In-memory storage for rate limit tracking (fallback)
     // Format: { key: { count: number, resetAt: timestamp } }
     this.attempts = new Map();
+
+    // Redis key prefix
+    this.keyPrefix = "ratelimit:";
 
     // Cleanup interval (every 5 minutes)
     this.cleanupInterval = 5 * 60 * 1000;
     this.startCleanup();
+  }
+
+  /**
+   * Initialize Redis connection
+   */
+  async init() {
+    await redisClient.connect();
+    if (redisClient.isAvailable()) {
+      strapi.log.info("[RateLimiter] Using Redis for persistence");
+    } else {
+      strapi.log.warn("[RateLimiter] Redis not available, using in-memory storage");
+    }
   }
 
   /**
@@ -28,8 +44,67 @@ class RateLimiter {
    * @param {number} windowMs - Time window in milliseconds
    * @returns {object} - { allowed: boolean, remaining: number, resetAt: number }
    */
-  check(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
+  async check(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
     const now = Date.now();
+
+    // Try Redis first
+    if (redisClient.isAvailable()) {
+      return await this._checkRedis(key, maxAttempts, windowMs, now);
+    }
+
+    // Fall back to in-memory
+    return this._checkInMemory(key, maxAttempts, windowMs, now);
+  }
+
+  /**
+   * Check rate limit using Redis
+   */
+  async _checkRedis(key, maxAttempts, windowMs, now) {
+    const redisKey = `${this.keyPrefix}${key}`;
+    const resetAt = now + windowMs;
+
+    try {
+      // Increment counter
+      const count = await redisClient.incr(redisKey);
+
+      // Set expiry on first request
+      if (count === 1) {
+        const ttl = Math.ceil(windowMs / 1000);
+        await redisClient.expire(redisKey, ttl);
+      }
+
+      const allowed = count <= maxAttempts;
+      const remaining = Math.max(0, maxAttempts - count);
+
+      if (!allowed) {
+        logger.logRateLimit('Limit exceeded (Redis)', {
+          key: key.substring(0, 30),
+          attempts: count,
+          maxAttempts,
+          resetAt: new Date(resetAt).toISOString(),
+        });
+      }
+
+      return {
+        allowed,
+        remaining,
+        resetAt
+      };
+    } catch (error) {
+      logger.logSecurity('Redis rate limit check failed, falling back to in-memory', {
+        error: error.message,
+        key: key.substring(0, 30),
+      });
+
+      // Fall back to in-memory
+      return this._checkInMemory(key, maxAttempts, windowMs, now);
+    }
+  }
+
+  /**
+   * Check rate limit using in-memory storage
+   */
+  _checkInMemory(key, maxAttempts, windowMs, now) {
     const record = this.attempts.get(key);
 
     // No previous attempts or window expired
@@ -55,7 +130,7 @@ class RateLimiter {
     const remaining = Math.max(0, maxAttempts - record.count);
 
     if (!allowed) {
-      logger.logRateLimit('Limit exceeded', {
+      logger.logRateLimit('Limit exceeded (in-memory)', {
         key: key.substring(0, 30),
         attempts: record.count,
         maxAttempts,
@@ -74,10 +149,32 @@ class RateLimiter {
    * Reset rate limit for a specific key
    * @param {string} key - Unique identifier
    */
-  reset(key) {
+  async reset(key) {
+    // Try Redis first
+    if (redisClient.isAvailable()) {
+      try {
+        const redisKey = `${this.keyPrefix}${key}`;
+        const success = await redisClient.del(redisKey);
+
+        if (success) {
+          logger.logRateLimit('Limit reset (Redis)', {
+            key: key.substring(0, 30),
+            reason: 'successful_authentication',
+          });
+          return true;
+        }
+      } catch (error) {
+        logger.logSecurity('Redis rate limit reset failed, falling back to in-memory', {
+          error: error.message,
+          key: key.substring(0, 30),
+        });
+      }
+    }
+
+    // Fall back to in-memory
     const deleted = this.attempts.delete(key);
     if (deleted) {
-      logger.logRateLimit('Limit reset', {
+      logger.logRateLimit('Limit reset (in-memory)', {
         key: key.substring(0, 30),
         reason: 'successful_authentication',
       });
