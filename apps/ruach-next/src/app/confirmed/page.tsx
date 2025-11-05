@@ -66,7 +66,7 @@ function ConfirmedContent() {
             Your email has been verified successfully. You can now sign in and start your journey with Ruach.
           </p>
           <Link
-            href="/login"
+            href="/login?confirmed=true"
             className="inline-block bg-ruach-flame hover:bg-ruach-flame-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors"
           >
             Sign In Now

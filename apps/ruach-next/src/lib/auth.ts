@@ -7,6 +7,7 @@ const CONFIRM_REDIRECT = process.env.STRAPI_EMAIL_CONFIRM_REDIRECT || (process.e
 // JWT expiration times
 const JWT_MAX_AGE = 60 * 60; // 1 hour (in seconds)
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; // 7 days (in seconds)
+const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes (in milliseconds)
 
 // Helper to refresh the access token using refresh token from Strapi
 async function refreshAccessToken(token: any) {
@@ -83,7 +84,29 @@ export const authOptions: NextAuthOptions = {
           ...token,
           strapiJwt: (user as any).strapiJwt,
           accessTokenExpires: Date.now() + JWT_MAX_AGE * 1000,
+          lastActivity: Date.now(),
           error: undefined
+        };
+      }
+
+      // Update activity on session update
+      if (trigger === "update") {
+        return {
+          ...token,
+          lastActivity: Date.now(),
+        };
+      }
+
+      // Check idle timeout
+      const lastActivity = (token.lastActivity as number) || Date.now();
+      const now = Date.now();
+
+      if (now - lastActivity > IDLE_TIMEOUT) {
+        // User has been idle for > 30 minutes
+        console.log("Session expired due to inactivity");
+        return {
+          ...token,
+          error: "IdleTimeout"
         };
       }
 
@@ -99,10 +122,11 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       (session as any).strapiJwt = (token as any).strapiJwt;
       (session as any).error = token.error;
+      (session as any).lastActivity = token.lastActivity;
 
       // If there's a refresh error, the session is invalid
       if (token.error) {
-        console.error("Session has refresh error:", token.error);
+        console.error("Session has error:", token.error);
       }
 
       return session;

@@ -1,21 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { moderateLimiter, requireRateLimit, rateLimitResponse, RateLimitError } from "@/lib/ratelimit";
+import { isModerator } from "@/lib/strapi-user";
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }){
-  const session = await getServerSession(authOptions);
-  const jwt = session?.strapiJwt;
-  const email = session?.user?.email ?? undefined;
-  const allow = (process.env.MODERATOR_EMAILS||"").split(",").map(s=>s.trim()).filter(Boolean);
-  if (!jwt || !email || !allow.includes(email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getServerSession(authOptions);
+    const jwt = session?.strapiJwt;
+    const email = session?.user?.email;
 
-  const { id } = await context.params;
-  const r = await fetch(`${STRAPI}/api/lesson-comments/${id}`, {
-    method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
-    body: JSON.stringify({ data: { approved: true } }), cache: "no-store"
-  });
-  const j = await r.json().catch(()=>({}));
-  if (!r.ok) return NextResponse.json({ error: "Approve failed", details: j }, { status: 500 });
-  return NextResponse.json({ ok: true });
+    if (!jwt || !email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user has moderator role
+    const isUserModerator = await isModerator(jwt);
+    if (!isUserModerator) {
+      return NextResponse.json({ error: "Forbidden - Moderator role required" }, { status: 403 });
+    }
+
+    // Rate limit by moderator email
+    await requireRateLimit(moderateLimiter, email, "Too many moderation actions");
+
+    const { id } = await context.params;
+    const r = await fetch(`${STRAPI}/api/lesson-comments/${id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
+      body: JSON.stringify({ data: { approved: true } }), cache: "no-store"
+    });
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok) return NextResponse.json({ error: "Approve failed", details: j }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof RateLimitError) return rateLimitResponse(error);
+    throw error;
+  }
 }

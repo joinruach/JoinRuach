@@ -49,6 +49,12 @@ export const contactLimiter = createLimiter(6, "10 m", "rl:contact");
 export const testimonyLimiter = createLimiter(3, "15 m", "rl:testimony");
 export const newsletterLimiter = createLimiter(10, "10 m", "rl:newsletter");
 
+// Content interaction rate limiters
+export const commentsGetLimiter = createLimiter(100, "1 m", "rl:comments:get"); // 100 requests per minute
+export const commentsPostLimiter = createLimiter(10, "5 m", "rl:comments:post"); // 10 comments per 5 minutes
+export const progressLimiter = createLimiter(30, "1 m", "rl:progress"); // 30 saves per minute
+export const moderateLimiter = createLimiter(50, "5 m", "rl:moderate"); // 50 moderation actions per 5 minutes
+
 export function ipFromHeaders(h: Headers) {
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
 }
