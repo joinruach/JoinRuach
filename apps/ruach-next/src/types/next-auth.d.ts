@@ -5,6 +5,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     strapiJwt?: string;
     error?: string; // Error from token refresh
+    lastActivity?: number; // Timestamp of last user activity
   }
 
   interface User {
@@ -17,5 +18,6 @@ declare module "next-auth/jwt" {
     strapiJwt?: string;
     accessTokenExpires?: number; // Timestamp when access token expires
     error?: string; // Error from token refresh
+    lastActivity?: number; // Timestamp of last user activity
   }
 }
