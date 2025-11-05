@@ -4,17 +4,21 @@
  * Rate Limiter Service for Strapi Backend
  *
  * Provides rate limiting functionality for authentication endpoints
- * to prevent brute force attacks. Uses in-memory storage with
- * optional Redis support for production.
+ * to prevent brute force attacks. Uses Redis for persistence with
+ * fallback to in-memory storage.
  */
 
 const logger = require('../config/logger');
+const { redisClient } = require('./redis-client');
 
 class RateLimiter {
   constructor() {
-    // In-memory storage for rate limit tracking
+    // In-memory storage for rate limit tracking (fallback)
     // Format: { key: { count: number, resetAt: timestamp } }
     this.attempts = new Map();
+
+    // Redis key prefix
+    this.keyPrefix = "ratelimit:";
 
     // Cleanup interval (every 5 minutes)
     this.cleanupInterval = 5 * 60 * 1000;
@@ -22,23 +26,60 @@ class RateLimiter {
   }
 
   /**
+   * Initialize Redis connection
+   */
+  async init() {
+    await redisClient.connect();
+    if (redisClient.isAvailable()) {
+      strapi.log.info("[RateLimiter] Using Redis for persistence");
+    } else {
+      strapi.log.warn("[RateLimiter] Redis not available, using in-memory storage");
+    }
+  }
+
+  /**
    * Check if request should be rate limited
    * @param {string} key - Unique identifier (IP, username, etc.)
    * @param {number} maxAttempts - Maximum attempts allowed
    * @param {number} windowMs - Time window in milliseconds
-   * @returns {object} - { allowed: boolean, remaining: number, resetAt: number }
+   * @returns {Promise<object>} - { allowed: boolean, remaining: number, resetAt: number }
    */
-  check(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
+  async check(key, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
     const now = Date.now();
-    const record = this.attempts.get(key);
+    let record = null;
+
+    // Try Redis first
+    if (redisClient.isAvailable()) {
+      const redisKey = `${this.keyPrefix}${key}`;
+      const data = await redisClient.get(redisKey);
+
+      if (data) {
+        record = JSON.parse(data);
+      }
+    }
+
+    // Fallback to in-memory if Redis not available or no record found
+    if (!record && !redisClient.isAvailable()) {
+      record = this.attempts.get(key);
+    }
 
     // No previous attempts or window expired
     if (!record || now > record.resetAt) {
       const resetAt = now + windowMs;
-      this.attempts.set(key, {
+      const newRecord = {
         count: 1,
         resetAt
-      });
+      };
+
+      // Store in Redis
+      if (redisClient.isAvailable()) {
+        const redisKey = `${this.keyPrefix}${key}`;
+        const ttl = Math.ceil(windowMs / 1000);
+        await redisClient.set(redisKey, JSON.stringify(newRecord), ttl);
+      }
+
+      // Store in-memory fallback
+      this.attempts.set(key, newRecord);
 
       return {
         allowed: true,
@@ -49,6 +90,15 @@ class RateLimiter {
 
     // Increment attempt count
     record.count++;
+
+    // Update in Redis
+    if (redisClient.isAvailable()) {
+      const redisKey = `${this.keyPrefix}${key}`;
+      const ttl = Math.ceil((record.resetAt - now) / 1000);
+      await redisClient.set(redisKey, JSON.stringify(record), ttl);
+    }
+
+    // Update in-memory
     this.attempts.set(key, record);
 
     const allowed = record.count <= maxAttempts;
@@ -74,8 +124,20 @@ class RateLimiter {
    * Reset rate limit for a specific key
    * @param {string} key - Unique identifier
    */
-  reset(key) {
-    const deleted = this.attempts.delete(key);
+  async reset(key) {
+    let deleted = false;
+
+    // Delete from Redis
+    if (redisClient.isAvailable()) {
+      const redisKey = `${this.keyPrefix}${key}`;
+      await redisClient.del(redisKey);
+      deleted = true;
+    }
+
+    // Delete from in-memory
+    const memDeleted = this.attempts.delete(key);
+    deleted = deleted || memDeleted;
+
     if (deleted) {
       logger.logRateLimit('Limit reset', {
         key: key.substring(0, 30),
@@ -148,8 +210,16 @@ class RateLimiter {
   /**
    * Clear all rate limit records (for testing)
    */
-  clear() {
+  async clear() {
     this.attempts.clear();
+
+    // Also clear from Redis
+    if (redisClient.isAvailable()) {
+      const keys = await redisClient.keys(`${this.keyPrefix}*`);
+      for (const key of keys) {
+        await redisClient.del(key);
+      }
+    }
   }
 }
 
@@ -183,8 +253,8 @@ function createRateLimitMiddleware(options = {}) {
       key = `${keyPrefix}:${ip}`;
     }
 
-    // Check rate limit
-    const result = rateLimiter.check(key, maxAttempts, windowMs);
+    // Check rate limit (now async)
+    const result = await rateLimiter.check(key, maxAttempts, windowMs);
 
     // Set rate limit headers
     ctx.set("X-RateLimit-Limit", String(maxAttempts));
