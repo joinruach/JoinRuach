@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import type { Session } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { progressLimiter, requireRateLimit, rateLimitResponse, RateLimitError } from "@/lib/ratelimit";
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
 export async function POST(req: NextRequest){
   try {
-    const session = await getServerSession(authOptions as any);
-    const jwt = (session as any)?.strapiJwt as string | undefined;
+    const session = await getServerSession(authOptions as any) as Session | null;
+    const jwt = session?.strapiJwt as string | undefined;
     if (!jwt) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Rate limit by user email
-    const email = (session as any)?.user?.email as string | undefined;
+    const email = session?.user?.email as string | undefined;
     if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     await requireRateLimit(progressLimiter, email, "Too many progress updates");
 

@@ -42,12 +42,14 @@ const fallbackGivingHighlights = [
   {
     label: "Most Impactful",
     amount: "$75 / month",
-    description: "Feeds 5 families + funds outreach film gear."
+    description: "Feeds 5 families + funds outreach film gear.",
+    badge: undefined
   },
   {
     label: "Launch Kit",
     amount: "$250 one-time",
-    description: "Covers venue, permits, and testimony cards."
+    description: "Covers venue, permits, and testimony cards.",
+    badge: undefined
   }
 ];
 
