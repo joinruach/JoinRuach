@@ -22,3 +22,44 @@ const securityHeaders = [
       .trim(),
   },
 ];
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
+  webpack: (config, { isServer }) => {
+    // Handle .node files (native Node.js addons like @resvg/resvg-js)
+    // Tell webpack to ignore/copy .node files without parsing them
+    config.module.rules.push({
+      test: /\.node$/,
+      type: "asset/resource",
+      generator: {
+        filename: "static/chunks/[name].[hash][ext]",
+      },
+    });
+
+    // Also configure webpack to not parse .node files
+    config.module.noParse = config.module.noParse || [];
+    if (Array.isArray(config.module.noParse)) {
+      config.module.noParse.push(/\.node$/);
+    } else {
+      config.module.noParse = [config.module.noParse, /\.node$/];
+    }
+
+    // Suppress warnings for optional @resvg platform-specific binaries
+    config.ignoreWarnings = config.ignoreWarnings || [];
+    config.ignoreWarnings.push(
+      { module: /node_modules\/@resvg\/resvg-js/ }
+    );
+
+    return config;
+  },
+};
+
+export default nextConfig;
