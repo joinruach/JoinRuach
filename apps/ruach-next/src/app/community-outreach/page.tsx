@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import DonationForm from "@ruach/components/components/ruach/DonationForm";
@@ -38,11 +39,19 @@ const fallbackVolunteerHighlights: Array<{ title: string; description?: string; 
   { title: "Follow-up discipleship and small groups" }
 ];
 
-const fallbackGivingHighlights = [
+type GivingHighlight = {
+  label?: string;
+  amount?: string;
+  description?: string;
+  badge?: string;
+};
+
+const fallbackGivingHighlights: GivingHighlight[] = [
   {
     label: "Most Impactful",
     amount: "$75 / month",
-    description: "Feeds 5 families + funds outreach film gear."
+    description: "Feeds 5 families + funds outreach film gear.",
+    badge: "Partner Favorite"
   },
   {
     label: "Launch Kit",
@@ -112,12 +121,14 @@ function normalizeVolunteerHighlights(
   return normalized.length > 0 ? normalized : fallbackVolunteerHighlights;
 }
 
-function normalizeGivingHighlights(entity?: CommunityOutreachPageEntity["attributes"]["givingHighlights"]) {
+function normalizeGivingHighlights(
+  entity?: CommunityOutreachPageEntity["attributes"]["givingHighlights"]
+): GivingHighlight[] {
   if (!Array.isArray(entity) || entity.length === 0) {
     return fallbackGivingHighlights;
   }
 
-  const normalized = entity
+  const normalized: GivingHighlight[] = entity
     .map((item) => ({
       label: item?.label,
       amount: item?.amount,
@@ -127,6 +138,14 @@ function normalizeGivingHighlights(entity?: CommunityOutreachPageEntity["attribu
     .filter((item) => Boolean(item.label?.trim() || item.amount?.trim()));
 
   return normalized.length > 0 ? normalized : fallbackGivingHighlights;
+}
+
+function extractMediaDimension(media: unknown, key: "width" | "height"): number | undefined {
+  if (!media || typeof media !== "object") {
+    return undefined;
+  }
+  const value = (media as Record<string, unknown>)[key];
+  return typeof value === "number" ? value : undefined;
 }
 
 export async function generateMetadata() {
@@ -217,6 +236,19 @@ export default async function CommunityOutreachPage() {
   const volunteerSectionTitle = attributes?.volunteerSectionTitle ?? "Volunteer Sign-Up";
   const givingSectionTitle = attributes?.givingSectionTitle ?? "Support Outreach Campaigns";
 
+  const rawSubscriptionImage = attributes?.subscriptionBanner?.image?.data?.attributes;
+  const subscriptionBannerImage = (() => {
+    if (!rawSubscriptionImage?.url) return null;
+    const resolvedUrl = imgUrl(rawSubscriptionImage.url);
+    if (!resolvedUrl) return null;
+    return {
+      url: resolvedUrl,
+      alt: rawSubscriptionImage.alternativeText ?? attributes?.subscriptionBanner?.title ?? "",
+      width: extractMediaDimension(rawSubscriptionImage, "width"),
+      height: extractMediaDimension(rawSubscriptionImage, "height")
+    };
+  })();
+
   const subscriptionBanner =
     attributes?.subscriptionBannerEnabled && attributes?.subscriptionBanner
       ? {
@@ -224,7 +256,7 @@ export default async function CommunityOutreachPage() {
           body: attributes.subscriptionBanner.body ?? "",
           ctaLabel: attributes.subscriptionBanner.ctaLabel ?? undefined,
           ctaUrl: attributes.subscriptionBanner.ctaUrl ?? undefined,
-          image: attributes.subscriptionBanner.image?.data?.attributes
+          image: subscriptionBannerImage
         }
       : null;
 
@@ -427,11 +459,14 @@ export default async function CommunityOutreachPage() {
                 </Link>
               ) : null}
             </div>
-            {subscriptionBanner.image?.url ? (
-              <img
-                src={imgUrl(subscriptionBanner.image.url)}
-                alt={subscriptionBanner.image.alternativeText ?? subscriptionBanner.title}
+            {subscriptionBanner?.image ? (
+              <Image
+                src={subscriptionBanner.image.url}
+                alt={subscriptionBanner.image.alt}
+                width={subscriptionBanner.image.width ?? 640}
+                height={subscriptionBanner.image.height ?? 360}
                 className="h-32 w-full max-w-sm rounded-2xl object-cover"
+                sizes="(min-width: 768px) 320px, 100vw"
               />
             ) : null}
           </div>
