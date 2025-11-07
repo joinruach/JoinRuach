@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruach Ministries - Animated Outro</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a1828 0%, #1a3a52 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Particle container for wind/breath effect */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(77, 146, 150, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s infinite ease-in-out;
+            opacity: 0;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Main logo container */
+        .logo-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        /* SVG styling */
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(77, 146, 150, 0.5));
+        }
+
+        /* Animated glow ring */
+        .glow-ring {
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            border: 3px solid rgba(77, 146, 150, 0.3);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(0.95);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        /* Circle path animation - progressive fill following stroke (delayed start) */
+        #circle-path {
+            fill: url(#circleGradient);
+            fill-opacity: 0;
+            stroke: url(#circleGradient);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 3200;
+            stroke-dashoffset: 3200;
+            opacity: 0;
+            filter: drop-shadow(0 0 8px rgba(77, 146, 150, 0.8));
+            animation: 
+                fadeInStroke 0.1s ease-in forwards 1s,
+                drawCircle 2.2s cubic-bezier(0.65, 0, 0.35, 1) forwards 1s,
+                fadeDrawGlow 2.2s ease-out forwards 1s,
+                progressiveFillCircle 2.5s cubic-bezier(0.65, 0, 0.35, 1) forwards 1.4s;
+        }
+
+        @keyframes fadeInStroke {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes drawCircle {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes fadeDrawGlow {
+            0% {
+                filter: drop-shadow(0 0 12px rgba(77, 146, 150, 1));
+            }
+            100% {
+                filter: drop-shadow(0 0 8px rgba(77, 146, 150, 0.6));
+            }
+        }
+
+        @keyframes progressiveFillCircle {
+            0% {
+                fill-opacity: 0;
+                stroke-width: 2.5;
+            }
+            85% {
+                fill-opacity: 1;
+                stroke-width: 1.5;
+            }
+            100% {
+                fill-opacity: 1;
+                stroke-width: 0;
+                filter: drop-shadow(0 0 20px rgba(77, 146, 150, 0.5));
+            }
+        }
+
+        /* Golden accent fire sweep - AFTER flame appears */
+        #golden-accent {
+            opacity: 0.9;
+            clip-path: inset(0 100% 0 0);
+            animation: revealRightToLeft 1.8s ease-out forwards 6s;
+            filter: drop-shadow(0 0 15px rgba(242, 169, 0, 0.8));
+        }
+
+        @keyframes revealRightToLeft {
+            0% {
+                clip-path: inset(0 100% 0 0);
+                filter: drop-shadow(0 0 30px rgba(242, 169, 0, 1)) brightness(1.8);
+            }
+            50% {
+                filter: drop-shadow(0 0 25px rgba(242, 169, 0, 0.9)) brightness(1.4);
+            }
+            100% {
+                clip-path: inset(0 0 0 0);
+                filter: drop-shadow(0 0 15px rgba(242, 169, 0, 0.8)) brightness(1);
+            }
+        }
+
+        /* Fire particles for golden accent */
+        .fire-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 211, 104, 0.9) 0%, rgba(242, 169, 0, 0.6) 40%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fireTrail 1.2s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fireTrail {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0.5);
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--fx), var(--fy)) scale(1.5);
+            }
+        }
+
+        /* Hebrew letters - progressive fill following stroke (delayed start) */
+        #hebrew-letters path {
+            fill: url(#letterGradient);
+            fill-opacity: 0;
+            stroke: url(#letterGradient);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            opacity: 0;
+            filter: drop-shadow(0 0 6px rgba(77, 146, 150, 0.6));
+            animation: 
+                fadeInStroke 0.1s ease-in forwards 1s,
+                drawLetters 2.2s cubic-bezier(0.65, 0, 0.35, 1) forwards 1s,
+                progressiveFillLetters 2.5s cubic-bezier(0.65, 0, 0.35, 1) forwards 1.4s;
+        }
+
+        #hebrew-letters ellipse {
+            fill: url(#letterGradient);
+            fill-opacity: 0;
+            stroke: url(#letterGradient);
+            stroke-width: 2;
+            stroke-dasharray: 80;
+            stroke-dashoffset: 80;
+            opacity: 0;
+            filter: drop-shadow(0 0 6px rgba(77, 146, 150, 0.6));
+            animation: 
+                fadeInStroke 0.1s ease-in forwards 1s,
+                drawLetters 2.2s cubic-bezier(0.65, 0, 0.35, 1) forwards 1s,
+                progressiveFillLetters 2.5s cubic-bezier(0.65, 0, 0.35, 1) forwards 1.4s;
+        }
+
+        @keyframes drawLetters {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes progressiveFillLetters {
+            0% {
+                fill-opacity: 0;
+                stroke-width: 2;
+            }
+            85% {
+                fill-opacity: 1;
+                stroke-width: 1.2;
+            }
+            100% {
+                fill-opacity: 1;
+                stroke-width: 0;
+                filter: drop-shadow(0 0 8px rgba(77, 146, 150, 0.4));
+            }
+        }
+
+        /* Flame animation - smooth ethereal entry */
+        #flame {
+            transform-origin: center bottom;
+            opacity: 0;
+            filter: blur(8px);
+            animation: 
+                fadeInFlame 1.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards 4s,
+                flicker 2s ease-in-out infinite 6s;
+        }
+
+        @keyframes fadeInFlame {
+            0% {
+                opacity: 0;
+                filter: blur(8px) brightness(1.5);
+                transform: scale(0.85) translateY(15px);
+            }
+            40% {
+                opacity: 0.3;
+                filter: blur(4px) brightness(1.3);
+            }
+            70% {
+                opacity: 0.7;
+                filter: blur(1px) brightness(1.1);
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0px) brightness(1);
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes flicker {
+            0%, 100% {
+                transform: scale(1, 1) translateY(0);
+                opacity: 1;
+                filter: blur(0px);
+            }
+            25% {
+                transform: scale(0.98, 1.05) translateY(-2px);
+                opacity: 0.9;
+                filter: blur(0px);
+            }
+            50% {
+                transform: scale(1.02, 0.95) translateY(1px);
+                opacity: 1;
+                filter: blur(0px);
+            }
+            75% {
+                transform: scale(0.99, 1.03) translateY(-1px);
+                opacity: 0.95;
+                filter: blur(0px);
+            }
+        }
+
+        /* Flame glow - perfectly synced */
+        #flame-glow {
+            opacity: 0;
+            filter: blur(12px);
+            animation: 
+                fadeInFlameGlow 1.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards 4s,
+                flameGlow 2s ease-in-out infinite 6s;
+        }
+
+        @keyframes fadeInFlameGlow {
+            0% {
+                opacity: 0;
+                filter: blur(12px);
+                transform: scale(0.8);
+            }
+            40% {
+                opacity: 0.2;
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 0.5;
+                filter: blur(8px);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes flameGlow {
+            0%, 100% {
+                opacity: 0.4;
+                filter: blur(8px);
+            }
+            50% {
+                opacity: 0.7;
+                filter: blur(12px);
+            }
+        }
+
+        /* Text below logo */
+        .ministry-text {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #ffd368 0%, #f2a900 50%, #d97700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInText 2s ease-in forwards 3.5s, flameTextFlicker 3s ease-in-out infinite 7.8s;
+            filter: drop-shadow(0 0 10px rgba(242, 169, 0, 0.5));
+        }
+
+        @keyframes fadeInText {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes flameTextFlicker {
+            0%, 100% {
+                filter: drop-shadow(0 0 10px rgba(242, 169, 0, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 20px rgba(242, 169, 0, 0.8));
+            }
+        }
+
+        .flame-embers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .ember {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #ffd368, transparent);
+            border-radius: 50%;
+            animation: emberRise 3s ease-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes emberRise {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(1);
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.3);
+            }
+        }
+
+        /* Spiral wind effect */
+        .wind-spiral {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .wind-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(77, 146, 150, 0.3), transparent);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Wind spiral effect -->
+        <div class="wind-spiral" id="windSpiral"></div>
+        
+        <!-- Floating particles -->
+        <div class="particles" id="particles"></div>
+        
+        <!-- Glowing pulse rings -->
+        <div class="glow-ring"></div>
+        <div class="glow-ring" style="animation-delay: 1s;"></div>
+        <div class="glow-ring" style="animation-delay: 2s;"></div>
+        
+        <!-- Main logo -->
+        <div class="logo-container">
+            <svg viewBox="0 0 631 638" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1d597b;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#4d9296;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#f2a900;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="flameGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ffd368;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#f2a900;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#8f6400;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="letterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#337388;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#4d9296;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#185378;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                
+                <!-- Circular border path -->
+                <path id="circle-path" d="M258.785,608.709c32.075,11.508 84.809,10.004 140.541,-7.378c86.418,-26.946 180.054,-92.051 215.128,-206.013c0.016,-0.051 0.053,-0.093 0.101,-0.113c0.053,-0.016 0.106,-0.016 0.154,0.01c0.117,0.067 0.228,0.207 0.297,0.434c0.09,0.269 0.133,0.677 0.133,1.22c-0,2.022 -0.632,5.961 -1.953,11.39c-7.538,30.911 -37.501,110.13 -100.192,156.479c-191.683,141.714 -348.854,28.373 -372.718,12.543c-230.297,-152.794 -152.665,-485.771 83.864,-558.031c135.271,-41.329 256.933,9.078 329.879,91.482c50,56.487 76.141,130.051 71.953,191.274c-0.005,0.087 -0.079,0.16 -0.17,0.16c-0.09,0.005 -0.164,-0.062 -0.18,-0.145c-14.639,-100.949 -83.806,-181.393 -150.876,-223.368c-61.471,-38.475 -121.041,-41.19 -166.545,-41.676c-52.346,-0.553 -123.344,24.744 -178.27,75.906c-47.118,43.898 -82.325,107.447 -87.834,182.934c-9.353,128.221 68.397,233.543 164.655,267.525c49.915,17.62 120.563,22.35 172.431,-2.502c62.091,-29.753 156.195,-83.759 167.522,-229.086c1.618,-20.789 0.859,-35.027 -1.593,-44.741c-1.831,-7.254 -4.602,-11.974 -8.031,-15.009c-3.418,-3.024 -7.494,-4.368 -11.921,-4.88c-14.873,-1.727 -52.091,-0.202 -72.15,-2.182c-12.463,-1.23 -27.16,-7.496 -32.357,-18.607c-9.071,-19.382 -3.083,-48.499 6.752,-70.229c0.037,-0.077 0.122,-0.118 0.207,-0.098c0.08,0.021 0.138,0.098 0.133,0.181c-0,0 -0.547,6.349 1.587,12.739c2.118,6.364 6.905,12.78 17.563,12.961c34.884,0.595 69.358,-1.918 103.122,1.598c7.516,0.785 12.25,5.325 15.239,10.686c4.458,8.003 5.026,17.836 5.191,19.63c12.24,132.925 -21.837,203.744 -70.876,262.842c-57.299,69.05 -140.733,100.488 -194.878,109.939c-20.494,3.578 -36.795,4.002 -45.908,2.125Z" fill="url(#circleGradient)" />
+                
+                <!-- Right-side golden accent -->
+                <path id="golden-accent" d="M625.972,302.006c5.484,-66.367 -28.693,-140.076 -71.396,-190.291c-33.307,-39.167 -72.931,-61.796 -82.439,-66.493l5.014,35.27c70.856,48.102 131.086,117.66 148.821,221.514Z" fill="url(#flameGradient)" opacity="0.9" />
+                
+                <!-- Hebrew letters -->
+                <g id="hebrew-letters">
+                    <!-- Bottom horizontal bar -->
+                    <path d="M233.785,471.557c3.997,0.022 7.218,6.152 7.218,6.152c0.361,0.722 0.377,1.363 0,1.901l-7.266,6.144l-54.193,0c-4.013,0 -7.267,-6.144 -7.267,-6.144c0,-0 -0.382,-1.636 0,-2.203l7.315,-6.152l54.193,0.302Z" fill="url(#letterGradient)" />
+                    
+                    <!-- Center vertical letter (ו - Vav) -->
+                    <path d="M347.861,172.725c-12.061,0.328 -28.358,43.931 -10.722,68.614c2.751,3.851 18.992,3.502 23.169,5.844c6.359,3.567 12.304,18.736 12.665,27.484c1.518,36.763 -0.361,158.863 0.265,191.283c0.075,3.873 8.387,4.173 12.07,2.71c3.843,-1.526 10.674,-7.456 10.722,-12.284c0.388,-37.116 0.489,-173.799 -0.849,-219.822c-0.34,-11.839 -9.114,-27.716 -18.885,-33.429c-6.97,-4.074 -19.369,-5.031 -25.197,-8.407c-5.817,-3.37 -3.456,-22.831 -3.238,-21.993Z" fill="url(#letterGradient)" />
+                    
+                    <!-- Left letter (ח - Chet) -->
+                    <path d="M280.621,194.687c5.531,1.37 10.515,4.638 14.263,9.72c7.924,10.738 7.006,25.462 6.035,31.914c-0.797,5.263 -3.742,18.953 -12.617,25.674c-3.514,2.658 -7.261,3.748 -10.425,9.022c-0.907,1.509 -1.635,3.138 -2.192,4.854c2.484,28.156 4.873,57.635 6.582,83.268c1.316,19.744 2.171,39.519 4.389,56.203c0.669,5.046 1.306,11.177 1.646,17.345c0.446,8.148 0.446,16.249 -0,24.288c-0.818,1.52 -1.731,2.906 -2.744,4.162c-1.21,1.505 -4.613,4.255 -8.227,6.246c-1.821,1.003 -3.329,1.633 -4.39,0.692c-0.908,-0.806 -1.168,-2.492 -1.099,-4.161c-0.377,-20.024 -0.923,-39.67 -1.645,-59.677c-1.757,-48.779 -4.459,-96.4 -8.227,-145.018c-16.864,-0.16 -108.976,-1.075 -111.906,-0.693c-0.197,0.026 -1.009,0.264 -1.646,0.693c-0.695,0.47 -1.008,0.967 -1.098,1.391c-0.085,0.418 -0.006,1.163 0.552,2.078c0.934,1.551 1.932,1.411 2.739,2.776c0.727,1.215 0.891,2.916 0.552,4.162c-0.499,1.835 -1.991,2.42 -3.291,3.469c-0.892,0.719 -2.84,3.945 -4.39,7.636c-3.02,7.192 -4.209,16.363 -4.389,18.736c-1.227,16.358 -1.365,31.718 -0.547,47.181c0.292,5.517 0.642,11.297 1.099,15.96c0.626,6.462 1.565,12.273 2.192,18.731c0.53,5.49 0.897,13.038 1.098,20.126c0.361,12.724 0.324,27.303 0,41.629c-2.807,11.508 -7.829,21.166 -15.361,25.674c-5.053,3.03 -8.131,3.035 -9.872,1.391c-1.524,-1.437 -2.362,-4.286 -2.192,-9.022c0.159,-4.699 1.65,-7.641 2.739,-11.1c1.273,-4.068 1.236,-7.972 1.645,-13.188c0.456,-5.77 1.189,-11.788 2.192,-18.038l0,-99.222c1.486,-9.777 3.599,-18.783 6.587,-26.372c1.088,-2.766 3.318,-11.152 4.384,-18.731c0.276,-1.934 0.446,-3.878 0,-6.246c-1.433,-7.672 -11.082,-13.876 -13.163,-16.652c-3.774,-5.046 -6.407,-11.896 -7.68,-19.429c-0.579,-3.438 -0.558,-12.335 0.552,-20.819c1.22,-9.342 3.789,-17.852 5.483,-20.815c2.919,-5.102 6.873,-9.068 11.523,-11.797l16.454,14.574l134.395,1.385Z" fill="url(#letterGradient)" />
+                    
+                    <!-- Center dot - aligned with visual center -->
+                    <ellipse cx="315.5" cy="319" rx="12.757" ry="13.053" fill="url(#letterGradient)" />
+                </g>
+                
+                <!-- Flame - appears after logo loads -->
+                <g id="flame">
+                    <!-- Flame glow (background) -->
+                    <ellipse id="flame-glow" cx="350" cy="170" rx="35" ry="45" fill="url(#flameGradient)" opacity="0.5" />
+                    
+                    <!-- Main flame shape -->
+                    <path d="M330.011,90.425c0,-0 2.224,19.413 -0.605,27.369c-4.289,12.052 -19.14,31.739 -24.942,46.344c-4.978,12.527 -1.735,32.281 2.049,41.329c5.43,12.987 26.951,35.688 26.951,35.688c-11.549,-20.569 -9.736,-55.857 10.591,-70.35c6.747,-4.81 16.535,-18.563 16.248,-27.347c-0.26,-8.019 -4.676,-32.178 -30.292,-53.033Z" fill="url(#flameGradient)" />
+                    
+                    <path d="M363.332,149.172c-1.202,17.716 -19.909,22.437 -10.463,43.436c18.195,-11.306 18.09,-27.544 10.463,-43.436Z" fill="url(#flameGradient)" />
+                </g>
+            </svg>
+        </div>
+        
+        <!-- Ministry name -->
+        <div class="ministry-text">
+            Ministries
+            <div class="flame-embers"></div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 30;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Random starting position
+            const startX = Math.random() * 600;
+            const startY = Math.random() * 600;
+            
+            // Random movement
+            const moveX = (Math.random() - 0.5) * 400;
+            const moveY = (Math.random() - 0.5) * 400;
+            
+            // Random size
+            const size = Math.random() * 30 + 10;
+            
+            particle.style.left = startX + 'px';
+            particle.style.top = startY + 'px';
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.setProperty('--tx', moveX + 'px');
+            particle.style.setProperty('--ty', moveY + 'px');
+            particle.style.animationDelay = (Math.random() * 8) + 's';
+            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+            
+            particlesContainer.appendChild(particle);
+        }
+
+        // Create wind spiral lines
+        const windSpiral = document.getElementById('windSpiral');
+        const lineCount = 8;
+
+        for (let i = 0; i < lineCount; i++) {
+            const line = document.createElement('div');
+            line.className = 'wind-line';
+            
+            const angle = (360 / lineCount) * i;
+            const length = 200 + Math.random() * 100;
+            
+            line.style.width = length + 'px';
+            line.style.left = '50%';
+            line.style.top = '50%';
+            line.style.transform = `rotate(${angle}deg) translateX(-50%)`;
+            line.style.transformOrigin = '0 50%';
+            
+            windSpiral.appendChild(line);
+        }
+
+        // Add subtle flame flicker variation
+        setInterval(() => {
+            const flame = document.getElementById('flame');
+            if (flame && parseFloat(getComputedStyle(flame).opacity) > 0) {
+                const randomScale = 0.98 + Math.random() * 0.04;
+                const currentTransform = flame.style.transform || '';
+                if (!currentTransform.includes('scale')) {
+                    flame.style.transform = `scale(${randomScale})`;
+                }
+            }
+        }, 200);
+
+        // Create fire particles for golden accent sweep
+        // Animation timeline (UPDATED - 1.0s anticipation before drawing):
+        // 0.0s → ✨ Ambient particles floating (EXTENDED anticipation moment)
+        // 1.0s → 🔵✡️  Circle & Hebrew letters begin drawing (stroke animation)
+        // 1.4s → 🔵✡️  Fill begins fading in BEHIND the drawing stroke (progressive fill)
+        // 3.2s → 🔵✡️  Drawing completes, fill continues solidifying
+        // 3.5s → 📝 "MINISTRIES" text fades in
+        // 3.9s → 🔵✡️  Fill complete, strokes fade to 0
+        // 4.0s → 🔥 Flame begins ethereal entry (1.8s duration)
+        // 5.8s → 🔥 Flame fully materialized
+        // 6.0s → 🔥 Golden accent sweeps in (1.8s duration) + fire particles
+        // 6.0s → 🔥 Flame flickering begins
+        // 7.8s → 🔥 Golden accent completes + "MINISTRIES" text begins flickering
+        // 8.0s → ✨ Rising embers start
+        setTimeout(() => {
+            const container = document.querySelector('.container');
+            const fireParticleCount = 15;
+            
+            for (let i = 0; i < fireParticleCount; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'fire-particle';
+                    
+                    // Position along the sweep path (top right area)
+                    const startX = 500 + (i * 10);
+                    const startY = 80 + Math.random() * 150;
+                    
+                    // Random drift
+                    const driftX = (Math.random() - 0.7) * 80;
+                    const driftY = (Math.random() - 0.5) * 60;
+                    
+                    // Random size
+                    const size = Math.random() * 20 + 10;
+                    
+                    particle.style.left = startX + 'px';
+                    particle.style.top = startY + 'px';
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    particle.style.setProperty('--fx', driftX + 'px');
+                    particle.style.setProperty('--fy', driftY + 'px');
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove particle after animation
+                    setTimeout(() => particle.remove(), 1200);
+                }, i * 80);
+            }
+        }, 6000); // Start when golden accent begins (after flame appears)
+
+        // Create rising embers from ministry text
+        setTimeout(() => {
+            const flameEmbers = document.querySelector('.flame-embers');
+            
+            setInterval(() => {
+                const ember = document.createElement('div');
+                ember.className = 'ember';
+                
+                // Random position along text width
+                const randomX = Math.random() * 100;
+                ember.style.left = randomX + '%';
+                ember.style.bottom = '0';
+                ember.style.animationDelay = Math.random() * 2 + 's';
+                ember.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                flameEmbers.appendChild(ember);
+                
+                // Remove ember after animation
+                setTimeout(() => ember.remove(), 5000);
+            }, 400);
+        }, 8000); // Start after golden accent completes
+    </script>
+
+</body>
+</html>
