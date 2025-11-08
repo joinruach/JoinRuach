@@ -79,6 +79,51 @@ export interface MediaVideoSource extends Struct.ComponentSchema {
   };
 }
 
+export interface OutreachGivingHighlight extends Struct.ComponentSchema {
+  collectionName: 'components_outreach_giving_highlights';
+  info: {
+    description: 'Callout card for a giving option or campaign focus';
+    displayName: 'Giving highlight';
+    icon: 'donate';
+  };
+  attributes: {
+    amount: Schema.Attribute.String;
+    badge: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface OutreachSubscriptionBanner extends Struct.ComponentSchema {
+  collectionName: 'components_outreach_subscription_banners';
+  info: {
+    description: 'Optional email or SMS banner for the outreach page';
+    displayName: 'Subscription banner';
+    icon: 'megaphone';
+  };
+  attributes: {
+    body: Schema.Attribute.Text;
+    ctaLabel: Schema.Attribute.String;
+    ctaUrl: Schema.Attribute.String;
+    image: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface OutreachVolunteerPoint extends Struct.ComponentSchema {
+  collectionName: 'components_outreach_volunteer_points';
+  info: {
+    description: 'Short highlight describing a volunteer opportunity or focus area';
+    displayName: 'Volunteer point';
+    icon: 'check';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    icon: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ResourceResourceCard extends Struct.ComponentSchema {
   collectionName: 'components_resource_resource_cards';
   info: {
@@ -262,6 +307,9 @@ declare module '@strapi/strapi' {
       'general.social-links': GeneralSocialLinks;
       'impact.metric': ImpactMetric;
       'media.video-source': MediaVideoSource;
+      'outreach.giving-highlight': OutreachGivingHighlight;
+      'outreach.subscription-banner': OutreachSubscriptionBanner;
+      'outreach.volunteer-point': OutreachVolunteerPoint;
       'resource.resource-card': ResourceResourceCard;
       'shared.core-beliefs': SharedCoreBeliefs;
       'shared.highlight': SharedHighlight;

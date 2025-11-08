@@ -744,92 +744,6 @@ export interface ApiCommunityOutreachPageCommunityOutreachPage
   };
 }
 
-export interface ApiOutreachCampaignOutreachCampaign
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'outreach_campaigns';
-  info: {
-    description: 'Recurring outreach initiatives that can be linked from stories or the outreach page';
-    displayName: 'Outreach Campaign';
-    pluralName: 'outreach-campaigns';
-    singularName: 'outreach-campaign';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    description: Schema.Attribute.RichText;
-    donationLink: Schema.Attribute.String;
-    endDate: Schema.Attribute.Date;
-    giveCode: Schema.Attribute.String;
-    impactMetrics: Schema.Attribute.Component<'impact.metric', true>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::outreach-campaign.outreach-campaign'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    startDate: Schema.Attribute.Date;
-    stories: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::outreach-story.outreach-story'
-    >;
-    summary: Schema.Attribute.Text;
-    supportingMedia: Schema.Attribute.Media<'images' | 'videos', true>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiOutreachStoryOutreachStory
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'outreach_stories';
-  info: {
-    description: 'Stories and testimonies from community outreach';
-    displayName: 'Outreach Story';
-    pluralName: 'outreach-stories';
-    singularName: 'outreach-story';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    body: Schema.Attribute.RichText;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::outreach-story.outreach-story'
-    > &
-      Schema.Attribute.Private;
-    media: Schema.Attribute.Media<'images' | 'videos' | 'files', true>;
-    publishedAt: Schema.Attribute.DateTime;
-    relatedCampaign: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::outreach-campaign.outreach-campaign'
-    >;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    storyDate: Schema.Attribute.Date;
-    summary: Schema.Attribute.Text;
-    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiContactInfoContactInfo extends Struct.SingleTypeSchema {
   collectionName: 'contact_infos';
   info: {
@@ -1427,6 +1341,92 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
         },
         number
       >;
+  };
+}
+
+export interface ApiOutreachCampaignOutreachCampaign
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'outreach_campaigns';
+  info: {
+    description: 'Recurring outreach initiatives that can be linked from stories or the outreach page';
+    displayName: 'Outreach Campaign';
+    pluralName: 'outreach-campaigns';
+    singularName: 'outreach-campaign';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
+    donationLink: Schema.Attribute.String;
+    endDate: Schema.Attribute.Date;
+    giveCode: Schema.Attribute.String;
+    impactMetrics: Schema.Attribute.Component<'impact.metric', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-campaign.outreach-campaign'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    startDate: Schema.Attribute.Date;
+    stories: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-story.outreach-story'
+    >;
+    summary: Schema.Attribute.Text;
+    supportingMedia: Schema.Attribute.Media<'images' | 'videos', true>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiOutreachStoryOutreachStory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'outreach_stories';
+  info: {
+    description: 'Stories and testimonies from community outreach';
+    displayName: 'Outreach Story';
+    pluralName: 'outreach-stories';
+    singularName: 'outreach-story';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    body: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::outreach-story.outreach-story'
+    > &
+      Schema.Attribute.Private;
+    media: Schema.Attribute.Media<'images' | 'videos' | 'files', true>;
+    publishedAt: Schema.Attribute.DateTime;
+    relatedCampaign: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::outreach-campaign.outreach-campaign'
+    >;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    storyDate: Schema.Attribute.Date;
+    summary: Schema.Attribute.Text;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
