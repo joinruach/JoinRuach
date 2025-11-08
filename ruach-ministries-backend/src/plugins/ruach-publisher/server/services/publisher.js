@@ -191,30 +191,42 @@ module.exports = ({ strapi }) => ({
     }
 
     // Get all jobs for this media item
-    const [completed, failed, active, waiting] = await Promise.all([
+    const [completed, failed, active, waiting, delayed] = await Promise.all([
       queue.getCompleted(),
       queue.getFailed(),
       queue.getActive(),
       queue.getWaiting(),
+      queue.getDelayed(),
     ]);
 
-    const allJobs = [...completed, ...failed, ...active, ...waiting];
+    // Map jobs with their states
+    const jobsWithStates = [
+      ...completed.map((job) => ({ ...job, state: 'completed' })),
+      ...failed.map((job) => ({ ...job, state: 'failed' })),
+      ...active.map((job) => ({ ...job, state: 'active' })),
+      ...waiting.map((job) => ({ ...job, state: 'waiting' })),
+      ...delayed.map((job) => ({ ...job, state: 'delayed' })),
+    ];
 
     // Filter jobs for this media item
-    const mediaItemJobs = allJobs.filter(
-      (job) => job.data.mediaItem.id === mediaItemId
+    const mediaItemJobs = jobsWithStates.filter(
+      (job) => job.data?.mediaItem?.id === mediaItemId
     );
 
     return {
       mediaItemId,
       totalJobs: mediaItemJobs.length,
-      jobs: mediaItemJobs.map((job) => ({
-        id: job.id,
-        platform: job.data.platform,
-        state: job.getState ? job.getState() : 'unknown',
-        attemptsMade: job.attemptsMade,
-        timestamp: job.timestamp,
-      })),
+      jobs: await Promise.all(
+        mediaItemJobs.map(async (job) => ({
+          id: job.id,
+          platform: job.data.platform,
+          state: job.state,
+          attemptsMade: job.attemptsMade || 0,
+          timestamp: job.timestamp,
+          finishedOn: job.finishedOn,
+          failedReason: job.failedReason,
+        }))
+      ),
     };
   },
 });
