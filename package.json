@@ -35,5 +35,25 @@
   },
   "dependencies": {
     "zod": "^3.25.76"
+  },
+  "pnpm": {
+    "overrides": {
+      "koa@>=2.0.0 <2.16.1": ">=2.16.1",
+      "axios@<0.30.2": ">=1.12.0",
+      "axios@>=1.0.0 <1.12.0": ">=1.12.0",
+      "vite@>=5.0.0 <=5.4.21": ">=5.4.21",
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "xml2js@<0.5.0": ">=0.5.0",
+      "next-auth@<4.24.12": ">=4.24.12",
+      "@strapi/core": ">=5.30.1",
+      "@strapi/strapi": ">=5.30.1"
+    },
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "aws-sdk",
+      "core-js-pure",
+      "esbuild",
+      "sharp"
+    ]
   }
 }

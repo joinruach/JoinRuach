@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
@@ -100,10 +101,13 @@ export default async function OutreachStoryPage({ params }: Props) {
           <p className="max-w-2xl text-sm text-white/70">{attributes.summary}</p>
         ) : null}
         {heroMedia ? (
-          <img
+          <Image
             src={heroMedia.url}
-            alt={heroMedia.alternativeText}
+            alt={heroMedia.alternativeText || attributes.title}
+            width={heroMedia.width || 1200}
+            height={heroMedia.height || 630}
             className="w-full rounded-3xl border border-white/10 object-cover"
+            priority
           />
         ) : null}
       </header>
