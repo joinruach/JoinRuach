@@ -28,8 +28,9 @@ COPY ruach-ministries-backend ./ruach-ministries-backend
 WORKDIR /repo/ruach-ministries-backend
 RUN pnpm run build
 
-# Produce a pruned production bundle with dependencies
-RUN pnpm deploy --filter ruach-ministries-backend /opt/strapi
+# Produce a pruned production bundle with dependencies (includes build artifacts)
+RUN pnpm deploy --filter ruach-ministries-backend /opt/strapi \
+ && if [ -d ./dist ]; then cp -r ./dist /opt/strapi/dist; fi
 
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
