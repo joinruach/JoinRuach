@@ -9,7 +9,6 @@
     "develop": "node scripts/run-strapi.js develop",
     "start": "node scripts/run-strapi.js start",
     "strapi": "node scripts/run-strapi.js",
-    "postinstall": "node scripts/link-dependencies.js || true",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
