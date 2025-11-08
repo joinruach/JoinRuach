@@ -28,8 +28,9 @@ COPY ruach-ministries-backend ./ruach-ministries-backend
 WORKDIR /repo/ruach-ministries-backend
 RUN pnpm run build
 
-# Prune to production deps and prepare for final image
-RUN pnpm prune --prod \
+# Install only production deps and prepare for final image
+RUN rm -rf node_modules \
+ && pnpm install --prod --frozen-lockfile --filter=ruach-ministries-backend... \
  && mkdir -p /opt/strapi \
  && cp -r . /opt/strapi/
 
