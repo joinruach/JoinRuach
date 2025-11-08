@@ -4,7 +4,7 @@ ENV NODE_ENV=development
 WORKDIR /repo
 
 # Install pnpm globally (avoid runtime Corepack downloads)
-RUN npm install -g pnpm@9.9.0
+RUN npm install -g pnpm@9.12.0
 
 # Native build tools (for any deps like sharp, bcrypt, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,24 +12,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # ---- Better layer caching: copy manifests first ----
-COPY package.json package.json
-COPY pnpm-lock.yaml pnpm-lock.yaml
-COPY .pnpmfile.cjs .pnpmfile.cjs
-COPY scripts ./scripts
+# Build context is monorepo root, so paths are relative to root
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY ruach-ministries-backend/package.json ./ruach-ministries-backend/package.json
+COPY ruach-ministries-backend/.pnpmfile.cjs ./ruach-ministries-backend/.pnpmfile.cjs
 
-# Install WITH devDependencies for build step
-RUN pnpm install --frozen-lockfile
+# Install WITH devDependencies for backend workspace only
+RUN pnpm install --frozen-lockfile --filter=ruach-ministries-backend...
 
-# Copy the rest of the backend source and build Strapi admin
-COPY . .
+# Copy backend source files
+COPY ruach-ministries-backend ./ruach-ministries-backend
+
+# Build the Strapi admin panel
+WORKDIR /repo/ruach-ministries-backend
 RUN pnpm run build
 
-# Prune to production deps, copy the bundle, and rebuild node_modules for /opt/strapi
+# Prune to production deps and prepare for final image
 RUN pnpm prune --prod \
  && mkdir -p /opt/strapi \
- && tar -C . -cf - . | tar -C /opt/strapi -xf - \
- && rm -rf /opt/strapi/node_modules \
- && pnpm --dir /opt/strapi install --prod --frozen-lockfile --store-dir /opt/strapi/.pnpm-store
+ && cp -r . /opt/strapi/
 
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
@@ -51,11 +52,8 @@ RUN groupadd -r strapi \
 
 ENV HOME=/home/strapi
 
-# Copy pruned backend (code + prod node_modules + built admin)
-COPY --from=builder /opt/strapi/ ./
-
-# Change ownership to non-root user
-RUN chown -R strapi:strapi /opt/strapi
+# Copy production backend from builder
+COPY --from=builder --chown=strapi:strapi /opt/strapi ./
 
 # Switch to non-root user
 USER strapi
@@ -67,5 +65,5 @@ EXPOSE 1337
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:1337/_health || exit 1
 
-# Start Strapi (uses the backend's package.json "start")
-CMD ["pnpm","start"]
+# Start Strapi
+CMD ["pnpm", "start"]
