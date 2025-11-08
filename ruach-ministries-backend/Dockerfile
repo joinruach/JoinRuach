@@ -28,12 +28,6 @@ COPY ruach-ministries-backend ./ruach-ministries-backend
 WORKDIR /repo/ruach-ministries-backend
 RUN pnpm run build
 
-# Install only production deps and prepare for final image
-RUN rm -rf node_modules \
- && pnpm install --prod --frozen-lockfile --filter=ruach-ministries-backend... \
- && mkdir -p /opt/strapi \
- && cp -r . /opt/strapi/
-
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production
@@ -43,8 +37,8 @@ WORKDIR /opt/strapi
 RUN apt-get update && apt-get install -y --no-install-recommends curl libvips \
  && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally for runtime
-RUN npm install -g pnpm@9.9.0
+# Install pnpm globally for runtime (match builder version)
+RUN npm install -g pnpm@9.12.0
 
 # Create non-root user for security
 RUN groupadd -r strapi \
@@ -54,8 +48,24 @@ RUN groupadd -r strapi \
 
 ENV HOME=/home/strapi
 
-# Copy production backend from builder
-COPY --from=builder --chown=strapi:strapi /opt/strapi ./
+# Copy package files needed for production install
+COPY --from=builder /repo/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /repo/ruach-ministries-backend/package.json ./package.json
+COPY --from=builder /repo/ruach-ministries-backend/.pnpmfile.cjs ./.pnpmfile.cjs
+
+# Copy built application
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/dist ./dist
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/build ./build
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/config ./config
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/database ./database
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/public ./public
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/src ./src
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/types ./types
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/scripts ./scripts
+COPY --from=builder --chown=strapi:strapi /repo/ruach-ministries-backend/.env.example ./.env.example
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile && chown -R strapi:strapi /opt/strapi
 
 # Switch to non-root user
 USER strapi
