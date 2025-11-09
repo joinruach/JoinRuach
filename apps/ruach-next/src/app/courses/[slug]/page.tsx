@@ -24,7 +24,7 @@ async function getCompletedLessons(jwt: string, courseSlug: string) {
   return new Set(slugs as string[]);
 }
 
-export const dynamic = "force-static";
+export const dynamic = "auto";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }){
   const { slug } = await params;
