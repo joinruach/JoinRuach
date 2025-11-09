@@ -149,7 +149,7 @@ function extractMediaDimension(media: unknown, key: "width" | "height"): number 
 }
 
 export async function generateMetadata() {
-  const page = await getCommunityOutreachPage();
+  const page = await getCommunityOutreachPage().catch(() => null);
   const attributes = page?.attributes;
   const seo = attributes?.seo;
 
@@ -174,7 +174,7 @@ export async function generateMetadata() {
 }
 
 export default async function CommunityOutreachPage() {
-  const page = await getCommunityOutreachPage();
+  const page = await getCommunityOutreachPage().catch(() => null);
   const attributes = page?.attributes;
 
   const heroEyebrow = attributes?.heroEyebrow ?? "Ruach in the City";
@@ -195,13 +195,13 @@ export default async function CommunityOutreachPage() {
     .filter((story): story is MediaCardProps => Boolean(story));
 
   if (stories.length === 0) {
-    const fallbackEntities = await getOutreachStories({ limit: 6, featured: true });
+    const fallbackEntities = await getOutreachStories({ limit: 6, featured: true }).catch(() => []);
     stories = fallbackEntities
       .map(mapStoryToMediaCard)
       .filter((story): story is MediaCardProps => Boolean(story));
 
     if (stories.length === 0) {
-      const recentStories = await getOutreachStories({ limit: 6 });
+      const recentStories = await getOutreachStories({ limit: 6 }).catch(() => []);
       stories = recentStories
         .map(mapStoryToMediaCard)
         .filter((story): story is MediaCardProps => Boolean(story));
