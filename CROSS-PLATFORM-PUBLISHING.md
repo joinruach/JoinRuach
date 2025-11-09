@@ -380,6 +380,16 @@ pnpm install @bull-board/api @bull-board/koa
 # Access at http://localhost:1337/admin/queues
 ```
 
+## 📊 STEP 10: Optional Admin Tools
+
+Install Bull Board inside `ruach-ministries-backend` to get a browser view of every queue:
+
+```bash
+pnpm add @bull-board/api @bull-board/koa
+```
+
+Expose a lightweight Koa route such as `/admin/queues` (or mount it in Strapi middleware) so you can open the Bull Board UI in the browser and inspect waiting, active, completed, and failed jobs without touching Redis directly.
+
 ---
 
 ## 🐛 Troubleshooting
