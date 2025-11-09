@@ -23,13 +23,13 @@ function resolveShareImage(story: OutreachStoryEntity) {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getOutreachStorySlugs(60);
+  const slugs = await getOutreachStorySlugs(60).catch(() => []);
   return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const story = await getOutreachStoryBySlug(slug);
+  const story = await getOutreachStoryBySlug(slug).catch(() => null);
 
   if (!story?.attributes) {
     return {
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function OutreachStoryPage({ params }: Props) {
   const { slug } = await params;
-  const story = await getOutreachStoryBySlug(slug);
+  const story = await getOutreachStoryBySlug(slug).catch(() => null);
 
   if (!story?.attributes) {
     notFound();
@@ -77,7 +77,7 @@ export default async function OutreachStoryPage({ params }: Props) {
   const relatedEntities = await getOutreachStories({
     limit: 4,
     excludeIds: [story.id]
-  });
+  }).catch(() => []);
 
   const relatedStories = relatedEntities
     .map(mapStoryToMediaCard)
