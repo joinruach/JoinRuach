@@ -29,6 +29,16 @@ const shouldEnableVideoAction = (action: string) => {
   return actionName === 'find' || actionName === 'findOne';
 };
 
+const shouldEnableApiAction = (action: string) => {
+  const lastDot = action.lastIndexOf('.');
+  if (lastDot === -1) {
+    return false;
+  }
+
+  const actionName = action.slice(lastDot + 1);
+  return actionName === 'find' || actionName === 'findOne';
+};
+
 export const syncPublicPermissions = async (strapi: Core.Strapi) => {
   const publicRole = await strapi.db
     .query('plugin::users-permissions.role')
@@ -52,6 +62,7 @@ export const syncPublicPermissions = async (strapi: Core.Strapi) => {
 
     const uid = permission.action.slice(0, lastDot) as `api::${string}.${string}`;
 
+    // Disable permissions for explicitly disabled content types
     if (PUBLIC_DISABLED_UIDS.has(uid)) {
       if (permission.enabled) {
         updates.push(
@@ -64,6 +75,7 @@ export const syncPublicPermissions = async (strapi: Core.Strapi) => {
       continue;
     }
 
+    // Special handling for video content type
     if (uid === VIDEO_UID) {
       const enable = shouldEnableVideoAction(permission.action);
       if (permission.enabled !== enable) {
@@ -75,6 +87,19 @@ export const syncPublicPermissions = async (strapi: Core.Strapi) => {
         );
       }
       continue;
+    }
+
+    // Enable find and findOne for all other API content types
+    if (uid.startsWith('api::')) {
+      const enable = shouldEnableApiAction(permission.action);
+      if (permission.enabled !== enable) {
+        updates.push(
+          strapi.db.query('plugin::users-permissions.permission').update({
+            where: { id: permission.id },
+            data: { enabled: enable },
+          }),
+        );
+      }
     }
   }
 
