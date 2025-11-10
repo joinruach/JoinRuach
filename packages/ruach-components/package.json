@@ -3,12 +3,23 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./styles": "./src/styles/tokens.css"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
   "peerDependencies": {
     "next": "^15.5.2",
     "next-auth": "^4.24.7",
@@ -18,6 +29,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "isomorphic-dompurify": "^2.31.0",
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {

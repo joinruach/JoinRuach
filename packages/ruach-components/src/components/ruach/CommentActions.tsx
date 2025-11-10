@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useToast } from "@/components/ruach/toast/useToast";
+import { useToast } from "./toast/useToast";
 
 export default function CommentActions({ commentId }: { commentId: string | number }) {
   const [busy, setBusy] = useState(false);
