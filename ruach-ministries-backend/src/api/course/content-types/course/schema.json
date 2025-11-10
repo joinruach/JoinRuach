@@ -64,6 +64,12 @@
       "target": "api::lesson.lesson",
       "mappedBy": "course"
     },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lesson-comment.lesson-comment",
+      "mappedBy": "course"
+    },
     "ctaLabel": {
       "type": "string"
     },

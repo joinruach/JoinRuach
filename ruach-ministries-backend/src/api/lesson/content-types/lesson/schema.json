@@ -59,6 +59,12 @@
       "inversedBy": "lessons",
       "required": true
     },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lesson-comment.lesson-comment",
+      "mappedBy": "lesson"
+    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",

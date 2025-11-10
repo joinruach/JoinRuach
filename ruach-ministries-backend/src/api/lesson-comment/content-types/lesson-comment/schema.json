@@ -4,19 +4,32 @@
   "info": {
     "singularName": "lesson-comment",
     "pluralName": "lesson-comments",
-    "displayName": "Lesson Comment"
+    "displayName": "Lesson Comment",
+    "description": "Comments on course lessons with proper relations"
   },
   "options": {
     "draftAndPublish": false
   },
   "attributes": {
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "comments"
+    },
+    "lesson": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::lesson.lesson",
+      "inversedBy": "comments"
+    },
     "courseSlug": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "lessonSlug": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "text": {
       "type": "text",
