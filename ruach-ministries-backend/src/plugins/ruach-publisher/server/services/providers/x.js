@@ -32,13 +32,27 @@ class XProvider extends BaseProvider {
       const publicUrl = this.getPublicUrl(mediaItem.slug);
 
       // X has a 280 character limit
+      // URLs are shortened to t.co links which are always 23 characters
+      const URL_LENGTH = 23;
+      const MAX_LENGTH = 280;
+
       let text = mediaItem.shortDescription || mediaItem.title;
 
       // Add hashtags if there's space
       if (mediaItem.hashtags) {
         const hashtagText = `\n\n${mediaItem.hashtags}`;
-        if ((text + hashtagText + publicUrl.length + 3) <= 280) {
+        // Calculate: current text + hashtags + newlines + URL length
+        const totalLength = text.length + hashtagText.length + 2 + URL_LENGTH;
+
+        if (totalLength <= MAX_LENGTH) {
           text += hashtagText;
+        } else {
+          // If hashtags don't fit, try to fit just the description
+          if (text.length + 2 + URL_LENGTH > MAX_LENGTH) {
+            // Truncate description to make room for URL
+            const maxDescLength = MAX_LENGTH - URL_LENGTH - 5; // -5 for "...\n\n"
+            text = text.substring(0, maxDescLength) + '...';
+          }
         }
       }
 
@@ -49,6 +63,7 @@ class XProvider extends BaseProvider {
 
       this.logPublish(mediaItem, 'Successfully published to X', {
         tweetId: result.id,
+        textLength: text.length,
       });
 
       return result;
