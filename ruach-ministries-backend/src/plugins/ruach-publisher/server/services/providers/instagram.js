@@ -63,10 +63,14 @@ class InstagramProvider extends BaseProvider {
   async createMediaContainer(caption, thumbnail, mediaItem) {
     const fetch = (await import('node-fetch')).default;
 
-    // Get full thumbnail URL
-    const thumbnailUrl = thumbnail.url.startsWith('http')
-      ? thumbnail.url
-      : `${process.env.API_URL || 'http://localhost:1337'}${thumbnail.url}`;
+    // Get full thumbnail URL using base provider method
+    const thumbnailUrl = this.getThumbnailUrl(thumbnail);
+
+    if (!thumbnailUrl) {
+      throw new Error('Thumbnail URL is required for Instagram posts');
+    }
+
+    this.logPublish(mediaItem, 'Using thumbnail URL for Instagram', { thumbnailUrl });
 
     // Step 1: Create media container
     const containerParams = new URLSearchParams({

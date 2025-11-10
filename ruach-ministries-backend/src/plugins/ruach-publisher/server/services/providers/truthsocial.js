@@ -31,7 +31,7 @@ class TruthSocialProvider extends BaseProvider {
     try {
       const publicUrl = this.getPublicUrl(mediaItem.slug);
 
-      // Truth Social has character limits similar to Twitter
+      // Truth Social has a 500 character limit
       let status = mediaItem.shortDescription || mediaItem.title;
 
       // Add hashtags if there's space
@@ -45,10 +45,28 @@ class TruthSocialProvider extends BaseProvider {
       // Add URL
       status += `\n\n${publicUrl}`;
 
-      const result = await this.postStatus(status, mediaItem);
+      let result;
+
+      // If thumbnail is available, post with media
+      if (mediaItem.thumbnail) {
+        this.logPublish(mediaItem, 'Downloading thumbnail for Truth Social');
+        const mediaBuffer = await this.downloadThumbnail(mediaItem.thumbnail);
+
+        if (mediaBuffer) {
+          this.logPublish(mediaItem, 'Posting to Truth Social with media');
+          result = await this.postWithMedia(status, mediaBuffer, mediaItem);
+        } else {
+          this.logPublish(mediaItem, 'Failed to download thumbnail, posting without media');
+          result = await this.postStatus(status, mediaItem);
+        }
+      } else {
+        // Post text-only status
+        result = await this.postStatus(status, mediaItem);
+      }
 
       this.logPublish(mediaItem, 'Successfully published to Truth Social', {
         statusId: result.id,
+        withMedia: result.type === 'status_with_media',
       });
 
       return result;

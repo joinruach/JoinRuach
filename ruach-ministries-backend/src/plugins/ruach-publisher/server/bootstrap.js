@@ -23,6 +23,12 @@ module.exports = async ({ strapi }) => {
     maxRetriesPerRequest: null, // Required for BullMQ
   };
 
+  logger.info('Connecting to Redis for job queue', {
+    category: 'publisher',
+    host: redisConfig.host,
+    port: redisConfig.port,
+  });
+
   try {
     // Create BullMQ queue for publishing jobs
     publishQueue = new Queue('ruach-publisher', {
@@ -144,7 +150,22 @@ module.exports = async ({ strapi }) => {
       category: 'publisher',
       error: error.message,
       stack: error.stack,
+      redisConfig: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
     });
+
+    logger.warn(
+      '⚠️ Ruach Publisher will NOT be available. Auto-publishing is DISABLED.',
+      {
+        category: 'publisher',
+        help: 'Ensure Redis is running and accessible at the configured host and port.',
+      }
+    );
+
+    // Store null reference to indicate publisher is not available
+    strapi.ruachPublisher = null;
   }
 };
 

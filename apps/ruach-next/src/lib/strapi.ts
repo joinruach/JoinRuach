@@ -76,10 +76,26 @@ function isNotFoundOrNetwork(error: unknown): boolean {
 
 export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
+
+  // Check if draft mode is enabled (for Next.js preview functionality)
+  let isDraftMode = false;
+  try {
+    // Import draftMode from next/headers for server-side draft mode detection
+    const { draftMode } = await import('next/headers');
+    const draft = await draftMode();
+    isDraftMode = draft.isEnabled;
+  } catch {
+    // draftMode is only available in server components
+    // If we're in a client component or context where it's not available, skip
+    isDraftMode = false;
+  }
+
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
       ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      // Enable content source maps in preview mode for Live Preview
+      ...(isDraftMode ? { "strapi-encode-source-maps": "true" } : {}),
       ...(opts.headers || {}),
     },
     next: { tags: opts.tags, revalidate: opts.revalidate, ...opts.next },

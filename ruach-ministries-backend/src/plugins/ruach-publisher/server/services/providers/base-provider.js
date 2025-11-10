@@ -75,23 +75,60 @@ class BaseProvider {
   }
 
   /**
+   * Get the API base URL for media files
+   *
+   * @returns {string} - Base API URL
+   */
+  getApiUrl() {
+    // Try API_URL first, then PUBLIC_URL (strip path if present), then fallback to localhost
+    if (process.env.API_URL) {
+      return process.env.API_URL;
+    }
+    if (process.env.PUBLIC_URL) {
+      // PUBLIC_URL might include paths, extract just the origin
+      try {
+        const url = new URL(process.env.PUBLIC_URL);
+        return url.origin;
+      } catch {
+        return process.env.PUBLIC_URL;
+      }
+    }
+    return 'http://localhost:1337';
+  }
+
+  /**
+   * Get full URL for a thumbnail
+   *
+   * @param {object} thumbnail - Strapi media object
+   * @returns {string|null} - Full thumbnail URL
+   */
+  getThumbnailUrl(thumbnail) {
+    if (!thumbnail || !thumbnail.url) {
+      return null;
+    }
+
+    return thumbnail.url.startsWith('http')
+      ? thumbnail.url
+      : `${this.getApiUrl()}${thumbnail.url}`;
+  }
+
+  /**
    * Download thumbnail from URL
    *
    * @param {object} thumbnail - Strapi media object
    * @returns {Promise<Buffer>} - Thumbnail buffer
    */
   async downloadThumbnail(thumbnail) {
-    if (!thumbnail || !thumbnail.url) {
+    const thumbnailUrl = this.getThumbnailUrl(thumbnail);
+
+    if (!thumbnailUrl) {
       return null;
     }
 
     try {
       const fetch = (await import('node-fetch')).default;
-      const thumbnailUrl = thumbnail.url.startsWith('http')
-        ? thumbnail.url
-        : `${process.env.API_URL || 'http://localhost:1337'}${thumbnail.url}`;
-
       const response = await fetch(thumbnailUrl);
+
       if (!response.ok) {
         throw new Error(`Failed to download thumbnail: ${response.statusText}`);
       }
@@ -101,6 +138,7 @@ class BaseProvider {
       logger.error('Failed to download thumbnail', {
         category: 'publisher',
         platform: this.platformName,
+        thumbnailUrl,
         error: error.message,
       });
       return null;

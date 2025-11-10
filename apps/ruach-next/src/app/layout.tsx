@@ -4,6 +4,7 @@ import Providers from "./providers";
 import Script from "next/script";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import LivePreview from "@/components/preview/LivePreview";
 
 export const metadata = {
   title: "Ruach Ministries",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }:{ children: React.ReactNode }){
           />
         ) : null}
         <Providers>
+          <LivePreview />
           <Header />
           <main className="mx-auto max-w-6xl px-4 py-12 lg:py-16">
             {children}
