@@ -51,11 +51,7 @@ const fallbackGivingHighlights: GivingHighlight[] = [
     label: "Most Impactful",
     amount: "$75 / month",
     description: "Feeds 5 families + funds outreach film gear.",
-<<<<<<< HEAD
     badge: "Partner Favorite"
-=======
-    badge: undefined
->>>>>>> origin/claude/review-authentication-tasks-011CUqFDfaLLApG3r9jTCfLr
   },
   {
     label: "Launch Kit",
