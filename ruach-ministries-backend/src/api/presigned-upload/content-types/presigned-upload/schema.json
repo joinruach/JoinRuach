@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "presigned_uploads",
+  "info": {
+    "singularName": "presigned-upload",
+    "pluralName": "presigned-uploads",
+    "displayName": "Presigned Upload",
+    "description": "Tracks files uploaded via presigned URLs"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "filename": {
+      "type": "string",
+      "required": true
+    },
+    "mimeType": {
+      "type": "string",
+      "required": true
+    },
+    "size": {
+      "type": "biginteger",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "uploadedAt": {
+      "type": "datetime"
+    }
+  }
+}
