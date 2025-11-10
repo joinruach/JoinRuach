@@ -1,6 +1,6 @@
 "use client";
-import { NavLink } from "@/components/ruach/ui/NavLink";
-import Logo from "@/components/ruach/ui/Logo";
+import { NavLink } from "../ruach/ui/NavLink";
+import Logo from "../ruach/ui/Logo";
 import { useSession } from "next-auth/react";
 
 export default function Header() {

@@ -7,7 +7,7 @@ export function NavLink({ href, children, className, ...props }:
   LinkProps & { children: React.ReactNode; className?: string }) {
   const pathname = usePathname();
   const active = (() => {
-    if (typeof href !== "string") return pathname === href;
+    if (typeof href !== "string") return false;
     if (href === "/") return pathname === "/";
     const normalizedHref = href.endsWith("/") ? href.slice(0, -1) : href;
     const normalizedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;

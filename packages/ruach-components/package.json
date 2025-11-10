@@ -3,16 +3,32 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+<<<<<<< HEAD
     "build": "tsup src/index.ts --dts --format esm,cjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
+=======
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+>>>>>>> 47c40a7 (fix: add comprehensive exports and HTML sanitization to ruach-components)
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./styles": "./src/styles/tokens.css"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
   "peerDependencies": {
     "next": "^15.5.2",
     "next-auth": "^4.24.7",
@@ -22,6 +38,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "isomorphic-dompurify": "^2.31.0",
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
