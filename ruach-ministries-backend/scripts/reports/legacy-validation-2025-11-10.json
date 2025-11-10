@@ -1,0 +1,849 @@
+{
+  "timestamp": "2025-11-10T20:25:41.264Z",
+  "safeToRemove": [
+    {
+      "type": "api::audio-file.audio-file",
+      "count": 0
+    },
+    {
+      "type": "api::article.article",
+      "count": 0
+    },
+    {
+      "type": "api::testimonial.testimonial",
+      "count": 0
+    },
+    {
+      "type": "api::gallery.gallery",
+      "count": 0
+    },
+    {
+      "type": "api::reply.reply",
+      "count": 0
+    }
+  ],
+  "hasData": [
+    {
+      "type": "api::video.video",
+      "count": 12,
+      "sample": [
+        {
+          "id": 3,
+          "documentId": "ffn5i6hkfdyzzg8j8zshphi3",
+          "title": "The Silent Trap: How Spiritual Isolation is Destroying You (And How to Escape!)",
+          "description": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Isolation can feel like peace, but in reality, it’s a silent trap. When we withdraw spiritually, we unknowingly open the door to doubt, deception, and discouragement.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "In this powerful episode, we uncover the hidden dangers of spiritual isolation and reveal how the enemy uses it to weaken believers. More importantly, we share biblical truths and practical steps to break free, reconnect, and walk in the strength of true fellowship.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🚨 Don’t let isolation rob you of your purpose—discover the power of community and spiritual covering today!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🔥 Key Moments in This Episode:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "⏳ Jump to the Most Important Parts:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "00:00 - The Silent Trap: Why Isolation Feels Like Peace (But Isn’t)",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "02:15 - How the Enemy Uses Isolation to Attack Believers",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "05:30 - Spiritual Warfare: The Hidden Dangers of Isolation",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "08:45 - The Power of Fellowship: Why You Need the Body of Christ",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "12:00 - The 5 Dangers of Spiritual Isolation & How to Overcome Them",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "15:30 - A Call to Action: Breaking Free & Reconnecting with God",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "📖 Key Bible Verses Discussed:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Hebrews 10:25 – “Do not forsake the assembly of believers…”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Ecclesiastes 4:9-10 – “Two are better than one…”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • 1 Peter 5:8 – “Be sober, be vigilant; because your adversary the devil walks about like a roaring lion, seeking whom he may devour.”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Joel 2:1 – “Blow the trumpet in Zion; sound an alarm in My holy mountain!”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "💬 What are your thoughts on spiritual isolation? Have you ever felt trapped in it? Share your experience in the comments—we’d love to hear from you!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "👍 Like & Subscribe if this message spoke to you! Help us spread the truth by sharing this video with others.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🔔 Turn on Notifications so you don’t miss our next powerful episode!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "📢 Follow Us for More Content:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🌍 Website: www.ruachstudio.com",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "‪@RuachStudioProductions‬ ",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "#Faith #Christianity #SpiritualWarfare #Breakthrough #JesusSaves #Fellowship",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            }
+          ],
+          "publishedDate": null,
+          "isShort": null,
+          "uid": "uid_1740447834522",
+          "trending_video": true,
+          "createdAt": "2025-02-25T01:43:54.521Z",
+          "updatedAt": "2025-03-11T07:49:49.131Z",
+          "publishedAt": null,
+          "locale": null,
+          "videoUrl": "https://www.youtube.com/watch?v=da7gqWlDuYo",
+          "slug": null
+        },
+        {
+          "id": 10,
+          "documentId": "ffn5i6hkfdyzzg8j8zshphi3",
+          "title": "The Silent Trap: How Spiritual Isolation is Destroying You (And How to Escape!)",
+          "description": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Isolation can feel like peace, but in reality, it’s a silent trap. When we withdraw spiritually, we unknowingly open the door to doubt, deception, and discouragement.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "In this powerful episode, we uncover the hidden dangers of spiritual isolation and reveal how the enemy uses it to weaken believers. More importantly, we share biblical truths and practical steps to break free, reconnect, and walk in the strength of true fellowship.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🚨 Don’t let isolation rob you of your purpose—discover the power of community and spiritual covering today!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🔥 Key Moments in This Episode:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "⏳ Jump to the Most Important Parts:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "00:00 - The Silent Trap: Why Isolation Feels Like Peace (But Isn’t)",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "02:15 - How the Enemy Uses Isolation to Attack Believers",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "05:30 - Spiritual Warfare: The Hidden Dangers of Isolation",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "08:45 - The Power of Fellowship: Why You Need the Body of Christ",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "12:00 - The 5 Dangers of Spiritual Isolation & How to Overcome Them",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "15:30 - A Call to Action: Breaking Free & Reconnecting with God",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "📖 Key Bible Verses Discussed:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Hebrews 10:25 – “Do not forsake the assembly of believers…”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Ecclesiastes 4:9-10 – “Two are better than one…”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • 1 Peter 5:8 – “Be sober, be vigilant; because your adversary the devil walks about like a roaring lion, seeking whom he may devour.”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": " • Joel 2:1 – “Blow the trumpet in Zion; sound an alarm in My holy mountain!”",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "💬 What are your thoughts on spiritual isolation? Have you ever felt trapped in it? Share your experience in the comments—we’d love to hear from you!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "👍 Like & Subscribe if this message spoke to you! Help us spread the truth by sharing this video with others.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🔔 Turn on Notifications so you don’t miss our next powerful episode!",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "📢 Follow Us for More Content:",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "🌍 Website: www.ruachstudio.com",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "‪@RuachStudioProductions‬ ",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "#Faith #Christianity #SpiritualWarfare #Breakthrough #JesusSaves #Fellowship",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "",
+                  "type": "text"
+                }
+              ]
+            }
+          ],
+          "publishedDate": null,
+          "isShort": null,
+          "uid": "uid_1740447834522",
+          "trending_video": true,
+          "createdAt": "2025-02-25T01:43:54.521Z",
+          "updatedAt": "2025-03-11T07:49:49.131Z",
+          "publishedAt": "2025-03-11T07:49:49.435Z",
+          "locale": null,
+          "videoUrl": "https://www.youtube.com/watch?v=da7gqWlDuYo",
+          "slug": null
+        },
+        {
+          "id": 1,
+          "documentId": "bzclbrnzvjbv1oew4a1uypvz",
+          "title": "The Church Exposed: Trading Christ for Culture",
+          "description": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Apostolic Vision: Pastor Marc Seals’ Call to Revive the Church",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "In this powerful wake-up call, we confront the harsh truth: America’s churches are drifting from the Gospel, and the cost of this compromise is too high to ignore. From watered-down sermons to a hollow, man-centered gospel, the church has traded divine power for entertainment and repentance for empty rituals. Drawing from the Apostle Paul’s warning in Galatians 1:1-12, we expose how today’s church has strayed far from the unshakable, life-transforming truth of Christ crucified and risen.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "The time for silence is over. In this video, we shine a light on the counterfeit Christianity taking root, a faith watered down to fit cultural agendas and human desires. With urgent clarity, we challenge the Church to return to its first love, to stand firm in the Gospel, and to fight against the falsehoods that threaten to destroy the very foundation of our faith.",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "text": "Will we heed the call, or will we continue to coddle the counterfeit that leads countless souls astray? Watch now, and join the call to Guard the Gospel—before it’s too late.",
+                  "type": "text"
+                }
+              ]
+            }
+          ],
+          "publishedDate": "2025-02-21",
+          "isShort": null,
+          "uid": "uid_1740160941740",
+          "trending_video": true,
+          "createdAt": "2025-02-21T18:02:21.738Z",
+          "updatedAt": "2025-03-11T23:19:03.617Z",
+          "publishedAt": null,
+          "locale": null,
+          "videoUrl": "https://www.youtube.com/watch?v=zlCE3xEEst0",
+          "slug": null
+        }
+      ]
+    },
+    {
+      "type": "api::image.image",
+      "count": 4,
+      "sample": [
+        {
+          "id": 3,
+          "documentId": "oggexyq7py1gelel7tanc3jr",
+          "title": "Jonathan & Carly",
+          "altText": "Jonathan & Carly",
+          "createdAt": "2025-02-21T18:07:46.497Z",
+          "updatedAt": "2025-03-12T17:23:51.695Z",
+          "publishedAt": null,
+          "locale": null
+        },
+        {
+          "id": 5,
+          "documentId": "oggexyq7py1gelel7tanc3jr",
+          "title": "Jonathan & Carly",
+          "altText": "Jonathan & Carly",
+          "createdAt": "2025-02-21T18:07:46.497Z",
+          "updatedAt": "2025-03-12T17:23:51.695Z",
+          "publishedAt": "2025-03-12T17:23:51.982Z",
+          "locale": null
+        },
+        {
+          "id": 1,
+          "documentId": "iyuipsf30yn3282makaszjyz",
+          "title": "Marc Seals & Family",
+          "altText": "Marc Seals & Family",
+          "createdAt": "2025-02-21T18:07:21.340Z",
+          "updatedAt": "2025-03-12T17:24:00.982Z",
+          "publishedAt": null,
+          "locale": null
+        }
+      ]
+    },
+    {
+      "type": "api::about.about",
+      "count": 1,
+      "sample": [
+        {
+          "id": 1,
+          "documentId": "rbh91ta1zzn3qcass7qtpbfh",
+          "title": "Ruach Ministries: Winds of Inspiration",
+          "createdAt": "2025-02-21T18:12:06.333Z",
+          "updatedAt": "2025-02-25T01:07:53.436Z",
+          "publishedAt": "2025-02-25T01:07:53.423Z",
+          "locale": null
+        }
+      ]
+    },
+    {
+      "type": "api::contact-info.contact-info",
+      "count": 2,
+      "sample": [
+        {
+          "id": 1,
+          "documentId": "gg7sjsm1kzhvtzxl6umy3rwg",
+          "email": "support@ruachstudio.com",
+          "phone": "225-577-3525",
+          "address": "32084 LA-16, Denham Springs, LA 70726",
+          "createdAt": "2025-02-21T18:35:17.206Z",
+          "updatedAt": "2025-03-11T23:04:46.261Z",
+          "publishedAt": null,
+          "locale": null
+        },
+        {
+          "id": 5,
+          "documentId": "gg7sjsm1kzhvtzxl6umy3rwg",
+          "email": "support@ruachstudio.com",
+          "phone": "225-577-3525",
+          "address": "32084 LA-16, Denham Springs, LA 70726",
+          "createdAt": "2025-02-21T18:35:17.206Z",
+          "updatedAt": "2025-03-11T23:04:46.261Z",
+          "publishedAt": "2025-03-11T23:04:46.483Z",
+          "locale": null
+        }
+      ]
+    },
+    {
+      "type": "api::hero-section.hero-section",
+      "count": 2,
+      "sample": [
+        {
+          "id": 1,
+          "documentId": "lv9gi722tc8o8aevr0bt5dsg",
+          "title": "Spirit-Led Media. Bold Truth. Kingdom Impact.",
+          "subtitle": "Empowering a generation through faith-driven content, powerful storytelling, and the unshakable truth of the gospel. Experience inspiration, revelation, and transformation—right here.",
+          "buttonText": "Watch Now",
+          "buttonLink": "/videos",
+          "createdAt": "2025-02-21T18:39:36.959Z",
+          "updatedAt": "2025-03-12T17:27:08.332Z",
+          "publishedAt": null,
+          "locale": null
+        },
+        {
+          "id": 3,
+          "documentId": "lv9gi722tc8o8aevr0bt5dsg",
+          "title": "Spirit-Led Media. Bold Truth. Kingdom Impact.",
+          "subtitle": "Empowering a generation through faith-driven content, powerful storytelling, and the unshakable truth of the gospel. Experience inspiration, revelation, and transformation—right here.",
+          "buttonText": "Watch Now",
+          "buttonLink": "/videos",
+          "createdAt": "2025-02-21T18:39:36.959Z",
+          "updatedAt": "2025-03-12T17:27:08.332Z",
+          "publishedAt": "2025-03-12T17:27:08.559Z",
+          "locale": null
+        }
+      ]
+    },
+    {
+      "type": "api::setting.setting",
+      "count": 2,
+      "sample": [
+        {
+          "id": 1,
+          "documentId": "x6m30rhfzwia0q4txumzuyzi",
+          "siteName": "Ruach Ministries | Ruach Studio",
+          "createdAt": "2025-02-21T19:52:41.429Z",
+          "updatedAt": "2025-03-12T17:26:25.914Z",
+          "publishedAt": null,
+          "locale": null
+        },
+        {
+          "id": 5,
+          "documentId": "x6m30rhfzwia0q4txumzuyzi",
+          "siteName": "Ruach Ministries | Ruach Studio",
+          "createdAt": "2025-02-21T19:52:41.429Z",
+          "updatedAt": "2025-03-12T17:26:25.914Z",
+          "publishedAt": "2025-03-12T17:26:26.344Z",
+          "locale": null
+        }
+      ]
+    }
+  ],
+  "notFound": [],
+  "errors": []
+}

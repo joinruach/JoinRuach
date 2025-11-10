@@ -28,12 +28,12 @@ const LEGACY_TYPES = [
 ];
 
 async function runValidation() {
-  const Strapi = require('@strapi/strapi');
+  const { createStrapi } = require('@strapi/strapi');
   let strapi;
 
   try {
     console.log('🔄 Loading Strapi...\n');
-    strapi = await Strapi({
+    strapi = await createStrapi({
       distDir: path.resolve(__dirname, '..', 'dist'),
       autoReload: false,
       serveAdminPanel: false,

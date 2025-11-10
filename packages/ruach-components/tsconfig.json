@@ -4,13 +4,15 @@
     "baseUrl": ".",
     "composite": false,
     "incremental": false,
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "isomorphic-dompurify": ["./node_modules/isomorphic-dompurify"]
     }
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "src",
+    "src/types",
     "../../types/**/*.d.ts"
   ],
   "exclude": [
