@@ -2,6 +2,11 @@
 
 > **"Where technology meets testimony, and code carries Kingdom purpose."**
 
+[![CI/CD Pipeline](https://github.com/joinruach/JoinRuach/actions/workflows/ci.yml/badge.svg)](https://github.com/joinruach/JoinRuach/actions/workflows/ci.yml)
+[![Enhanced CI](https://github.com/joinruach/JoinRuach/actions/workflows/ci-enhanced.yml/badge.svg)](https://github.com/joinruach/JoinRuach/actions/workflows/ci-enhanced.yml)
+[![codecov](https://codecov.io/gh/joinruach/JoinRuach/branch/main/graph/badge.svg)](https://codecov.io/gh/joinruach/JoinRuach)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ---
 
 ## What is JoinRuach?
@@ -27,6 +32,8 @@ Whether you're a **developer**, **designer**, **storyteller**, or **visionary**,
 ### **For Developers**
 - [Technical Stack](./Technical-Stack) — Architecture and tools
 - [Development Setup](./Development-Setup) — Get your environment running
+- [Testing Guide](./docs/TESTING.md) — Comprehensive testing documentation
+- [Coverage Matrix](./docs/COVERAGE_MATRIX.md) — Test coverage tracking
 - [API Documentation](./API-Documentation) — Integrate with Ruach systems
 - [Contributing Code](./Contributing-Code) — Pull requests, standards, and workflows
 
@@ -60,6 +67,40 @@ Whether you're a **developer**, **designer**, **storyteller**, or **visionary**,
 3. **Support** — Pray, fund, or share the vision
 
 [→ Start Contributing](./How-to-Contribute)
+
+---
+
+## Testing & Quality
+
+We maintain **100% test coverage** across all critical paths to ensure reliability and stability.
+
+### Quick Start
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run all tests
+pnpm test
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run complete test matrix
+./scripts/test-matrix.sh --coverage
+```
+
+### Test Coverage
+
+- ✅ Unit Tests: 100% coverage target
+- ✅ Integration Tests: API, Database, R2 Storage
+- ✅ E2E Tests: Full user journeys
+- ✅ CI/CD: Automated testing on every PR
+
+For comprehensive testing documentation, see [docs/TESTING.md](./docs/TESTING.md).
 
 ---
 
