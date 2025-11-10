@@ -1,0 +1,354 @@
+name: Enhanced CI/CD Pipeline with 100% Coverage
+
+on:
+  push:
+    branches: [main, develop, 'claude/**']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+
+jobs:
+  # Job 1: Lint and Type Check
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+        continue-on-error: false
+
+      - name: Run TypeScript type check
+        run: pnpm typecheck
+        continue-on-error: false
+
+  # Job 2: Unit Tests with Coverage
+  test-unit:
+    name: Unit Tests (Target: 100% Coverage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run all unit tests with coverage
+        run: pnpm test:coverage
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Generate coverage summary
+        run: |
+          echo "📊 Coverage Summary Generated"
+          if [ -d "coverage" ]; then
+            echo "✅ Root coverage reports found"
+          fi
+          if [ -d "apps/ruach-next/coverage" ]; then
+            echo "✅ Next.js coverage reports found"
+          fi
+          if [ -d "ruach-ministries-backend/coverage" ]; then
+            echo "✅ Backend coverage reports found"
+          fi
+          if [ -d "packages/ruach-components/coverage" ]; then
+            echo "✅ Components coverage reports found"
+          fi
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: |
+            ./coverage/lcov.info
+            ./apps/ruach-next/coverage/lcov.info
+            ./ruach-ministries-backend/coverage/lcov.info
+            ./packages/ruach-components/coverage/lcov.info
+            ./packages/ruach-next-addons/coverage/lcov.info
+          flags: unittests
+          name: ruach-unit-coverage
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: |
+            coverage/
+            apps/ruach-next/coverage/
+            ruach-ministries-backend/coverage/
+            packages/*/coverage/
+          retention-days: 30
+
+  # Job 3: E2E Tests
+  test-e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint-and-typecheck]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-e2e-must-be-32-chars-long' }}
+          NEXTAUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_STRAPI_URL: http://localhost:1337
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload E2E videos and traces
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures
+          path: test-results/
+          retention-days: 7
+
+  # Job 4: Build Frontend
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-typecheck, test-unit]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Next.js app
+        run: pnpm --filter ruach-next build
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'build-time-secret-minimum-32-characters-long-required' }}
+          NEXT_PUBLIC_STRAPI_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337' }}
+          STRAPI_REVALIDATE_SECRET: ${{ secrets.STRAPI_REVALIDATE_SECRET || 'dev-revalidate-secret' }}
+
+      - name: Upload build artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: apps/ruach-next/.next
+          retention-days: 7
+
+  # Job 5: Build Backend
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-typecheck, test-unit]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Strapi backend
+        run: pnpm --filter ruach-ministries-backend build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: ruach-ministries-backend/build
+          retention-days: 7
+
+  # Job 6: Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run npm audit
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for environment variable security
+        run: |
+          echo "Checking .env.example files for insecure patterns..."
+          if grep -r "change_me\|tobemodified" --include=".env.example" .; then
+            echo "❌ Found insecure placeholders in .env.example files"
+            exit 1
+          else
+            echo "✅ No insecure placeholders found"
+          fi
+
+  # Job 7: Coverage Report Summary
+  coverage-summary:
+    name: Coverage Report Summary
+    runs-on: ubuntu-latest
+    needs: [test-unit]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage-reports
+
+      - name: Display coverage summary
+        run: |
+          echo "📊 Test Coverage Summary for Ruach Monorepo"
+          echo "=============================================="
+          echo ""
+          echo "🎯 Target: 100% coverage across all modules"
+          echo ""
+          if [ -d "coverage-reports" ]; then
+            echo "✅ Coverage reports generated successfully"
+            echo ""
+            echo "Coverage reports available for:"
+            find coverage-reports -type d -name "coverage" | while read dir; do
+              module=$(dirname "$dir" | xargs basename)
+              echo "  - $module"
+            done
+          else
+            echo "⚠️  No coverage reports found"
+          fi
+
+  notify-success:
+    name: Notify on Success
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test-unit, test-e2e, build-frontend, build-backend, security-scan]
+    if: success()
+
+    steps:
+      - name: Success notification
+        run: |
+          echo "✅ All CI checks passed successfully!"
+          echo "📊 Test coverage reports have been generated"
+          echo "🚀 Build artifacts are ready for deployment"
+
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test-unit, test-e2e, build-frontend, build-backend, security-scan]
+    if: failure()
+
+    steps:
+      - name: Send notification
+        run: |
+          echo "❌ CI/CD Pipeline failed!"
+          echo "Please check the workflow logs for details."
+          echo ""
+          echo "Common issues:"
+          echo "  - Test failures"
+          echo "  - Type errors"
+          echo "  - Build errors"
+          echo "  - Security vulnerabilities"

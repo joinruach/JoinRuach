@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsup",
-    "typecheck": "tsc --noEmit"
+    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -17,9 +21,7 @@
     },
     "./styles": "./src/styles/tokens.css"
   },
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": ["*.css"],
   "peerDependencies": {
     "next": "^15.5.2",
     "next-auth": "^4.24.7",
