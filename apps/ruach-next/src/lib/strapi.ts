@@ -1406,3 +1406,87 @@ export async function getConferencePage() {
 
   return null as ConferencePageEntity | null;
 }
+
+export type SeriesEntity = {
+  id: number;
+  attributes?: {
+    title?: string;
+    slug?: string;
+    description?: string | null;
+    coverImage?: {
+      data?: {
+        attributes?: {
+          url?: string;
+          alternativeText?: string | null;
+        } | null;
+      } | null;
+    } | null;
+    mediaItems?: {
+      data?: MediaItemEntity[];
+    };
+  };
+};
+
+export async function getAllSeries() {
+  const params = new URLSearchParams();
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "description");
+  params.set("populate[coverImage][fields][0]", "url");
+  params.set("populate[coverImage][fields][1]", "alternativeText");
+  params.set("populate[mediaItems][count]", "true");
+  params.set("sort[0]", "createdAt:desc");
+  params.set("pagination[pageSize]", "100");
+
+  try {
+    const j = await getJSON<{ data: SeriesEntity[] }>(`/api/series-collection?${params.toString()}`, {
+      tags: ["series"],
+      revalidate: 300,
+    });
+    return j.data || [];
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [] as SeriesEntity[];
+    }
+
+    throw error;
+  }
+}
+
+export async function getSeriesBySlug(slug: string) {
+  const params = new URLSearchParams();
+  params.set("filters[slug][$eq]", slug);
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "description");
+  params.set("populate[coverImage][fields][0]", "url");
+  params.set("populate[coverImage][fields][1]", "alternativeText");
+  params.set("populate[mediaItems][fields][0]", "title");
+  params.set("populate[mediaItems][fields][1]", "slug");
+  params.set("populate[mediaItems][fields][2]", "excerpt");
+  params.set("populate[mediaItems][fields][3]", "releasedAt");
+  params.set("populate[mediaItems][fields][4]", "weekNumber");
+  params.set("populate[mediaItems][fields][5]", "episodeNumber");
+  params.set("populate[mediaItems][populate][thumbnail][fields][0]", "url");
+  params.set("populate[mediaItems][populate][thumbnail][fields][1]", "alternativeText");
+  params.set("populate[mediaItems][populate][speakers][fields][0]", "name");
+  params.set("populate[mediaItems][populate][speakers][fields][1]", "displayName");
+  params.set("populate[mediaItems][sort][0]", "weekNumber:asc");
+  params.set("populate[mediaItems][sort][1]", "episodeNumber:asc");
+  params.set("populate[mediaItems][sort][2]", "releasedAt:asc");
+  params.set("pagination[pageSize]", "1");
+
+  try {
+    const j = await getJSON<{ data: SeriesEntity[] }>(`/api/series-collection?${params.toString()}`, {
+      tags: [`series:${slug}`],
+      revalidate: 300,
+    });
+    return j.data?.[0] ?? null;
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
