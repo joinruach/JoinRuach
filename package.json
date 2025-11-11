@@ -30,17 +30,25 @@
   },
   "scripts": {
     "build": "turbo run build",
+    "build:all": "turbo run build --force",
+    "build:packages": "turbo run build --filter='@ruach/*'",
     "dev": "turbo run dev --parallel",
+    "dev:all": "turbo run dev --parallel --continue",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:all": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "typecheck:all": "turbo run typecheck --continue",
     "test": "turbo run test",
+    "test:all": "turbo run test --continue",
     "test:watch": "turbo run test:watch",
     "test:coverage": "turbo run test:coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "clean:packages": "rm -rf packages/*/dist packages/*/node_modules"
   },
   "dependencies": {
     "zod": "^3.25.76"
