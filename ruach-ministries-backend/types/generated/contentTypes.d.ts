@@ -1470,6 +1470,38 @@ export interface ApiPrayerPrayer extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPresignedUploadPresignedUpload
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'presigned_uploads';
+  info: {
+    description: 'Tracks files uploaded via presigned URLs';
+    displayName: 'Presigned Upload';
+    pluralName: 'presigned-uploads';
+    singularName: 'presigned-upload';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    filename: Schema.Attribute.String & Schema.Attribute.Required;
+    key: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    mimeType: Schema.Attribute.String & Schema.Attribute.Required;
+    size: Schema.Attribute.BigInteger & Schema.Attribute.Required;
+    title: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    uploadedAt: Schema.Attribute.DateTime;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiProjectProject extends Struct.CollectionTypeSchema {
   collectionName: 'projects';
   info: {
@@ -2648,6 +2680,7 @@ declare module '@strapi/strapi' {
       'api::outreach-campaign.outreach-campaign': ApiOutreachCampaignOutreachCampaign;
       'api::outreach-story.outreach-story': ApiOutreachStoryOutreachStory;
       'api::prayer.prayer': ApiPrayerPrayer;
+      'api::presigned-upload.presigned-upload': ApiPresignedUploadPresignedUpload;
       'api::project.project': ApiProjectProject;
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;

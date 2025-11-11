@@ -37,9 +37,10 @@ describe('LoadingSpinner', () => {
 
   it('should handle empty label', () => {
     render(<LoadingSpinner label="" />);
-    const wrapper = screen.getByText('').parentElement;
+    const label = screen.getByTestId('loading-spinner-label');
 
-    expect(wrapper).toBeInTheDocument();
+    expect(label).toBeInTheDocument();
+    expect(label).toBeEmptyDOMElement();
   });
 
   it('should be accessible', () => {
