@@ -24,12 +24,18 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@ruach/components/*": [
-        "packages/ruach-components/src/*"
-      ],
-      "@ruach/addons/*": [
-        "packages/ruach-next-addons/src/*"
-      ]
+      "@ruach/components": ["packages/ruach-components/src/index.ts"],
+      "@ruach/components/*": ["packages/ruach-components/src/*"],
+      "@ruach/addons": ["packages/ruach-next-addons/src/index.ts"],
+      "@ruach/addons/*": ["packages/ruach-next-addons/src/*"],
+      "@ruach/utils": ["packages/ruach-utils/src/index.ts"],
+      "@ruach/utils/*": ["packages/ruach-utils/src/*"],
+      "@ruach/hooks": ["packages/ruach-hooks/src/index.ts"],
+      "@ruach/hooks/*": ["packages/ruach-hooks/src/*"],
+      "@ruach/types": ["packages/ruach-types/src/index.ts"],
+      "@ruach/types/*": ["packages/ruach-types/src/*"],
+      "@ruach/icons": ["packages/ruach-icons/src/index.ts"],
+      "@ruach/icons/*": ["packages/ruach-icons/src/*"]
     }
   },
   "watchOptions": {
