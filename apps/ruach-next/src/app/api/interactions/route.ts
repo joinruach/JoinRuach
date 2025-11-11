@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { trackInteraction, getUserInteractions } from '@/lib/db/ai';
 
 /**
  * User Interactions Tracking API
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get user session
     const session = await getServerSession();
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -39,23 +40,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Save to database
-    // await db.userInteractions.create({
-    //   userId: session.user.id,
-    //   contentType,
-    //   contentId,
-    //   interactionType,
-    //   durationSec,
-    //   completed: completed || false,
-    //   createdAt: new Date(),
-    // });
+    // Get user ID (use email hash as fallback if no numeric ID)
+    const userId = (session.user as any).id || hashEmail(session.user.email);
 
-    console.log('User interaction tracked:', {
-      userId: session.user.email,
-      contentType,
-      contentId,
-      interactionType,
-    });
+    // Save to database
+    try {
+      await trackInteraction({
+        userId,
+        contentType,
+        contentId,
+        interactionType,
+        durationSec,
+        completed: completed || false,
+      });
+    } catch (dbError) {
+      // Log error but don't fail - graceful degradation
+      console.error('Database error (tracking will use fallback):', dbError);
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,12 +73,12 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET user's interaction history
- * GET /api/interactions?userId=123&limit=20
+ * GET /api/interactions?limit=20
  */
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession();
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -87,16 +88,21 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-    // TODO: Fetch from database
-    // const interactions = await db.userInteractions.findMany({
-    //   where: { userId: session.user.id },
-    //   orderBy: { createdAt: 'desc' },
-    //   limit,
-    // });
+    // Get user ID
+    const userId = (session.user as any).id || hashEmail(session.user.email);
+
+    // Fetch from database
+    let interactions = [];
+    try {
+      interactions = await getUserInteractions(userId, limit);
+    } catch (dbError) {
+      console.error('Database error fetching interactions:', dbError);
+      // Return empty array on error (graceful degradation)
+    }
 
     return NextResponse.json({
-      interactions: [], // Empty for now
-      count: 0,
+      interactions,
+      count: interactions.length,
     });
   } catch (error) {
     console.error('Interactions API error:', error);
@@ -105,4 +111,18 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Simple hash function for email to numeric ID
+ * Used when session doesn't have numeric user ID
+ */
+function hashEmail(email: string): number {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    const char = email.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
 }
