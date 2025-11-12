@@ -88,16 +88,17 @@ export default function ShareButton({
     }
 
     // Get platform URL
-    const config = platformConfig[platform];
     let shareUrl: string;
 
     if (platform === "twitter") {
-      shareUrl = config.getUrl(url, title, hashtags);
+      shareUrl = platformConfig.twitter.getUrl(url, title, hashtags);
     } else if (platform === "facebook") {
-      shareUrl = config.getUrl(url);
+      shareUrl = platformConfig.facebook.getUrl(url);
+    } else if (platform === "linkedin") {
+      shareUrl = platformConfig.linkedin.getUrl(url, title, description);
     } else {
-      // linkedin or email
-      shareUrl = config.getUrl(url, title, description);
+      // email
+      shareUrl = platformConfig.email.getUrl(url, title, description);
     }
 
     // Open in new window
