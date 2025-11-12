@@ -25,8 +25,9 @@ interface Props {
 }
 
 export default async function RecommendedForYou({ userId, limit = 6, contentType }: Props) {
+  let recommendations: RecommendedContent[] = [];
+
   try {
-    // Fetch recommendations from API
     const params = new URLSearchParams({
       limit: limit.toString(),
       ...(userId && { userId: userId.toString() }),
@@ -35,22 +36,27 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:3000'}/api/recommendations?${params}`,
-      { next: { revalidate: 3600 } } // Cache for 1 hour
+      { next: { revalidate: 3600 } }
     );
 
     if (!response.ok) {
       throw new Error('Failed to fetch recommendations');
     }
 
-    const data = await response.json();
-    const recommendations: RecommendedContent[] = data.recommendations || [];
-
-    if (recommendations.length === 0) {
-      return null; // Don't render if no recommendations
+    const data = (await response.json().catch(() => null)) as { recommendations?: RecommendedContent[] } | null;
+    if (Array.isArray(data?.recommendations)) {
+      recommendations = data.recommendations;
     }
+  } catch (error) {
+    console.error('Failed to load recommendations:', error);
+  }
 
-    return (
-      <section className="py-12">
+  if (recommendations.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">Recommended For You</h2>
           <div className="flex items-center gap-2">
@@ -144,9 +150,5 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
           ))}
         </div>
       </section>
-    );
-  } catch (error) {
-    console.error('Failed to load recommendations:', error);
-    return null; // Fail silently
-  }
+  );
 }
