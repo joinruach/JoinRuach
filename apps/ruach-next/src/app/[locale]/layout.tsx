@@ -29,11 +29,14 @@ export const metadata = {
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }){
+  // Await params (Next.js 15 requirement)
+  const { locale } = await params;
+
   // Validate locale
   if (!locales.includes(locale as any)) {
     notFound();
