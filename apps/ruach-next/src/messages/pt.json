@@ -1,0 +1,143 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "search": "Pesquisar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "learnMore": "Saiba Mais",
+    "viewAll": "Ver Tudo",
+    "readMore": "Leia Mais"
+  },
+  "nav": {
+    "home": "Início",
+    "media": "Mídia e Testemunhos",
+    "courses": "Cursos",
+    "resources": "Recursos",
+    "conferences": "Conferências",
+    "communityOutreach": "Alcance Comunitário",
+    "give": "Doar",
+    "about": "Sobre",
+    "contact": "Contato",
+    "login": "Entrar",
+    "logout": "Sair",
+    "signup": "Cadastrar",
+    "dashboard": "Painel"
+  },
+  "footer": {
+    "tagline": "Transformando vidas através da verdade e criatividade",
+    "copyright": "© {year} Ruach Ministries. Todos os direitos reservados.",
+    "quickLinks": "Links Rápidos",
+    "connect": "Conectar",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Fique atualizado com nosso conteúdo e eventos mais recentes"
+  },
+  "media": {
+    "title": "Mídia e Testemunhos",
+    "featured": "Destaque",
+    "latest": "Mais Recentes",
+    "categories": "Categorias",
+    "speakers": "Palestrantes",
+    "series": "Séries",
+    "duration": "Duração",
+    "views": "Visualizações",
+    "likes": "Curtidas",
+    "watchNow": "Assistir Agora",
+    "shareMedia": "Compartilhar",
+    "downloadMedia": "Baixar"
+  },
+  "courses": {
+    "title": "Cursos",
+    "enrolled": "Matriculado",
+    "progress": "Progresso",
+    "complete": "Concluir",
+    "certificate": "Certificado",
+    "startCourse": "Iniciar Curso",
+    "continueCourse": "Continuar Curso",
+    "completeCourse": "Concluir Curso",
+    "lessons": "Lições",
+    "duration": "Duração"
+  },
+  "auth": {
+    "loginTitle": "Entre na Sua Conta",
+    "signupTitle": "Crie Sua Conta",
+    "email": "Endereço de E-mail",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "forgotPassword": "Esqueceu sua senha?",
+    "rememberMe": "Lembrar de Mim",
+    "dontHaveAccount": "Não tem uma conta?",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "signInWith": "Entrar com {provider}",
+    "orContinueWith": "Ou continuar com"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema",
+    "toggleTheme": "Alternar tema"
+  },
+  "language": {
+    "selectLanguage": "Selecionar Idioma",
+    "currentLanguage": "Idioma Atual"
+  },
+  "search": {
+    "placeholder": "Pesquisar mídia, cursos e mais...",
+    "noResults": "Nenhum resultado encontrado",
+    "results": "Resultados",
+    "filters": "Filtros"
+  },
+  "errors": {
+    "pageNotFound": "Página Não Encontrada",
+    "somethingWentWrong": "Algo deu errado",
+    "tryAgain": "Tentar Novamente",
+    "goHome": "Ir para Início"
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "name": "Nome",
+    "email": "E-mail",
+    "message": "Mensagem",
+    "send": "Enviar Mensagem",
+    "successMessage": "Obrigado pela sua mensagem. Entraremos em contato em breve!"
+  },
+  "newsletter": {
+    "subscribe": "Inscrever-se",
+    "enterEmail": "Digite seu e-mail",
+    "successMessage": "Inscrito com sucesso em nossa newsletter!",
+    "errorMessage": "Falha ao inscrever-se. Por favor, tente novamente."
+  },
+  "scripture": {
+    "references": "Referências Bíblicas",
+    "featuredScripture": "Escritura em Destaque",
+    "loading": "Carregando escritura...",
+    "error": "Falha ao carregar escritura",
+    "copyToClipboard": "Copiar para Área de Transferência",
+    "copied": "Copiado!",
+    "share": "Compartilhar Escritura"
+  },
+  "live": {
+    "liveNow": "Ao Vivo Agora",
+    "watchLive": "Assistir Ao Vivo",
+    "upcomingEvents": "Próximos Eventos",
+    "noLiveStream": "Nenhuma transmissão ao vivo no momento"
+  },
+  "comments": {
+    "title": "Comentários",
+    "writeComment": "Escreva um comentário...",
+    "post": "Publicar",
+    "reply": "Responder",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "pending": "Seu comentário está pendente de aprovação",
+    "noComments": "Nenhum comentário ainda. Seja o primeiro a comentar!"
+  }
+}

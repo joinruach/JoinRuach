@@ -1,16 +1,44 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import createIntlMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './i18n';
 
 /**
- * Middleware for HTTPS enforcement, route protection, and Preview CSP headers
+ * Middleware for i18n, HTTPS enforcement, route protection, and Preview CSP headers
  *
- * 1. HTTPS Enforcement: In production, redirects HTTP requests to HTTPS
- * 2. Auth Protection: Protects /admin routes with NextAuth
- * 3. Preview CSP: Allows embedding in Strapi admin panel for Preview feature
+ * 1. Internationalization: Handles locale routing and detection
+ * 2. HTTPS Enforcement: In production, redirects HTTP requests to HTTPS
+ * 3. Auth Protection: Protects /admin routes with NextAuth
+ * 4. Preview CSP: Allows embedding in Strapi admin panel for Preview feature
  */
 
+// Create i18n middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always',
+});
+
 export async function middleware(req: NextRequest) {
+  // Skip i18n for API routes, static files, and Next.js internals
+  const pathname = req.nextUrl.pathname;
+  const shouldSkipI18n =
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/_vercel') ||
+    /\..+$/.test(pathname); // has file extension
+
+  // Apply i18n middleware first (unless skipped)
+  if (!shouldSkipI18n) {
+    const intlResponse = intlMiddleware(req);
+    // If intl middleware returns a response (redirect), use it
+    if (intlResponse) {
+      return intlResponse;
+    }
+  }
+
+  // Continue with existing middleware logic
   // HTTPS Enforcement (Production Only)
   if (process.env.NODE_ENV === "production") {
     const proto = req.headers.get("x-forwarded-proto");

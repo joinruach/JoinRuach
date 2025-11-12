@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { NavLink } from "@ruach/components/components/ruach/ui/NavLink";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -65,6 +66,7 @@ export default function Header() {
           ))}
 
           <ThemeToggle />
+          <LocaleSwitcher />
 
           {status === "authenticated" ? (
             <div className="flex items-center gap-4">
@@ -88,6 +90,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3 md:hidden">
+          <LocaleSwitcher />
           <ThemeToggle />
           <button
             type="button"
