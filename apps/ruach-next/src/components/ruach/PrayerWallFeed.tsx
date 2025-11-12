@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getPrayers } from "@/lib/strapi";
 
 const createdAtFormatter = new Intl.DateTimeFormat("en-US", {
@@ -28,7 +29,7 @@ export default async function PrayerWallFeed() {
           </li>
         ))}
       </ul>
-      <a className="mt-4 inline-block underline" href="/contact">Post a prayer →</a>
+      <Link className="mt-4 inline-block underline" href="/contact">Post a prayer →</Link>
     </div>
   );
 }

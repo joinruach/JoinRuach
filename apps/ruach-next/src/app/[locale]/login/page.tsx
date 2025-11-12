@@ -2,6 +2,7 @@
 import { signIn } from "next-auth/react";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ruach/ui/Button";
 
 function LoginForm() {
@@ -89,7 +90,7 @@ function LoginForm() {
         </div>
       </form>
       <p className="text-sm text-neutral-600">
-        No account? <a href="/signup" className="text-amber-700 underline">Create one</a>
+        No account? <Link href="/signup" className="text-amber-700 underline">Create one</Link>
       </p>
     </div>
   );

@@ -115,7 +115,7 @@ export default function ScriptureHighlight({
 
       {/* Verse text */}
       <p className={`${variant === "card" ? "text-lg" : "text-base"} leading-relaxed text-neutral-800 dark:text-neutral-200`}>
-        "{verseText}"
+        &ldquo;{verseText}&rdquo;
       </p>
 
       {/* Reference */}

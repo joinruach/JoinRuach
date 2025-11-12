@@ -13,17 +13,17 @@ export default function OfflinePage() {
 
       {/* Title */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-white">You're Offline</h1>
+        <h1 className="text-4xl font-bold text-white">You&apos;re Offline</h1>
         <p className="text-lg text-white/70">
-          It looks like you've lost your internet connection.
+          It looks like you&apos;ve lost your internet connection.
         </p>
       </div>
 
       {/* Message */}
       <div className="max-w-md space-y-4">
         <p className="text-sm text-white/60">
-          Don't worry! Some content may still be available from your previous visits.
-          Once you're back online, you'll have full access to all features.
+          Don&apos;t worry! Some content may still be available from your previous visits.
+          Once you&apos;re back online, you&apos;ll have full access to all features.
         </p>
       </div>
 

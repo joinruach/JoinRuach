@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function ConfirmedPage() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
@@ -37,12 +38,12 @@ export default function ConfirmedPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-green-400">✅ Email Confirmed</h1>
           <p className="mt-2">You can now log in to your account.</p>
-          <a
+          <Link
             href="/login"
             className="mt-4 inline-block rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
           >
             Go to Login
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -55,12 +56,12 @@ export default function ConfirmedPage() {
         <p className="mt-2">
           Your link may have expired. Please request a new one.
         </p>
-        <a
+        <Link
           href="/login"
           className="mt-4 inline-block rounded bg-white/10 px-4 py-2 text-white hover:bg-white/20"
         >
           Back to Login
-        </a>
+        </Link>
       </div>
     </main>
   );

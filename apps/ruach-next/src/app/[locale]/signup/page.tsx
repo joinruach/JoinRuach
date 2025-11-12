@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ruach/ui/Button";
 import { track } from "@/lib/analytics";
 
@@ -105,7 +106,7 @@ export default function SignupPage(){
           {status==="loading"?"Creating account…":"Create account"}
         </Button>
       </form>
-      <p className="text-sm text-white/70">Already registered? <a className="text-amber-300 underline" href="/login">Sign in</a></p>
+      <p className="text-sm text-white/70">Already registered? <Link className="text-amber-300 underline" href="/login">Sign in</Link></p>
     </div>
   );
 }

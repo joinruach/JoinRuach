@@ -2,6 +2,7 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ruach/ui/Button";
 
 const SUCCESS_MESSAGE =
@@ -67,9 +68,9 @@ function ForgotPasswordForm() {
       </form>
       <p className="text-sm text-neutral-600">
         Remembered your password?{" "}
-        <a href="/login" className="text-amber-700 underline">
+        <Link href="/login" className="text-amber-700 underline">
           Return to login
-        </a>
+        </Link>
       </p>
     </div>
   );
@@ -162,9 +163,9 @@ function ResetPasswordForm({ code }: { code: string }) {
       </form>
       <p className="text-sm text-neutral-600">
         Link expired or not working?{" "}
-        <a href="/reset-password" className="text-amber-700 underline">
+        <Link href="/reset-password" className="text-amber-700 underline">
           Request a new reset email
-        </a>
+        </Link>
       </p>
     </div>
   );

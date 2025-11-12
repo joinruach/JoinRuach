@@ -23,7 +23,7 @@ export default function TestimoniesOfFreedomPage(){
       <section className="space-y-3">
         <h2 className="text-xl font-bold">Share Your Story</h2>
         <p className="text-neutral-700">We believe testimonies carry fire. Tell us what God has done in your life and encourage others.</p>
-        <a href="/contact" className="inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Submit a Testimony</a>
+        <Link href="/contact" className="inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Submit a Testimony</Link>
       </section>
     </div>
   );
