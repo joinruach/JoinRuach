@@ -1,3 +1,5 @@
+import withPWA from "@ducanh2912/next-pwa";
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
@@ -82,4 +84,79 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/cdn\.joinruach\.org\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "cdn-cache",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/.*\.r2\.cloudflarestorage\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "r2-cache",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "image-cache",
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "google-fonts",
+        expiration: {
+          maxEntries: 20,
+          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        },
+      },
+    },
+    {
+      urlPattern: /\/api\/.*/i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-cache",
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 5, // 5 minutes
+        },
+      },
+    },
+    {
+      urlPattern: /.*/i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "others",
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24, // 24 hours
+        },
+      },
+    },
+  ],
+})(nextConfig);
