@@ -126,11 +126,3 @@ export function generateTwitterMetadata(content: ShareContent) {
     images: content.image ? [content.image] : [],
   };
 }
-
-// Type declarations for analytics
-declare global {
-  interface Window {
-    plausible?: (event: string, options?: { props?: Record<string, string> }) => void;
-    gtag?: (command: string, event: string, params?: Record<string, any>) => void;
-  }
-}
