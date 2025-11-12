@@ -163,7 +163,7 @@ export default function ShareButton({
             </div>
 
             <div className="space-y-1">
-              {(Object.keys(platformConfig) as SharePlatform[]).map((platform) => {
+              {(Object.keys(platformConfig) as Array<keyof typeof platformConfig>).map((platform) => {
                 const config = platformConfig[platform];
                 return (
                   <button
