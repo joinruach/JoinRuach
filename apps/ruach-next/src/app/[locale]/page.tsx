@@ -17,6 +17,9 @@ import { locales } from '@/i18n';
 // Use ISR (Incremental Static Regeneration) with 60 second revalidation
 export const revalidate = 60;
 
+// Only generate pages for defined locales at build time
+export const dynamicParams = false;
+
 // Generate static pages for all locales
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));

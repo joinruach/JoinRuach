@@ -32,6 +32,9 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+// Only allow defined locales
+export const dynamicParams = false;
+
 export default async function LocaleLayout({
   children,
   params
