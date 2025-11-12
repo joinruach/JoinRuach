@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import LivePreview from "@/components/preview/LivePreview";
 import { RuachAssistant } from "@/components/ai/RuachAssistant";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export const metadata = {
   title: "Ruach Ministries",
@@ -29,6 +30,22 @@ export default function RootLayout({ children }:{ children: React.ReactNode }){
   return (
     <html lang="en">
       <head>
+        {/* Anti-flash script for theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'system';
+                  const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  const resolved = theme === 'system' ? getSystemTheme() : theme;
+                  document.documentElement.classList.add(resolved);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+
         {/* Favicons */}
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -44,7 +61,7 @@ export default function RootLayout({ children }:{ children: React.ReactNode }){
         <meta name="theme-color" content="#fbbf24" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
       </head>
-      <body className="bg-neutral-950 text-neutral-100 antialiased">
+      <body className="bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {plausibleDomain ? (
           <Script
             defer
@@ -52,16 +69,18 @@ export default function RootLayout({ children }:{ children: React.ReactNode }){
             src="https://plausible.io/js/script.js"
           />
         ) : null}
-        <Providers>
-          <LivePreview />
-          <Header />
-          <main className="mx-auto max-w-6xl px-4 py-12 lg:py-16">
-            {children}
-          </main>
-          <Footer />
-          {aiAssistantEnabled && <RuachAssistant />}
-          <InstallPrompt />
-        </Providers>
+        <ThemeProvider>
+          <Providers>
+            <LivePreview />
+            <Header />
+            <main className="mx-auto max-w-6xl px-4 py-12 lg:py-16">
+              {children}
+            </main>
+            <Footer />
+            {aiAssistantEnabled && <RuachAssistant />}
+            <InstallPrompt />
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

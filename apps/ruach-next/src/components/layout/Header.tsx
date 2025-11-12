@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { NavLink } from "@ruach/components/components/ruach/ui/NavLink";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -22,7 +23,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-black/90">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link href="/" aria-label="Ruach Ministries Home" className="flex items-center gap-3">
           <Image
@@ -34,14 +35,14 @@ export default function Header() {
             priority
           />
           <div className="hidden leading-tight sm:flex sm:flex-col">
-            <span className="text-base font-bold uppercase tracking-[0.35em] text-white">
+            <span className="text-base font-bold uppercase tracking-[0.35em] text-neutral-900 dark:text-white">
               Ruach
             </span>
-            <span className="text-xs font-semibold uppercase tracking-[0.45em] text-white/70">
+            <span className="text-xs font-semibold uppercase tracking-[0.45em] text-neutral-600 dark:text-white/70">
               Ministries
             </span>
           </div>
-          <span className="text-sm font-semibold uppercase tracking-[0.3em] text-white/70 sm:hidden">
+          <span className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-600 dark:text-white/70 sm:hidden">
             Ruach Ministries
           </span>
         </Link>
@@ -63,20 +64,22 @@ export default function Header() {
             )
           ))}
 
+          <ThemeToggle />
+
           {status === "authenticated" ? (
             <div className="flex items-center gap-4">
-              <Link href="/logout" className="text-white/80 transition hover:text-white">
+              <Link href="/logout" className="text-white/80 transition hover:text-white dark:text-white/80 dark:hover:text-white">
                 Logout
               </Link>
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-white/80 transition hover:text-white">
+              <Link href="/login" className="text-white/80 transition hover:text-white dark:text-white/80 dark:hover:text-white">
                 Login
               </Link>
               <Link
                 href="/signup"
-                className="rounded-full border border-white/20 px-4 py-1.5 text-white/90 transition hover:border-white hover:text-white"
+                className="rounded-full border border-white/20 px-4 py-1.5 text-white/90 transition hover:border-white hover:text-white dark:border-white/20 dark:text-white/90 dark:hover:border-white dark:hover:text-white"
               >
                 Signup
               </Link>
@@ -84,14 +87,15 @@ export default function Header() {
           )}
         </nav>
 
-        <button
-          type="button"
-          className="md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle navigation menu"
-        >
+        <div className="flex items-center gap-3 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle navigation menu"
+          >
           <svg
-            className="h-6 w-6 text-white"
+            className="h-6 w-6 text-neutral-900 dark:text-white"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -109,19 +113,20 @@ export default function Header() {
               </>
             )}
           </svg>
-        </button>
+          </button>
+        </div>
       </div>
 
       {open ? (
         <div className="md:hidden">
-          <div className="space-y-1 border-t border-white/10 bg-black/95 px-4 py-4 text-sm">
+          <div className="space-y-1 border-t border-neutral-200 bg-white px-4 py-4 text-sm dark:border-white/10 dark:bg-black/95">
             {NAV_LINKS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={item.highlight
                   ? "flex w-full items-center justify-center rounded-full bg-amber-500 px-4 py-2 font-semibold text-black"
-                  : "block rounded-lg px-3 py-2 text-white/80 transition hover:bg-white/10 hover:text-white"}
+                  : "block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"}
                 onClick={() => setOpen(false)}
               >
                 {item.label}
@@ -131,7 +136,7 @@ export default function Header() {
             {status === "authenticated" ? (
               <Link
                 href="/logout"
-                className="block rounded-lg px-3 py-2 text-white/80 transition hover:bg-white/10 hover:text-white"
+                className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                 onClick={() => setOpen(false)}
               >
                 Logout
@@ -140,14 +145,14 @@ export default function Header() {
               <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="block rounded-lg px-3 py-2 text-white/80 transition hover:bg-white/10 hover:text-white"
+                  className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                   onClick={() => setOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-white transition hover:border-white"
+                  className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 text-neutral-900 transition hover:border-neutral-900 dark:border-white/20 dark:text-white dark:hover:border-white"
                   onClick={() => setOpen(false)}
                 >
                   Signup
