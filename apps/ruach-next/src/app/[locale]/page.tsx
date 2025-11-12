@@ -13,7 +13,7 @@ import {
 } from "@/lib/strapi-normalize";
 import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
 
-export const dynamic = "force-static";
+// Use ISR (Incremental Static Regeneration) with 60 second revalidation
 export const revalidate = 60;
 
 type MediaAttributes = MediaItemEntity["attributes"];
@@ -21,11 +21,12 @@ type CourseAttributes = CourseEntity["attributes"];
 type EventAttributes = EventEntity["attributes"];
 
 export default async function Home(){
+  // Fetch data with error handling - if Strapi is unavailable, use empty arrays
   const [courses, testimonies, featured, events] = await Promise.all([
-    getCourses(),
-    getMediaByCategory("testimony", 6),
-    getFeaturedTestimony(),
-    getEvents(3)
+    getCourses().catch(() => []),
+    getMediaByCategory("testimony", 6).catch(() => []),
+    getFeaturedTestimony().catch(() => null),
+    getEvents(3).catch(() => [])
   ]);
 
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
