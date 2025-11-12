@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     const userId = (session.user as any).id || hashEmail(session.user.email);
 
     // Fetch from database
-    let interactions = [];
+    let interactions: Awaited<ReturnType<typeof getUserInteractions>> = [];
     try {
       interactions = await getUserInteractions(userId, limit);
     } catch (dbError) {

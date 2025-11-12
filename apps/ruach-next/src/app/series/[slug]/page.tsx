@@ -9,7 +9,7 @@ import {
   extractManyRelation,
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
-import type { MediaItemEntity, SeriesEntity } from "@/lib/strapi";
+import type { MediaItemEntity, SeriesEntity } from "@/lib/types/strapi-types";
 
 export const dynamic = "force-static";
 

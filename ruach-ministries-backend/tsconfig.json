@@ -24,6 +24,7 @@
     "./",                                      // Include root directory files
     "./**/*.ts",                                // Include all TypeScript files
     "./**/*.js",                                // Include all JavaScript files
+    "types/**/*.d.ts",                          // Include generated type definitions
     "src/**/*.json"                             // Include JSON files in 'src' directory
   ],
   "exclude": [

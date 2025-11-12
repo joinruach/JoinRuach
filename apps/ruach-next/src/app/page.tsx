@@ -5,6 +5,7 @@ import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
 import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, getMediaByCategory, getFeaturedTestimony, imgUrl, getEvents } from "@/lib/strapi";
+import RecommendedForYou from "@/components/recommendations/RecommendedForYou";
 import {
   extractAttributes,
   extractManyRelation,
@@ -125,6 +126,7 @@ export default async function Home(){
   const featuredThumbnail = featuredAttributes
     ? extractSingleRelation<{ url?: string; alternativeText?: string }>(featuredAttributes.thumbnail)
     : undefined;
+  const recommendationsEnabled = process.env.NEXT_PUBLIC_RECOMMENDATIONS_ENABLED === "true";
 
   return (
     <div className="space-y-16">
@@ -318,6 +320,8 @@ export default async function Home(){
           </div>
         </section>
       ) : null}
+
+      {recommendationsEnabled ? <RecommendedForYou limit={6} /> : null}
 
       <section className="rounded-3xl border border-white/10 bg-amber-500/10 p-10 text-white">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

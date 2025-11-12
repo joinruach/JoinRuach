@@ -96,7 +96,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
     return (
       <div className="space-y-4">
         <p className="text-sm text-white/70">
-          Found {results.length} result{results.length !== 1 ? "s" : ""} for "{query}"
+          Found {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
         </p>
 
         <div className="space-y-4">

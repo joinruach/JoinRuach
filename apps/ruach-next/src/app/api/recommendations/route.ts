@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getJSON } from '@/lib/strapi';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Content Recommendations API
  * Returns personalized content recommendations
@@ -60,5 +62,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-export const revalidate = 3600; // Cache for 1 hour

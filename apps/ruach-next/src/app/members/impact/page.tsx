@@ -83,7 +83,7 @@ export default async function ImpactDashboardPage() {
         <span className="text-xs uppercase tracking-wide text-white/60">Partner Dashboard</span>
         <h1 className="text-3xl font-semibold text-white">Your Impact</h1>
         <p className="text-sm text-white/70">
-          Track your partnership journey and see the eternal difference you're making.
+          Track your partnership journey and see the eternal difference you&apos;re making.
         </p>
       </header>
 

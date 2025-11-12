@@ -25,7 +25,9 @@
     ],
     "types": [
       "jest",
-      "node"
+      "node",
+      "react",
+      "react-dom"
     ],
     "plugins": [
       {

@@ -82,7 +82,7 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
               {item.thumbnailUrl ? (
                 <div className="relative aspect-video w-full overflow-hidden">
                   <Image
-                    src={imgUrl(item.thumbnailUrl)}
+                    src={imgUrl(item.thumbnailUrl) ?? item.thumbnailUrl}
                     alt={item.title}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"

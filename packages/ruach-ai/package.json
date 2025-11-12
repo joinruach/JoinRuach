@@ -3,23 +3,28 @@
   "version": "1.0.0",
   "private": true,
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./embeddings": {
       "types": "./dist/embeddings/index.d.ts",
-      "default": "./dist/embeddings/index.js"
+      "import": "./dist/embeddings/index.mjs",
+      "require": "./dist/embeddings/index.js"
     },
     "./chat": {
       "types": "./dist/chat/index.d.ts",
-      "default": "./dist/chat/index.js"
+      "import": "./dist/chat/index.mjs",
+      "require": "./dist/chat/index.js"
     },
     "./recommendations": {
       "types": "./dist/recommendations/index.d.ts",
-      "default": "./dist/recommendations/index.js"
+      "import": "./dist/recommendations/index.mjs",
+      "require": "./dist/recommendations/index.js"
     }
   },
   "scripts": {

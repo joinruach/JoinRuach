@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getAllSeries, imgUrl } from "@/lib/strapi";
 import { extractAttributes, extractSingleRelation } from "@/lib/strapi-normalize";
-import type { SeriesEntity } from "@/lib/strapi";
+import type { SeriesEntity } from "@/lib/types/strapi-types";
 
 export const metadata = {
   title: "Series | Ruach Ministries",
@@ -23,7 +23,7 @@ export default async function SeriesPage() {
   const series = await getAllSeries();
 
   const seriesCards: SeriesCardData[] = series.map((s) => {
-    const attrs = extractAttributes<SeriesEntity["attributes"]>(s as any);
+    const attrs = extractAttributes(s as any) as SeriesEntity["attributes"] | undefined;
     const coverAttributes = extractSingleRelation<{ url?: string; alternativeText?: string }>(attrs?.coverImage);
     const mediaItems = attrs?.mediaItems?.data ?? [];
 

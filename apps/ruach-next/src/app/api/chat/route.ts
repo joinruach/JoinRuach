@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       system: systemPrompt,
       messages,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
 
     // Save conversation to database (async, non-blocking)
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return result.toDataStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('Chat API error:', error);
     return Response.json(

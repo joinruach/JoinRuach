@@ -76,9 +76,7 @@ const nextConfig = {
 
     // Suppress warnings for optional @resvg platform-specific binaries
     config.ignoreWarnings = config.ignoreWarnings || [];
-    config.ignoreWarnings.push(
-      { module: /node_modules\/@resvg\/resvg-js/ }
-    );
+    config.ignoreWarnings.push({ module: /node_modules\/@resvg\/resvg-js/ });
 
     return config;
   },

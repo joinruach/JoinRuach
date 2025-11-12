@@ -1,28 +1,94 @@
 'use client';
 
-import { useChat } from 'ai/react';
-import { useEffect, useRef, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ruach/ui/Button';
 
 export function RuachAssistant() {
   const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    error,
-  } = useChat({
-    api: '/api/chat',
-  });
+    messages: uiMessages,
+    sendMessage,
+    status,
+    error: chatError,
+  } = useChat();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+
+  const isLoading = status === 'streaming' || status === 'submitted';
+
+  const simplifiedMessages = useMemo(
+    () =>
+      uiMessages.map(message => {
+        const text = message.parts
+          .map(part => {
+            const partText = (part as { text?: string }).text;
+            if (typeof partText === 'string') {
+              return partText;
+            }
+            const partUrl = (part as { url?: string }).url;
+            if (typeof partUrl === 'string') {
+              return `[Attachment] ${partUrl}`;
+            }
+            return '';
+          })
+          .filter(Boolean)
+          .join('\n');
+
+        return {
+          id: message.id,
+          role: message.role,
+          content: text,
+        };
+      }),
+    [uiMessages]
+  );
+
+  const sendUserMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      try {
+        await sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: trimmed }],
+        });
+      } catch (err) {
+        console.error('Failed to send chat message:', err);
+      }
+    },
+    [sendMessage]
+  );
+
+  const handleInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  }, []);
+
+  const handleFormSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const trimmed = input.trim();
+      if (!trimmed) return;
+      await sendUserMessage(trimmed);
+      setInput('');
+    },
+    [input, sendUserMessage]
+  );
+
+  const handleSuggestionClick = useCallback(
+    (prompt: string) => {
+      void sendUserMessage(prompt);
+    },
+    [sendUserMessage]
+  );
+
+  const error = chatError;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [simplifiedMessages]);
 
   // Keyboard shortcut: Cmd/Ctrl + /
   useEffect(() => {
@@ -90,7 +156,7 @@ export function RuachAssistant() {
 
       {/* Messages */}
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        {messages.length === 0 ? (
+        {simplifiedMessages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <div className="mb-4 rounded-full bg-amber-500/10 p-4">
               <svg
@@ -115,25 +181,13 @@ export function RuachAssistant() {
             </p>
             <div className="space-y-2 text-left">
               <button
-                onClick={() => {
-                  handleInputChange({ target: { value: 'What is the latest series?' } } as any);
-                  setTimeout(() => {
-                    const form = document.querySelector('form');
-                    form?.requestSubmit();
-                  }, 100);
-                }}
+                onClick={() => handleSuggestionClick('What is the latest series?')}
                 className="w-full rounded-lg border border-white/10 p-3 text-left text-sm text-white/80 transition-colors hover:bg-white/5"
               >
                 What is the latest series?
               </button>
               <button
-                onClick={() => {
-                  handleInputChange({ target: { value: 'Recommend videos about prayer' } } as any);
-                  setTimeout(() => {
-                    const form = document.querySelector('form');
-                    form?.requestSubmit();
-                  }, 100);
-                }}
+                onClick={() => handleSuggestionClick('Recommend videos about prayer')}
                 className="w-full rounded-lg border border-white/10 p-3 text-left text-sm text-white/80 transition-colors hover:bg-white/5"
               >
                 Recommend videos about prayer
@@ -142,7 +196,7 @@ export function RuachAssistant() {
           </div>
         ) : (
           <>
-            {messages.map(msg => (
+            {simplifiedMessages.map(msg => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -180,7 +234,7 @@ export function RuachAssistant() {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t border-white/10 p-4">
+      <form onSubmit={handleFormSubmit} className="border-t border-white/10 p-4">
         <div className="flex gap-2">
           <input
             value={input}

@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, type QueryResultRow } from 'pg';
 
 /**
  * Database utilities for AI features
@@ -26,9 +26,16 @@ function getPool(): Pool {
 /**
  * Execute a query
  */
-export async function query<T = any>(text: string, params?: any[]): Promise<{ rows: T[]; rowCount: number }> {
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: any[]
+): Promise<{ rows: T[]; rowCount: number }> {
   const client = getPool();
-  return client.query(text, params);
+  const result = await client.query<T>(text, params);
+  return {
+    rows: result.rows,
+    rowCount: typeof result.rowCount === 'number' ? result.rowCount : result.rows.length,
+  };
 }
 
 /**

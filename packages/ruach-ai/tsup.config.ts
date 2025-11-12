@@ -7,7 +7,7 @@ export default defineConfig({
     'src/chat/index.ts',
     'src/recommendations/index.ts',
   ],
-  format: ['esm'],
+  format: ['esm', 'cjs'],
   dts: true,
   splitting: false,
   sourcemap: true,
