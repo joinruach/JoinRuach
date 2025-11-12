@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.44",
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@resvg/resvg-js": "^2.6.2",
     "@ruach/addons": "workspace:*",
     "@ruach/ai": "workspace:*",
