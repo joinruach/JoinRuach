@@ -72,7 +72,7 @@ export const usePresignedUpload = () => {
   /**
    * Generate presigned URL from Strapi
    */
-  const generatePresignedUrl = async (file: File): Promise<PresignedUrlResponse> => {
+  const generatePresignedUrl = useCallback(async (file: File): Promise<PresignedUrlResponse> => {
     const response = await fetch(`${API_URL}/api/presigned-upload/generate`, {
       method: 'POST',
       headers: {
@@ -91,12 +91,12 @@ export const usePresignedUpload = () => {
     }
 
     return response.json();
-  };
+  }, [API_URL]);
 
   /**
    * Upload file to R2 using presigned URL (single request)
    */
-  const uploadToR2 = async (file: File, uploadUrl: string, onProgress?: (progress: number) => void): Promise<void> => {
+  const uploadToR2 = useCallback(async (file: File, uploadUrl: string, onProgress?: (progress: number) => void): Promise<void> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -132,12 +132,12 @@ export const usePresignedUpload = () => {
       xhr.setRequestHeader('Content-Type', file.type);
       xhr.send(file);
     });
-  };
+  }, []);
 
   /**
    * Upload file in chunks (for large files)
    */
-  const uploadToR2Chunked = async (
+  const uploadToR2Chunked = useCallback(async (
     file: File,
     uploadUrl: string,
     chunkSize: number,
@@ -171,12 +171,12 @@ export const usePresignedUpload = () => {
       setProgress(progressPercent);
       onProgress?.(progressPercent);
     }
-  };
+  }, []);
 
   /**
    * Complete the upload by saving metadata to Strapi
    */
-  const completeUpload = async (key: string, file: File, publicUrl: string): Promise<CompleteUploadResponse> => {
+  const completeUpload = useCallback(async (key: string, file: File, publicUrl: string): Promise<CompleteUploadResponse> => {
     const response = await fetch(`${API_URL}/api/presigned-upload/complete`, {
       method: 'POST',
       headers: {
@@ -197,7 +197,7 @@ export const usePresignedUpload = () => {
     }
 
     return response.json();
-  };
+  }, [API_URL]);
 
   /**
    * Upload a file
@@ -251,7 +251,7 @@ export const usePresignedUpload = () => {
       onError?.(uploadError);
       throw uploadError;
     }
-  }, [API_URL]);
+  }, [completeUpload, generatePresignedUrl, uploadToR2, uploadToR2Chunked]);
 
   /**
    * Reset the upload state

@@ -192,7 +192,6 @@ export default function About(){
                   {storyImageMobile && storyImageMobile !== storyImageDesktop ? (
                     <source media="(max-width: 768px)" srcSet={storyImageMobile} />
                   ) : null}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={storyImageDesktop}
                     alt={storyImageAlt}
