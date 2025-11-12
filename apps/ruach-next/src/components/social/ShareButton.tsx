@@ -89,7 +89,16 @@ export default function ShareButton({
 
     // Get platform URL
     const config = platformConfig[platform];
-    const shareUrl = config.getUrl(url, title, description);
+    let shareUrl: string;
+
+    if (platform === "twitter") {
+      shareUrl = config.getUrl(url, title, hashtags);
+    } else if (platform === "facebook") {
+      shareUrl = config.getUrl(url);
+    } else {
+      // linkedin or email
+      shareUrl = config.getUrl(url, title, description);
+    }
 
     // Open in new window
     window.open(shareUrl, "_blank", "width=600,height=400");
