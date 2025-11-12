@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getEventBySlug, imgUrl } from "@/lib/strapi";
+import { LiveIndicator, LivestreamPlayer, UpcomingStream } from "@/components/livestream";
+import { isStreamLive, getLivestreamStatus, extractYouTubeVideoId } from "@/lib/livestream";
 
 export const dynamic = "force-static";
 
@@ -23,15 +25,44 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   const date = a.date || a.startDate;
   const end = a.endDate;
 
+  // Livestream support
+  const livestreamUrl = a.livestreamUrl || a.videoUrl;
+  const videoId = livestreamUrl ? extractYouTubeVideoId(livestreamUrl) : null;
+  const hasLivestream = Boolean(videoId);
+  const isLive = hasLivestream && date ? isStreamLive(date, end, a.isLive) : false;
+  const livestreamStatus = hasLivestream && date ? getLivestreamStatus(date, end, a.isLive) : null;
+  const showChat = a.showChat !== false; // Default to true if not specified
+  const coverUrl = imgUrl(a.cover?.data?.attributes?.url);
+
   return (
     <div className="space-y-10">
-      <nav className="text-xs uppercase tracking-wide text-white/50">
-        <Link href="/events" className="text-white/70 transition hover:text-white">Events</Link>
+      <nav className="text-xs uppercase tracking-wide text-neutral-600 dark:text-white/50">
+        <Link href="/events" className="text-neutral-700 transition hover:text-neutral-900 dark:text-white/70 dark:hover:text-white">Events</Link>
         <span className="mx-1">/</span>
-        <span className="text-white">{a.title}</span>
+        <span className="text-neutral-900 dark:text-white">{a.title}</span>
       </nav>
 
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+      {/* Upcoming stream countdown */}
+      {hasLivestream && livestreamStatus === "upcoming" && date && (
+        <UpcomingStream
+          title={a.title}
+          description={a.description}
+          scheduledTime={date}
+          thumbnail={coverUrl}
+        />
+      )}
+
+      {/* Live player */}
+      {hasLivestream && isLive && videoId && (
+        <LivestreamPlayer
+          videoId={videoId}
+          isLive={true}
+          showChat={showChat}
+          title={a.title}
+        />
+      )}
+
+      <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-white/5">
         {a.cover?.data?.attributes?.url ? (
           <div className="relative h-72 w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,15 +70,16 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           </div>
         ) : null}
-        <div className="space-y-4 p-8 text-white">
-          <div className="flex flex-wrap gap-4 text-sm text-white/70">
+        <div className="space-y-4 p-8 text-neutral-900 dark:text-white">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-white/70">
+            {isLive && <LiveIndicator isLive={true} size="sm" />}
             {date ? <span>{new Date(date).toLocaleString()}</span> : null}
             {end ? <span>– {new Date(end).toLocaleDateString()}</span> : null}
             {a.location ? <span>• {a.location}</span> : null}
           </div>
-          <h1 className="text-3xl font-semibold text-white">{a.title}</h1>
+          <h1 className="text-3xl font-semibold text-neutral-900 dark:text-white">{a.title}</h1>
           {a.description ? (
-            <p className="text-sm leading-relaxed text-white/70 whitespace-pre-wrap">{a.description}</p>
+            <p className="text-sm leading-relaxed text-neutral-700 dark:text-white/70 whitespace-pre-wrap">{a.description}</p>
           ) : null}
           <div className="flex flex-wrap gap-3 pt-2">
             {a.registrationUrl ? (
@@ -55,14 +87,14 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
                 href={a.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
+                className="inline-flex items-center rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-black dark:hover:bg-amber-300"
               >
                 Register now
               </Link>
             ) : null}
             <Link
               href="/conferences"
-              className="inline-flex items-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+              className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900 dark:border-white/20 dark:text-white/80 dark:hover:border-white dark:hover:text-white"
             >
               Back to conferences
             </Link>

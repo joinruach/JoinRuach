@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { imgUrl } from "@/lib/strapi";
+import LiveIndicator from "@/components/livestream/LiveIndicator";
 
 export type MediaCardProps = {
   title: string;
@@ -13,6 +14,7 @@ export type MediaCardProps = {
   speakers?: string[];
   likes?: number;
   contentId?: string | number;
+  isLive?: boolean;
 };
 
 function formatDuration(seconds?: number) {
@@ -33,6 +35,7 @@ export default function MediaCard({
   speakers,
   likes,
   contentId,
+  isLive,
 }: MediaCardProps) {
   const src = thumbnail?.src ? imgUrl(thumbnail.src) : undefined;
   const primarySpeaker = speakers?.[0];
@@ -63,6 +66,12 @@ export default function MediaCard({
           />
         ) : (
           <div className="h-full w-full bg-neutral-200" />
+        )}
+        {/* Live badge overlay */}
+        {isLive && (
+          <div className="absolute left-3 top-3">
+            <LiveIndicator isLive={true} size="sm" />
+          </div>
         )}
       </div>
       <div className="p-4">
