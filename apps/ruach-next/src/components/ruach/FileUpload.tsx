@@ -286,6 +286,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {/* Preview */}
         {previewUrl && showPreview && (
           <div style={{ marginBottom: '1rem' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
               alt="Preview"

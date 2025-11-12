@@ -1,9 +1,6 @@
-import Link from "next/link";
+"use client";
 
-export const metadata = {
-  title: "Offline | Ruach Ministries",
-  description: "You are currently offline. Please check your internet connection.",
-};
+import Link from "next/link";
 
 export default function OfflinePage() {
   return (
