@@ -4,6 +4,7 @@ import SEOHead from "@/components/ruach/SEOHead";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
 import ShareButton from "@/components/social/ShareButton";
 import LikeButton from "@/components/social/LikeButton";
+import { ScriptureList, ScriptureHighlight } from "@/components/scripture";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
 import {
   extractAttributes,
@@ -270,6 +271,24 @@ export default async function MediaDetail({ params }: Props){
         {a.description ? (
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-neutral-700 dark:text-white/70">{a.description}</p>
         ) : null}
+
+        {/* Featured Scripture */}
+        {a.featuredScripture && (
+          <div className="mt-6">
+            <ScriptureHighlight reference={a.featuredScripture} variant="card" />
+          </div>
+        )}
+
+        {/* Scripture References */}
+        {a.scriptureReferences && a.scriptureReferences.length > 0 && (
+          <div className="mt-6">
+            <ScriptureList
+              title="Key Scriptures"
+              references={a.scriptureReferences}
+              variant="badge"
+            />
+          </div>
+        )}
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-black">
