@@ -2,6 +2,8 @@ import Link from "next/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
+import ShareButton from "@/components/social/ShareButton";
+import LikeButton from "@/components/social/LikeButton";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
 import {
   extractAttributes,
@@ -10,6 +12,8 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
+import { getAbsoluteUrl, generateShareText, getDefaultHashtags, trackShare } from "@/lib/share";
+import { trackLike } from "@/lib/likes";
 
 export const dynamic = "force-static";
 
@@ -130,14 +134,30 @@ export async function generateMetadata({ params }: Props){
   const title = a?.seoTitle || a?.title || "Media";
   const desc = a?.seoDescription || a?.description || "";
   const thumb = imgUrl(extractMediaUrl(a?.seoImage) || extractMediaUrl(a?.thumbnail));
+  const url = getAbsoluteUrl(`/media/${slug}`);
+
   return {
     title,
     description: desc,
     openGraph: {
       title,
       description: desc,
-      images: thumb ? [thumb] : []
-    }
+      url,
+      siteName: "Ruach Ministries",
+      images: thumb ? [{
+        url: thumb,
+        width: 1200,
+        height: 630,
+        alt: title,
+      }] : [],
+      type: "video.other",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: desc,
+      images: thumb ? [thumb] : [],
+    },
   };
 }
 
@@ -204,6 +224,9 @@ export default async function MediaDetail({ params }: Props){
   }
 
   const thumbUrl = imgUrl(extractMediaUrl(a.thumbnail));
+  const pageUrl = getAbsoluteUrl(`/media/${slug}`);
+  const shareText = generateShareText("media", a.title ?? "Untitled Media");
+  const shareHashtags = getDefaultHashtags("media");
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -219,20 +242,37 @@ export default async function MediaDetail({ params }: Props){
   return (
     <div className="space-y-10">
       <SEOHead jsonLd={jsonLd} />
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8">
-        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-white/60">
-          {categoryName ? <span>{categoryName}</span> : null}
-          {a.publishedAt ? (
-            <span className="text-white/40">{new Date(a.publishedAt).toLocaleDateString()}</span>
-          ) : null}
+      <section className="rounded-3xl border border-neutral-200 bg-white p-8 dark:border-white/10 dark:bg-white/5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-neutral-600 dark:text-white/60">
+            {categoryName ? <span>{categoryName}</span> : null}
+            {a.publishedAt ? (
+              <span className="text-neutral-400 dark:text-white/40">{new Date(a.publishedAt).toLocaleDateString()}</span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <LikeButton
+              contentType="media"
+              contentId={data.id}
+              initialLikes={a.likes ?? 0}
+              onLike={(liked, count) => trackLike("media", data.id, liked)}
+            />
+            <ShareButton
+              url={pageUrl}
+              title={a.title ?? "Untitled Media"}
+              description={shareText}
+              hashtags={shareHashtags}
+              onShare={(platform) => trackShare(platform, "media", data.id)}
+            />
+          </div>
         </div>
-        <h1 className="mt-3 text-3xl font-semibold text-white">{a.title}</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-neutral-900 dark:text-white">{a.title}</h1>
         {a.description ? (
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70">{a.description}</p>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-neutral-700 dark:text-white/70">{a.description}</p>
         ) : null}
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-black">
+      <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-black">
         <MediaPlayer
           mediaId={data.id}
           videoUrl={videoUrl}
@@ -245,12 +285,12 @@ export default async function MediaDetail({ params }: Props){
       {related.length ? (
         <section className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-white">Related Media</h2>
-            <Link href="/media" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Related Media</h2>
+            <Link href="/media" className="text-sm font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-300 dark:hover:text-amber-200">
               Browse all media →
             </Link>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-neutral-200 bg-white p-8 text-neutral-900 dark:border-white/10 dark:bg-white dark:text-neutral-900">
             <MediaGrid items={related} />
           </div>
         </section>

@@ -11,6 +11,8 @@ export type MediaCardProps = {
   views?: number;
   durationSec?: number;
   speakers?: string[];
+  likes?: number;
+  contentId?: string | number;
 };
 
 function formatDuration(seconds?: number) {
@@ -29,17 +31,22 @@ export default function MediaCard({
   views,
   durationSec,
   speakers,
+  likes,
+  contentId,
 }: MediaCardProps) {
   const src = thumbnail?.src ? imgUrl(thumbnail.src) : undefined;
   const primarySpeaker = speakers?.[0];
   const durationLabel = formatDuration(durationSec);
   const viewLabel =
     typeof views === "number" ? `${new Intl.NumberFormat("en", { notation: "compact" }).format(views)} views` : undefined;
+  const likeLabel =
+    typeof likes === "number" && likes > 0 ? `${new Intl.NumberFormat("en", { notation: "compact" }).format(likes)} likes` : undefined;
 
   const meta: string[] = [];
   if (durationLabel) meta.push(durationLabel);
   if (primarySpeaker) meta.push(primarySpeaker);
   if (viewLabel) meta.push(viewLabel);
+  if (likeLabel) meta.push(likeLabel);
 
   return (
     <Link
