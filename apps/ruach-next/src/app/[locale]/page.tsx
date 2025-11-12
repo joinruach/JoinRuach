@@ -12,9 +12,15 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
+import { locales } from '@/i18n';
 
 // Use ISR (Incremental Static Regeneration) with 60 second revalidation
 export const revalidate = 60;
+
+// Generate static pages for all locales
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
 type MediaAttributes = MediaItemEntity["attributes"];
 type CourseAttributes = CourseEntity["attributes"];
