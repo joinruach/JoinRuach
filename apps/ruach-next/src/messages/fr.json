@@ -1,0 +1,143 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "learnMore": "En Savoir Plus",
+    "viewAll": "Voir Tout",
+    "readMore": "Lire Plus"
+  },
+  "nav": {
+    "home": "Accueil",
+    "media": "Médias et Témoignages",
+    "courses": "Cours",
+    "resources": "Ressources",
+    "conferences": "Conférences",
+    "communityOutreach": "Sensibilisation Communautaire",
+    "give": "Donner",
+    "about": "À Propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "signup": "S'inscrire",
+    "dashboard": "Tableau de Bord"
+  },
+  "footer": {
+    "tagline": "Transformer des vies par la vérité et la créativité",
+    "copyright": "© {year} Ruach Ministries. Tous droits réservés.",
+    "quickLinks": "Liens Rapides",
+    "connect": "Se Connecter",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Restez informé de nos derniers contenus et événements"
+  },
+  "media": {
+    "title": "Médias et Témoignages",
+    "featured": "En Vedette",
+    "latest": "Derniers",
+    "categories": "Catégories",
+    "speakers": "Intervenants",
+    "series": "Séries",
+    "duration": "Durée",
+    "views": "Vues",
+    "likes": "J'aime",
+    "watchNow": "Regarder Maintenant",
+    "shareMedia": "Partager",
+    "downloadMedia": "Télécharger"
+  },
+  "courses": {
+    "title": "Cours",
+    "enrolled": "Inscrit",
+    "progress": "Progrès",
+    "complete": "Terminer",
+    "certificate": "Certificat",
+    "startCourse": "Commencer le Cours",
+    "continueCourse": "Continuer le Cours",
+    "completeCourse": "Terminer le Cours",
+    "lessons": "Leçons",
+    "duration": "Durée"
+  },
+  "auth": {
+    "loginTitle": "Connectez-vous à Votre Compte",
+    "signupTitle": "Créer Votre Compte",
+    "email": "Adresse E-mail",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se Souvenir de Moi",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signInWith": "Se connecter avec {provider}",
+    "orContinueWith": "Ou continuer avec"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "toggleTheme": "Changer le thème"
+  },
+  "language": {
+    "selectLanguage": "Sélectionner la Langue",
+    "currentLanguage": "Langue Actuelle"
+  },
+  "search": {
+    "placeholder": "Rechercher des médias, des cours et plus...",
+    "noResults": "Aucun résultat trouvé",
+    "results": "Résultats",
+    "filters": "Filtres"
+  },
+  "errors": {
+    "pageNotFound": "Page Non Trouvée",
+    "somethingWentWrong": "Quelque chose s'est mal passé",
+    "tryAgain": "Réessayer",
+    "goHome": "Accueil"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "name": "Nom",
+    "email": "E-mail",
+    "message": "Message",
+    "send": "Envoyer le Message",
+    "successMessage": "Merci pour votre message. Nous vous répondrons bientôt !"
+  },
+  "newsletter": {
+    "subscribe": "S'abonner",
+    "enterEmail": "Entrez votre e-mail",
+    "successMessage": "Abonné avec succès à notre newsletter !",
+    "errorMessage": "Échec de l'abonnement. Veuillez réessayer."
+  },
+  "scripture": {
+    "references": "Références Bibliques",
+    "featuredScripture": "Écriture en Vedette",
+    "loading": "Chargement de l'écriture...",
+    "error": "Échec du chargement de l'écriture",
+    "copyToClipboard": "Copier dans le Presse-papiers",
+    "copied": "Copié !",
+    "share": "Partager l'Écriture"
+  },
+  "live": {
+    "liveNow": "En Direct Maintenant",
+    "watchLive": "Regarder en Direct",
+    "upcomingEvents": "Événements à Venir",
+    "noLiveStream": "Aucune diffusion en direct pour le moment"
+  },
+  "comments": {
+    "title": "Commentaires",
+    "writeComment": "Écrire un commentaire...",
+    "post": "Publier",
+    "reply": "Répondre",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "pending": "Votre commentaire est en attente d'approbation",
+    "noComments": "Pas encore de commentaires. Soyez le premier à commenter !"
+  }
+}

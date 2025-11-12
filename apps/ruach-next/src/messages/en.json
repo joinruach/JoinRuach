@@ -1,0 +1,143 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "learnMore": "Learn More",
+    "viewAll": "View All",
+    "readMore": "Read More"
+  },
+  "nav": {
+    "home": "Home",
+    "media": "Media & Testimonies",
+    "courses": "Courses",
+    "resources": "Resources",
+    "conferences": "Conferences",
+    "communityOutreach": "Community Outreach",
+    "give": "Give",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard"
+  },
+  "footer": {
+    "tagline": "Transforming lives through truth and creativity",
+    "copyright": "© {year} Ruach Ministries. All rights reserved.",
+    "quickLinks": "Quick Links",
+    "connect": "Connect",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Stay updated with our latest content and events"
+  },
+  "media": {
+    "title": "Media & Testimonies",
+    "featured": "Featured",
+    "latest": "Latest",
+    "categories": "Categories",
+    "speakers": "Speakers",
+    "series": "Series",
+    "duration": "Duration",
+    "views": "Views",
+    "likes": "Likes",
+    "watchNow": "Watch Now",
+    "shareMedia": "Share",
+    "downloadMedia": "Download"
+  },
+  "courses": {
+    "title": "Courses",
+    "enrolled": "Enrolled",
+    "progress": "Progress",
+    "complete": "Complete",
+    "certificate": "Certificate",
+    "startCourse": "Start Course",
+    "continueCourse": "Continue Course",
+    "completeCourse": "Complete Course",
+    "lessons": "Lessons",
+    "duration": "Duration"
+  },
+  "auth": {
+    "loginTitle": "Login to Your Account",
+    "signupTitle": "Create Your Account",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInWith": "Sign in with {provider}",
+    "orContinueWith": "Or continue with"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggleTheme": "Toggle theme"
+  },
+  "language": {
+    "selectLanguage": "Select Language",
+    "currentLanguage": "Current Language"
+  },
+  "search": {
+    "placeholder": "Search media, courses, and more...",
+    "noResults": "No results found",
+    "results": "Results",
+    "filters": "Filters"
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send Message",
+    "successMessage": "Thank you for your message. We'll get back to you soon!"
+  },
+  "newsletter": {
+    "subscribe": "Subscribe",
+    "enterEmail": "Enter your email",
+    "successMessage": "Successfully subscribed to our newsletter!",
+    "errorMessage": "Failed to subscribe. Please try again."
+  },
+  "scripture": {
+    "references": "Scripture References",
+    "featuredScripture": "Featured Scripture",
+    "loading": "Loading scripture...",
+    "error": "Failed to load scripture",
+    "copyToClipboard": "Copy to Clipboard",
+    "copied": "Copied!",
+    "share": "Share Scripture"
+  },
+  "live": {
+    "liveNow": "Live Now",
+    "watchLive": "Watch Live",
+    "upcomingEvents": "Upcoming Events",
+    "noLiveStream": "No live stream at the moment"
+  },
+  "comments": {
+    "title": "Comments",
+    "writeComment": "Write a comment...",
+    "post": "Post",
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "pending": "Your comment is pending approval",
+    "noComments": "No comments yet. Be the first to comment!"
+  }
+}
