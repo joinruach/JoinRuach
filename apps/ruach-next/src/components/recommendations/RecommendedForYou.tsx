@@ -1,4 +1,4 @@
-import { getJSON, imgUrl } from '@/lib/strapi';
+import { imgUrl } from '@/lib/strapi';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -24,8 +24,20 @@ interface Props {
   contentType?: string;
 }
 
+const STRAPI_URL =
+  process.env.NEXT_PUBLIC_STRAPI_URL ||
+  process.env.STRAPI_URL ||
+  'https://api.joinruach.org';
+
 export default async function RecommendedForYou({ userId, limit = 6, contentType }: Props) {
   let recommendations: RecommendedContent[] = [];
+
+  const safeToFetch = typeof STRAPI_URL === 'string' && STRAPI_URL.startsWith('http');
+
+  if (!safeToFetch) {
+    console.error('[RecommendedForYou] Skipping fetch - invalid STRAPI_URL:', STRAPI_URL);
+    return null;
+  }
 
   try {
     const params = new URLSearchParams({
@@ -34,21 +46,23 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
       ...(contentType && { type: contentType }),
     });
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:3000'}/api/recommendations?${params}`,
-      { next: { revalidate: 3600 } }
-    );
+    const url = `${STRAPI_URL}/api/recommendations?${params}`;
+    const response = await fetch(url, { next: { revalidate: 3600 } });
 
     if (!response.ok) {
+      console.error('[RecommendedForYou] Unexpected response:', response.status, response.statusText);
       throw new Error('Failed to fetch recommendations');
     }
 
-    const data = (await response.json().catch(() => null)) as { recommendations?: RecommendedContent[] } | null;
+    const data = (await response.json().catch((err) => {
+      console.error('[RecommendedForYou] JSON parse error:', err);
+      return null;
+    })) as { recommendations?: RecommendedContent[] } | null;
     if (Array.isArray(data?.recommendations)) {
       recommendations = data.recommendations;
     }
   } catch (error) {
-    console.error('Failed to load recommendations:', error);
+    console.error('[RecommendedForYou] Failed to load recommendations:', error);
   }
 
   if (recommendations.length === 0) {
