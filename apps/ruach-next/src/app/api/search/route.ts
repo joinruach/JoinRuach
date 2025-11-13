@@ -1,19 +1,213 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getJSON } from "@/lib/strapi";
 
-type SearchResult = {
+// Discriminated union for search results
+interface BaseSearchResult {
   id: string;
-  type: "media" | "series" | "course" | "blog" | "event" | "article";
   title: string;
-  excerpt?: string;
   slug: string;
   url: string;
+  relevanceScore?: number;
+}
+
+interface MediaSearchResult extends BaseSearchResult {
+  type: 'media';
+  excerpt?: string;
   thumbnail?: string;
   publishedAt?: string;
-  relevanceScore?: number;
-};
+}
 
-export async function GET(request: NextRequest) {
+interface SeriesSearchResult extends BaseSearchResult {
+  type: 'series';
+  description?: string;
+  thumbnail?: string;
+}
+
+interface CourseSearchResult extends BaseSearchResult {
+  type: 'course';
+  excerpt?: string;
+  thumbnail?: string;
+}
+
+interface BlogSearchResult extends BaseSearchResult {
+  type: 'blog';
+  thumbnail?: string;
+  publishedAt?: string;
+}
+
+interface EventSearchResult extends BaseSearchResult {
+  type: 'event';
+  description?: string;
+  thumbnail?: string;
+  startDate?: string;
+}
+
+interface ArticleSearchResult extends BaseSearchResult {
+  type: 'article';
+  description?: string;
+  thumbnail?: string;
+}
+
+type SearchResult =
+  | MediaSearchResult
+  | SeriesSearchResult
+  | CourseSearchResult
+  | BlogSearchResult
+  | EventSearchResult
+  | ArticleSearchResult;
+
+// Strapi response types
+interface MediaItemResponse {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    excerpt?: string | null;
+    description?: string | null;
+    publishedAt?: string | null;
+    thumbnail?: {
+      data?: {
+        attributes?: {
+          url?: string;
+        } | null;
+      } | null;
+    } | null;
+  };
+}
+
+interface SeriesItemResponse {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    description?: string | null;
+    coverImage?: {
+      data?: {
+        attributes?: {
+          url?: string;
+        } | null;
+      } | null;
+    } | null;
+  };
+}
+
+interface CourseItemResponse {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    excerpt?: string | null;
+    description?: string | null;
+    cover?: {
+      data?: {
+        attributes?: {
+          url?: string;
+        } | null;
+      } | null;
+    } | null;
+  };
+}
+
+interface BlogItemResponse {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    publishedDate?: string | null;
+    featuredImage?: {
+      data?: {
+        attributes?: {
+          url?: string;
+        } | null;
+      } | null;
+    } | null;
+  };
+}
+
+interface EventItemResponse {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    description?: string | null;
+    startDate?: string | null;
+    cover?: {
+      data?: {
+        attributes?: {
+          url?: string;
+        } | null;
+      } | null;
+    } | null;
+  };
+}
+
+// Type guards
+function isValidMediaItem(item: unknown): item is MediaItemResponse {
+  if (!item || typeof item !== 'object') return false;
+  const i = item as Partial<MediaItemResponse>;
+  return (
+    typeof i.id === 'number' &&
+    i.attributes !== null &&
+    i.attributes !== undefined &&
+    typeof i.attributes === 'object' &&
+    typeof i.attributes.title === 'string' &&
+    typeof i.attributes.slug === 'string'
+  );
+}
+
+function isValidSeriesItem(item: unknown): item is SeriesItemResponse {
+  if (!item || typeof item !== 'object') return false;
+  const i = item as Partial<SeriesItemResponse>;
+  return (
+    typeof i.id === 'number' &&
+    i.attributes !== null &&
+    i.attributes !== undefined &&
+    typeof i.attributes === 'object' &&
+    typeof i.attributes.title === 'string' &&
+    typeof i.attributes.slug === 'string'
+  );
+}
+
+function isValidCourseItem(item: unknown): item is CourseItemResponse {
+  if (!item || typeof item !== 'object') return false;
+  const i = item as Partial<CourseItemResponse>;
+  return (
+    typeof i.id === 'number' &&
+    i.attributes !== null &&
+    i.attributes !== undefined &&
+    typeof i.attributes === 'object' &&
+    typeof i.attributes.title === 'string' &&
+    typeof i.attributes.slug === 'string'
+  );
+}
+
+function isValidBlogItem(item: unknown): item is BlogItemResponse {
+  if (!item || typeof item !== 'object') return false;
+  const i = item as Partial<BlogItemResponse>;
+  return (
+    typeof i.id === 'number' &&
+    i.attributes !== null &&
+    i.attributes !== undefined &&
+    typeof i.attributes === 'object' &&
+    typeof i.attributes.title === 'string' &&
+    typeof i.attributes.slug === 'string'
+  );
+}
+
+function isValidEventItem(item: unknown): item is EventItemResponse {
+  if (!item || typeof item !== 'object') return false;
+  const i = item as Partial<EventItemResponse>;
+  return (
+    typeof i.id === 'number' &&
+    i.attributes !== null &&
+    i.attributes !== undefined &&
+    typeof i.attributes === 'object' &&
+    typeof i.attributes.title === 'string' &&
+    typeof i.attributes.slug === 'string'
+  );
+}
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
   const type = searchParams.get("type"); // Filter by content type
@@ -44,24 +238,25 @@ export async function GET(request: NextRequest) {
       mediaParams.set("pagination[pageSize]", String(Math.min(limit, 10)));
 
       try {
-        const mediaData = await getJSON<{ data: any[] }>(
+        const mediaData = await getJSON<{ data: unknown[] }>(
           `/api/media-items?${mediaParams.toString()}`,
           { tags: [`search:media:${searchQuery}`], revalidate: 300 }
         );
 
-        (mediaData.data || []).forEach((item) => {
-          const attrs = item.attributes;
+        const validItems = (mediaData.data || []).filter(isValidMediaItem);
+
+        for (const item of validItems) {
           results.push({
             id: `media-${item.id}`,
             type: "media",
-            title: attrs?.title || "Untitled",
-            excerpt: attrs?.excerpt || attrs?.description,
-            slug: attrs?.slug,
-            url: `/media/${attrs?.slug}`,
-            thumbnail: attrs?.thumbnail?.data?.attributes?.url,
-            publishedAt: attrs?.publishedAt,
+            title: item.attributes.title,
+            excerpt: item.attributes.excerpt || item.attributes.description || undefined,
+            slug: item.attributes.slug,
+            url: `/media/${item.attributes.slug}`,
+            thumbnail: item.attributes.thumbnail?.data?.attributes?.url,
+            publishedAt: item.attributes.publishedAt || undefined,
           });
-        });
+        }
       } catch (err) {
         console.error("Media search error:", err);
       }
@@ -79,23 +274,24 @@ export async function GET(request: NextRequest) {
       seriesParams.set("pagination[pageSize]", String(Math.min(limit, 5)));
 
       try {
-        const seriesData = await getJSON<{ data: any[] }>(
+        const seriesData = await getJSON<{ data: unknown[] }>(
           `/api/series-collection?${seriesParams.toString()}`,
           { tags: [`search:series:${searchQuery}`], revalidate: 300 }
         );
 
-        (seriesData.data || []).forEach((item) => {
-          const attrs = item.attributes;
+        const validItems = (seriesData.data || []).filter(isValidSeriesItem);
+
+        for (const item of validItems) {
           results.push({
             id: `series-${item.id}`,
             type: "series",
-            title: attrs?.title || "Untitled Series",
-            excerpt: attrs?.description?.substring(0, 200),
-            slug: attrs?.slug,
-            url: `/series/${attrs?.slug}`,
-            thumbnail: attrs?.coverImage?.data?.attributes?.url,
+            title: item.attributes.title,
+            description: item.attributes.description?.substring(0, 200) || undefined,
+            slug: item.attributes.slug,
+            url: `/series/${item.attributes.slug}`,
+            thumbnail: item.attributes.coverImage?.data?.attributes?.url,
           });
-        });
+        }
       } catch (err) {
         console.error("Series search error:", err);
       }
@@ -114,23 +310,24 @@ export async function GET(request: NextRequest) {
       courseParams.set("pagination[pageSize]", String(Math.min(limit, 5)));
 
       try {
-        const courseData = await getJSON<{ data: any[] }>(
+        const courseData = await getJSON<{ data: unknown[] }>(
           `/api/courses?${courseParams.toString()}`,
           { tags: [`search:courses:${searchQuery}`], revalidate: 300 }
         );
 
-        (courseData.data || []).forEach((item) => {
-          const attrs = item.attributes;
+        const validItems = (courseData.data || []).filter(isValidCourseItem);
+
+        for (const item of validItems) {
           results.push({
             id: `course-${item.id}`,
             type: "course",
-            title: attrs?.title || "Untitled Course",
-            excerpt: attrs?.excerpt || attrs?.description,
-            slug: attrs?.slug,
-            url: `/courses/${attrs?.slug}`,
-            thumbnail: attrs?.cover?.data?.attributes?.url,
+            title: item.attributes.title,
+            excerpt: item.attributes.excerpt || item.attributes.description || undefined,
+            slug: item.attributes.slug,
+            url: `/courses/${item.attributes.slug}`,
+            thumbnail: item.attributes.cover?.data?.attributes?.url,
           });
-        });
+        }
       } catch (err) {
         console.error("Course search error:", err);
       }
@@ -147,23 +344,24 @@ export async function GET(request: NextRequest) {
       blogParams.set("pagination[pageSize]", String(Math.min(limit, 5)));
 
       try {
-        const blogData = await getJSON<{ data: any[] }>(
+        const blogData = await getJSON<{ data: unknown[] }>(
           `/api/blog-posts?${blogParams.toString()}`,
           { tags: [`search:blog:${searchQuery}`], revalidate: 300 }
         );
 
-        (blogData.data || []).forEach((item) => {
-          const attrs = item.attributes;
+        const validItems = (blogData.data || []).filter(isValidBlogItem);
+
+        for (const item of validItems) {
           results.push({
             id: `blog-${item.id}`,
             type: "blog",
-            title: attrs?.title || "Untitled Post",
-            slug: attrs?.slug,
-            url: `/members/posts/${attrs?.slug}`,
-            thumbnail: attrs?.featuredImage?.data?.attributes?.url,
-            publishedAt: attrs?.publishedDate,
+            title: item.attributes.title,
+            slug: item.attributes.slug,
+            url: `/members/posts/${item.attributes.slug}`,
+            thumbnail: item.attributes.featuredImage?.data?.attributes?.url,
+            publishedAt: item.attributes.publishedDate || undefined,
           });
-        });
+        }
       } catch (err) {
         console.error("Blog search error:", err);
       }
@@ -182,24 +380,25 @@ export async function GET(request: NextRequest) {
       eventParams.set("pagination[pageSize]", String(Math.min(limit, 5)));
 
       try {
-        const eventData = await getJSON<{ data: any[] }>(
+        const eventData = await getJSON<{ data: unknown[] }>(
           `/api/events?${eventParams.toString()}`,
           { tags: [`search:events:${searchQuery}`], revalidate: 300 }
         );
 
-        (eventData.data || []).forEach((item) => {
-          const attrs = item.attributes;
+        const validItems = (eventData.data || []).filter(isValidEventItem);
+
+        for (const item of validItems) {
           results.push({
             id: `event-${item.id}`,
             type: "event",
-            title: attrs?.title || "Untitled Event",
-            excerpt: attrs?.description,
-            slug: attrs?.slug,
-            url: `/events/${attrs?.slug}`,
-            thumbnail: attrs?.cover?.data?.attributes?.url,
-            publishedAt: attrs?.startDate,
+            title: item.attributes.title,
+            description: item.attributes.description || undefined,
+            slug: item.attributes.slug,
+            url: `/events/${item.attributes.slug}`,
+            thumbnail: item.attributes.cover?.data?.attributes?.url,
+            startDate: item.attributes.startDate || undefined,
           });
-        });
+        }
       } catch (err) {
         console.error("Event search error:", err);
       }

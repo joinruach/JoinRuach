@@ -24,14 +24,43 @@ function getPool(): Pool {
 }
 
 /**
- * Execute a query
+ * Execute a query with type-safe parameters
  */
+type QueryParam = string | number | boolean | null | Date | string[] | number[];
+
 export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
-  params?: any[]
+  params?: QueryParam[]
 ): Promise<{ rows: T[]; rowCount: number }> {
+  // Validate parameters
+  if (params) {
+    for (const param of params) {
+      if (param === undefined) {
+        throw new Error('Query parameters cannot be undefined - use null instead');
+      }
+
+      const paramType = typeof param;
+      const isValidType =
+        param === null ||
+        paramType === 'string' ||
+        paramType === 'number' ||
+        paramType === 'boolean' ||
+        param instanceof Date ||
+        (Array.isArray(param) && param.every(
+          (p) => typeof p === 'string' || typeof p === 'number'
+        ));
+
+      if (!isValidType) {
+        throw new Error(
+          `Invalid query parameter type: ${paramType}. Must be string, number, boolean, null, Date, or array of string/number.`
+        );
+      }
+    }
+  }
+
   const client = getPool();
   const result = await client.query<T>(text, params);
+
   return {
     rows: result.rows,
     rowCount: typeof result.rowCount === 'number' ? result.rowCount : result.rows.length,
@@ -39,15 +68,82 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
 }
 
 /**
- * Save content embedding
+ * Save content embedding with validated metadata
  */
-export async function saveEmbedding(data: {
-  contentType: string;
+interface BaseMetadata {
+  title: string;
+  contentType: 'media' | 'lesson' | 'course' | 'blog' | 'series';
+}
+
+interface MediaMetadata extends BaseMetadata {
+  contentType: 'media';
+  description?: string;
+  speakers?: string[];
+  tags?: string[];
+  category?: string;
+  duration?: number;
+  views?: number;
+}
+
+interface LessonMetadata extends BaseMetadata {
+  contentType: 'lesson';
+  courseSlug: string;
+  lessonNumber?: number;
+  duration?: number;
+}
+
+interface CourseMetadata extends BaseMetadata {
+  contentType: 'course';
+  level?: 'foundation' | 'intermediate' | 'advanced';
+  lessonCount?: number;
+}
+
+interface BlogMetadata extends BaseMetadata {
+  contentType: 'blog';
+  author?: string;
+  publishedDate?: string;
+  excerpt?: string;
+}
+
+interface SeriesMetadata extends BaseMetadata {
+  contentType: 'series';
+  episodeCount?: number;
+}
+
+type ContentMetadata =
+  | MediaMetadata
+  | LessonMetadata
+  | CourseMetadata
+  | BlogMetadata
+  | SeriesMetadata;
+
+interface SaveEmbeddingParams {
+  contentType: ContentMetadata['contentType'];
   contentId: number;
   embedding: number[];
   textContent: string;
-  metadata: Record<string, any>;
-}) {
+  metadata: ContentMetadata;
+}
+
+export async function saveEmbedding(data: SaveEmbeddingParams): Promise<{ id: number }> {
+  // Validate embedding
+  if (!Array.isArray(data.embedding) || data.embedding.length === 0) {
+    throw new Error('Embedding must be a non-empty array');
+  }
+
+  if (!data.embedding.every((val) => typeof val === 'number' && Number.isFinite(val))) {
+    throw new Error('Embedding must contain only finite numbers');
+  }
+
+  // Validate content ID
+  if (!Number.isInteger(data.contentId) || data.contentId < 1) {
+    throw new Error('Content ID must be a positive integer');
+  }
+
+  // Validate text content
+  if (typeof data.textContent !== 'string' || data.textContent.trim().length === 0) {
+    throw new Error('Text content must be a non-empty string');
+  }
   const sql = `
     INSERT INTO content_embeddings (content_type, content_id, embedding, text_content, metadata, created_at, updated_at)
     VALUES ($1, $2, $3::vector, $4, $5, NOW(), NOW())
@@ -60,13 +156,17 @@ export async function saveEmbedding(data: {
     RETURNING id
   `;
 
-  const result = await query(sql, [
+  const result = await query<{ id: number }>(sql, [
     data.contentType,
     data.contentId,
     JSON.stringify(data.embedding), // Convert array to string for pgvector
     data.textContent,
     JSON.stringify(data.metadata),
   ]);
+
+  if (result.rows.length === 0) {
+    throw new Error('Failed to save embedding');
+  }
 
   return result.rows[0];
 }
@@ -99,7 +199,7 @@ export async function semanticSearch(params: {
   const result = await query<{
     content_type: string;
     content_id: number;
-    metadata: any;
+    metadata: ContentMetadata;
     text_content: string;
     similarity: number;
   }>(sql, [
@@ -111,7 +211,7 @@ export async function semanticSearch(params: {
 
   return result.rows.map(row => ({
     ...row,
-    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata,
+    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) as ContentMetadata : row.metadata,
   }));
 }
 
@@ -136,7 +236,7 @@ export async function saveMessage(data: {
   conversationId: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }) {
   const sql = `
     INSERT INTO ai_messages (conversation_id, role, content, metadata, created_at)
@@ -170,7 +270,7 @@ export async function getConversationHistory(conversationId: number, limit = 20)
     id: number;
     role: string;
     content: string;
-    metadata: any;
+    metadata: Record<string, unknown> | null;
     created_at: Date;
   }>(sql, [conversationId, limit]);
 
@@ -298,13 +398,13 @@ export async function getContentBasedRecommendations(userId: number, limit = 10)
   const result = await query<{
     content_type: string;
     content_id: number;
-    metadata: any;
+    metadata: ContentMetadata;
     score: number;
   }>(sql, [userId, limit]);
 
   return result.rows.map(row => ({
     ...row,
-    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata,
+    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) as ContentMetadata : row.metadata,
   }));
 }
 

@@ -175,13 +175,24 @@ type StrapiListResponse<T> = {
   };
 };
 
+// Rich text content block type (Strapi blocks format)
+interface RichTextBlock {
+  type: string;
+  children?: Array<{
+    type?: string;
+    text?: string;
+    [key: string]: unknown;
+  }>;
+  [key: string]: unknown;
+}
+
 export type BlogPostEntity = {
   id: number;
   attributes?: {
     title?: string;
     slug?: string;
     publishedDate?: string | null;
-    content?: any;
+    content?: RichTextBlock[] | null;
     featuredImage?: {
       data?: {
         attributes?: {
@@ -363,11 +374,11 @@ export async function getCourses() {
   });
 
   try {
-    const j = await getJSON<{ data: any[] }>(`/api/courses?${q}`, { tags: ["courses"] });
+    const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${q}`, { tags: ["courses"] });
     return j.data || [];
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
-      return [];
+      return [] as CourseEntity[];
     }
 
     throw error;
@@ -397,7 +408,7 @@ export async function getCourseBySlug(slug: string) {
   params.set("pagination[pageSize]", "1");
 
   try {
-    const j = await getJSON<{ data: any[] }>(`/api/courses?${params.toString()}`, {
+    const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${params.toString()}`, {
       tags: [`course:${slug}`],
     });
     return j.data?.[0];
@@ -680,7 +691,7 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
   const endpoint = `/api/media-items?${params.toString()}`;
 
   try {
-    const j = await getJSON<StrapiListResponse<any>>(endpoint, { tags: [tag, "media-items"] });
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, { tags: [tag, "media-items"] });
     return {
       data: j.data || [],
       meta: j.meta,
@@ -743,7 +754,7 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
 
   try {
     const endpoint = `/api/media-items?${params.toString()}`;
-    const j = await getJSON<StrapiListResponse<any>>(endpoint, { tags: [tag, "media-items"] });
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, { tags: [tag, "media-items"] });
     return {
       data: j.data || [],
       meta: j.meta,
@@ -798,7 +809,7 @@ async function fetchMediaBySlug(slug: string) {
   params.set("pagination[pageSize]", "1");
 
   try {
-    const j = await getJSON<{ data: any[] }>(`/api/media-items?${params.toString()}`, {
+    const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${params.toString()}`, {
       tags: [`media:${slug}`],
     });
     return j.data?.[0];
@@ -819,7 +830,7 @@ async function fetchMediaBySlugLegacy(slug: string) {
   });
 
   try {
-    const j = await getJSON<{ data: any[] }>(`/api/media-items?${q}`, {
+    const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${q}`, {
       tags: [`media:${slug}`],
     });
     return j.data?.[0];
@@ -1032,19 +1043,32 @@ function relationToArray<T>(relation: { data?: unknown } | null | undefined): T[
   return data.filter((item): item is T => Boolean(item));
 }
 
-function mapHighlightEntry(entry: any, index: number): ResourceHighlight | null {
-  if (!entry) return null;
-  const title = typeof entry.title === "string" ? entry.title.trim() : "";
+// Type for raw highlight entry from Strapi
+interface RawHighlightEntry {
+  id?: number;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  accentColor?: string;
+}
+
+function mapHighlightEntry(entry: unknown, index: number): ResourceHighlight | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const raw = entry as RawHighlightEntry;
+  const title = typeof raw.title === "string" ? raw.title.trim() : "";
   if (!title) return null;
 
   return {
-    id: typeof entry.id === "number" ? entry.id : index,
-    eyebrow: typeof entry.eyebrow === "string" ? entry.eyebrow : null,
+    id: typeof raw.id === "number" ? raw.id : index,
+    eyebrow: typeof raw.eyebrow === "string" ? raw.eyebrow : null,
     title,
-    description: typeof entry.description === "string" ? entry.description : null,
-    ctaLabel: typeof entry.ctaLabel === "string" ? entry.ctaLabel : null,
-    ctaUrl: typeof entry.ctaUrl === "string" ? entry.ctaUrl : null,
-    accentColor: typeof entry.accentColor === "string" ? entry.accentColor : null,
+    description: typeof raw.description === "string" ? raw.description : null,
+    ctaLabel: typeof raw.ctaLabel === "string" ? raw.ctaLabel : null,
+    ctaUrl: typeof raw.ctaUrl === "string" ? raw.ctaUrl : null,
+    accentColor: typeof raw.accentColor === "string" ? raw.accentColor : null,
   };
 }
 

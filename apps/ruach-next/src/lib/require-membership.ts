@@ -2,6 +2,13 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { fetchStrapiMembership, isMembershipActive, type StrapiMembership } from "@/lib/strapi-membership";
+import type { AuthOptions } from "next-auth";
+
+// Extended session type with Strapi JWT
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 type RequireMemberResult = {
   session: Awaited<ReturnType<typeof getServerSession>>;
@@ -10,8 +17,8 @@ type RequireMemberResult = {
 };
 
 export async function requireActiveMembership(callbackPath: string): Promise<RequireMemberResult> {
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+  const session = await getServerSession(authOptions as AuthOptions);
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
 
   if (!jwt) {
     redirect(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);

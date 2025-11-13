@@ -6,6 +6,50 @@ import { SYSTEM_PROMPT, formatContextForPrompt } from '@ruach/ai/chat';
 import { getRelevantContext } from '@/lib/ai/rag';
 import { createConversation, saveMessage } from '@/lib/db/ai';
 
+// Type definitions for chat messages
+interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  name?: string;
+}
+
+interface ChatRequestBody {
+  messages: ChatMessage[];
+  conversationId?: number;
+}
+
+// Type guards
+function isChatMessage(msg: unknown): msg is ChatMessage {
+  if (!msg || typeof msg !== 'object') return false;
+  const m = msg as Partial<ChatMessage>;
+  return (
+    (m.role === 'user' || m.role === 'assistant' || m.role === 'system') &&
+    typeof m.content === 'string' &&
+    m.content.length > 0 &&
+    (m.name === undefined || typeof m.name === 'string')
+  );
+}
+
+function assertChatRequestBody(body: unknown): asserts body is ChatRequestBody {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Invalid request body');
+  }
+
+  const b = body as Partial<ChatRequestBody>;
+
+  if (!Array.isArray(b.messages) || b.messages.length === 0) {
+    throw new Error('Messages array required and must not be empty');
+  }
+
+  if (!b.messages.every(isChatMessage)) {
+    throw new Error('Invalid message format. Each message must have role and content.');
+  }
+
+  if (b.conversationId !== undefined && typeof b.conversationId !== 'number') {
+    throw new Error('conversationId must be a number');
+  }
+}
+
 /**
  * AI Chat Endpoint
  * Provides streaming responses from the Ruach AI Assistant
@@ -13,14 +57,29 @@ import { createConversation, saveMessage } from '@/lib/db/ai';
  * POST /api/chat
  * Body: { messages: Message[], conversationId?: number }
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<Response> {
+  let body: unknown;
   try {
-    const { messages, conversationId } = await req.json();
+    body = await req.json();
+  } catch (error) {
+    return Response.json(
+      { error: 'Invalid JSON in request body' },
+      { status: 400 }
+    );
+  }
 
-    if (!messages || !Array.isArray(messages)) {
-      return Response.json({ error: 'Messages array required' }, { status: 400 });
-    }
+  try {
+    assertChatRequestBody(body);
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : 'Invalid request' },
+      { status: 400 }
+    );
+  }
 
+  const { messages, conversationId } = body;
+
+  try {
     // Check for API key
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -33,11 +92,12 @@ export async function POST(req: NextRequest) {
 
     // Get user session for personalization
     const session = await getServerSession();
-    const userId = session?.user?.email ? hashEmail(session.user.email) : undefined;
+    const userEmail = session?.user?.email;
+    const userId = userEmail ? hashEmail(userEmail) : undefined;
 
     // Get last user message for context
     const lastMessage = messages[messages.length - 1];
-    const query = lastMessage?.content || '';
+    const query = lastMessage.content;
 
     // RAG: Get relevant context from knowledge base
     let context = '';
@@ -70,7 +130,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Save conversation to database (async, non-blocking)
-    if (userId) {
+    if (userId !== undefined) {
       saveConversationAsync(userId, conversationId, messages, query).catch((err) =>
         console.error('Failed to save conversation:', err)
       );
@@ -80,7 +140,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Chat API error:', error);
     return Response.json(
-      { error: 'Failed to process chat request' },
+      { error: error instanceof Error ? error.message : 'Failed to process chat request' },
       { status: 500 }
     );
   }
@@ -92,9 +152,9 @@ export async function POST(req: NextRequest) {
 async function saveConversationAsync(
   userId: number,
   conversationId: number | undefined,
-  messages: any[],
+  messages: ChatMessage[],
   query: string
-) {
+): Promise<void> {
   try {
     // Create conversation if new
     let convId = conversationId;
@@ -122,6 +182,10 @@ async function saveConversationAsync(
  * Simple hash function for email to numeric ID
  */
 function hashEmail(email: string): number {
+  if (typeof email !== 'string' || email.length === 0) {
+    throw new Error('Invalid email for hashing');
+  }
+
   let hash = 0;
   for (let i = 0; i < email.length; i++) {
     const char = email.charCodeAt(i);

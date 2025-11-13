@@ -155,8 +155,8 @@ export function trackLike(
   const action = liked ? "like" : "unlike";
 
   // Plausible Analytics
-  if (typeof window !== "undefined" && (window as any).plausible) {
-    (window as any).plausible(liked ? "Like" : "Unlike", {
+  if (typeof window !== "undefined" && window.plausible) {
+    window.plausible(liked ? "Like" : "Unlike", {
       props: {
         contentType,
         contentId: contentId.toString(),
@@ -165,8 +165,8 @@ export function trackLike(
   }
 
   // Google Analytics
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    (window as any).gtag("event", action, {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", action, {
       event_category: "engagement",
       event_label: contentType,
       value: contentId.toString(),
