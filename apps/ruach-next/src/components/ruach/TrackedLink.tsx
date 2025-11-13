@@ -7,7 +7,7 @@ import type { AnchorHTMLAttributes, MouseEvent } from "react";
 type Props = LinkProps &
   Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
     event: string;
-    eventProps?: Record<string, any>;
+    eventProps?: Record<string, string>;
   };
 
 export default function TrackedLink({ event, eventProps, onClick, ...rest }: Props) {

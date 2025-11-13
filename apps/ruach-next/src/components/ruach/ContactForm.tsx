@@ -32,16 +32,22 @@ export default function ContactForm(){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const json = await res.json().catch(() => ({}));
+      let json: { error?: string } | undefined;
+      try {
+        json = await res.json();
+      } catch {
+        // JSON parsing failed
+      }
+
       if (!res.ok) {
         throw new Error(json?.error || "Unable to send message");
       }
       track("ContactFormSubmit", { topic: payload.topic });
       setStatus("success");
       e.currentTarget.reset();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setError(err?.message || "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 
