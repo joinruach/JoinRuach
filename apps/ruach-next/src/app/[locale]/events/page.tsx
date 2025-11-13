@@ -17,7 +17,7 @@ export default async function EventsPage(){
       </section>
 
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {events.map((event: any) => {
+        {events.map((event) => {
           const a = event.attributes;
           const date = a.date || a.startDate;
           return (

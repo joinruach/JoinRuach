@@ -8,7 +8,7 @@ export const dynamic = "force-static";
 export default async function CoursesPage(){
   const items = await getCourses();
   const courses: Course[] = (items || [])
-    .map((c: any) => {
+    .map((c) => {
       const attributes = c?.attributes;
       if (!attributes) return null;
 
@@ -32,8 +32,8 @@ export default async function CoursesPage(){
     .filter((course): course is Course => course !== null);
 
   const featuredCourse = (items || [])
-    .map((c: any) => c?.attributes)
-    .find((attrs: any) => Boolean(attrs));
+    .map((c) => c?.attributes)
+    .find((attrs) => Boolean(attrs));
 
   return (
     <div className="space-y-12">

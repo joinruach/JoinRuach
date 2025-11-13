@@ -139,7 +139,7 @@ async function fetchCourseDetail(slug: string): Promise<CourseDetail | null> {
   if (!row) return null;
 
   const attributes = row.attributes ?? {};
-  const lessons: CourseLesson[] = (attributes.lessons?.data ?? []).map((item: any) => {
+  const lessons: CourseLesson[] = (attributes.lessons?.data ?? []).map((item) => {
     const rawOrder = item?.attributes?.order;
     let order: number | null = null;
 
@@ -184,13 +184,13 @@ function resolveProfileImage(media: any): string | undefined {
   return undefined;
 }
 
-function extractBioText(bio: any): string | null {
+function extractBioText(bio: unknown): string | null {
   if (!Array.isArray(bio)) return null;
   const lines: string[] = [];
   for (const block of bio) {
     if (!block || typeof block !== "object") continue;
-    if (block.type === "paragraph" && Array.isArray(block.children)) {
-      const text = block.children.map((child: any) => child?.text ?? "").join("");
+    if ((block as { type?: unknown }).type === "paragraph" && Array.isArray((block as { children?: unknown }).children)) {
+      const text = ((block as { children: unknown[] }).children).map((child) => (child as { text?: unknown })?.text ?? "").join("");
       if (text.trim()) lines.push(text.trim());
     }
   }

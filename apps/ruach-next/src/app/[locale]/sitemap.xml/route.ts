@@ -18,15 +18,15 @@ export async function GET() {
   ]);
   const media = Array.isArray(mediaResult?.data) ? mediaResult.data : [];
   const courseUrls = (Array.isArray(courses) ? courses : [])
-    .map((c: any) => c?.attributes?.slug)
+    .map((c) => (c as { attributes?: { slug?: unknown } })?.attributes?.slug)
     .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
     .map((slug) => `courses/${slug}`);
   const mediaUrls = media
-    .map((m: any) => m?.attributes?.slug)
+    .map((m) => (m as { attributes?: { slug?: unknown } })?.attributes?.slug)
     .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
     .map((slug) => `media/${slug}`);
   const eventUrls = (Array.isArray(events) ? events : [])
-    .map((e: any) => e?.attributes?.slug)
+    .map((e) => (e as { attributes?: { slug?: unknown } })?.attributes?.slug)
     .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
     .map((slug) => `events/${slug}`);
   const outreachStoryUrls = (Array.isArray(outreachSlugs) ? outreachSlugs : [])
