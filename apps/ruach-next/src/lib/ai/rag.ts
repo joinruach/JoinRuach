@@ -7,6 +7,33 @@ import { getJSON } from '@/lib/strapi';
  * Provides relevant context for AI assistant
  */
 
+// Strapi content response types
+interface StrapiContentAttributes {
+  title?: string;
+  slug?: string;
+  description?: string;
+  excerpt?: string;
+  speakers?: {
+    data?: Array<{
+      attributes?: {
+        name?: string;
+      } | null;
+    }> | null;
+  } | null;
+  tags?: {
+    data?: Array<{
+      attributes?: {
+        name?: string;
+      } | null;
+    }> | null;
+  } | null;
+}
+
+interface StrapiContentItem {
+  id: number;
+  attributes?: StrapiContentAttributes;
+}
+
 interface SearchResult {
   contentType: string;
   contentId: number;
@@ -120,7 +147,7 @@ async function fetchStrapiContent(contentType: string, contentId: number) {
       'populate[tags]': 'true',
     });
 
-    const response = await getJSON<{ data: any }>(`${endpoint}?${params}`);
+    const response = await getJSON<{ data: StrapiContentItem }>(`${endpoint}?${params}`);
     return response.data?.attributes || response.data;
   } catch (error) {
     console.error(`Error fetching ${contentType}/${contentId}:`, error);
@@ -143,17 +170,21 @@ async function keywordSearch(query: string, limit: number): Promise<SearchResult
       'populate[tags]': 'true',
     });
 
-    const response = await getJSON<{ data: any[] }>(`/api/media-items?${params}`);
+    const response = await getJSON<{ data: StrapiContentItem[] }>(`/api/media-items?${params}`);
     const items = response.data || [];
 
-    return items.map((item: any) => ({
+    return items.map((item) => ({
       contentType: 'media',
       contentId: item.id,
       title: item.attributes?.title || 'Untitled',
       description: item.attributes?.description || item.attributes?.excerpt,
       url: `/media/${item.attributes?.slug || item.id}`,
-      speakers: item.attributes?.speakers?.data?.map((s: any) => s.attributes?.name),
-      tags: item.attributes?.tags?.data?.map((t: any) => t.attributes?.name),
+      speakers: item.attributes?.speakers?.data
+        ?.map((s) => s.attributes?.name)
+        .filter((name): name is string => typeof name === 'string') || [],
+      tags: item.attributes?.tags?.data
+        ?.map((t) => t.attributes?.name)
+        .filter((name): name is string => typeof name === 'string') || [],
     }));
   } catch (error) {
     console.error('Keyword search error:', error);

@@ -199,7 +199,7 @@ export async function semanticSearch(params: {
   const result = await query<{
     content_type: string;
     content_id: number;
-    metadata: any;
+    metadata: ContentMetadata;
     text_content: string;
     similarity: number;
   }>(sql, [
@@ -211,7 +211,7 @@ export async function semanticSearch(params: {
 
   return result.rows.map(row => ({
     ...row,
-    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata,
+    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) as ContentMetadata : row.metadata,
   }));
 }
 
@@ -236,7 +236,7 @@ export async function saveMessage(data: {
   conversationId: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }) {
   const sql = `
     INSERT INTO ai_messages (conversation_id, role, content, metadata, created_at)
@@ -270,7 +270,7 @@ export async function getConversationHistory(conversationId: number, limit = 20)
     id: number;
     role: string;
     content: string;
-    metadata: any;
+    metadata: Record<string, unknown> | null;
     created_at: Date;
   }>(sql, [conversationId, limit]);
 
@@ -398,13 +398,13 @@ export async function getContentBasedRecommendations(userId: number, limit = 10)
   const result = await query<{
     content_type: string;
     content_id: number;
-    metadata: any;
+    metadata: ContentMetadata;
     score: number;
   }>(sql, [userId, limit]);
 
   return result.rows.map(row => ({
     ...row,
-    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata,
+    metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) as ContentMetadata : row.metadata,
   }));
 }
 

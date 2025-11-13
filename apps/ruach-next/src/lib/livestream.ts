@@ -4,6 +4,14 @@
  * Functions for managing livestream states, scheduling, and notifications
  */
 
+// Window globals for analytics (matching scripture.ts and analytics.ts)
+declare global {
+  interface Window {
+    plausible?: (event: string, options?: { props?: Record<string, string> }) => void;
+    gtag?: (command: string, action: string, params?: Record<string, string | number>) => void;
+  }
+}
+
 export type LivestreamStatus = "upcoming" | "live" | "ended";
 
 export interface LivestreamSchedule {
@@ -267,18 +275,25 @@ export function trackLivestreamEvent(
   metadata?: Record<string, string | number>
 ): void {
   // Plausible Analytics
-  if (typeof window !== "undefined" && (window as any).plausible) {
-    (window as any).plausible(`Livestream ${event}`, {
-      props: {
-        streamId: streamId.toString(),
-        ...metadata,
-      },
+  if (typeof window !== "undefined" && window.plausible) {
+    // Convert metadata to string values for plausible
+    const stringProps: Record<string, string> = {
+      streamId: streamId.toString(),
+    };
+    if (metadata) {
+      for (const [key, value] of Object.entries(metadata)) {
+        stringProps[key] = String(value);
+      }
+    }
+
+    window.plausible(`Livestream ${event}`, {
+      props: stringProps,
     });
   }
 
   // Google Analytics
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    (window as any).gtag("event", `livestream_${event}`, {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", `livestream_${event}`, {
       event_category: "livestream",
       event_label: streamId.toString(),
       ...metadata,
