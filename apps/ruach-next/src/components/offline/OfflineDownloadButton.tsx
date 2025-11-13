@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   downloadForOffline,
   removeFromOffline,
@@ -57,14 +57,14 @@ export default function OfflineDownloadButton({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    checkOfflineStatus();
-  }, [id]);
-
-  const checkOfflineStatus = async () => {
+  const checkOfflineStatus = useCallback(async () => {
     const available = await isAvailableOffline(id);
     setIsDownloaded(available);
-  };
+  }, [id]);
+
+  useEffect(() => {
+    checkOfflineStatus();
+  }, [checkOfflineStatus]);
 
   const handleDownload = async () => {
     setIsLoading(true);

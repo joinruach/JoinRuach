@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import MetricCard from '@/components/analytics/MetricCard';
 import LineChart from '@/components/analytics/LineChart';
 import BarChart from '@/components/analytics/BarChart';
@@ -59,11 +59,7 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState('30d');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [range]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -82,7 +78,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [range]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   const exportData = async (format: 'json' | 'csv') => {
     if (!data) return;
