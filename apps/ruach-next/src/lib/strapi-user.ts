@@ -6,6 +6,12 @@ import { authOptions } from "./auth";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
+// Extended session type with Strapi JWT
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
+
 export interface StrapiUser {
   id: number;
   username: string;
@@ -76,7 +82,7 @@ export async function hasRole(jwt: string, roleName: string): Promise<boolean> {
  */
 export async function getUser(): Promise<StrapiUser | null> {
   const session = await getServerSession(authOptions);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
   if (!jwt) return null;
   return fetchStrapiUser(jwt);
 }

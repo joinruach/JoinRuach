@@ -4,6 +4,32 @@
  * Functions for Bible verse lookup, parsing, and formatting
  */
 
+// Bible API response types
+interface BibleApiVerse {
+  book_id: string;
+  book_name: string;
+  chapter: number;
+  verse: number;
+  text: string;
+}
+
+interface BibleApiResponse {
+  reference: string;
+  verses: BibleApiVerse[];
+  text: string;
+  translation_id: string;
+  translation_name: string;
+  translation_note: string;
+}
+
+// Window globals for analytics
+declare global {
+  interface Window {
+    plausible?: (event: string, options?: { props?: Record<string, string> }) => void;
+    gtag?: (command: string, action: string, params?: Record<string, string>) => void;
+  }
+}
+
 export interface ScriptureReference {
   book: string;
   chapter: number;
@@ -84,10 +110,10 @@ export async function fetchScripture(
 
     if (!response.ok) return null;
 
-    const data = await response.json();
+    const data: BibleApiResponse = await response.json();
 
     // Parse verses from response
-    const verses: ScriptureVerse[] = data.verses?.map((v: any) => ({
+    const verses: ScriptureVerse[] = data.verses?.map((v) => ({
       reference: `${v.book_name} ${v.chapter}:${v.verse}`,
       text: v.text.trim(),
       book: v.book_name,
@@ -259,15 +285,15 @@ export function trackScriptureEvent(
   reference: string
 ): void {
   // Plausible Analytics
-  if (typeof window !== "undefined" && (window as any).plausible) {
-    (window as any).plausible(`Scripture ${action}`, {
+  if (typeof window !== "undefined" && window.plausible) {
+    window.plausible(`Scripture ${action}`, {
       props: { reference },
     });
   }
 
   // Google Analytics
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    (window as any).gtag("event", `scripture_${action}`, {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", `scripture_${action}`, {
       event_category: "scripture",
       event_label: reference,
     });
