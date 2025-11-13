@@ -42,7 +42,8 @@ ENV NEXTAUTH_URL=${NEXTAUTH_URL} \
     NEXT_PUBLIC_STRAPI_URL=${NEXT_PUBLIC_STRAPI_URL} \
     STRAPI_REVALIDATE_SECRET=${STRAPI_REVALIDATE_SECRET}
 
-RUN pnpm --filter @ruach/components run build \
+RUN pnpm --filter @ruach/ai run build \
+ && pnpm --filter @ruach/components run build \
  && pnpm --filter @ruach/addons run build \
  && pnpm --filter ruach-next... run build
 
@@ -59,14 +60,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally for runtime
-RUN npm install -g pnpm@9.9.0
-
 # Create non-root user for security
 RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
 
-# Copy pruned app (code + prod node_modules)
+# Copy pruned app from builder
+# The pnpm deploy command creates a flat structure at /opt/app
 COPY --from=builder /opt/app/ ./
+
+# Copy static assets and public files from the original build
+# These are needed for standalone mode but not included in pnpm deploy
+COPY --from=builder /repo/apps/ruach-next/.next/standalone ./
+COPY --from=builder /repo/apps/ruach-next/.next/static ./apps/ruach-next/.next/static
+COPY --from=builder /repo/apps/ruach-next/public ./apps/ruach-next/public
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
@@ -80,4 +85,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-CMD ["pnpm","start"]
+# Use node to run the standalone server directly
+# This is required for output: 'standalone' mode
+CMD ["node", "apps/ruach-next/server.js"]
