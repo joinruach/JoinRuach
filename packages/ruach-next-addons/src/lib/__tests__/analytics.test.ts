@@ -121,14 +121,10 @@ describe('analytics', () => {
       } as any;
 
       const props = {
-        user: {
-          id: '123',
-          name: 'Test User',
-        },
-        metadata: {
-          browser: 'Chrome',
-          os: 'Linux',
-        },
+        userId: '123',
+        userName: 'Test User',
+        browser: 'Chrome',
+        os: 'Linux',
       };
 
       track('complex_event', props);
@@ -208,9 +204,9 @@ describe('analytics', () => {
     });
 
     it('should track form submissions', () => {
-      track('form_submit', { form: 'contact', success: true });
+      track('form_submit', { form: 'contact', success: 'true' });
       expect(mockPlausible).toHaveBeenCalledWith('form_submit', {
-        props: { form: 'contact', success: true },
+        props: { form: 'contact', success: 'true' },
       });
     });
 

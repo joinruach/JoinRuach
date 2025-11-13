@@ -14,7 +14,7 @@ export default function DonationForm({ processorUrl="https://givebutter.com/ruac
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const a = typeof amount === "number" ? amount : 0;
-    track("GiveClick", { placement:"donation_form", amount: a, monthly });
+    track("GiveClick", { placement:"donation_form", amount: a, monthly: monthly ? "true" : "false" });
     const newWindow = window.open(processorUrl, "_blank", "noopener,noreferrer");
     if (newWindow) newWindow.opener = null;
   }

@@ -131,7 +131,7 @@ function normalizeVideoUrl(url: string | undefined): string | undefined {
 export async function generateMetadata({ params }: Props){
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
-  const a = extractAttributes(data);
+  const a = extractAttributes<MediaAttributes>(data);
   const title = a?.seoTitle || a?.title || "Media";
   const desc = a?.seoDescription || a?.description || "";
   const thumb = imgUrl(extractMediaUrl(a?.seoImage) || extractMediaUrl(a?.thumbnail));
@@ -165,7 +165,7 @@ export async function generateMetadata({ params }: Props){
 export default async function MediaDetail({ params }: Props){
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
-  const a = extractAttributes(data);
+  const a = extractAttributes<MediaAttributes>(data);
   if (!data || !a) {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/80">
@@ -179,7 +179,7 @@ export default async function MediaDetail({ params }: Props){
   const relatedRaw = categorySlug ? await getMediaByCategory(categorySlug, 4) : [];
   const related = (relatedRaw || [])
     .map((item: MediaItemEntity | (Partial<MediaAttributes> & Record<string, any>) | null | undefined) => {
-      const attr = extractAttributes(item);
+      const attr = extractAttributes<MediaAttributes>(item);
       if (!attr || attr.slug === slug) return null;
       const relCategory = extractSingleRelation<{ name?: string }>(attr.category)?.name ?? attr.legacyCategory ?? undefined;
     const speakerNames = extractManyRelation<{ name?: string; displayName?: string }>(attr.speakers)
@@ -235,7 +235,7 @@ export default async function MediaDetail({ params }: Props){
     name: a.title,
     description: a.description,
     thumbnailUrl: thumbUrl ? [thumbUrl] : undefined,
-    uploadDate: a.publishedAt,
+    uploadDate: data.publishedAt,
     contentUrl: isFileVideo ? videoUrl : undefined,
     embedUrl: !isFileVideo ? videoUrl : undefined
   };
@@ -247,8 +247,8 @@ export default async function MediaDetail({ params }: Props){
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-neutral-600 dark:text-white/60">
             {categoryName ? <span>{categoryName}</span> : null}
-            {a.publishedAt ? (
-              <span className="text-neutral-400 dark:text-white/40">{new Date(a.publishedAt).toLocaleDateString()}</span>
+            {data.publishedAt ? (
+              <span className="text-neutral-400 dark:text-white/40">{new Date(data.publishedAt).toLocaleDateString()}</span>
             ) : null}
           </div>
           <div className="flex items-center gap-2">

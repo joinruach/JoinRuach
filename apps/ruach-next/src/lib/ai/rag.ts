@@ -84,14 +84,15 @@ export async function getRelevantContext(
             result.content_type,
             result.content_id
           );
+          const metadata = result.metadata;
           return {
             contentType: result.content_type,
             contentId: result.content_id,
-            title: strapiData?.title || result.metadata.title || 'Untitled',
-            description: strapiData?.description || result.metadata.description,
+            title: strapiData?.title || metadata.title || 'Untitled',
+            description: strapiData?.description || ('description' in metadata ? metadata.description : undefined),
             url: buildContentUrl(result.content_type, strapiData?.slug || result.content_id),
-            speakers: result.metadata.speakers || [],
-            tags: result.metadata.tags || [],
+            speakers: ('speakers' in metadata ? metadata.speakers : undefined) || [],
+            tags: ('tags' in metadata ? metadata.tags : undefined) || [],
             similarity: result.similarity,
           };
         })
@@ -118,7 +119,7 @@ export async function getRelevantContext(
 /**
  * Fetch content from Strapi by type and ID
  */
-async function fetchStrapiContent(contentType: string, contentId: number) {
+async function fetchStrapiContent(contentType: string, contentId: number): Promise<StrapiContentAttributes | null> {
   try {
     let endpoint = '';
     switch (contentType) {
@@ -148,7 +149,7 @@ async function fetchStrapiContent(contentType: string, contentId: number) {
     });
 
     const response = await getJSON<{ data: StrapiContentItem }>(`${endpoint}?${params}`);
-    return response.data?.attributes || response.data;
+    return response.data?.attributes || null;
   } catch (error) {
     console.error(`Error fetching ${contentType}/${contentId}:`, error);
     return null;

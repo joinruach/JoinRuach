@@ -46,7 +46,7 @@ export function extractSingleRelation<T extends Record<string, unknown>>(value: 
   const data = hasDataProperty(value) ? value.data : value;
   if (!data || typeof data !== "object") return undefined;
 
-  const attributes = extractAttributes<T>(data);
+  const attributes = extractAttributes<T>(data as UnknownEntity);
   if (!attributes) return undefined;
 
   return {
@@ -62,17 +62,19 @@ export function extractManyRelation<T extends Record<string, unknown>>(value: un
   const raw = hasDataProperty(value) ? value.data : value;
   const list = Array.isArray(raw) ? raw : [raw];
 
-  return list
-    .map((item) => {
-      if (!item || typeof item !== "object") return undefined;
-      const attributes = extractAttributes<T>(item);
-      if (!attributes) return undefined;
-      return {
-        id: hasIdProperty(item) ? item.id : undefined,
-        ...attributes,
-      };
-    })
-    .filter((item): item is T & { id?: number } => Boolean(item));
+  const results: Array<T & { id?: number }> = [];
+
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const attributes = extractAttributes<T>(item as UnknownEntity);
+    if (!attributes) continue;
+    results.push({
+      id: hasIdProperty(item) ? item.id : undefined,
+      ...attributes,
+    });
+  }
+
+  return results;
 }
 
 export function extractMediaUrl(value: unknown): string | undefined {

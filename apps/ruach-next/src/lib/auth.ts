@@ -1,4 +1,5 @@
 import { type NextAuthOptions } from "next-auth";
+import { type JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
@@ -10,14 +11,11 @@ const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; // 7 days (in seconds)
 const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes (in milliseconds)
 
 // Type definitions for JWT token
-interface JWTToken {
+interface JWTToken extends JWT {
   strapiJwt?: string;
   accessTokenExpires?: number;
   lastActivity?: number;
   error?: 'RefreshAccessTokenError' | 'IdleTimeout';
-  sub?: string;
-  email?: string;
-  name?: string;
 }
 
 // Strapi API response types
@@ -108,7 +106,8 @@ export const authOptions: NextAuthOptions = {
 
         if (!r.ok || isStrapiError(j)) {
           // If not confirmed, bubble up message
-          throw new Error(j.error?.message || "Login failed");
+          const errorMsg = isStrapiError(j) ? j.error?.message : undefined;
+          throw new Error(errorMsg || "Login failed");
         }
 
         // Expect Strapi returns { jwt, user }

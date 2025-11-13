@@ -1,14 +1,11 @@
-type PlausibleFn = (event: string, options?: { props?: Record<string, unknown> }) => void;
-
 declare global {
   interface Window {
-    plausible?: (event: string, options?: any) => void;
+    plausible?: (e: string, o?: { props?: Record<string, string | number | undefined> }) => void;
   }
 }
 
-export function track(event: string, props?: Record<string, unknown>) {
+export function track(event: string, props?: Record<string, string | number | undefined>) {
   if (typeof window !== "undefined" && typeof window.plausible === "function") {
-    const plausible = window.plausible as PlausibleFn;
-    plausible(event, { props });
+    window.plausible(event, { props });
   }
 }

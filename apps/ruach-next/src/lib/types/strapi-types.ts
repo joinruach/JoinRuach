@@ -68,6 +68,7 @@ export interface MediaItemEntity extends StrapiBase {
     excerpt?: string;
     type?: 'testimony' | 'teaching' | 'worship' | 'podcast' | 'short';
     views?: number;
+    likes?: number;
     durationSec?: number | null;
     releasedAt?: string | null;
     featured?: boolean;
@@ -86,9 +87,31 @@ export interface MediaItemEntity extends StrapiBase {
     thumbnail?: { data?: { attributes?: Media } };
     gallery?: { data?: { attributes?: Media }[] };
     transcript?: string;
+    featuredScripture?: string;
+    scriptureReferences?: string[];
     seoTitle?: string;
     seoDescription?: string;
     seoImage?: { data?: { attributes?: Media } };
+  };
+}
+
+export interface LessonEntity extends StrapiBase {
+  attributes: {
+    title: string;
+    slug: string;
+    summary?: string;
+    order?: number;
+    duration?: number;
+    video_url?: string;
+    videoUrl?: string;
+    transcript?: string;
+    transcript_html?: string;
+    transcriptHtml?: string;
+    transcriptDownload?: string;
+    transcript_download?: string;
+    transcriptFile?: { data?: { attributes?: Media } };
+    previewAvailable?: boolean;
+    course?: { data?: CourseEntity | null };
   };
 }
 
@@ -100,6 +123,7 @@ export interface CourseEntity extends StrapiBase {
     description?: string;
     cover?: { data?: { attributes?: Media } };
     heroVideo?: { data?: { attributes?: Media } };
+    lessons?: { data?: LessonEntity[] };
     level?: 'foundation' | 'intermediate' | 'advanced';
     estimatedDuration?: string;
     featured?: boolean;
