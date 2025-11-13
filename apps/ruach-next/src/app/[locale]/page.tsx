@@ -15,7 +15,7 @@ import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/str
 import { locales } from '@/i18n';
 
 // Use ISR (Incremental Static Regeneration) with 60 second revalidation
-export const revalidate = 60;
+export const revalidate = 60; // Incremental revalidation every 60 seconds
 
 // Only generate pages for defined locales at build time
 export const dynamicParams = false;
@@ -29,13 +29,21 @@ type MediaAttributes = MediaItemEntity["attributes"];
 type CourseAttributes = CourseEntity["attributes"];
 type EventAttributes = EventEntity["attributes"];
 
+async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fetcher();
+  } catch (error) {
+    console.error(`[Fetch failed] ${label}`, error);
+    return null;
+  }
+}
+
 export default async function Home(){
-  // Fetch data with error handling - if Strapi is unavailable, use empty arrays
   const [courses, testimonies, featured, events] = await Promise.all([
-    getCourses().catch(() => []),
-    getMediaByCategory("testimony", 6).catch(() => []),
-    getFeaturedTestimony().catch(() => null),
-    getEvents(3).catch(() => [])
+    safeFetch('courses', () => getCourses()),
+    safeFetch('testimonies', () => getMediaByCategory("testimony", 6)),
+    safeFetch('featuredTestimony', () => getFeaturedTestimony()),
+    safeFetch('events', () => getEvents(3))
   ]);
 
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
