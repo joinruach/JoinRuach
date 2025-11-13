@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
@@ -339,7 +340,11 @@ export default async function Home(){
         </section>
       ) : null}
 
-      {recommendationsEnabled ? <RecommendedForYou limit={6} /> : null}
+      {recommendationsEnabled ? (
+        <Suspense fallback={null}>
+          <RecommendedForYou limit={6} />
+        </Suspense>
+      ) : null}
 
       <section className="rounded-3xl border border-white/10 bg-amber-500/10 p-10 text-white">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

@@ -30,44 +30,62 @@ const STRAPI_URL =
   'https://api.joinruach.org';
 
 export default async function RecommendedForYou({ userId, limit = 6, contentType }: Props) {
-  let recommendations: RecommendedContent[] = [];
-
-  const safeToFetch = typeof STRAPI_URL === 'string' && STRAPI_URL.startsWith('http');
-
-  if (!safeToFetch) {
-    console.error('[RecommendedForYou] Skipping fetch - invalid STRAPI_URL:', STRAPI_URL);
-    return null;
-  }
-
+  // Wrap everything in a try-catch to ensure we never throw and always return valid JSX or null
   try {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-      ...(userId && { userId: userId.toString() }),
-      ...(contentType && { type: contentType }),
-    });
+    let recommendations: RecommendedContent[] = [];
 
-    const url = `${STRAPI_URL}/api/recommendations?${params}`;
-    const response = await fetch(url, { next: { revalidate: 3600 } });
+    const safeToFetch = typeof STRAPI_URL === 'string' && STRAPI_URL.startsWith('http');
 
-    if (!response.ok) {
-      console.error('[RecommendedForYou] Unexpected response:', response.status, response.statusText);
-      throw new Error('Failed to fetch recommendations');
-    }
-
-    const data = (await response.json().catch((err) => {
-      console.error('[RecommendedForYou] JSON parse error:', err);
+    if (!safeToFetch) {
+      console.error('[RecommendedForYou] Skipping fetch - invalid STRAPI_URL:', STRAPI_URL);
       return null;
-    })) as { recommendations?: RecommendedContent[] } | null;
-    if (Array.isArray(data?.recommendations)) {
-      recommendations = data.recommendations;
     }
-  } catch (error) {
-    console.error('[RecommendedForYou] Failed to load recommendations:', error);
-  }
 
-  if (recommendations.length === 0) {
-    return null;
-  }
+    try {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        ...(userId && { userId: userId.toString() }),
+        ...(contentType && { type: contentType }),
+      });
+
+      const url = `${STRAPI_URL}/api/recommendations?${params}`;
+      const response = await fetch(url, {
+        next: { revalidate: 3600 },
+        // Add timeout and error handling
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      }).catch((fetchError) => {
+        console.error('[RecommendedForYou] Fetch error:', fetchError);
+        return null;
+      });
+
+      if (!response) {
+        console.error('[RecommendedForYou] No response received from fetch');
+        return null;
+      }
+
+      if (!response.ok) {
+        console.error('[RecommendedForYou] Unexpected response:', response.status, response.statusText);
+        // Don't throw - just return null to gracefully degrade
+        return null;
+      }
+
+      const data = (await response.json().catch((err) => {
+        console.error('[RecommendedForYou] JSON parse error:', err);
+        return null;
+      })) as { recommendations?: RecommendedContent[] } | null;
+
+      if (Array.isArray(data?.recommendations)) {
+        recommendations = data.recommendations;
+      }
+    } catch (error) {
+      console.error('[RecommendedForYou] Failed to load recommendations:', error);
+      // Return null instead of continuing with empty recommendations
+      return null;
+    }
+
+    if (recommendations.length === 0) {
+      return null;
+    }
 
   return (
     <section className="py-12">
@@ -164,5 +182,10 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
           ))}
         </div>
       </section>
-  );
+    );
+  } catch (error) {
+    // Catch any rendering errors and return null gracefully
+    console.error('[RecommendedForYou] Component rendering error:', error);
+    return null;
+  }
 }
