@@ -12,7 +12,50 @@ const STRAPI = env.NEXT_PUBLIC_STRAPI_URL;
 const API_TOKEN = env.STRAPI_CONTACT_TOKEN ?? env.STRAPI_API_TOKEN;
 const COLLECTION = env.STRAPI_CONTACT_COLLECTION ?? "contact-submissions";
 
-export async function POST(req: NextRequest) {
+// Request body types
+interface ContactRequestBody {
+  name: string;
+  email: string;
+  topic?: string;
+  message: string;
+}
+
+// Response types
+interface ContactSuccessResponse {
+  ok: true;
+}
+
+interface ContactErrorResponse {
+  error: string;
+  details?: unknown;
+}
+
+// Assertion function for request body
+function assertContactBody(body: unknown): asserts body is ContactRequestBody {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Request body is required');
+  }
+
+  const b = body as Partial<ContactRequestBody>;
+
+  if (!b.name || typeof b.name !== 'string' || b.name.trim().length === 0) {
+    throw new Error('Name is required');
+  }
+
+  if (!b.email || typeof b.email !== 'string' || !b.email.includes('@')) {
+    throw new Error('Valid email is required');
+  }
+
+  if (!b.message || typeof b.message !== 'string' || b.message.trim().length === 0) {
+    throw new Error('Message is required');
+  }
+
+  if (b.topic !== undefined && typeof b.topic !== 'string') {
+    throw new Error('Topic must be a string');
+  }
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse<ContactSuccessResponse | ContactErrorResponse>> {
   if (!API_TOKEN) {
     return NextResponse.json({ error: "Contact form not configured." }, { status: 500 });
   }
@@ -27,10 +70,26 @@ export async function POST(req: NextRequest) {
     throw error;
   }
 
-  const { name, email, topic, message } = await req.json().catch(() => ({}));
-  if (!name || !email || !message) {
-    return NextResponse.json({ error: "Name, email, and message are required." }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Invalid JSON in request body' },
+      { status: 400 }
+    );
   }
+
+  try {
+    assertContactBody(body);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Invalid request' },
+      { status: 400 }
+    );
+  }
+
+  const { name, email, topic, message } = body;
 
   const payload = {
     data: {
@@ -50,7 +109,18 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify(payload)
   });
 
-  const json = await res.json().catch(() => ({}));
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch (error) {
+    console.error('Failed to parse Strapi response:', error);
+    if (!res.ok) {
+      return NextResponse.json({ error: "Could not send message" }, { status: 500 });
+    }
+    // If response was OK but JSON parsing failed, still return success
+    return NextResponse.json({ ok: true });
+  }
+
   if (!res.ok) {
     return NextResponse.json({ error: "Could not send message", details: json }, { status: 500 });
   }
