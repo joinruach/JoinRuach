@@ -58,5 +58,5 @@ export async function POST(req: NextRequest){
 
   if (!r.ok) return NextResponse.json({ error: "Create failed", details: j }, { status: 500 });
 
-  return NextResponse.json({ ok: true, id: j.data?.id });
+  return NextResponse.json({ ok: true, id: j?.data?.id });
 }

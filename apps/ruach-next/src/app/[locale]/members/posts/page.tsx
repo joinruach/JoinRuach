@@ -116,7 +116,7 @@ export default async function MemberPostsPage() {
                     <p className="mt-2 text-lg font-semibold text-white">{title}</p>
                   )}
                   <p className="mt-3 text-sm text-white/70">{summary}</p>
-                  {href ? (
+                  {href && slug ? (
                     <TrackedLink
                       href={href}
                       className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200"

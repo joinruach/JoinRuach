@@ -31,8 +31,10 @@ export function Button({ variant="black", size="md", className, as="button", hre
     variant==="gold"&&"bg-amber-500 text-black hover:bg-amber-400", className);
 
   if (as==="a" && href) {
-    return <Link href={href} className={cls} {...props} />;
+    const linkProps = props as Omit<ComponentPropsWithoutRef<typeof Link>, "href">;
+    return <Link href={href} className={cls} {...linkProps} />;
   }
 
-  return <button className={cls} {...props} />;
+  const buttonProps = props as ComponentPropsWithoutRef<"button">;
+  return <button className={cls} {...buttonProps} />;
 }
