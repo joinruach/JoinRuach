@@ -17,7 +17,13 @@ export default function CommentModerationActions({ commentId }: Props){
     setLoading(action);
     try {
       const res = await fetch(`/api/comments/${commentId}/${action}`, { method: "POST" });
-      const data = await res.json().catch(() => ({}));
+      let data: { error?: string } | undefined;
+      try {
+        data = await res.json();
+      } catch {
+        // JSON parsing failed
+      }
+
       if (!res.ok) {
         throw new Error(data?.error || "Request failed");
       }
@@ -26,10 +32,10 @@ export default function CommentModerationActions({ commentId }: Props){
         variant: "success"
       });
       startTransition(() => router.refresh());
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Moderation error",
-        description: err?.message || "Unable to process request",
+        description: err instanceof Error ? err.message : "Unable to process request",
         variant: "error"
       });
     } finally {

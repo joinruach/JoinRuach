@@ -32,16 +32,22 @@ export default function VolunteerSignupForm(){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const data = await res.json().catch(() => ({}));
+      let data: { error?: string } | undefined;
+      try {
+        data = await res.json();
+      } catch {
+        // JSON parsing failed
+      }
+
       if (!res.ok) {
         throw new Error(data?.error || "Failed to submit");
       }
       track("VolunteerSignupSubmit", { availability: payload.availability });
       setStatus("success");
       e.currentTarget.reset();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setError(err?.message || "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 
