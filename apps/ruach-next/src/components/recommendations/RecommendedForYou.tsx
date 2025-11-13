@@ -24,22 +24,16 @@ interface Props {
   contentType?: string;
 }
 
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_URL ||
-  process.env.STRAPI_URL ||
-  'https://api.joinruach.org';
-
 export default async function RecommendedForYou({ userId, limit = 6, contentType }: Props) {
   // Wrap everything in a try-catch to ensure we never throw and always return valid JSX or null
   try {
-    let recommendations: RecommendedContent[] = [];
-
-    const safeToFetch = typeof STRAPI_URL === 'string' && STRAPI_URL.startsWith('http');
-
-    if (!safeToFetch) {
-      console.error('[RecommendedForYou] Skipping fetch - invalid STRAPI_URL:', STRAPI_URL);
+    // Check if recommendations are enabled
+    const recommendationsEnabled = process.env.NEXT_PUBLIC_RECOMMENDATIONS_ENABLED === 'true';
+    if (!recommendationsEnabled) {
       return null;
     }
+
+    let recommendations: RecommendedContent[] = [];
 
     try {
       const params = new URLSearchParams({
@@ -48,11 +42,20 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
         ...(contentType && { type: contentType }),
       });
 
-      const url = `${STRAPI_URL}/api/recommendations?${params}`;
+      // Fetch from Next.js API route (not Strapi)
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const safeToFetch = typeof baseUrl === 'string' && baseUrl.startsWith('http');
+
+      if (!safeToFetch) {
+        console.error('[RecommendedForYou] Skipping fetch - invalid NEXT_PUBLIC_SITE_URL:', baseUrl);
+        return null;
+      }
+
+      const url = `${baseUrl}/api/recommendations?${params}`;
       const response = await fetch(url, {
         next: { revalidate: 3600 },
-        // Add timeout and error handling
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       }).catch((fetchError) => {
         console.error('[RecommendedForYou] Fetch error:', fetchError);
         return null;
@@ -87,8 +90,8 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
       return null;
     }
 
-  return (
-    <section className="py-12">
+    return (
+      <section className="py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">Recommended For You</h2>
           <div className="flex items-center gap-2">

@@ -34,5 +34,11 @@ export default getRequestConfig(async (params) => {
   return {
     locale: locale as string,
     messages: (await import(`./messages/${locale}.json`)).default,
+    // Provide default message for missing keys instead of throwing error
+    getMessageFallback({ namespace, key, error }) {
+      const path = [namespace, key].filter((part) => part != null).join('.');
+      console.warn(`Missing translation: ${path}`);
+      return `${path}`;
+    },
   };
 });
