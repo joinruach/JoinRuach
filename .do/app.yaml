@@ -1,0 +1,140 @@
+# DigitalOcean App Platform Spec for JoinRuach
+#
+# This file defines the configuration for deploying to DigitalOcean App Platform.
+# You can import this spec or use it as a reference.
+
+name: joinruach
+region: nyc
+
+services:
+  - name: web
+    # Use Docker deployment with our Dockerfile
+    dockerfile_path: apps/ruach-next/Dockerfile
+    source_dir: /
+    github:
+      repo: joinruach/JoinRuach
+      branch: main
+      deploy_on_push: true
+
+    # Port configuration
+    # DigitalOcean expects apps to listen on the PORT environment variable
+    # Our Dockerfile defaults to 3000 but respects the PORT env var
+    http_port: 3000
+
+    # Health check
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 60
+      period_seconds: 30
+      timeout_seconds: 10
+      success_threshold: 1
+      failure_threshold: 3
+
+    # Instance configuration
+    instance_count: 1
+    instance_size_slug: basic-xs  # Adjust based on your needs
+
+    # Environment variables
+    # IMPORTANT: Set these in the DigitalOcean dashboard, not here!
+    # These are just placeholders to show what's required.
+    envs:
+      # Runtime environment
+      - key: NODE_ENV
+        value: production
+        scope: RUN_TIME
+
+      # Authentication
+      - key: NEXTAUTH_URL
+        value: https://joinruach.org
+        type: SECRET
+        scope: RUN_AND_BUILD_TIME
+
+      - key: NEXTAUTH_SECRET
+        type: SECRET
+        scope: RUN_AND_BUILD_TIME
+
+      # Strapi API (CRITICAL: Must be reachable during build!)
+      - key: NEXT_PUBLIC_STRAPI_URL
+        value: https://your-strapi-api.example.com
+        scope: RUN_AND_BUILD_TIME
+
+      - key: STRAPI_REVALIDATE_SECRET
+        type: SECRET
+        scope: RUN_AND_BUILD_TIME
+
+      # Optional: AI features
+      - key: OPENAI_API_KEY
+        type: SECRET
+        scope: RUN_TIME
+
+      - key: ANTHROPIC_API_KEY
+        type: SECRET
+        scope: RUN_TIME
+
+      - key: NEXT_PUBLIC_AI_ASSISTANT_ENABLED
+        value: "true"
+        scope: RUN_TIME
+
+      - key: NEXT_PUBLIC_RECOMMENDATIONS_ENABLED
+        value: "true"
+        scope: RUN_TIME
+
+      # Optional: Other services
+      - key: UPSTASH_REDIS_REST_URL
+        type: SECRET
+        scope: RUN_TIME
+
+      - key: UPSTASH_REDIS_REST_TOKEN
+        type: SECRET
+        scope: RUN_TIME
+
+      - key: CONVERTKIT_API_SECRET
+        type: SECRET
+        scope: RUN_TIME
+
+    # Build arguments (passed to Dockerfile ARG instructions)
+    build_args:
+      - key: NEXTAUTH_URL
+        value: ${NEXTAUTH_URL}
+
+      - key: NEXTAUTH_SECRET
+        value: ${NEXTAUTH_SECRET}
+
+      - key: NEXT_PUBLIC_STRAPI_URL
+        value: ${NEXT_PUBLIC_STRAPI_URL}
+
+      - key: STRAPI_REVALIDATE_SECRET
+        value: ${STRAPI_REVALIDATE_SECRET}
+
+# Domain configuration
+domains:
+  - domain: joinruach.org
+    type: PRIMARY
+    zone: joinruach.org
+
+  - domain: www.joinruach.org
+    type: ALIAS
+    zone: joinruach.org
+
+# Notes for deployment:
+#
+# 1. Build Time vs Runtime:
+#    - BUILD_TIME: Available during Docker build
+#    - RUN_TIME: Available when container runs
+#    - RUN_AND_BUILD_TIME: Available in both phases
+#
+# 2. NEXT_PUBLIC_STRAPI_URL is RUN_AND_BUILD_TIME because:
+#    - BUILD: Next.js needs it to pre-render pages
+#    - RUN: Client-side code needs it for API calls
+#
+# 3. If pages show 404 after deployment:
+#    - Strapi was unreachable during build
+#    - Check NEXT_PUBLIC_STRAPI_URL is correct
+#    - Ensure Strapi allows DigitalOcean IPs
+#    - Force rebuild after fixing
+#
+# 4. If getting "Access denied" (403):
+#    - Check build logs for errors
+#    - Verify runtime logs show "Ready in Xms"
+#    - Ensure all required env vars are set
+#    - Try "Force Rebuild and Deploy"

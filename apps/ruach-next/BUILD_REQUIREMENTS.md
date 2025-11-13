@@ -47,11 +47,22 @@ pnpm run build
 
 ### Dockerfile Considerations
 
-The Dockerfile already handles the correct build order, but ensure:
+**CRITICAL FIX APPLIED:** The Dockerfile has been updated to use the correct startup command for standalone mode:
+
+```dockerfile
+# ❌ OLD (causes crash):
+CMD ["pnpm","start"]
+
+# ✅ NEW (correct for standalone):
+CMD ["node", "apps/ruach-next/server.js"]
+```
+
+Also ensure:
 
 1. **Build-time environment variables** are provided as ARGs
 2. **Strapi URL** points to a reachable API endpoint (not a CDN)
 3. Network access to Strapi is available during the Docker build
+4. **All workspace packages** are built in correct order (ai → components → addons → next)
 
 ### Alternative: Skip Static Generation (Not Recommended)
 
