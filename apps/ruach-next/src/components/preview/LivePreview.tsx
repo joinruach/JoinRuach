@@ -13,6 +13,20 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Strapi Live Preview message types
+type StrapiUpdateMessage = {
+  type: 'strapiUpdate';
+};
+
+type StrapiScriptMessage = {
+  type: 'strapiScript';
+  payload: {
+    script: string;
+  };
+};
+
+type StrapiPreviewMessage = StrapiUpdateMessage | StrapiScriptMessage;
+
 export default function LivePreview() {
   const router = useRouter();
 
@@ -20,7 +34,7 @@ export default function LivePreview() {
     /**
      * Handle messages from Strapi admin panel
      */
-    const handleMessage = async (message: MessageEvent<any>) => {
+    const handleMessage = async (message: MessageEvent<StrapiPreviewMessage>) => {
       const { origin, data } = message;
 
       // Verify message is from Strapi admin panel
