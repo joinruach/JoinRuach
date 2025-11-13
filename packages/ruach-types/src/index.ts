@@ -20,3 +20,9 @@ export * from './course';
 
 // API response types
 export * from './api';
+
+// Authentication types
+export * from './auth';
+
+// Strapi response utilities
+export * from './strapi-response';

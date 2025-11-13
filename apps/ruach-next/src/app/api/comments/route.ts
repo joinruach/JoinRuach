@@ -28,14 +28,55 @@ export async function GET(req: NextRequest){
     }).toString();
 
     const r = await fetch(`${STRAPI}/api/lesson-comments?${qs}`, { cache: "no-store" });
-    const j = await r.json().catch(()=>({}));
-    if (!r.ok) return NextResponse.json({ error: "Fetch failed", details: j }, { status: 500 });
 
-    const comments = (j.data ?? []).map((row:any)=>({
+    let j: unknown;
+    try {
+      j = await r.json();
+    } catch (error) {
+      console.error('Failed to parse Strapi response:', error);
+      return NextResponse.json(
+        { error: "Failed to fetch comments" },
+        { status: 500 }
+      );
+    }
+
+    if (!r.ok) {
+      return NextResponse.json(
+        { error: "Fetch failed", details: j },
+        { status: 500 }
+      );
+    }
+
+    interface CommentData {
+      id: number;
+      attributes?: {
+        text?: string;
+        createdAt?: string;
+        user?: {
+          data?: {
+            attributes?: {
+              username?: string;
+              email?: string;
+            };
+          };
+        };
+      };
+    }
+
+    interface StrapiCommentsResponse {
+      data?: CommentData[];
+    }
+
+    const response = j as StrapiCommentsResponse;
+    const comments = (response.data ?? []).map((row) => ({
       id: row.id,
-      author: row.attributes?.user?.data?.attributes?.username || row.attributes?.user?.data?.attributes?.email || "User",
-      text: row.attributes?.text, createdAt: row.attributes?.createdAt
+      author: row.attributes?.user?.data?.attributes?.username ||
+              row.attributes?.user?.data?.attributes?.email ||
+              "User",
+      text: row.attributes?.text || "",
+      createdAt: row.attributes?.createdAt || new Date().toISOString()
     }));
+
     return NextResponse.json({ comments });
   } catch (error) {
     if (error instanceof RateLimitError) return rateLimitResponse(error);
@@ -55,20 +96,76 @@ export async function POST(req: NextRequest){
     if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     await requireRateLimit(commentsPostLimiter, email, "Too many comments posted");
 
-    const { courseSlug, lessonSlug, text } = await req.json().catch(()=>({}));
-    if (!courseSlug || !lessonSlug || !text) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    interface CommentRequestBody {
+      courseSlug: string;
+      lessonSlug: string;
+      text: string;
+    }
+
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+
+    const { courseSlug, lessonSlug, text } = body as Partial<CommentRequestBody>;
+    if (!courseSlug || !lessonSlug || !text) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
 
     // Check if user has moderator role for auto-approval
     const isUserModerator = await isModerator(jwt);
 
     const r = await fetch(`${STRAPI}/api/lesson-comments`, {
-      method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
-      body: JSON.stringify({ data: { courseSlug, lessonSlug, text, approved: isUserModerator } })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`
+      },
+      body: JSON.stringify({
+        data: {
+          courseSlug,
+          lessonSlug,
+          text,
+          approved: isUserModerator
+        }
+      })
     });
-    const j = await r.json().catch(()=>({}));
-    if (!r.ok) return NextResponse.json({ error: "Create failed", details: j }, { status: 500 });
 
-    return NextResponse.json({ ok: true, id: j.data?.id, approved: isUserModerator });
+    interface CreateCommentResponse {
+      data?: {
+        id?: number;
+      };
+    }
+
+    let j: unknown;
+    try {
+      j = await r.json();
+    } catch (error) {
+      console.error('Failed to parse Strapi response:', error);
+      return NextResponse.json(
+        { error: "Failed to create comment" },
+        { status: 500 }
+      );
+    }
+
+    if (!r.ok) {
+      return NextResponse.json(
+        { error: "Create failed", details: j },
+        { status: 500 }
+      );
+    }
+
+    const response = j as CreateCommentResponse;
+    return NextResponse.json({
+      ok: true,
+      id: response.data?.id,
+      approved: isUserModerator
+    });
   } catch (error) {
     if (error instanceof RateLimitError) return rateLimitResponse(error);
     throw error;
