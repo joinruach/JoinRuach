@@ -66,7 +66,7 @@ export default async function Home(){
 
   const testimonyList = (testimonies || [])
     .slice(0, 4)
-    .map((entity: any) => {
+    .map((entity) => {
       const attributes = extractAttributes<MediaAttributes>(entity);
       if (!attributes?.slug) return null;
 
@@ -140,7 +140,7 @@ export default async function Home(){
     };
   });
 
-  const featuredAttributes = extractAttributes<MediaAttributes>(featured as any);
+  const featuredAttributes = extractAttributes<MediaAttributes>(featured);
   const featuredThumbnail = featuredAttributes
     ? extractSingleRelation<{ url?: string; alternativeText?: string }>(featuredAttributes.thumbnail)
     : undefined;

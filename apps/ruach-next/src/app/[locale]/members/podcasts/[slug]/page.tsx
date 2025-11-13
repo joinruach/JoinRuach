@@ -69,7 +69,7 @@ function resolvePlayback(attributes: MediaItemEntity["attributes"]) {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const data = await getMediaBySlug(slug);
-  const attributes = extractAttributes<MediaItemEntity["attributes"]>(data as any);
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(data);
   if (!attributes) {
     return {
       title: "Member Podcast",
@@ -98,7 +98,7 @@ export default async function MemberPodcastDetail({ params }: Props) {
   await requireActiveMembership(path);
 
   const entity = await getMediaBySlug(slug);
-  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity);
   if (!attributes) {
     notFound();
   }
@@ -108,7 +108,7 @@ export default async function MemberPodcastDetail({ params }: Props) {
     categorySlug && attributes.slug
       ? (await getMediaByCategory(categorySlug, 5))
           .map((item) => {
-            const attr = extractAttributes<MediaItemEntity["attributes"]>(item as any);
+            const attr = extractAttributes<MediaItemEntity["attributes"]>(item);
             if (!attr || attr.slug === attributes.slug) return null;
             return attr;
           })

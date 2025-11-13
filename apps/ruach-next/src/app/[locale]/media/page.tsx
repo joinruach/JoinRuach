@@ -83,7 +83,7 @@ export default async function MediaPage({
     { value: "all", label: "All" },
     ...categories
       .map((c) => {
-        const attrs = extractAttributes<{ name?: string; slug?: string }>(c as any);
+        const attrs = extractAttributes<{ name?: string; slug?: string }>(c);
         const slug = attrs?.slug;
         const name = attrs?.name;
         if (!slug || !name) return null;
@@ -102,7 +102,7 @@ export default async function MediaPage({
   type MediaAttributes = MediaItemEntity["attributes"];
 
   for (const entity of entities) {
-    const attributes = extractAttributes<MediaAttributes>(entity as any);
+    const attributes = extractAttributes<MediaAttributes>(entity);
     if (!attributes) continue;
 
     const slugValue = attributes.slug;

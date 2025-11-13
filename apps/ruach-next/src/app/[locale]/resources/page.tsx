@@ -850,7 +850,7 @@ function CustomResourceCardView({ resource }: { resource: CustomResourceCard }) 
 }
 
 function mapMediaItem(entity: MediaItemEntity | null | undefined): MediaCardProps | null {
-  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+  const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity);
   if (!attributes) return null;
 
   const slug = attributes.slug;

@@ -23,7 +23,7 @@ export default async function SeriesPage() {
   const series = await getAllSeries();
 
   const seriesCards: SeriesCardData[] = series.map((s) => {
-    const attrs = extractAttributes(s as any) as SeriesEntity["attributes"] | undefined;
+    const attrs = extractAttributes<SeriesEntity["attributes"]>(s);
     const coverAttributes = extractSingleRelation<{ url?: string; alternativeText?: string }>(attrs?.coverImage);
     const mediaItems = attrs?.mediaItems?.data ?? [];
 
