@@ -53,7 +53,11 @@ RUN pnpm deploy --filter ruach-next /opt/app
 
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 COREPACK_HOME=/tmp/corepack
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    COREPACK_HOME=/tmp/corepack \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
 WORKDIR /app
 
 # Install curl for healthcheck
@@ -82,8 +86,9 @@ USER nodejs
 EXPOSE 3000
 
 # Healthcheck - verify Next.js is responding
+# Uses $PORT environment variable (defaults to 3000)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
 
 # Use node to run the standalone server directly
 # This is required for output: 'standalone' mode
