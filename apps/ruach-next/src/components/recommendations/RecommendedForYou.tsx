@@ -25,6 +25,12 @@ interface Props {
 }
 
 export default async function RecommendedForYou({ userId, limit = 6, contentType }: Props) {
+  // Check if recommendations are enabled
+  const recommendationsEnabled = process.env.NEXT_PUBLIC_RECOMMENDATIONS_ENABLED === 'true';
+  if (!recommendationsEnabled) {
+    return null;
+  }
+
   let recommendations: RecommendedContent[] = [];
 
   try {
@@ -34,13 +40,19 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
       ...(contentType && { type: contentType }),
     });
 
+    // Fetch from Next.js API route (not Strapi)
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:3000'}/api/recommendations?${params}`,
-      { next: { revalidate: 3600 } }
+      `${baseUrl}/api/recommendations?${params}`,
+      {
+        next: { revalidate: 3600 },
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(5000)
+      }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch recommendations');
+      throw new Error(`Failed to fetch recommendations: ${response.status}`);
     }
 
     const data = (await response.json().catch(() => null)) as { recommendations?: RecommendedContent[] } | null;
@@ -48,7 +60,9 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
       recommendations = data.recommendations;
     }
   } catch (error) {
+    // Log but don't crash - recommendations are optional
     console.error('Failed to load recommendations:', error);
+    return null;
   }
 
   if (recommendations.length === 0) {
