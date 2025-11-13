@@ -11,6 +11,24 @@ type QuickResult = {
   url: string;
 };
 
+// API response type (matches our type-safe search API)
+interface SearchApiResponse {
+  query: string;
+  total: number;
+  results: Array<{
+    id: string;
+    title: string;
+    type: string;
+    url: string;
+    slug: string;
+    description?: string;
+    thumbnail?: string;
+    excerpt?: string;
+    startDate?: string;
+    publishedAt?: string;
+  }>;
+}
+
 export default function SearchBar() {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -67,9 +85,9 @@ export default function SearchBar() {
       setIsLoading(true);
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=5`);
-        const data = await response.json();
+        const data: SearchApiResponse = await response.json();
         setResults(
-          (data.results || []).map((r: any) => ({
+          (data.results || []).map((r) => ({
             id: r.id,
             title: r.title,
             type: r.type,
