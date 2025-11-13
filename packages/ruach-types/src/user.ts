@@ -2,7 +2,7 @@
  * User-related types
  */
 
-export type UserRole = 'authenticated' | 'partner' | 'moderator' | 'admin';
+export type UserRole = 'authenticated' | 'partner' | 'moderator' | 'admin' | 'super_admin';
 
 export interface User {
   id: number;
@@ -29,7 +29,7 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
-export interface Session extends User {
+export interface UserSession extends User {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;

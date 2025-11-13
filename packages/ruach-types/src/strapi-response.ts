@@ -11,7 +11,7 @@ export interface StrapiEntityBase {
 }
 
 // Generic Strapi response wrapper
-export interface StrapiResponse<T> {
+export interface StrictStrapiResponse<T> {
   data: T;
   meta?: StrapiMeta;
 }
@@ -31,7 +31,7 @@ export interface StrapiMeta {
 }
 
 // Strapi error structure
-export interface StrapiError {
+export interface StrictStrapiError {
   status: number;
   name: string;
   message: string;
@@ -39,7 +39,7 @@ export interface StrapiError {
 }
 
 export interface StrapiErrorResponse {
-  error: StrapiError;
+  error: StrictStrapiError;
 }
 
 // Type guards
@@ -63,7 +63,7 @@ export function isStrapiCollection<T>(
   return 'data' in r && Array.isArray(r.data);
 }
 
-export function isStrapiSingle<T>(response: unknown): response is StrapiResponse<T> {
+export function isStrapiSingle<T>(response: unknown): response is StrictStrapiResponse<T> {
   if (!response || typeof response !== 'object') return false;
   const r = response as Record<string, unknown>;
   return (
@@ -72,7 +72,7 @@ export function isStrapiSingle<T>(response: unknown): response is StrapiResponse
 }
 
 // Media/file structure
-export interface StrapiMedia {
+export interface StrictStrapiMedia {
   url: string;
   alternativeText?: string | null;
   caption?: string | null;
@@ -88,14 +88,14 @@ export interface StrapiMedia {
 export interface StrapiMediaData {
   data?: {
     id?: number;
-    attributes?: StrapiMedia;
+    attributes?: StrictStrapiMedia;
   } | null;
 }
 
 export interface StrapiMediaCollection {
   data?: Array<{
     id: number;
-    attributes: StrapiMedia;
+    attributes: StrictStrapiMedia;
   }> | null;
 }
 

@@ -50,8 +50,12 @@ describe('cn utility', () => {
   });
 
   it('should handle complex combinations', () => {
-    const variant = 'primary';
-    const size = 'lg';
+    // Use identity function to prevent type narrowing
+    const getVariant = (): 'primary' | 'secondary' => 'primary';
+    const getSize = (): 'sm' | 'lg' => 'lg';
+
+    const variant = getVariant();
+    const size = getSize();
     const disabled = false;
 
     const result = cn(

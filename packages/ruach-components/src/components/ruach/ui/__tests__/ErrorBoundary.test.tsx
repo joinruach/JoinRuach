@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createRef } from 'react';
 import ErrorBoundary from '../ErrorBoundary';
 
@@ -62,8 +63,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('logs error details in development', () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
     const spy = getConsoleSpy();
 
     const { ref } = renderBoundary();
@@ -74,13 +74,12 @@ describe('ErrorBoundary', () => {
     });
 
     expect(spy).toHaveBeenCalled();
-    process.env.NODE_ENV = originalNodeEnv;
+    vi.unstubAllEnvs();
   });
 
   it('suppresses logging in production mode', () => {
-    const originalNodeEnv = process.env.NODE_ENV;
     const originalRuntimeOverride = globalThis.__RUACH_RUNTIME_ENV__;
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     globalThis.__RUACH_RUNTIME_ENV__ = 'production';
 
     const spy = getConsoleSpy();
@@ -95,7 +94,7 @@ describe('ErrorBoundary', () => {
     expect(spy).not.toHaveBeenCalled();
 
     globalThis.__RUACH_RUNTIME_ENV__ = originalRuntimeOverride;
-    process.env.NODE_ENV = originalNodeEnv;
+    vi.unstubAllEnvs();
   });
 
   it('maintains accessibility semantics for fallback UI', () => {

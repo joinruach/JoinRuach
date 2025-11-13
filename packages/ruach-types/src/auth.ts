@@ -3,6 +3,8 @@
  * Provides type-safe auth state management
  */
 
+import type { UserRole } from './user';
+
 export type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
 
 export interface BaseUser {
@@ -72,8 +74,6 @@ export function isMembershipActive(status: MembershipStatus | undefined | null):
   if (!status) return false;
   return ACTIVE_MEMBERSHIP_STATUSES.has(status);
 }
-
-export type UserRole = 'authenticated' | 'partner' | 'moderator' | 'admin' | 'super_admin';
 
 export const MODERATOR_ROLES: ReadonlySet<UserRole> = new Set([
   'moderator',
