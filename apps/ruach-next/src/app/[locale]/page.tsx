@@ -66,7 +66,7 @@ export default async function Home(){
 
   const testimonyList = (testimonies || [])
     .slice(0, 4)
-    .map((entity: any) => {
+    .map((entity) => {
       const attributes = extractAttributes<MediaAttributes>(entity);
       if (!attributes?.slug) return null;
 
@@ -95,7 +95,7 @@ export default async function Home(){
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   const courseList: Course[] = (courses || [])
-    .map((c: any): Course | null => {
+    .map((c): Course | null => {
       const attributes = extractAttributes<CourseAttributes>(c);
       if (!attributes) return null;
 
@@ -115,7 +115,7 @@ export default async function Home(){
     .filter((course): course is Course => course !== null)
     .slice(0, 3);
 
-  const eventCards = (events || []).map((event: any) => {
+  const eventCards = (events || []).map((event) => {
     const attributes = extractAttributes<EventAttributes>(event);
     if (!attributes) {
       return {
@@ -140,7 +140,7 @@ export default async function Home(){
     };
   });
 
-  const featuredAttributes = extractAttributes<MediaAttributes>(featured as any);
+  const featuredAttributes = extractAttributes<MediaAttributes>(featured);
   const featuredThumbnail = featuredAttributes
     ? extractSingleRelation<{ url?: string; alternativeText?: string }>(featuredAttributes.thumbnail)
     : undefined;

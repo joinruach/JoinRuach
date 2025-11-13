@@ -79,8 +79,9 @@ function resolveMediaUrl(media: unknown): string | undefined {
   if (!media) return undefined;
   if (typeof media === "string") return imgUrl(media);
   if (typeof media !== "object") return undefined;
-  const node = (media as any).data ? (media as any).data : media;
-  const attrs = maybeAttributes<{ url?: string }>(node as any);
+  const wrappedMedia = media as { data?: unknown };
+  const node = wrappedMedia.data ? wrappedMedia.data : media;
+  const attrs = maybeAttributes<{ url?: string }>(node);
   if (!attrs?.url || typeof attrs.url !== "string") return undefined;
   return imgUrl(attrs.url);
 }

@@ -18,7 +18,7 @@ export default async function MemberPodcastsPage() {
   });
 
   const items = (data || []).reduce<MediaCardProps[]>((acc, entity: MediaItemEntity | undefined | null) => {
-    const attr = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+    const attr = extractAttributes<MediaItemEntity["attributes"]>(entity);
     if (!attr) return acc;
     const slug = attr.slug;
     if (!slug) return acc;

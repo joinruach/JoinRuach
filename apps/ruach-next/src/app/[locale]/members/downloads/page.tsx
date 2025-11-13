@@ -20,8 +20,8 @@ type DownloadResource = {
   };
 };
 
-function normalizeDownload(entity: MediaItemEntity | Record<string, any>): DownloadResource | null {
-  const attr = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+function normalizeDownload(entity: MediaItemEntity | Record<string, unknown>): DownloadResource | null {
+  const attr = extractAttributes<MediaItemEntity["attributes"]>(entity);
   if (!attr) return null;
 
   const sourceFile = extractSingleRelation<{ url?: string }>(attr.source?.file);

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { trackInteraction, getUserInteractions } from '@/lib/db/ai';
 
+// Extended user type that may have an id
+interface ExtendedUser {
+  id?: number;
+  email: string;
+  [key: string]: unknown;
+}
+
 /**
  * User Interactions Tracking API
  * Tracks user behavior for recommendations
@@ -41,7 +48,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user ID (use email hash as fallback if no numeric ID)
-    const userId = (session.user as any).id || hashEmail(session.user.email);
+    const user = session.user as ExtendedUser;
+    const userId = user.id || hashEmail(user.email);
 
     // Save to database
     try {
@@ -89,7 +97,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20', 10);
 
     // Get user ID
-    const userId = (session.user as any).id || hashEmail(session.user.email);
+    const user = session.user as ExtendedUser;
+    const userId = user.id || hashEmail(user.email);
 
     // Fetch from database
     let interactions: Awaited<ReturnType<typeof getUserInteractions>> = [];

@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
+import type { AuthOptions } from "next-auth";
 import { notFound } from "next/navigation";
 import CertificateButton from "@/components/ruach/CertificateButton";
 import SEOHead from "@/components/ruach/SEOHead";
 import { authOptions } from "@/lib/auth";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
+
+// Extended session type with Strapi JWT
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
@@ -20,7 +27,7 @@ async function getCompletedLessons(jwt: string, courseSlug: string) {
   });
   if (!res.ok) return new Set<string>();
   const json = await res.json();
-  const slugs = (json?.data ?? []).map((row: any) => row?.attributes?.lessonSlug).filter(Boolean);
+  const slugs = (json?.data ?? []).map((row) => row?.attributes?.lessonSlug).filter(Boolean);
   return new Set(slugs as string[]);
 }
 
@@ -45,8 +52,8 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const course = await getCourseBySlug(slug);
   if (!course) return notFound();
 
-  const session = await getServerSession(authOptions as any);
-  const jwt = (session as any)?.strapiJwt as string | undefined;
+  const session = await getServerSession(authOptions as AuthOptions);
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
   const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
 
   const a = course.attributes;
@@ -56,12 +63,12 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
 
   const lessonsRaw = Array.isArray(a.lessons?.data) ? a.lessons.data : [];
   const lessons = lessonsRaw
-    .map((d: any) => d?.attributes)
-    .filter(Boolean)
-    .sort((x: any, y: any) => (x.order || 0) - (y.order || 0));
+    .map((d) => (d as { attributes?: unknown })?.attributes)
+    .filter((attrs): attrs is Record<string, unknown> => Boolean(attrs))
+    .sort((x, y) => ((x.order as number | undefined) || 0) - ((y.order as number | undefined) || 0));
 
   const total = lessons.length;
-  const completed = lessons.filter((lesson:any)=>completedLessons.has(lesson.slug)).length;
+  const completed = lessons.filter((lesson) => completedLessons.has(lesson.slug as string)).length;
   const progress = total ? Math.round((completed / total) * 100) : 0;
   const firstLesson = lessons[0];
   const isAuthenticated = Boolean(jwt);

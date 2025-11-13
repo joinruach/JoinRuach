@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import type { AuthOptions } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { fetchStrapiMembership } from "@/lib/strapi-membership";
+
+// Extended session type with Strapi JWT
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -15,8 +22,8 @@ const RETURN_URL =
 
 export async function POST() {
   try {
-    const session = await getServerSession(authOptions);
-    const jwt = (session as any)?.strapiJwt as string | undefined;
+    const session = await getServerSession(authOptions as AuthOptions);
+    const jwt = (session as ExtendedSession | null)?.strapiJwt;
 
     if (!jwt) {
       return NextResponse.json(

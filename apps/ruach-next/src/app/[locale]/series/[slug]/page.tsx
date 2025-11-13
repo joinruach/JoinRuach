@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props) {
     };
   }
 
-  const attrs = extractAttributes<SeriesEntity["attributes"]>(series as any);
+  const attrs = extractAttributes<SeriesEntity["attributes"]>(series);
   const title = `${attrs?.title ?? "Series"} | Ruach Ministries`;
   const description = typeof attrs?.description === "string"
     ? attrs.description.slice(0, 160)
@@ -63,7 +63,7 @@ export default async function SeriesDetailPage({ params }: Props) {
     notFound();
   }
 
-  const attrs = extractAttributes<SeriesEntity["attributes"]>(series as any);
+  const attrs = extractAttributes<SeriesEntity["attributes"]>(series);
   const title = attrs?.title ?? "Untitled Series";
   const description = attrs?.description ?? null;
 
@@ -76,7 +76,7 @@ export default async function SeriesDetailPage({ params }: Props) {
   const items: MediaCardItem[] = [];
 
   for (const entity of mediaItems) {
-    const mediaAttrs = extractAttributes<MediaItemEntity["attributes"]>(entity as any);
+    const mediaAttrs = extractAttributes<MediaItemEntity["attributes"]>(entity);
     if (!mediaAttrs) continue;
 
     const slugValue = mediaAttrs.slug;
