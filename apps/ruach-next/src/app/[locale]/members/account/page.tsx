@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getServerSession, type Session } from "next-auth";
+import type { AuthOptions } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { imgUrl } from "@/lib/strapi";
@@ -257,7 +258,7 @@ function membershipStatusBadgeClasses(status?: string | null): string {
 }
 
 export default async function AccountPage() {
-  const session = (await getServerSession(authOptions as any)) as StrapiSession | null;
+  const session = await getServerSession(authOptions as AuthOptions) as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
 
   if (!jwt) {
