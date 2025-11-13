@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import LivePreview from "@/components/preview/LivePreview";
 import { RuachAssistant } from "@/components/ai/RuachAssistant";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
+import OfflineIndicator from "@/components/offline/OfflineIndicator";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -97,6 +98,7 @@ export default async function LocaleLayout({
               <Footer />
               {aiAssistantEnabled && <RuachAssistant />}
               <InstallPrompt />
+              <OfflineIndicator />
             </Providers>
           </ThemeProvider>
         </NextIntlClientProvider>
