@@ -15,6 +15,16 @@ interface ExtendedSession {
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
+interface LessonProgressRow {
+  attributes?: {
+    lessonSlug?: string | null;
+  };
+}
+
+interface LessonProgressResponse {
+  data?: LessonProgressRow[];
+}
+
 async function getCompletedLessons(jwt: string, courseSlug: string) {
   const params = new URLSearchParams({
     "filters[courseSlug][$eq]": courseSlug,
@@ -26,9 +36,12 @@ async function getCompletedLessons(jwt: string, courseSlug: string) {
     cache: "no-store"
   });
   if (!res.ok) return new Set<string>();
-  const json = await res.json();
-  const slugs = (json?.data ?? []).map((row) => row?.attributes?.lessonSlug).filter(Boolean);
-  return new Set(slugs as string[]);
+  const json = (await res.json()) as LessonProgressResponse;
+  const data: LessonProgressRow[] = Array.isArray(json?.data) ? json.data : [];
+  const slugs = data
+    .map((row) => row?.attributes?.lessonSlug)
+    .filter((slug): slug is string => typeof slug === "string" && slug.length > 0);
+  return new Set(slugs);
 }
 
 export const dynamic = "auto";

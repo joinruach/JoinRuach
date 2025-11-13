@@ -140,7 +140,19 @@ async function fetchCourseDetail(slug: string): Promise<CourseDetail | null> {
   if (!row) return null;
 
   const attributes = row.attributes ?? {};
-  const lessons: CourseLesson[] = (attributes.lessons?.data ?? []).map((item) => {
+  type LessonRelationEntry = {
+    attributes?: {
+      slug?: string;
+      title?: string;
+      order?: number | string | null;
+    } | null;
+  };
+
+  const lessonsData: LessonRelationEntry[] = Array.isArray(attributes.lessons?.data)
+    ? attributes.lessons.data
+    : [];
+
+  const lessons: CourseLesson[] = lessonsData.map((item) => {
     const rawOrder = item?.attributes?.order;
     let order: number | null = null;
 

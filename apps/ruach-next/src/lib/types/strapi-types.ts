@@ -3,6 +3,7 @@ export interface StrapiBase {
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
+  [key: string]: unknown;
 }
 
 export interface Media {
