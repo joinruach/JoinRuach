@@ -35,7 +35,9 @@
       "@ruach/types": ["packages/ruach-types/src/index.ts"],
       "@ruach/types/*": ["packages/ruach-types/src/*"],
       "@ruach/icons": ["packages/ruach-icons/src/index.ts"],
-      "@ruach/icons/*": ["packages/ruach-icons/src/*"]
+      "@ruach/icons/*": ["packages/ruach-icons/src/*"],
+      "@ruach/ai": ["packages/ruach-ai/src/index.ts"],
+      "@ruach/ai/*": ["packages/ruach-ai/src/*"]
     }
   },
   "watchOptions": {
