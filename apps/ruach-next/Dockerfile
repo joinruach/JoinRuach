@@ -60,6 +60,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
+# Install pnpm globally so platforms that override CMD with "pnpm start" still work
+RUN npm install -g pnpm@9.12.0
+
 # Create non-root user for security
 RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
 
