@@ -58,7 +58,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const response = await fetch(`${baseUrl}/api/search?${params.toString()}`, {
-      next: { revalidate: 300 },
+      cache: 'no-store', // Always fetch fresh at runtime, never during build
     });
 
     if (!response.ok) {

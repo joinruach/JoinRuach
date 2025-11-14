@@ -9,9 +9,6 @@ import { getCommunityOutreachPage, getOutreachStories, imgUrl } from "@/lib/stra
 import type { CommunityOutreachPageEntity, OutreachCampaignEntity } from "@/lib/types/strapi-types";
 import { mapStoryToMediaCard } from "./story-helpers";
 
-export const dynamic = "force-static";
-export const revalidate = 300;
-
 const fallbackStories: MediaCardProps[] = [
   {
     title: "Deliverance on the Streets",

@@ -4,9 +4,6 @@ import Link from "next/link";
 import { getOutreachStories } from "@/lib/strapi";
 import { mapStoryToMediaCard } from "../story-helpers";
 
-export const dynamic = "force-static";
-export const revalidate = 300;
-
 type Props = {
   searchParams: Promise<{ page?: string }>;
 };

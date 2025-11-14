@@ -53,7 +53,7 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
 
       const url = `${baseUrl}/api/recommendations?${params}`;
       const response = await fetch(url, {
-        next: { revalidate: 3600 },
+        cache: 'no-store', // Always fetch fresh at runtime, never during build
         // Add timeout to prevent hanging
         signal: AbortSignal.timeout(5000) // 5 second timeout
       }).catch((fetchError) => {

@@ -6,9 +6,6 @@ import SEOHead from "@/components/ruach/SEOHead";
 import GivebutterGoalWidget from "@ruach/addons/components/ruach/GivebutterGoalWidget";
 import DoubleTheDonation from "@ruach/addons/components/ruach/DoubleTheDonation";
 
-export const dynamic = "force-static";
-export const revalidate = 180;
-
 export default function GivePage(){
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ruachministries.org";
   const givebutterUrl = process.env.NEXT_PUBLIC_GIVEBUTTER_URL || "https://givebutter.com/ruach-ministries";

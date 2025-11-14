@@ -7,9 +7,6 @@ import { getOutreachStoryBySlug, getOutreachStorySlugs, getOutreachStories, imgU
 import type { OutreachStoryEntity } from "@/lib/types/strapi-types";
 import { formatStoryDate, getPrimaryStoryMedia, mapStoryToMediaCard } from "../../story-helpers";
 
-export const dynamic = "force-static";
-export const revalidate = 300;
-
 type Props = { params: Promise<{ slug: string }> };
 
 function resolveShareImage(story: OutreachStoryEntity) {

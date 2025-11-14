@@ -31,9 +31,6 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 
-export const dynamic = "force-static";
-export const revalidate = 180;
-
 export const metadata = {
   title: "Resource Hub — Media, Courses, and Ministry Tools | Ruach Ministries",
   description:

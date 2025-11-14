@@ -10,9 +10,6 @@ import type {
   EventEntity,
 } from "@/lib/types/strapi-types";
 
-export const dynamic = "force-static";
-export const revalidate = 120;
-
 type ScheduleBlock = {
   id?: number | string;
   time?: string;

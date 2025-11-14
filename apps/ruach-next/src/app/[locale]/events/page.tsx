@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { getEvents, imgUrl } from "@/lib/strapi";
 
-export const dynamic = "force-static";
-export const revalidate = 120;
-
 export default async function EventsPage(){
   const events = await getEvents(24);
   return (
