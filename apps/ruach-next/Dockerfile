@@ -93,6 +93,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
 
-# Use node to run the standalone server directly
-# This is required for output: 'standalone' mode
-CMD ["node", "apps/ruach-next/server.js"]
+# Use Next.js standalone entrypoint emitted at the workspace root
+CMD ["node", "server.js"]
