@@ -76,8 +76,8 @@ COPY --from=builder /repo/apps/ruach-next/.next/static ./apps/ruach-next/.next/s
 COPY --from=builder /repo/apps/ruach-next/public ./apps/ruach-next/public
 
 # Create a minimal package.json at root for platforms that expect "pnpm start"
-# This allows both "node server.js" and "pnpm start" to work
-RUN echo '{"scripts":{"start":"node server.js"}}' > package.json
+# This allows both "node apps/ruach-next/server.js" and "pnpm start" to work
+RUN echo '{"scripts":{"start":"node apps/ruach-next/server.js"}}' > package.json
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
@@ -92,5 +92,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
 
-# Use Next.js standalone entrypoint emitted at the workspace root
-CMD ["node", "server.js"]
+# Use Next.js standalone entrypoint in the monorepo structure
+# In monorepo mode, standalone creates apps/ruach-next/server.js
+CMD ["node", "apps/ruach-next/server.js"]
