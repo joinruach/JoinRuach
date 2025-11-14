@@ -29,17 +29,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/_vercel') ||
     /\..+$/.test(pathname); // has file extension
 
-  // Apply i18n middleware first (unless skipped)
-  if (!shouldSkipI18n) {
-    const intlResponse = intlMiddleware(req);
-    // If intl middleware returns a response (redirect), use it
-    if (intlResponse) {
-      return intlResponse;
-    }
-  }
-
-  // Continue with existing middleware logic
-  // HTTPS Enforcement (Production Only)
+  // HTTPS Enforcement (Production Only) - must run before i18n
   if (process.env.NODE_ENV === "production") {
     const proto = req.headers.get("x-forwarded-proto");
     const host = req.headers.get("host");
@@ -51,19 +41,27 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Admin route protection
-  if (req.nextUrl.pathname.startsWith("/admin")) {
+  // Admin route protection - must run before i18n
+  if (pathname.startsWith("/admin") || pathname.match(/^\/[a-z]{2}\/admin/)) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token) {
       const loginUrl = new URL("/login", req.url);
-      loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+      loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Create response with CSP headers for Preview feature
-  const response = NextResponse.next();
+  // Apply i18n middleware and capture its response
+  let response: NextResponse;
+
+  if (!shouldSkipI18n) {
+    // intlMiddleware always returns a response (either redirect or next())
+    response = intlMiddleware(req);
+  } else {
+    // For skipped paths, create a basic next() response
+    response = NextResponse.next();
+  }
 
   // Allow embedding in Strapi admin panel for Preview feature
   // The frame-ancestors directive controls which domains can embed this page in an iframe
@@ -78,7 +76,7 @@ export async function middleware(req: NextRequest) {
     // If URL parsing fails, use the raw value
   }
 
-  // Set Content-Security-Policy header
+  // Set Content-Security-Policy header on the i18n response
   // frame-ancestors 'self' allows same-origin embedding
   // Adding the Strapi origin allows embedding from Strapi admin panel
   response.headers.set(
