@@ -47,10 +47,6 @@ RUN pnpm --filter @ruach/ai run build \
  && pnpm --filter @ruach/addons run build \
  && pnpm --filter ruach-next... run build
 
-# Produce a pruned production bundle for just the Next app
-# (includes only prod deps + built .next)
-RUN pnpm deploy --filter ruach-next /opt/app
-
 # ---------- Runner (prod) ----------
 FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production \
@@ -64,21 +60,21 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally so platforms that override CMD with "pnpm start" still work
-RUN npm install -g pnpm@9.12.0
-
 # Create non-root user for security
 RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
 
-# Copy pruned app from builder
-# The pnpm deploy command creates a flat structure at /opt/app
-COPY --from=builder /opt/app/ ./
-
-# Copy static assets and public files from the original build
-# These are needed for standalone mode but not included in pnpm deploy
+# Copy the standalone Next.js build (includes server.js + minimal node_modules)
 COPY --from=builder /repo/apps/ruach-next/.next/standalone ./
+
+# Copy static assets (not included in standalone by default)
 COPY --from=builder /repo/apps/ruach-next/.next/static ./apps/ruach-next/.next/static
+
+# Copy public files
 COPY --from=builder /repo/apps/ruach-next/public ./apps/ruach-next/public
+
+# Create a minimal package.json at root for platforms that expect "pnpm start"
+# This allows both "node server.js" and "pnpm start" to work
+RUN echo '{"scripts":{"start":"node server.js"}}' > package.json
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
