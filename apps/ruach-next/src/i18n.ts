@@ -23,6 +23,20 @@ export const localeFlags: Record<Locale, string> = {
   pt: '🇧🇷',
 };
 
+// Static imports to ensure messages are included in production build
+// Dynamic imports with template literals get tree-shaken in standalone builds
+import enMessages from './messages/en.json';
+import esMessages from './messages/es.json';
+import frMessages from './messages/fr.json';
+import ptMessages from './messages/pt.json';
+
+const messages = {
+  en: enMessages,
+  es: esMessages,
+  fr: frMessages,
+  pt: ptMessages,
+} as const;
+
 export default getRequestConfig(async (params) => {
   const locale = params.locale;
 
@@ -33,7 +47,7 @@ export default getRequestConfig(async (params) => {
 
   return {
     locale: locale as string,
-    messages: (await import(`./messages/${locale}.json`)).default,
+    messages: messages[locale as Locale],
     // Provide default message for missing keys instead of throwing error
     getMessageFallback({ namespace, key, error }) {
       const path = [namespace, key].filter((part) => part != null).join('.');
