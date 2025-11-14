@@ -75,8 +75,12 @@ COPY --from=builder /repo/apps/ruach-next/.next/static ./apps/ruach-next/.next/s
 # Copy public files
 COPY --from=builder /repo/apps/ruach-next/public ./apps/ruach-next/public
 
-# Create a minimal package.json at root for platforms that expect "pnpm start"
-# This allows both "node apps/ruach-next/server.js" and "pnpm start" to work
+# Replace package.json in the app directory with correct start script for standalone
+# The standalone build copies the original package.json which has "next start"
+# but standalone doesn't include the next CLI, only server.js
+RUN echo '{"name":"ruach-next","scripts":{"start":"node server.js"}}' > ./apps/ruach-next/package.json
+
+# Create a minimal package.json at root as backup
 RUN echo '{"scripts":{"start":"node apps/ruach-next/server.js"}}' > package.json
 
 # Change ownership to non-root user
