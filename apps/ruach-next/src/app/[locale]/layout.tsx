@@ -36,6 +36,10 @@ export function generateStaticParams() {
 // Only allow defined locales
 export const dynamicParams = false;
 
+// Force dynamic rendering for all pages in this layout
+// This ensures fresh data from Strapi at runtime instead of SSG during build
+export const dynamic = 'force-dynamic';
+
 export default async function LocaleLayout({
   children,
   params

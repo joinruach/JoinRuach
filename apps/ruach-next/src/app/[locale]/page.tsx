@@ -13,20 +13,6 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
-import { locales } from '@/i18n';
-
-// Force dynamic rendering to avoid ECONNREFUSED during build
-// The homepage fetches recommendations from Strapi which isn't available during Docker build
-export const dynamic = 'force-dynamic';
-export const revalidate = 0; // Always fetch fresh data
-
-// Only generate pages for defined locales at build time
-export const dynamicParams = false;
-
-// Generate static params for locale routing (doesn't pre-render, just defines valid routes)
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
 
 type MediaAttributes = MediaItemEntity["attributes"];
 type CourseAttributes = CourseEntity["attributes"];
