@@ -69,10 +69,13 @@ RUN groupadd -r nodejs && useradd -r -g nodejs -s /bin/false nodejs
 # Copy the standalone Next.js build (includes server.js + minimal node_modules)
 COPY --from=builder /repo/apps/ruach-next/.next/standalone ./
 
-# Copy static assets (not included in standalone by default)
+# Ensure .next/static directory exists and copy static assets
+# Next.js standalone doesn't include static files, so we copy them separately
+RUN mkdir -p ./apps/ruach-next/.next/static
 COPY --from=builder /repo/apps/ruach-next/.next/static ./apps/ruach-next/.next/static
 
 # Copy public files
+RUN mkdir -p ./apps/ruach-next/public
 COPY --from=builder /repo/apps/ruach-next/public ./apps/ruach-next/public
 
 # Replace package.json in the app directory with correct start script for standalone
