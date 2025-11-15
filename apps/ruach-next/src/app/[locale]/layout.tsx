@@ -28,13 +28,14 @@ export const metadata = {
   },
 };
 
-// Generate static params for all locales
-export function generateStaticParams() {
+// Generate static params for all locales (Next.js 15 requires async)
+export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-// Only allow defined locales
-export const dynamicParams = false;
+// Allow dynamic params to handle locale routing
+// Set to true to allow next-intl middleware to handle locale detection
+export const dynamicParams = true;
 
 // Force dynamic rendering for all pages in this layout
 // This ensures fresh data from Strapi at runtime instead of SSG during build
