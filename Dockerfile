@@ -93,10 +93,7 @@ RUN chown -R nextjs:nodejs /app
 # Switch to non-root user
 USER nextjs
 
-# Change to Next.js app directory
-WORKDIR /app/apps/ruach-next
-
 EXPOSE 3000
 
-# Run Next.js start command directly
-CMD ["pnpm", "start"]
+# Run Next.js start command from the workspace root
+CMD ["pnpm", "--filter", "ruach-next", "start"]
