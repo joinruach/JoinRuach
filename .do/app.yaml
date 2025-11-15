@@ -16,6 +16,9 @@ services:
       branch: main
       deploy_on_push: true
 
+    # Explicitly use the Dockerfile's CMD (prevents auto-detection from overriding)
+    run_command: node apps/ruach-next/server.js
+
     # Port configuration
     # DigitalOcean expects apps to listen on the PORT environment variable
     # Our Dockerfile defaults to 3000 but respects the PORT env var
