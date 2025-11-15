@@ -8,16 +8,14 @@ region: nyc
 
 services:
   - name: web
-    # Use Docker deployment with our Dockerfile
-    dockerfile_path: apps/ruach-next/Dockerfile
+    # Use Docker deployment with Dockerfile at repo root
+    # DO App Platform requires Dockerfile in root to detect Docker mode
+    dockerfile_path: Dockerfile
     source_dir: /
     github:
       repo: joinruach/JoinRuach
       branch: main
       deploy_on_push: true
-
-    # Explicitly use the Dockerfile's CMD (prevents auto-detection from overriding)
-    run_command: node apps/ruach-next/server.js
 
     # Port configuration
     # DigitalOcean expects apps to listen on the PORT environment variable
