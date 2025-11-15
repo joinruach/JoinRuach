@@ -275,7 +275,14 @@ const DEFAULT_DIRECTORY: NormalizedResourceDirectory = {
   featuredBlogPosts: [],
 };
 
-export default async function ResourcesPage() {
+export default async function ResourcesPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const resourceDirectory = await getResourceDirectory().catch(() => null);
   const directory = normalizeResourceDirectory(resourceDirectory);
 

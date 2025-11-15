@@ -62,7 +62,14 @@ const impactStats = [
   { value: "1M+", label: "Content Views" },
 ];
 
-export default function PartnersPage() {
+export default async function PartnersPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   return (
     <div className="space-y-16">
       {/* Hero Section */}

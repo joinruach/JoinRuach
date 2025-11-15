@@ -26,7 +26,14 @@ const encouragements = [
   "If you or someone you know is hungry for transformation, reach out. We believe Jesus is still breathing life today.",
 ];
 
-export default function Contact(){
+export default async function Contact({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const testimonyHref = process.env.NEXT_PUBLIC_TESTIMONY_FORM_URL ?? "mailto:stories@joinruach.org?subject=Testimony%20Submission";
   const isInternalTestimonyLink = testimonyHref.startsWith("/");
 

@@ -19,7 +19,14 @@ type SeriesCardData = {
   itemCount: number;
 };
 
-export default async function SeriesPage() {
+export default async function SeriesPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const series = await getAllSeries();
 
   const seriesCards: SeriesCardData[] = series.map((s) => {

@@ -17,7 +17,12 @@ function CheckEmailContent(){
   );
 }
 
-export default function CheckEmail(){
+export default function CheckEmail({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // params available but not used in this client component
   return (
     <Suspense fallback={<div className="max-w-md space-y-4"><h1 className="text-2xl font-bold">Check your email</h1><p>Loading your email address…</p></div>}>
       <CheckEmailContent />

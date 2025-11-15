@@ -11,7 +11,14 @@ export const metadata = {
   }
 };
 
-export default function DeliveranceMinistryPage(){
+export default async function DeliveranceMinistryPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   return (
     <div className="space-y-8">
       <header className="rounded-2xl bg-black p-8 text-white">

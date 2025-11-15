@@ -171,7 +171,14 @@ export async function generateMetadata() {
   };
 }
 
-export default async function CommunityOutreachPage() {
+export default async function CommunityOutreachPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const page = await getCommunityOutreachPage().catch(() => null);
   const attributes = page?.attributes;
 

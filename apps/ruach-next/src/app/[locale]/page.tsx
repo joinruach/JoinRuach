@@ -27,7 +27,14 @@ async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T
   }
 }
 
-export default async function Home(){
+export default async function Home({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const [courses, testimonies, featured, events] = await Promise.all([
     safeFetch('courses', () => getCourses()),
     safeFetch('testimonies', () => getMediaByCategory("testimony", 6)),

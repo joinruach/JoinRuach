@@ -8,7 +8,14 @@ export const metadata = {
   openGraph: { title: "End Times Discipleship Course", description: "Biblical, practical training for these times." }
 };
 
-export default function EndTimesCourseLanding(){
+export default async function EndTimesCourseLanding({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   return (
     <div className="space-y-8">
       <header className="rounded-2xl bg-black p-8 text-white">

@@ -5,7 +5,14 @@ import { getCourses, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-static";
 
-export default async function CoursesPage(){
+export default async function CoursesPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const items = await getCourses();
   const courses: Course[] = (items || [])
     .map((c) => {

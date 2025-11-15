@@ -176,10 +176,15 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
 }
 
 export default async function SearchPage({
+  params,
   searchParams: searchParamsPromise,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const searchParams = await searchParamsPromise;
   const query = typeof searchParams.q === "string" ? searchParams.q : "";
   const type = typeof searchParams.type === "string" ? searchParams.type : "all";

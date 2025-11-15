@@ -5,7 +5,12 @@ import Link from "next/link";
 import { Button } from "@/components/ruach/ui/Button";
 import { track } from "@/lib/analytics";
 
-export default function SignupPage(){
+export default function SignupPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // params available but not used in this client component
   const router = useRouter();
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");

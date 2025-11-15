@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function ConfirmedPage() {
+export default function ConfirmedPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // params available but not used in this client component
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );

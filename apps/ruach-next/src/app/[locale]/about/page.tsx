@@ -46,7 +46,14 @@ function Section({ title, description, children }:{ title: string; description?:
   );
 }
 
-export default function About(){
+export default async function About({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // Await params (Next.js 15 requirement)
+  await params;
+
   const board = parseBoard();
   const storyImageDesktop = process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE
     ? imgUrl(process.env.NEXT_PUBLIC_ABOUT_STORY_IMAGE)
