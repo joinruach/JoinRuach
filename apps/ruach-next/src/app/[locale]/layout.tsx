@@ -37,10 +37,6 @@ export async function generateStaticParams() {
 // Set to true to allow next-intl middleware to handle locale detection
 export const dynamicParams = true;
 
-// Use ISR with revalidation instead of force-dynamic
-// This allows route registration while keeping data fresh
-export const revalidate = 0; // Revalidate on every request (similar to force-dynamic but allows route metadata generation)
-
 export default async function LocaleLayout({
   children,
   params
