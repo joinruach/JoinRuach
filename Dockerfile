@@ -52,6 +52,9 @@ RUN pnpm --filter @ruach/ai build \
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Enable pnpm via corepack
+RUN corepack enable
+
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
@@ -60,14 +63,29 @@ ENV NODE_ENV=production \
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
-# Copy standalone output (preserves monorepo structure: apps/ruach-next/server.js)
-COPY --from=builder /app/apps/ruach-next/.next/standalone ./
+# Copy package files for production dependencies
+COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/pnpm-lock.yaml ./
+COPY --from=builder /app/.npmrc ./.npmrc
+COPY --from=builder /app/apps/ruach-next/package.json ./apps/ruach-next/package.json
+COPY --from=builder /app/packages/ruach-ai/package.json ./packages/ruach-ai/package.json
+COPY --from=builder /app/packages/ruach-components/package.json ./packages/ruach-components/package.json
+COPY --from=builder /app/packages/ruach-hooks/package.json ./packages/ruach-hooks/package.json
+COPY --from=builder /app/packages/ruach-icons/package.json ./packages/ruach-icons/package.json
+COPY --from=builder /app/packages/ruach-next-addons/package.json ./packages/ruach-next-addons/package.json
+COPY --from=builder /app/packages/ruach-types/package.json ./packages/ruach-types/package.json
+COPY --from=builder /app/packages/ruach-utils/package.json ./packages/ruach-utils/package.json
+COPY --from=builder /app/packages/tailwind-preset/package.json ./packages/tailwind-preset/package.json
 
-# Copy static assets to match monorepo structure
-COPY --from=builder /app/apps/ruach-next/.next/static ./apps/ruach-next/.next/static
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
 
-# Copy public files to match monorepo structure
+# Copy built packages from builder
+COPY --from=builder /app/packages ./packages
+
+# Copy Next.js build output
+COPY --from=builder /app/apps/ruach-next/.next ./apps/ruach-next/.next
 COPY --from=builder /app/apps/ruach-next/public ./apps/ruach-next/public
+COPY --from=builder /app/apps/ruach-next/next.config.mjs ./apps/ruach-next/next.config.mjs
 
 # Set correct ownership
 RUN chown -R nextjs:nodejs /app
@@ -77,5 +95,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Run the standalone server (monorepo path)
-CMD ["node", "apps/ruach-next/server.js"]
+# Run Next.js start command
+CMD ["pnpm", "--filter", "ruach-next", "start"]
