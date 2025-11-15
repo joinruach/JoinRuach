@@ -37,9 +37,9 @@ export async function generateStaticParams() {
 // Set to true to allow next-intl middleware to handle locale detection
 export const dynamicParams = true;
 
-// Force dynamic rendering for all pages in this layout
-// This ensures fresh data from Strapi at runtime instead of SSG during build
-export const dynamic = 'force-dynamic';
+// Use ISR with revalidation instead of force-dynamic
+// This allows route registration while keeping data fresh
+export const revalidate = 0; // Revalidate on every request (similar to force-dynamic but allows route metadata generation)
 
 export default async function LocaleLayout({
   children,
