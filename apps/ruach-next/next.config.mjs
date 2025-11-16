@@ -59,6 +59,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/en",
+        permanent: false,
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     // Handle .node files (native Node.js addons like @resvg/resvg-js)
     // Tell webpack to ignore/copy .node files without parsing them
