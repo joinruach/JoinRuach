@@ -33,10 +33,9 @@ export const revalidate = 0;
 export default async function Home({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  // params are synchronous in production builds; destructure immediately
-  const { locale } = params;
+  const { locale } = await params;
 
   const [courses, testimonies, featured, events] = await Promise.all([
     safeFetch('courses', () => getCourses()),
