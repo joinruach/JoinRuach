@@ -27,6 +27,9 @@ async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T
   }
 }
 
+// Ensure fresh data from Strapi on every request without breaking route generation
+export const revalidate = 0;
+
 export default async function Home({
   params
 }: {
