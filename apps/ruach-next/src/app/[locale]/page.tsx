@@ -31,12 +31,12 @@ async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T
 export const revalidate = 0;
 
 export default async function Home({
-  params
+  params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  // Await params (Next.js 15 requirement)
-  await params;
+  // params are synchronous in production builds; destructure immediately
+  const { locale } = params;
 
   const [courses, testimonies, featured, events] = await Promise.all([
     safeFetch('courses', () => getCourses()),
