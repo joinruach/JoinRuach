@@ -1,4 +1,6 @@
-// Shared Tailwind preset for Ruach monorepo
+// Shared Tailwind preset for the Ruach monorepo (ESM export for Next/Turbopack)
+import animate from "tailwindcss-animate";
+
 /** @type {import('tailwindcss').Config} */
 const preset = {
   darkMode: ["class"],
@@ -46,8 +48,14 @@ const preset = {
         },
       },
       keyframes: {
-        "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
-        "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -55,6 +63,7 @@ const preset = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 };
-module.exports = preset;
+
+export default preset;

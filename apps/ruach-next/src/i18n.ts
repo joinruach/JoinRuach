@@ -37,17 +37,17 @@ const messages = {
   pt: ptMessages,
 } as const;
 
-export default getRequestConfig(async (params) => {
-  const locale = params.locale;
+export default getRequestConfig(async ({ locale, requestLocale }) => {
+  const resolvedLocale = locale ?? (await requestLocale);
 
   // Validate that the incoming `locale` parameter is valid
-  if (!locale || !locales.includes(locale as Locale)) {
+  if (!resolvedLocale || !locales.includes(resolvedLocale as Locale)) {
     notFound();
   }
 
   return {
-    locale: locale as string,
-    messages: messages[locale as Locale],
+    locale: resolvedLocale,
+    messages: messages[resolvedLocale as Locale],
     // Provide default message for missing keys instead of throwing error
     getMessageFallback({ namespace, key, error }) {
       const path = [namespace, key].filter((part) => part != null).join('.');

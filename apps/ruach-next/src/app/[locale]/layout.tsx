@@ -10,7 +10,7 @@ import InstallPrompt from "@/components/pwa/InstallPrompt";
 import OfflineIndicator from "@/components/offline/OfflineIndicator";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales, type Locale } from '@/i18n';
 
@@ -52,8 +52,17 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Get messages for the locale
-  const messages = await getMessages();
+  // Let next-intl know which locale is active before we read messages
+  setRequestLocale(locale as Locale);
+
+  // Get messages for the locale (log if we ever fail so deployments are debuggable)
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error("Failed to load locale messages", locale, error);
+    throw error;
+  }
   const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
   const aiAssistantEnabled = process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === 'true';
 
