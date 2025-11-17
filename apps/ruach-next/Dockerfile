@@ -3,6 +3,9 @@ FROM node:20-bookworm-slim AS builder
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /repo
 
+# Force rebuild knob for deployment caches
+ARG FORCE_REBUILD=0
+
 # Install pnpm globally (avoid runtime Corepack downloads)
 RUN npm install -g pnpm@9.9.0
 

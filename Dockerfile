@@ -3,6 +3,9 @@ FROM node:20-bookworm-slim AS builder
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /repo
 
+# Force rebuild when needed (even if unused)
+ARG FORCE_REBUILD=0
+
 # Install pnpm globally for consistency
 RUN npm install -g pnpm@9.9.0
 
