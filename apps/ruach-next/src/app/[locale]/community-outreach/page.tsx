@@ -267,18 +267,18 @@ export default async function CommunityOutreachPage({
 
   return (
     <div className="space-y-12">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-10 text-white">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">{heroEyebrow}</span>
-        <h1 className="mt-4 text-3xl font-semibold text-white">{heroTitle}</h1>
-        <p className="mt-3 max-w-3xl text-sm text-white/70">{heroDescription}</p>
+      <section className="rounded-3xl border border-border bg-card p-10 text-foreground shadow-[0_25px_80px_rgba(43,37,30,0.08)]">
+        <span className="text-xs uppercase tracking-[0.35em] text-muted-foreground">{heroEyebrow}</span>
+        <h1 className="mt-4 text-3xl font-semibold text-foreground">{heroTitle}</h1>
+        <p className="mt-3 max-w-3xl text-base text-muted-foreground">{heroDescription}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href={heroPrimaryCta.href}>
-            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+            <span className="rounded-full bg-[hsl(var(--primary))] px-5 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
               {heroPrimaryCta.label}
             </span>
           </Link>
           <Link href={heroSecondaryCta.href}>
-            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+            <span className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground transition hover:bg-[rgba(43,43,43,0.05)]">
               {heroSecondaryCta.label}
             </span>
           </Link>
@@ -287,23 +287,25 @@ export default async function CommunityOutreachPage({
 
       <section className="space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-white">{storiesHeading}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{storiesHeading}</h2>
           {storiesCtaUrl ? (
             <Link href={storiesCtaUrl}>
-              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">{storiesCtaLabel}</span>
+              <span className="text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
+                {storiesCtaLabel}
+              </span>
             </Link>
           ) : null}
         </div>
-        <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+        <div className="rounded-3xl border border-border bg-card p-8 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
           <MediaGrid items={stories} />
         </div>
       </section>
 
       {campaigns.length > 0 ? (
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+        <section className="rounded-3xl border border-border bg-card p-8 text-foreground">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-white">Active Campaigns</h2>
-            <span className="text-sm text-white/60">
+            <h2 className="text-xl font-semibold text-foreground">Active Campaigns</h2>
+            <span className="text-sm text-muted-foreground">
               Strategic initiatives we are funding in the city
             </span>
           </div>
@@ -311,17 +313,17 @@ export default async function CommunityOutreachPage({
             {campaigns.map((campaign) => (
               <div
                 key={campaign.id}
-                className="rounded-3xl border border-white/10 bg-black/30 p-6 backdrop-blur-sm"
+                className="rounded-3xl border border-border bg-[rgba(255,255,255,0.7)] p-6 shadow-[0_20px_60px_rgba(43,37,30,0.08)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">{campaign.name}</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{campaign.name}</h3>
                     {campaign.summary ? (
-                      <p className="mt-2 text-sm text-white/70">{campaign.summary}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{campaign.summary}</p>
                     ) : null}
                   </div>
                   {!campaign.active ? (
-                    <span className="rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-wide text-white/60">
+                    <span className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground">
                       Paused
                     </span>
                   ) : null}
@@ -329,30 +331,40 @@ export default async function CommunityOutreachPage({
                 {campaign.metrics.length > 0 ? (
                   <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                     {campaign.metrics.map((metric) => (
-                      <div key={`${campaign.id}-${metric.id ?? metric.label}`} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div
+                        key={`${campaign.id}-${metric.id ?? metric.label}`}
+                        className="rounded-2xl border border-border bg-muted/60 p-4"
+                      >
                         {metric.value ? (
-                          <dt className="text-lg font-semibold text-white">{metric.value}</dt>
+                          <dt className="text-lg font-semibold text-foreground">{metric.value}</dt>
                         ) : null}
                         {metric.label ? (
-                          <dd className="text-xs uppercase tracking-wide text-white/60">
+                          <dd className="text-xs uppercase tracking-wide text-muted-foreground">
                             {metric.label}
                           </dd>
                         ) : null}
                         {metric.description ? (
-                          <p className="mt-2 text-xs text-white/60">{metric.description}</p>
+                          <p className="mt-2 text-xs text-muted-foreground">{metric.description}</p>
                         ) : null}
                       </div>
                     ))}
                   </dl>
                 ) : null}
                 {campaign.donationLink ? (
-                  <Link href={campaign.donationLink}>
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
-                      Support this campaign →
-                    </span>
-                  </Link>
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <Link href={campaign.donationLink}>
+                      <span className="rounded-full bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
+                        Support this campaign
+                      </span>
+                    </Link>
+                    {campaign.giveCode ? (
+                      <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                        Give Code: {campaign.giveCode}
+                      </p>
+                    ) : null}
+                  </div>
                 ) : campaign.giveCode ? (
-                  <p className="mt-5 text-xs uppercase tracking-[0.24em] text-white/60">
+                  <p className="mt-5 text-xs uppercase tracking-[0.24em] text-muted-foreground">
                     Give Code: {campaign.giveCode}
                   </p>
                 ) : null}
@@ -364,37 +376,37 @@ export default async function CommunityOutreachPage({
 
       <section
         id="volunteer"
-        className="grid gap-8 rounded-3xl border border-white/10 bg-white/5 p-8 text-white lg:grid-cols-[1.1fr,0.9fr]"
+        className="grid gap-8 rounded-3xl border border-border bg-card p-8 text-foreground lg:grid-cols-[1.1fr,0.9fr]"
       >
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-white">{volunteerSectionTitle}</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{volunteerSectionTitle}</h2>
           {volunteerBodyHtml ? (
             <div
-              className="prose prose-invert prose-sm max-w-none text-white/70"
+              className="prose prose-sm max-w-none text-muted-foreground"
               dangerouslySetInnerHTML={{ __html: volunteerBodyHtml }}
             />
           ) : (
-            <p className="text-sm text-white/70">{defaultHeroDescription}</p>
+            <p className="text-sm text-muted-foreground">{defaultHeroDescription}</p>
           )}
-          <ul className="mt-4 space-y-2 text-sm text-white/70">
+          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
             {volunteerHighlights.map((highlight, index) => (
               <li key={`${highlight.title}-${index}`}>
                 • {highlight.title}
                 {highlight.description ? (
-                  <span className="ml-1 text-white/60">— {highlight.description}</span>
+                  <span className="ml-1 text-muted-foreground">— {highlight.description}</span>
                 ) : null}
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-3xl border border-white/10 bg-white/10 p-6">
+        <div className="rounded-3xl border border-border bg-muted/60 p-6">
           {volunteerFormEmbed ? (
             <EmbedScript html={volunteerFormEmbed} />
           ) : (
             <VolunteerSignupForm />
           )}
           {volunteerFormProvider ? (
-            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-white/50">
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-muted-foreground">
               Powered by {volunteerFormProvider}
             </p>
           ) : null}
@@ -403,58 +415,58 @@ export default async function CommunityOutreachPage({
 
       <section
         id="support"
-        className="grid gap-8 rounded-3xl border border-white/10 bg-white p-8 text-neutral-900 md:grid-cols-[1.2fr,1fr]"
+        className="grid gap-8 rounded-3xl border border-border bg-card p-8 text-foreground md:grid-cols-[1.2fr,1fr]"
       >
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">{givingSectionTitle}</h2>
           {givingBodyHtml ? (
             <div
-              className="prose prose-sm max-w-none text-neutral-600"
+              className="prose prose-sm max-w-none text-muted-foreground"
               dangerouslySetInnerHTML={{ __html: givingBodyHtml }}
             />
           ) : (
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-muted-foreground">
               Every dollar fuels groceries, Bibles, film production, and deliverance teams in the
               field. Give a one-time gift or become a monthly partner.
             </p>
           )}
           <div className="grid gap-3 sm:grid-cols-2">
             {givingHighlights.map((item, index) => (
-              <div key={`${item.label}-${index}`} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+              <div key={`${item.label}-${index}`} className="rounded-2xl border border-border bg-muted/60 p-4">
                 {item.badge ? (
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">{item.badge}</div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">{item.badge}</div>
                 ) : null}
                 {item.label ? (
-                  <div className="mt-1 text-xs uppercase tracking-wide text-neutral-500">
+                  <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
                     {item.label}
                   </div>
                 ) : null}
                 {item.amount ? (
-                  <div className="mt-2 text-lg font-semibold text-neutral-900">{item.amount}</div>
+                  <div className="mt-2 text-lg font-semibold text-foreground">{item.amount}</div>
                 ) : null}
                 {item.description ? (
-                  <p className="mt-1 text-sm text-neutral-600">{item.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
                 ) : null}
               </div>
             ))}
           </div>
         </div>
-        <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-[0_20px_60px_rgba(43,37,30,0.08)]">
           <DonationForm processorUrl={donationFormUrl} />
         </div>
       </section>
 
       {subscriptionBanner?.title ? (
-        <section className="rounded-3xl border border-white/10 bg-white/[0.08] p-8 text-white">
+        <section className="rounded-3xl border border-border bg-muted/80 p-8 text-foreground">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-white">{subscriptionBanner.title}</h3>
+              <h3 className="text-xl font-semibold text-foreground">{subscriptionBanner.title}</h3>
               {subscriptionBanner.body ? (
-                <p className="text-sm text-white/70">{subscriptionBanner.body}</p>
+                <p className="text-sm text-muted-foreground">{subscriptionBanner.body}</p>
               ) : null}
               {subscriptionBanner.ctaLabel && subscriptionBanner.ctaUrl ? (
                 <Link href={subscriptionBanner.ctaUrl}>
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
                     {subscriptionBanner.ctaLabel} →
                   </span>
                 </Link>

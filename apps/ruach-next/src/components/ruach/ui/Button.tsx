@@ -24,11 +24,14 @@ type ButtonAsLink = BaseProps & {
 type Props = ButtonAsButton | ButtonAsLink;
 
 export function Button({ variant="black", size="md", className, as="button", href, ...props }: Props) {
-  const cls = cn("rounded-lg font-semibold transition inline-flex items-center justify-center",
-    size==="sm"?"px-3 py-1.5 text-sm":"px-4 py-2",
-    variant==="black"&&"bg-black text-white hover:bg-black/90",
-    variant==="white"&&"bg-white text-black hover:bg-neutral-100 ring-1 ring-black/10",
-    variant==="gold"&&"bg-amber-500 text-black hover:bg-amber-400", className);
+  const cls = cn(
+    "inline-flex items-center justify-center rounded-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-[hsl(var(--background))]",
+    size==="sm" ? "px-3 py-1.5 text-sm" : "px-4 py-2",
+    variant==="black" && "bg-[hsl(var(--foreground))] text-[hsl(var(--background))] hover:bg-[#242424]",
+    variant==="white" && "bg-[hsl(var(--card))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] ring-1 ring-[rgba(43,43,43,0.15)]",
+    variant==="gold" && "bg-[#D4B58A] text-[hsl(var(--foreground))] hover:bg-[#C7A574] shadow-[0_12px_30px_rgba(212,181,138,0.45)]",
+    className
+  );
 
   if (as==="a" && href) {
     const linkProps = props as Omit<ComponentPropsWithoutRef<typeof Link>, "href">;

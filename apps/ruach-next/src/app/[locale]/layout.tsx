@@ -100,7 +100,7 @@ export default async function LocaleLayout({
         <meta name="theme-color" content="#fbbf24" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
       </head>
-      <body className="bg-ruachSoft text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="bg-background text-foreground antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {plausibleDomain ? (
           <Script
             defer

@@ -7,4 +7,3 @@
 
 /* Global base styles */
 html, body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
-html, body { @apply bg-white text-black; }

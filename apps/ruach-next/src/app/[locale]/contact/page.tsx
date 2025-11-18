@@ -39,30 +39,30 @@ export default async function Contact({
 
   return (
     <div className="space-y-12">
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent p-10 text-white shadow-2xl">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">Connect With Ruach</span>
+      <section className="rounded-3xl border border-border bg-card p-10 text-foreground shadow-[0_30px_90px_rgba(43,37,30,0.08)]">
+        <span className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Connect With Ruach</span>
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">Let the breath of God move through your story, city, and community.</h1>
-        <p className="mt-4 max-w-2xl text-sm text-white/75">
+        <p className="mt-4 max-w-2xl text-base text-muted-foreground">
           Whether you are carrying a testimony, planning an outreach, or needing prayer, our team wants to partner with what the Holy Spirit is doing in your life.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {isInternalTestimonyLink ? (
             <Link href={testimonyHref}>
-              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              <span className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-6 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
                 Submit a testimony →
               </span>
             </Link>
           ) : (
             <a
               href={testimonyHref}
-              className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
+              className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-6 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]"
             >
               Submit a testimony →
             </a>
           )}
           <a
             href="mailto:hello@joinruach.org"
-            className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
+            className="inline-flex items-center justify-center rounded-full border border-border px-6 py-2 text-sm font-semibold text-foreground transition hover:bg-[rgba(43,43,43,0.05)]"
           >
             Email our team
           </a>
@@ -71,12 +71,12 @@ export default async function Contact({
 
       <section className="grid gap-6 md:grid-cols-3">
         {defaultContacts.map((channel) => (
-          <div key={channel.title} className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white">
-            <div className="text-sm font-semibold text-white">{channel.title}</div>
-            <p className="mt-3 text-sm text-white/70">{channel.description}</p>
+          <div key={channel.title} className="rounded-3xl border border-border bg-card p-6 text-foreground shadow-[0_15px_50px_rgba(43,37,30,0.05)]">
+            <div className="text-sm font-semibold text-foreground">{channel.title}</div>
+            <p className="mt-3 text-sm text-muted-foreground">{channel.description}</p>
             <a
               href={`mailto:${channel.email}`}
-              className="mt-5 inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200"
+              className="mt-5 inline-flex items-center text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4"
             >
               {channel.email}
             </a>
@@ -85,54 +85,54 @@ export default async function Contact({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
-        <div className="space-y-4 rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
-          <h2 className="text-2xl font-semibold text-neutral-900">How we can walk with you</h2>
-          <p className="text-sm text-neutral-700">
+        <div className="space-y-4 rounded-3xl border border-border bg-card p-8 text-foreground">
+          <h2 className="text-2xl font-semibold text-foreground">How we can walk with you</h2>
+          <p className="text-sm text-muted-foreground">
             We respond within a few days to every message. Share as much context as you feel comfortable—our team safeguards sensitive stories with honor and confidentiality.
           </p>
-          <ul className="space-y-4 text-sm text-neutral-700">
-            <li className="rounded-2xl border border-neutral-200/70 bg-neutral-50 p-4">Share a testimony of deliverance, healing, or salvation that will edify believers worldwide.</li>
-            <li className="rounded-2xl border border-neutral-200/70 bg-neutral-50 p-4">Schedule a call about hosting Ruach for regional outreaches, conferences, or training intensives.</li>
-            <li className="rounded-2xl border border-neutral-200/70 bg-neutral-50 p-4">Request prayer, pastoral covering, or practical guidance for your church or small group.</li>
+          <ul className="space-y-4 text-sm text-muted-foreground">
+            <li className="rounded-2xl border border-border bg-muted/60 p-4">Share a testimony of deliverance, healing, or salvation that will edify believers worldwide.</li>
+            <li className="rounded-2xl border border-border bg-muted/60 p-4">Schedule a call about hosting Ruach for regional outreaches, conferences, or training intensives.</li>
+            <li className="rounded-2xl border border-border bg-muted/60 p-4">Request prayer, pastoral covering, or practical guidance for your church or small group.</li>
           </ul>
         </div>
-        <aside className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
-          <h3 className="text-lg font-semibold text-white">What you can expect</h3>
-          <div className="mt-4 space-y-4 text-sm text-white/70">
+        <aside className="rounded-3xl border border-border bg-muted/60 p-8 text-foreground">
+          <h3 className="text-lg font-semibold text-foreground">What you can expect</h3>
+          <div className="mt-4 space-y-4 text-sm text-muted-foreground">
             {encouragements.map((item) => (
-              <p key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p key={item} className="rounded-2xl border border-border bg-card p-4">
                 {item}
               </p>
             ))}
           </div>
-          <p className="mt-6 text-sm text-white/60">
-            Prefer to share later? Save <span className="text-white">hello@joinruach.org</span> in your contacts so you can reach out anytime.
+          <p className="mt-6 text-sm text-muted-foreground">
+            Prefer to share later? Save <span className="text-foreground">hello@joinruach.org</span> in your contacts so you can reach out anytime.
           </p>
         </aside>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="rounded-3xl border border-border bg-card p-8 text-foreground">
         <div className="grid gap-6 md:grid-cols-[1fr,1.2fr] md:items-center">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Partner on mission</h2>
-            <p className="mt-3 text-sm text-white/70">
+            <h2 className="text-2xl font-semibold text-foreground">Partner on mission</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
               Your support fuels testimonies, equips disciples, and mobilizes compassion projects across the globe. We would love to connect and dream with you.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
               <Link href="/give">
-                <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300">
+                <span className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-5 py-2 font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
                   Give to Ruach
                 </span>
               </Link>
               <Link href="/community-outreach">
-                <span className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white">
+                <span className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 font-semibold text-foreground transition hover:bg-[rgba(43,43,43,0.05)]">
                   Join Outreach
                 </span>
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
-            <h3 className="text-lg font-semibold text-white">Visit or Mail</h3>
+          <div className="rounded-3xl border border-border bg-muted/60 p-6 text-sm text-muted-foreground">
+            <h3 className="text-lg font-semibold text-foreground">Visit or Mail</h3>
             <p className="mt-3">
               Ruach Ministries HQ<br />
               7321 Magnolia Beach Rd.<br />

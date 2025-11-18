@@ -146,17 +146,17 @@ export default async function MediaPage({
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <span className="text-xs uppercase tracking-wide text-white/60">Media Library</span>
-        <h1 className="text-3xl font-semibold text-white">Stories, Teachings, and Films</h1>
-        <p className="text-sm text-white/70">
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">Media Library</span>
+        <h1 className="text-3xl font-semibold text-foreground">Stories, Teachings, and Films</h1>
+        <p className="text-sm text-muted-foreground">
           Watch testimonies of freedom, deep-dive discipleship sessions, and cinematic encounters from Ruach Studios.
         </p>
       </header>
 
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
+      <div className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-[0_20px_60px_rgba(43,37,30,0.05)]">
         <div className="grid gap-6 lg:grid-cols-3">
           <div>
-            <div className="text-xs uppercase tracking-wide text-white/50">Category</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Category</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {categoryOptions.map((option) => (
                 <Link
@@ -165,8 +165,8 @@ export default async function MediaPage({
                 >
                   <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === category
-                      ? "bg-amber-400 text-black"
-                      : "border border-white/10 text-white/70 hover:border-white hover:text-white"
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                      : "border border-border text-muted-foreground hover:text-foreground"
                   }`}>
                     {option.label}
                   </span>
@@ -175,7 +175,7 @@ export default async function MediaPage({
             </div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide text-white/50">Sort</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Sort</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {sortOptions.map((option) => (
                 <Link
@@ -184,8 +184,8 @@ export default async function MediaPage({
                 >
                   <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === sort
-                      ? "bg-amber-400 text-black"
-                      : "border border-white/10 text-white/70 hover:border-white hover:text-white"
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                      : "border border-border text-muted-foreground hover:text-foreground"
                   }`}>
                     {option.label}
                   </span>
@@ -194,7 +194,7 @@ export default async function MediaPage({
             </div>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wide text-white/50">Date</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Date</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {dateOptions.map((option) => (
                 <Link
@@ -203,8 +203,8 @@ export default async function MediaPage({
                 >
                   <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === range
-                      ? "bg-amber-400 text-black"
-                      : "border border-white/10 text-white/70 hover:border-white hover:text-white"
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                      : "border border-border text-muted-foreground hover:text-foreground"
                   }`}>
                     {option.label}
                   </span>
@@ -217,16 +217,16 @@ export default async function MediaPage({
 
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-white">{total} media items</h2>
+          <h2 className="text-lg font-semibold text-foreground">{total} media items</h2>
           <Link href="/contact">
-            <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Submit a testimony →</span>
+            <span className="text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">Submit a testimony →</span>
           </Link>
         </div>
-        <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+        <div className="rounded-3xl border border-border bg-card p-8 text-foreground">
           {items.length ? (
             <MediaGrid items={items} />
           ) : (
-            <p className="text-sm text-neutral-600">No media found for the selected filters. Try another combination.</p>
+            <p className="text-sm text-muted-foreground">No media found for the selected filters. Try another combination.</p>
           )}
         </div>
       </section>

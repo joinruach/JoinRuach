@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ruachSoft: "#F8F8F6",
-        ruachGold: "#D8A85E",
-        ruachDark: "#1A1A1A",
+        ruachSoft: "#F8F5F1",
+        ruachGold: "#D4B58A",
+        ruachDark: "#2B2B2B",
       },
     },
   },
