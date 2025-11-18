@@ -162,13 +162,14 @@ export default async function MediaPage({
                 <Link
                   key={option.value}
                   href={buildHref(searchParams, "category", option.value)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                >
+                  <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === category
                       ? "bg-amber-400 text-black"
                       : "border border-white/10 text-white/70 hover:border-white hover:text-white"
-                  }`}
-                >
-                  {option.label}
+                  }`}>
+                    {option.label}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -180,13 +181,14 @@ export default async function MediaPage({
                 <Link
                   key={option.value}
                   href={buildHref(searchParams, "sort", option.value)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                >
+                  <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === sort
                       ? "bg-amber-400 text-black"
                       : "border border-white/10 text-white/70 hover:border-white hover:text-white"
-                  }`}
-                >
-                  {option.label}
+                  }`}>
+                    {option.label}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -198,13 +200,14 @@ export default async function MediaPage({
                 <Link
                   key={option.value}
                   href={buildHref(searchParams, "range", option.value)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                >
+                  <span className={`rounded-full px-4 py-1.5 text-sm transition ${
                     option.value === range
                       ? "bg-amber-400 text-black"
                       : "border border-white/10 text-white/70 hover:border-white hover:text-white"
-                  }`}
-                >
-                  {option.label}
+                  }`}>
+                    {option.label}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -215,8 +218,8 @@ export default async function MediaPage({
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-white">{total} media items</h2>
-          <Link href="/contact" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-            Submit a testimony →
+          <Link href="/contact">
+            <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Submit a testimony →</span>
           </Link>
         </div>
         <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">

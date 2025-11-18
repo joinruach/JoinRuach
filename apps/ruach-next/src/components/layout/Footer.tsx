@@ -102,8 +102,10 @@ export default function Footer(){
               <ul className="mt-3 space-y-2 text-sm">
                 {quickLinks.map((link) => (
                   <li key={link.href}>
-                    <Link className="text-white/70 transition hover:text-white" href={link.href}>
-                      {link.label}
+                    <Link href={link.href}>
+                      <span className="text-white/70 transition hover:text-white">
+                        {link.label}
+                      </span>
                     </Link>
                   </li>
                 ))}
@@ -129,7 +131,7 @@ export default function Footer(){
             {socialLinks.length ? (
               <div className="flex flex-wrap gap-3">
                 {socialLinks.map((social) => (
-                  <Link
+                  <a
                     key={social.label}
                     href={social.href}
                     target="_blank"
@@ -138,7 +140,7 @@ export default function Footer(){
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
                   >
                     <SocialIcon name={social.icon} />
-                  </Link>
+                  </a>
                 ))}
               </div>
             ) : null}

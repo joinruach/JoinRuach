@@ -22,9 +22,9 @@ export default async function EndTimesCourseLanding({
         <h1 className="text-3xl font-extrabold">End Times Discipleship Course</h1>
         <p className="mt-3 text-white/80">Grow in faithfulness, hope, and clarity. Jesus is returning — we prepare in love.</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/courses" className="rounded bg-amber-500 px-5 py-2.5 text-black">Explore the Course</Link>
-          <Link href="/give" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Support the Teaching</Link>
-          <Link href="/signup" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Get Study Guides</Link>
+          <Link href="/courses"><span className="rounded bg-amber-500 px-5 py-2.5 text-black">Explore the Course</span></Link>
+          <Link href="/give"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Support the Teaching</span></Link>
+          <Link href="/signup"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Get Study Guides</span></Link>
         </div>
       </header>
       <section className="space-y-3">

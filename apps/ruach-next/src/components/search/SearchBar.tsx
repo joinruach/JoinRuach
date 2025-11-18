@@ -180,16 +180,17 @@ export default function SearchBar() {
                     setIsOpen(false);
                     inputRef.current?.blur();
                   }}
-                  className={`flex items-center gap-3 border-b border-white/10 p-3 transition last:border-0 ${
+                >
+                  <div className={`flex items-center gap-3 border-b border-white/10 p-3 transition last:border-0 ${
                     index === selectedIndex
                       ? "bg-amber-400/10"
                       : "hover:bg-white/5"
-                  }`}
-                >
+                  }`}>
                   <span className="text-xs rounded-full bg-white/10 px-2 py-0.5 text-white/70">
                     {typeLabels[result.type] || result.type}
                   </span>
                   <span className="flex-1 text-sm text-white truncate">{result.title}</span>
+                </div>
                 </Link>
               ))}
               <Link
@@ -198,9 +199,10 @@ export default function SearchBar() {
                   setIsOpen(false);
                   inputRef.current?.blur();
                 }}
-                className="block border-t border-white/10 bg-white/5 p-3 text-center text-sm font-semibold text-amber-300 hover:text-amber-200"
               >
-                See all results →
+                <div className="block border-t border-white/10 bg-white/5 p-3 text-center text-sm font-semibold text-amber-300 hover:text-amber-200">
+                  See all results →
+                </div>
               </Link>
             </div>
           ) : (

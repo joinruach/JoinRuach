@@ -43,11 +43,10 @@ export default function ConfirmedPage({
         <div className="text-center">
           <h1 className="text-2xl font-bold text-green-400">✅ Email Confirmed</h1>
           <p className="mt-2">You can now log in to your account.</p>
-          <Link
-            href="/login"
-            className="mt-4 inline-block rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-          >
-            Go to Login
+          <Link href="/login">
+            <span className="mt-4 inline-block rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600">
+              Go to Login
+            </span>
           </Link>
         </div>
       </main>
@@ -61,11 +60,10 @@ export default function ConfirmedPage({
         <p className="mt-2">
           Your link may have expired. Please request a new one.
         </p>
-        <Link
-          href="/login"
-          className="mt-4 inline-block rounded bg-white/10 px-4 py-2 text-white hover:bg-white/20"
-        >
-          Back to Login
+        <Link href="/login">
+          <span className="mt-4 inline-block rounded bg-white/10 px-4 py-2 text-white hover:bg-white/20">
+            Back to Login
+          </span>
         </Link>
       </div>
     </main>

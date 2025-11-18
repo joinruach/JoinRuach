@@ -66,8 +66,8 @@ export default async function SeriesPage({
               <Link
                 key={series.slug}
                 href={`/series/${series.slug}`}
-                className="group rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/10"
               >
+                <div className="group rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/10">
                 {series.coverImage ? (
                   <div className="relative mb-4 aspect-video overflow-hidden rounded-lg">
                     <Image
@@ -96,6 +96,7 @@ export default async function SeriesPage({
                 <div className="flex items-center gap-2 text-xs text-white/50">
                   <span>{series.itemCount} {series.itemCount === 1 ? 'episode' : 'episodes'}</span>
                 </div>
+              </div>
               </Link>
             ))
           ) : (

@@ -79,14 +79,14 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-center pt-4">
-            <Link href="/media" className="text-sm text-amber-300 hover:text-amber-200">
-              Browse Media →
+            <Link href="/media">
+              <span className="text-sm text-amber-300 hover:text-amber-200">Browse Media →</span>
             </Link>
-            <Link href="/courses" className="text-sm text-amber-300 hover:text-amber-200">
-              Browse Courses →
+            <Link href="/courses">
+              <span className="text-sm text-amber-300 hover:text-amber-200">Browse Courses →</span>
             </Link>
-            <Link href="/series" className="text-sm text-amber-300 hover:text-amber-200">
-              Browse Series →
+            <Link href="/series">
+              <span className="text-sm text-amber-300 hover:text-amber-200">Browse Series →</span>
             </Link>
           </div>
         </div>
@@ -104,8 +104,8 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
             <Link
               key={result.id}
               href={result.url}
-              className="group flex gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20 hover:bg-white/10"
             >
+              <div className="group flex gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20 hover:bg-white/10">
               {/* Thumbnail */}
               {result.thumbnail ? (
                 <div className="relative h-24 w-32 flex-shrink-0 overflow-hidden rounded-lg">
@@ -158,6 +158,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
                   </p>
                 )}
               </div>
+            </div>
             </Link>
           ))}
         </div>

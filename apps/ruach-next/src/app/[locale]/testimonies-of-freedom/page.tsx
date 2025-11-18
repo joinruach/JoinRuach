@@ -22,15 +22,15 @@ export default async function TestimoniesOfFreedomPage({
         <h1 className="text-3xl font-extrabold">Testimonies of Freedom</h1>
         <p className="mt-3 text-white/80">Experience the power of the gospel through lives transformed by Jesus.</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/media" className="rounded bg-amber-500 px-5 py-2.5 text-black">Watch Now</Link>
-          <Link href="/give" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Partner to Share More</Link>
-          <Link href="/signup" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Get Weekly Stories</Link>
+          <Link href="/media"><span className="rounded bg-amber-500 px-5 py-2.5 text-black">Watch Now</span></Link>
+          <Link href="/give"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Partner to Share More</span></Link>
+          <Link href="/signup"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Get Weekly Stories</span></Link>
         </div>
       </header>
       <section className="space-y-3">
         <h2 className="text-xl font-bold">Share Your Story</h2>
         <p className="text-neutral-700">We believe testimonies carry fire. Tell us what God has done in your life and encourage others.</p>
-        <Link href="/contact" className="inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Submit a Testimony</Link>
+        <Link href="/contact"><span className="inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Submit a Testimony</span></Link>
       </section>
     </div>
   );

@@ -107,11 +107,10 @@ export default function StreamNotification({
 
             {/* Actions */}
             <div className="mt-3 flex items-center gap-2">
-              <Link
-                href={streamUrl}
-                className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-amber-600 transition-colors hover:bg-white/90"
-              >
-                Join Stream
+              <Link href={streamUrl}>
+                <span className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-amber-600 transition-colors hover:bg-white/90">
+                  Join Stream
+                </span>
               </Link>
               <button
                 onClick={handleDismiss}

@@ -18,10 +18,12 @@ export function NavLink({ href, children, className, ...props }:
       ? pathname === normalizedHref || pathname.startsWith(`${normalizedHref}/`)
       : false;
   return (
-    <Link href={href} className={cn(
-      "text-sm font-medium text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold/90",
-      active && "text-ruachDark font-semibold dark:text-white",
-      className
-    )} {...props}>{children}</Link>
+    <Link href={href} {...props}>
+      <span className={cn(
+        "text-sm font-medium text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold/90",
+        active && "text-ruachDark font-semibold dark:text-white",
+        className
+      )}>{children}</span>
+    </Link>
   );
 }

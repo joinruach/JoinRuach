@@ -64,9 +64,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     <div className="space-y-12">
       <SEOHead jsonLd={lessonSchema} />
       <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/50">
-        <Link href="/courses" className="text-white/60 transition hover:text-white">Courses</Link>
+        <Link href="/courses"><span className="text-white/60 transition hover:text-white">Courses</span></Link>
         <span>/</span>
-        <Link href={`/courses/${slug}`} className="text-white/60 transition hover:text-white">{course.attributes?.title}</Link>
+        <Link href={`/courses/${slug}`}><span className="text-white/60 transition hover:text-white">{course.attributes?.title}</span></Link>
         <span>/</span>
         <span className="text-white">{lesson.title}</span>
       </nav>
@@ -90,19 +90,17 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           ) : null}
           <div className="flex gap-3 sm:ml-auto">
             {prevLesson ? (
-              <Link
-                href={`/courses/${slug}/${prevLesson.slug}`}
-                className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-              >
-                ← Previous Lesson
+              <Link href={`/courses/${slug}/${prevLesson.slug}`}>
+                <span className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+                  ← Previous Lesson
+                </span>
               </Link>
             ) : null}
             {nextLesson ? (
-              <Link
-                href={`/courses/${slug}/${nextLesson.slug}`}
-                className="inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-              >
-                Next Lesson →
+              <Link href={`/courses/${slug}/${nextLesson.slug}`}>
+                <span className="inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+                  Next Lesson →
+                </span>
               </Link>
             ) : null}
           </div>

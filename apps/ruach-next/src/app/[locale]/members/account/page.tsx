@@ -457,8 +457,8 @@ export default async function AccountPage() {
             />
             <p className="text-xs text-white/60">
               {membershipSupportMessage}{" "}
-              <Link className="text-amber-300 hover:text-amber-200" href="/contact">
-                Contact support
+              <Link href="/contact">
+                <span className="text-amber-300 hover:text-amber-200">Contact support</span>
               </Link>
               .
             </p>
@@ -486,18 +486,18 @@ export default async function AccountPage() {
           <h2 className="text-lg font-semibold text-white">Next steps</h2>
           <ul className="space-y-2 text-sm text-white/70">
             <li>
-              <Link className="text-amber-300 hover:text-amber-200" href="/courses">
-                Explore discipleship courses →
+              <Link href="/courses">
+                <span className="text-amber-300 hover:text-amber-200">Explore discipleship courses →</span>
               </Link>
             </li>
             <li>
-              <Link className="text-amber-300 hover:text-amber-200" href="/media">
-                Watch the latest testimonies →
+              <Link href="/media">
+                <span className="text-amber-300 hover:text-amber-200">Watch the latest testimonies →</span>
               </Link>
             </li>
             <li>
-              <Link className="text-amber-300 hover:text-amber-200" href="/community-outreach">
-                Join a local outreach →
+              <Link href="/community-outreach">
+                <span className="text-amber-300 hover:text-amber-200">Join a local outreach →</span>
               </Link>
             </li>
           </ul>

@@ -109,8 +109,8 @@ export default async function MemberPostsPage() {
                     <span className="text-xs uppercase tracking-wide text-white/60">{published}</span>
                   ) : null}
                   {href ? (
-                    <Link href={href} className="mt-2 text-lg font-semibold text-white hover:text-amber-300">
-                      {title}
+                    <Link href={href}>
+                      <span className="mt-2 text-lg font-semibold text-white hover:text-amber-300">{title}</span>
                     </Link>
                   ) : (
                     <p className="mt-2 text-lg font-semibold text-white">{title}</p>

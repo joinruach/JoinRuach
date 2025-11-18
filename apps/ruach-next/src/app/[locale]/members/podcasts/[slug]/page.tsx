@@ -180,26 +180,24 @@ export default async function MemberPodcastDetail({ params }: Props) {
         <section className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-white">More partner episodes</h2>
-            <Link href="/members/podcasts" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              Back to podcast hub →
+            <Link href="/members/podcasts">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Back to podcast hub →</span>
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {related.map((attrs) => {
               if (!attrs.slug) return null;
               return (
-                <Link
-                  key={attrs.slug}
-                  href={`/members/podcasts/${attrs.slug}`}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white transition hover:border-amber-300"
-                >
-                  <div className="text-xs uppercase tracking-wide text-white/50">
-                    Released {attrs.releasedAt ? new Date(attrs.releasedAt).toLocaleDateString() : ""}
+                <Link key={attrs.slug} href={`/members/podcasts/${attrs.slug}`}>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white transition hover:border-amber-300">
+                    <div className="text-xs uppercase tracking-wide text-white/50">
+                      Released {attrs.releasedAt ? new Date(attrs.releasedAt).toLocaleDateString() : ""}
+                    </div>
+                    <div className="mt-2 text-base font-semibold">{attrs.title}</div>
+                    {attrs.excerpt ? (
+                      <p className="mt-2 text-sm text-white/70">{attrs.excerpt}</p>
+                    ) : null}
                   </div>
-                  <div className="mt-2 text-base font-semibold">{attrs.title}</div>
-                  {attrs.excerpt ? (
-                    <p className="mt-2 text-sm text-white/70">{attrs.excerpt}</p>
-                  ) : null}
                 </Link>
               );
             })}

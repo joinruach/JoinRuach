@@ -90,7 +90,7 @@ function LoginForm() {
         </div>
       </form>
       <p className="text-sm text-neutral-600">
-        No account? <Link href="/signup" className="text-amber-700 underline">Create one</Link>
+        No account? <Link href="/signup"><span className="text-amber-700 underline">Create one</span></Link>
       </p>
     </div>
   );

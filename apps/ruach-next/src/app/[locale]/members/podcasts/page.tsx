@@ -61,8 +61,8 @@ export default async function MemberPodcastsPage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-white">{items.length} podcast episodes</h2>
-          <Link href="/members/downloads" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-            Explore downloads →
+          <Link href="/members/downloads">
+            <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Explore downloads →</span>
           </Link>
         </div>
         <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">

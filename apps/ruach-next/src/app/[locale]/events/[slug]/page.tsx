@@ -37,7 +37,7 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   return (
     <div className="space-y-10">
       <nav className="text-xs uppercase tracking-wide text-neutral-600 dark:text-white/50">
-        <Link href="/events" className="text-neutral-700 transition hover:text-neutral-900 dark:text-white/70 dark:hover:text-white">Events</Link>
+        <Link href="/events"><span className="text-neutral-700 transition hover:text-neutral-900 dark:text-white/70 dark:hover:text-white">Events</span></Link>
         <span className="mx-1">/</span>
         <span className="text-neutral-900 dark:text-white">{a.title}</span>
       </nav>
@@ -83,20 +83,19 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
           ) : null}
           <div className="flex flex-wrap gap-3 pt-2">
             {a.registrationUrl ? (
-              <Link
+              <a
                 href={a.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-black dark:hover:bg-amber-300"
               >
                 Register now
-              </Link>
+              </a>
             ) : null}
-            <Link
-              href="/conferences"
-              className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900 dark:border-white/20 dark:text-white/80 dark:hover:border-white dark:hover:text-white"
-            >
-              Back to conferences
+            <Link href="/conferences">
+              <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900 dark:border-white/20 dark:text-white/80 dark:hover:border-white dark:hover:text-white">
+                Back to conferences
+              </span>
             </Link>
           </div>
         </div>

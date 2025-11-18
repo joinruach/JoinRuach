@@ -326,22 +326,38 @@ export default async function ConferencesPage(){
               {location ? <span>• {location}</span> : null}
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href={primaryCtaUrl}
-                className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
-                target={isExternal(primaryCtaUrl) ? "_blank" : undefined}
-                rel={isExternal(primaryCtaUrl) ? "noopener noreferrer" : undefined}
-              >
-                {primaryCtaLabel}
-              </Link>
-              <Link
-                href={secondaryCtaUrl}
-                className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500"
-                target={isExternal(secondaryCtaUrl) ? "_blank" : undefined}
-                rel={isExternal(secondaryCtaUrl) ? "noopener noreferrer" : undefined}
-              >
-                {secondaryCtaLabel}
-              </Link>
+              {isExternal(primaryCtaUrl) ? (
+                <a
+                  href={primaryCtaUrl}
+                  className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {primaryCtaLabel}
+                </a>
+              ) : (
+                <Link href={primaryCtaUrl}>
+                  <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
+                    {primaryCtaLabel}
+                  </span>
+                </Link>
+              )}
+              {isExternal(secondaryCtaUrl) ? (
+                <a
+                  href={secondaryCtaUrl}
+                  className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {secondaryCtaLabel}
+                </a>
+              ) : (
+                <Link href={secondaryCtaUrl}>
+                  <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500">
+                    {secondaryCtaLabel}
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
           <div className="rounded-3xl border border-neutral-200 bg-white/70 p-5">
@@ -387,8 +403,8 @@ export default async function ConferencesPage(){
             <h2 className="text-2xl font-semibold text-neutral-900">Featured Speakers</h2>
             <p className="text-sm text-neutral-600">Leaders who burn for Jesus and carry impartation for freedom.</p>
           </div>
-          <Link href="/contact" className="text-sm font-semibold text-neutral-700 hover:text-neutral-900">
-            Invite Ruach to your city →
+          <Link href="/contact">
+            <span className="text-sm font-semibold text-neutral-700 hover:text-neutral-900">Invite Ruach to your city →</span>
           </Link>
         </div>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -415,8 +431,8 @@ export default async function ConferencesPage(){
             <h2 className="text-2xl font-semibold text-white">Conference Merch</h2>
             <p className="text-sm text-white/70">Grab limited releases to support Ruach Studios.</p>
           </div>
-          <Link href="/media" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-            Watch our latest stories →
+          <Link href="/media">
+            <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Watch our latest stories →</span>
           </Link>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -429,14 +445,22 @@ export default async function ConferencesPage(){
                 {item.description ? (
                   <p className="mt-2 text-sm text-white/70">{item.description}</p>
                 ) : null}
-                <Link
-                  href={item.href}
-                  target={external ? "_blank" : undefined}
-                  rel={external ? "noopener noreferrer" : undefined}
-                  className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-                >
-                  {item.ctaLabel || "Purchase via Stripe"}
-                </Link>
+                {external ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
+                  >
+                    {item.ctaLabel || "Purchase via Stripe"}
+                  </a>
+                ) : (
+                  <Link href={item.href}>
+                    <span className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+                      {item.ctaLabel || "Purchase via Stripe"}
+                    </span>
+                  </Link>
+                )}
               </div>
             );
           })}

@@ -255,10 +255,10 @@ export default async function About({
         </ol>
         <p className="mt-6 text-sm text-white/60">
           Have questions about theology, discipleship, or governance?{" "}
-          <Link href="/contact" className="text-amber-300 hover:text-amber-200">
-            Reach out to our team
+          <Link href="/contact">
+            <span className="text-amber-300 hover:text-amber-200">Reach out to our team</span>
           </Link>{" "}
-          —we’d love to walk with you as the Breath of God continues to move.
+          —we&apos;d love to walk with you as the Breath of God continues to move.
         </p>
       </Section>
     </div>

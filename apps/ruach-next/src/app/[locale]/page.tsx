@@ -159,21 +159,24 @@ export default async function Home({
           <div className="flex flex-wrap gap-3">
             <Link
               href="/give"
-              className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400"
             >
-              Give Today
+              <span className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400">
+                Give Today
+              </span>
             </Link>
             <Link
               href="/community-outreach"
-              className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white"
             >
-              Join the Community
+              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+                Join the Community
+              </span>
             </Link>
             <Link
               href="/media"
-              className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white"
             >
-              Watch Testimonies
+              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+                Watch Testimonies
+              </span>
             </Link>
           </div>
         </div>
@@ -198,15 +201,17 @@ export default async function Home({
           <div className="mt-6 flex flex-col gap-3">
             <Link
               href="/give"
-              className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300"
             >
-              Become a Partner
+              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300">
+                Become a Partner
+              </span>
             </Link>
             <Link
               href="/community-outreach"
-              className="inline-flex items-center justify-center rounded-full border border-amber-200/60 px-5 py-2 font-semibold text-amber-100 transition hover:border-amber-100"
             >
-              Join Community Outreach
+              <span className="inline-flex items-center justify-center rounded-full border border-amber-200/60 px-5 py-2 font-semibold text-amber-100 transition hover:border-amber-100">
+                Join Community Outreach
+              </span>
             </Link>
           </div>
         </div>
@@ -231,8 +236,8 @@ export default async function Home({
               {featuredAttributes.description ? (
                 <p className="text-neutral-600">{featuredAttributes.description}</p>
               ) : null}
-              <Link href={`/media/${featuredAttributes.slug}`} className="inline-flex items-center text-sm font-semibold text-amber-700 hover:text-amber-600">
-                Watch the story →
+              <Link href={`/media/${featuredAttributes.slug}`}>
+                <span className="inline-flex items-center text-sm font-semibold text-amber-700 hover:text-amber-600">Watch the story →</span>
               </Link>
             </div>
           </div>
@@ -243,9 +248,10 @@ export default async function Home({
             </p>
             <Link
               href="/media"
-              className="mt-6 inline-flex items-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white"
             >
-              Explore the media library
+              <span className="mt-6 inline-flex items-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white">
+                Explore the media library
+              </span>
             </Link>
           </div>
         </section>
@@ -258,8 +264,8 @@ export default async function Home({
               <span className="text-xs uppercase tracking-wide text-white/60">Featured Media</span>
               <h2 className="mt-2 text-2xl font-semibold text-white">Testimonies of Freedom</h2>
             </div>
-            <Link href="/media" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              View all media →
+            <Link href="/media">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">View all media →</span>
             </Link>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
@@ -275,8 +281,8 @@ export default async function Home({
               <span className="text-xs uppercase tracking-wide text-white/60">Featured Courses</span>
               <h2 className="mt-2 text-2xl font-semibold text-white">Grow as a Disciple</h2>
             </div>
-            <Link href="/courses" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              Explore courses →
+            <Link href="/courses">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Explore courses →</span>
             </Link>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
@@ -292,8 +298,8 @@ export default async function Home({
               <span className="text-xs uppercase tracking-wide text-white/60">Upcoming Events</span>
               <h2 className="mt-2 text-2xl font-semibold text-white">Conferences & Gatherings</h2>
             </div>
-            <Link href="/conferences" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              See all conferences →
+            <Link href="/conferences">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">See all conferences →</span>
             </Link>
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
@@ -325,9 +331,10 @@ export default async function Home({
                   <div className="mt-auto">
                     <Link
                       href={`/events/${event.slug}`}
-                      className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
                     >
-                      View details
+                      <span className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+                        View details
+                      </span>
                     </Link>
                   </div>
                 </div>
@@ -355,15 +362,17 @@ export default async function Home({
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/give"
-              className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-amber-300"
             >
-              Give a One-Time Gift
+              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-amber-300">
+                Give a One-Time Gift
+              </span>
             </Link>
             <Link
               href="/give#partner"
-              className="inline-flex items-center justify-center rounded-full border border-amber-200/70 px-6 py-3 text-sm font-semibold text-amber-100 transition hover:border-amber-100"
             >
-              Become a Monthly Partner
+              <span className="inline-flex items-center justify-center rounded-full border border-amber-200/70 px-6 py-3 text-sm font-semibold text-amber-100 transition hover:border-amber-100">
+                Become a Monthly Partner
+              </span>
             </Link>
           </div>
         </div>

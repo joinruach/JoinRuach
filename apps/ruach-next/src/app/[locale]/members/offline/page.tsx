@@ -289,11 +289,10 @@ export default function OfflineManagerPage() {
           <p className="mb-4 text-neutral-600 dark:text-neutral-400">
             Download content from media and courses to access offline
           </p>
-          <Link
-            href="/media"
-            className="inline-block rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-400"
-          >
-            Browse Media
+          <Link href="/media">
+            <span className="inline-block rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-400">
+              Browse Media
+            </span>
           </Link>
         </div>
       ) : (
@@ -330,11 +329,10 @@ export default function OfflineManagerPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Link
-                  href={item.url}
-                  className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-900 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800"
-                >
-                  View
+                <Link href={item.url}>
+                  <span className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-900 transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800">
+                    View
+                  </span>
                 </Link>
 
                 <button

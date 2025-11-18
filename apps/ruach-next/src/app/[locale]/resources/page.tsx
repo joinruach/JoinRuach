@@ -353,23 +353,20 @@ export default async function ResourcesPage({
           dangerouslySetInnerHTML={{ __html: heroCopyHtml }}
         />
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/media"
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-          >
-            Watch testimonies
+          <Link href="/media">
+            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              Watch testimonies
+            </span>
           </Link>
-          <Link
-            href="/courses"
-            className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            Explore courses
+          <Link href="/courses">
+            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Explore courses
+            </span>
           </Link>
-          <Link
-            href="/signup"
-            className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            Join partner community
+          <Link href="/signup">
+            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Join partner community
+            </span>
           </Link>
         </div>
       </section>
@@ -390,11 +387,10 @@ export default async function ResourcesPage({
                 <p className="mt-2 text-sm text-white/70">{highlight.description}</p>
               ) : null}
               {highlight.ctaLabel && highlight.ctaUrl ? (
-                <Link
-                  href={highlight.ctaUrl}
-                  className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 transition hover:text-amber-200"
-                >
-                  {highlight.ctaLabel} →
+                <Link href={highlight.ctaUrl}>
+                  <span className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 transition hover:text-amber-200">
+                    {highlight.ctaLabel} →
+                  </span>
                 </Link>
               ) : null}
             </article>
@@ -734,8 +730,8 @@ function SectionHeading({
         {section.description ? <p className="text-sm text-white/70">{section.description}</p> : null}
       </div>
       {section.ctaLabel && section.ctaUrl ? (
-        <Link href={section.ctaUrl} className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-          {section.ctaLabel}
+        <Link href={section.ctaUrl}>
+          <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">{section.ctaLabel}</span>
         </Link>
       ) : null}
     </div>
@@ -781,14 +777,14 @@ function LessonCard({ lesson }: { lesson: LessonDownload }) {
             {secondary.map((resource, index) => (
               <div key={`${resource.id ?? resource.url}-${index}`} className="flex items-center gap-2">
                 <span className="inline-flex h-2 w-2 rounded-full bg-amber-300" aria-hidden />
-                <Link
+                <a
                   href={resource.url}
                   className="underline decoration-dotted underline-offset-2 hover:text-amber-200"
                   target={resource.url.startsWith("http") ? "_blank" : undefined}
                   rel={resource.url.startsWith("http") ? "noopener noreferrer" : undefined}
                 >
                   {resource.label || "Additional resource"}
-                </Link>
+                </a>
                 {resource.requiresLogin ? <span className="text-[10px] uppercase text-white/40">Partners</span> : null}
               </div>
             ))}
@@ -823,8 +819,10 @@ function ArticleCardView({ article }: { article: ArticleCard }) {
         <h3 className="mt-2 text-lg font-semibold">{article.title}</h3>
         {article.summary ? <p className="mt-2 text-sm text-white/70">{article.summary}</p> : null}
         {article.href ? (
-          <Link href={href} className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200">
-            Read resource →
+          <Link href={href}>
+            <span className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200">
+              Read resource →
+            </span>
           </Link>
         ) : null}
       </div>
@@ -841,14 +839,22 @@ function CustomResourceCardView({ resource }: { resource: CustomResourceCard }) 
         {resource.type ? <span>{resource.type}</span> : null}
         {resource.requiresLogin ? <span className="rounded-full border border-white/30 px-2 py-0.5 text-[10px]">Partners</span> : null}
       </div>
-      <Link
-        href={resource.url}
-        className="mt-auto inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200"
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-      >
-        Open →
-      </Link>
+      {isExternal ? (
+        <a
+          href={resource.url}
+          className="mt-auto inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open →
+        </a>
+      ) : (
+        <Link href={resource.url}>
+          <span className="mt-auto inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200">
+            Open →
+          </span>
+        </Link>
+      )}
     </article>
   );
 }

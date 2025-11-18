@@ -83,8 +83,8 @@ export default async function OutreachStoryPage({ params }: Props) {
   return (
     <article className="space-y-12">
       <nav className="text-sm">
-        <Link href="/community-outreach" className="text-amber-300 hover:text-amber-200">
-          ← Back to Community Outreach
+        <Link href="/community-outreach">
+          <span className="text-amber-300 hover:text-amber-200">← Back to Community Outreach</span>
         </Link>
       </nav>
 
@@ -135,11 +135,10 @@ export default async function OutreachStoryPage({ params }: Props) {
             <p className="mt-3 text-sm text-white/70">{campaign.summary}</p>
           ) : null}
           {campaign.donationLink ? (
-            <Link
-              href={campaign.donationLink}
-              className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200"
-            >
-              Support this campaign →
+            <Link href={campaign.donationLink}>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
+                Support this campaign →
+              </span>
             </Link>
           ) : campaign.giveCode ? (
             <p className="mt-5 text-xs uppercase tracking-[0.3em] text-white/60">
@@ -153,8 +152,8 @@ export default async function OutreachStoryPage({ params }: Props) {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">More outreach impact</h2>
-            <Link href="/community-outreach/stories" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              View all stories →
+            <Link href="/community-outreach/stories">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">View all stories →</span>
             </Link>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">

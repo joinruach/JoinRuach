@@ -87,9 +87,10 @@ export default async function PartnersPage({
 
         <Link
           href="#tiers"
-          className="inline-block rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500"
         >
-          See Partnership Levels
+          <span className="inline-block rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500">
+            See Partnership Levels
+          </span>
         </Link>
       </section>
 
@@ -174,15 +175,17 @@ export default async function PartnersPage({
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
           <Link
             href="/give"
-            className="rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500"
           >
-            Become a Partner Today
+            <span className="rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500">
+              Become a Partner Today
+            </span>
           </Link>
           <Link
             href="/members/impact"
-            className="rounded-full border border-white/20 px-8 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10"
           >
-            View Partner Dashboard
+            <span className="rounded-full border border-white/20 px-8 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10">
+              View Partner Dashboard
+            </span>
           </Link>
         </div>
       </section>

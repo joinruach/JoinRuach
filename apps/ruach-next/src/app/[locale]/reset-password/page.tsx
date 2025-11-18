@@ -68,8 +68,8 @@ function ForgotPasswordForm() {
       </form>
       <p className="text-sm text-neutral-600">
         Remembered your password?{" "}
-        <Link href="/login" className="text-amber-700 underline">
-          Return to login
+        <Link href="/login">
+          <span className="text-amber-700 underline">Return to login</span>
         </Link>
       </p>
     </div>
@@ -163,8 +163,8 @@ function ResetPasswordForm({ code }: { code: string }) {
       </form>
       <p className="text-sm text-neutral-600">
         Link expired or not working?{" "}
-        <Link href="/reset-password" className="text-amber-700 underline">
-          Request a new reset email
+        <Link href="/reset-password">
+          <span className="text-amber-700 underline">Request a new reset email</span>
         </Link>
       </p>
     </div>

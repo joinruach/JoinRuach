@@ -51,17 +51,15 @@ export default async function CoursesPage({
           Engage with cinematic teachings, activation assignments, and community discussion designed to equip believers for deliverance, evangelism, and prophetic ministry.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/login"
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-          >
-            Login to track progress
+          <Link href="/login">
+            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              Login to track progress
+            </span>
           </Link>
-          <Link
-            href="/signup"
-            className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            Create a free account
+          <Link href="/signup">
+            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Create a free account
+            </span>
           </Link>
         </div>
       </section>
@@ -87,11 +85,10 @@ export default async function CoursesPage({
               <p className="text-neutral-600">{featuredCourse.description}</p>
             ) : null}
             <div className="mt-auto">
-              <Link
-                href={`/courses/${featuredCourse.slug}`}
-                className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
-              >
-                Start this course →
+              <Link href={`/courses/${featuredCourse.slug}`}>
+                <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
+                  Start this course →
+                </span>
               </Link>
             </div>
           </div>
@@ -102,8 +99,8 @@ export default async function CoursesPage({
         <section className="space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-white">All Courses</h2>
-            <Link href="/give" className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              Sponsor a student →
+            <Link href="/give">
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Sponsor a student →</span>
             </Link>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">

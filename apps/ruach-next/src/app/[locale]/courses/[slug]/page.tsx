@@ -136,25 +136,22 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
             </div>
             <div className="mt-auto flex flex-wrap gap-3">
               {isAuthenticated && firstLesson ? (
-                <Link
-                  href={`/courses/${slug}/${firstLesson.slug}`}
-                  className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
-                >
-                  Resume Course
+                <Link href={`/courses/${slug}/${firstLesson.slug}`}>
+                  <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
+                    Resume Course
+                  </span>
                 </Link>
               ) : (
                 <>
-                  <Link
-                    href="/login"
-                    className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700"
-                  >
-                    Login to start
+                  <Link href="/login">
+                    <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
+                      Login to start
+                    </span>
                   </Link>
-                  <Link
-                    href="/signup"
-                    className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500"
-                  >
-                    Create an account
+                  <Link href="/signup">
+                    <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500">
+                      Create an account
+                    </span>
                   </Link>
                 </>
               )}
@@ -183,18 +180,20 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
         <ol className="mt-6 space-y-3">
           {lessons.map((lesson:any, index:number)=>(
             <li key={lesson.slug} className="rounded-2xl border border-white/10 bg-white/5 transition hover:border-amber-300/60">
-              <Link href={`/courses/${slug}/${lesson.slug}`} className="flex items-center gap-4 p-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
-                  {lesson.order || index + 1}
-                </span>
+              <Link href={`/courses/${slug}/${lesson.slug}`}>
+                <span className="flex items-center gap-4 p-5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
+                    {lesson.order || index + 1}
+                  </span>
                 <div className="flex-1">
                   <div className="text-base font-semibold text-white">{lesson.title}</div>
                   {lesson.summary ? (
                     <p className="text-sm text-white/60">{lesson.summary}</p>
                   ) : null}
                 </div>
-                <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-white/40"}`}>
-                  {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
+                  <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-white/40"}`}>
+                    {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
+                  </span>
                 </span>
               </Link>
             </li>

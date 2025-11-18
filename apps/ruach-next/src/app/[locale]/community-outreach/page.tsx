@@ -272,17 +272,15 @@ export default async function CommunityOutreachPage({
         <h1 className="mt-4 text-3xl font-semibold text-white">{heroTitle}</h1>
         <p className="mt-3 max-w-3xl text-sm text-white/70">{heroDescription}</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href={heroPrimaryCta.href}
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-          >
-            {heroPrimaryCta.label}
+          <Link href={heroPrimaryCta.href}>
+            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              {heroPrimaryCta.label}
+            </span>
           </Link>
-          <Link
-            href={heroSecondaryCta.href}
-            className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            {heroSecondaryCta.label}
+          <Link href={heroSecondaryCta.href}>
+            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              {heroSecondaryCta.label}
+            </span>
           </Link>
         </div>
       </section>
@@ -291,8 +289,8 @@ export default async function CommunityOutreachPage({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-white">{storiesHeading}</h2>
           {storiesCtaUrl ? (
-            <Link href={storiesCtaUrl} className="text-sm font-semibold text-amber-300 hover:text-amber-200">
-              {storiesCtaLabel}
+            <Link href={storiesCtaUrl}>
+              <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">{storiesCtaLabel}</span>
             </Link>
           ) : null}
         </div>
@@ -348,11 +346,10 @@ export default async function CommunityOutreachPage({
                   </dl>
                 ) : null}
                 {campaign.donationLink ? (
-                  <Link
-                    href={campaign.donationLink}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200"
-                  >
-                    Support this campaign →
+                  <Link href={campaign.donationLink}>
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
+                      Support this campaign →
+                    </span>
                   </Link>
                 ) : campaign.giveCode ? (
                   <p className="mt-5 text-xs uppercase tracking-[0.24em] text-white/60">
@@ -456,11 +453,10 @@ export default async function CommunityOutreachPage({
                 <p className="text-sm text-white/70">{subscriptionBanner.body}</p>
               ) : null}
               {subscriptionBanner.ctaLabel && subscriptionBanner.ctaUrl ? (
-                <Link
-                  href={subscriptionBanner.ctaUrl}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200"
-                >
-                  {subscriptionBanner.ctaLabel} →
+                <Link href={subscriptionBanner.ctaUrl}>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
+                    {subscriptionBanner.ctaLabel} →
+                  </span>
                 </Link>
               ) : null}
             </div>

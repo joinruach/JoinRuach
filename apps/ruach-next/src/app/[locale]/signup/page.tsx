@@ -111,7 +111,7 @@ export default function SignupPage({
           {status==="loading"?"Creating account…":"Create account"}
         </Button>
       </form>
-      <p className="text-sm text-white/70">Already registered? <Link className="text-amber-300 underline" href="/login">Sign in</Link></p>
+      <p className="text-sm text-white/70">Already registered? <Link href="/login"><span className="text-amber-300 underline">Sign in</span></Link></p>
     </div>
   );
 }

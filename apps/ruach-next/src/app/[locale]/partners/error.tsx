@@ -35,9 +35,10 @@ export default function Error({
         </button>
         <Link
           href="/"
-          className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
         >
-          Go Home
+          <span className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10">
+            Go Home
+          </span>
         </Link>
       </div>
     </div>

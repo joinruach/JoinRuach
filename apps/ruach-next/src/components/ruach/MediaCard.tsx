@@ -52,10 +52,8 @@ export default function MediaCard({
   if (likeLabel) meta.push(likeLabel);
 
   return (
-    <Link
-      href={href}
-      className="group overflow-hidden rounded-xl ring-1 ring-black/5 transition hover:ring-amber-400"
-    >
+    <Link href={href}>
+      <div className="group overflow-hidden rounded-xl ring-1 ring-black/5 transition hover:ring-amber-400">
       <div className="relative aspect-video">
         {src ? (
           <Image
@@ -90,6 +88,7 @@ export default function MediaCard({
           </div>
         ) : null}
       </div>
+    </div>
     </Link>
   );
 }

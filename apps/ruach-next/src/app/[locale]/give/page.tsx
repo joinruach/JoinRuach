@@ -77,17 +77,15 @@ export default function GivePage(){
           Every gift helps us produce cinematic testimonies, launch discipleship courses, and fund outreach campaigns that lead people into encounters with Jesus.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="#donate"
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-          >
-            Give now
+          <Link href="#donate">
+            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              Give now
+            </span>
           </Link>
-          <Link
-            href="/community-outreach#support"
-            className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            Sponsor outreach
+          <Link href="/community-outreach#support">
+            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Sponsor outreach
+            </span>
           </Link>
         </div>
       </section>
@@ -145,22 +143,20 @@ export default function GivePage(){
           <div className="text-xs uppercase tracking-wide text-white/60">2</div>
           <h3 className="mt-2 text-lg font-semibold text-white">Sponsor a Course</h3>
           <p className="mt-2 text-sm text-white/70">Fund curriculum writing, filming, and translation so the global church can access discipleship for free.</p>
-          <Link
-            href="/courses"
-            className="mt-4 inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            View active courses
+          <Link href="/courses">
+            <span className="mt-4 inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              View active courses
+            </span>
           </Link>
         </div>
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <div className="text-xs uppercase tracking-wide text-white/60">3</div>
           <h3 className="mt-2 text-lg font-semibold text-white">Support Outreach</h3>
           <p className="mt-2 text-sm text-white/70">Give to meals, supplies, and follow-up discipleship that keeps freedom flowing on the streets.</p>
-          <Link
-            href="/community-outreach#support"
-            className="mt-4 inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white"
-          >
-            Fund community outreach
+          <Link href="/community-outreach#support">
+            <span className="mt-4 inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Fund community outreach
+            </span>
           </Link>
         </div>
       </section>
@@ -205,11 +201,10 @@ export default function GivePage(){
           ))}
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href={membershipPortalHref}
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-          >
-            Sign in to member portal
+          <Link href={membershipPortalHref}>
+            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+              Sign in to member portal
+            </span>
           </Link>
           <StripeSubscriptionButtons
             className="flex-shrink-0"

@@ -34,9 +34,10 @@ export default function OfflinePage() {
         </button>
         <Link
           href="/"
-          className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10"
         >
-          Go to Homepage
+          <span className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10">
+            Go to Homepage
+          </span>
         </Link>
       </div>
 

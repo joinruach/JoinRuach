@@ -305,8 +305,8 @@ export default async function MediaDetail({ params }: Props){
         <section className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Related Media</h2>
-            <Link href="/media" className="text-sm font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-300 dark:hover:text-amber-200">
-              Browse all media →
+            <Link href="/media">
+              <span className="text-sm font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-300 dark:hover:text-amber-200">Browse all media →</span>
             </Link>
           </div>
           <div className="rounded-3xl border border-neutral-200 bg-white p-8 text-neutral-900 dark:border-white/10 dark:bg-white dark:text-neutral-900">

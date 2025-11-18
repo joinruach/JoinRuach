@@ -124,11 +124,10 @@ export default async function SeriesDetailPage({ params }: Props) {
         <div className="grid lg:grid-cols-2 gap-8 p-8 lg:p-12">
           <div className="space-y-6">
             <div>
-              <Link
-                href="/series"
-                className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition"
-              >
-                ← Back to Series
+              <Link href="/series">
+                <span className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition">
+                  ← Back to Series
+                </span>
               </Link>
             </div>
 

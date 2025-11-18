@@ -47,11 +47,10 @@ export default async function Contact({
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {isInternalTestimonyLink ? (
-            <Link
-              href={testimonyHref}
-              className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
-            >
-              Submit a testimony →
+            <Link href={testimonyHref}>
+              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+                Submit a testimony →
+              </span>
             </Link>
           ) : (
             <a
@@ -120,17 +119,15 @@ export default async function Contact({
               Your support fuels testimonies, equips disciples, and mobilizes compassion projects across the globe. We would love to connect and dream with you.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              <Link
-                href="/give"
-                className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300"
-              >
-                Give to Ruach
+              <Link href="/give">
+                <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300">
+                  Give to Ruach
+                </span>
               </Link>
-              <Link
-                href="/community-outreach"
-                className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white"
-              >
-                Join Outreach
+              <Link href="/community-outreach">
+                <span className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white">
+                  Join Outreach
+                </span>
               </Link>
             </div>
           </div>

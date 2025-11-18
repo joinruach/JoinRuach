@@ -60,15 +60,14 @@ export default function PartnerTierCard({ tier }: PartnerTierCardProps) {
         </ul>
 
         {/* CTA */}
-        <Link
-          href={ctaHref ?? "/give"}
-          className={`block w-full rounded-full py-3 text-center text-sm font-semibold transition ${
+        <Link href={ctaHref ?? "/give"}>
+          <span className={`block w-full rounded-full py-3 text-center text-sm font-semibold transition ${
             highlighted
               ? "bg-amber-400 text-black hover:bg-amber-500"
               : "bg-neutral-900 text-white hover:bg-neutral-800"
-          }`}
-        >
-          {ctaText ?? "Become a Partner"}
+          }`}>
+            {ctaText ?? "Become a Partner"}
+          </span>
         </Link>
       </div>
     </div>

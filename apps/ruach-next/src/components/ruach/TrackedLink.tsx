@@ -11,7 +11,7 @@ type Props = LinkProps &
     eventProps?: Record<string, string>;
   };
 
-export default function TrackedLink({ event, eventProps, onClick, ...rest }: Props) {
+export default function TrackedLink({ event, eventProps, onClick, children, ...rest }: Props) {
   function handleClick(eventObj: MouseEvent<HTMLAnchorElement>) {
     if (onClick) {
       onClick(eventObj);
@@ -21,5 +21,5 @@ export default function TrackedLink({ event, eventProps, onClick, ...rest }: Pro
     }
   }
 
-  return <Link {...rest} onClick={handleClick} />;
+  return <Link {...rest} onClick={handleClick}>{children}</Link>;
 }

@@ -29,25 +29,27 @@ export default function Header() {
     <header className="fixed left-0 top-0 z-50 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-md shadow-sm dark:border-white/10 dark:bg-neutral-950/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-8">
-          <Link href="/" aria-label="Ruach Ministries Home" className="flex items-center gap-3">
-            <Image
-              src="/ruach-logo.svg"
-              alt="Ruach Ministries logo"
-              width={42}
-              height={42}
-              className="h-11 w-11"
-              priority
-            />
-            <div className="hidden leading-tight sm:flex sm:flex-col">
-              <span className="text-base font-bold uppercase tracking-[0.35em] text-ruachDark dark:text-white">
-                Ruach
+          <Link href="/" aria-label="Ruach Ministries Home">
+            <span className="flex items-center gap-3">
+              <Image
+                src="/ruach-logo.svg"
+                alt="Ruach Ministries logo"
+                width={42}
+                height={42}
+                className="h-11 w-11"
+                priority
+              />
+              <span className="hidden leading-tight sm:flex sm:flex-col">
+                <span className="text-base font-bold uppercase tracking-[0.35em] text-ruachDark dark:text-white">
+                  Ruach
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-[0.45em] text-neutral-500 dark:text-neutral-400">
+                  Ministries
+                </span>
               </span>
-              <span className="text-xs font-semibold uppercase tracking-[0.45em] text-neutral-500 dark:text-neutral-400">
-                Ministries
+              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-300 sm:hidden">
+                Ruach Ministries
               </span>
-            </div>
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-300 sm:hidden">
-              Ruach Ministries
             </span>
           </Link>
 
@@ -65,35 +67,31 @@ export default function Header() {
           <LocaleSwitcher />
 
           {status === "authenticated" ? (
-            <Link
-              href="/logout"
-              className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold"
-            >
-              Logout
+            <Link href="/logout">
+              <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
+                Logout
+              </span>
             </Link>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold"
-              >
-                Login
+              <Link href="/login">
+                <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
+                  Login
+                </span>
               </Link>
-              <Link
-                href="/signup"
-                className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white"
-              >
-                Signup
+              <Link href="/signup">
+                <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                  Signup
+                </span>
               </Link>
             </>
           )}
 
           {primaryAction ? (
-            <Link
-              href={primaryAction.href}
-              className="rounded-lg bg-ruachGold px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-ruachGold/90"
-            >
-              {primaryAction.label}
+            <Link href={primaryAction.href}>
+              <span className="rounded-lg bg-ruachGold px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-ruachGold/90">
+                {primaryAction.label}
+              </span>
             </Link>
           ) : null}
         </div>
@@ -137,45 +135,50 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5"
                 onClick={() => setOpen(false)}
               >
-                {item.label}
+                <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
+                  {item.label}
+                </span>
               </Link>
             ))}
             {primaryAction ? (
               <Link
                 href={primaryAction.href}
-                className="flex items-center justify-center rounded-lg bg-ruachGold px-4 py-2 font-semibold text-white transition hover:bg-ruachGold/90"
                 onClick={() => setOpen(false)}
               >
-                {primaryAction.label}
+                <span className="flex items-center justify-center rounded-lg bg-ruachGold px-4 py-2 font-semibold text-white transition hover:bg-ruachGold/90">
+                  {primaryAction.label}
+                </span>
               </Link>
             ) : null}
 
             {status === "authenticated" ? (
               <Link
                 href="/logout"
-                className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5"
                 onClick={() => setOpen(false)}
               >
-                Logout
+                <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
+                  Logout
+                </span>
               </Link>
             ) : (
               <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5"
                   onClick={() => setOpen(false)}
                 >
-                  Login
+                  <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
+                    Login
+                  </span>
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white"
                   onClick={() => setOpen(false)}
                 >
-                  Signup
+                  <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                    Signup
+                  </span>
                 </Link>
               </div>
             )}

@@ -32,7 +32,7 @@ export function Button({ variant="black", size="md", className, as="button", hre
 
   if (as==="a" && href) {
     const linkProps = props as Omit<ComponentPropsWithoutRef<typeof Link>, "href">;
-    return <Link href={href} className={cls} {...linkProps} />;
+    return <Link href={href} {...linkProps}><span className={cls}>{props.children}</span></Link>;
   }
 
   const buttonProps = props as ComponentPropsWithoutRef<"button">;

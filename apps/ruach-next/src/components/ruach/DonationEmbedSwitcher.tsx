@@ -67,8 +67,8 @@ export default function DonationEmbedSwitcher({ givebutterUrl, givebutterEmbedHt
           />
           <p className="text-xs text-white/60">
             Need help with your partnership?{" "}
-            <Link href="/contact" className="text-amber-300 hover:text-amber-200">
-              Contact our team
+            <Link href="/contact">
+              <span className="text-amber-300 hover:text-amber-200">Contact our team</span>
             </Link>
             .
           </p>

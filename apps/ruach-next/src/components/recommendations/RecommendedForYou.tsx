@@ -117,8 +117,8 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
             <Link
               key={`${item.contentType}-${item.contentId}-${index}`}
               href={item.url}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-amber-500/50 hover:bg-white/10"
             >
+              <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-amber-500/50 hover:bg-white/10">
               {/* Thumbnail */}
               {item.thumbnailUrl ? (
                 <div className="relative aspect-video w-full overflow-hidden">
@@ -181,6 +181,7 @@ export default async function RecommendedForYou({ userId, limit = 6, contentType
                 {/* Reason */}
                 <p className="text-xs italic text-amber-500/80">{item.reason}</p>
               </div>
+            </div>
             </Link>
           ))}
         </div>

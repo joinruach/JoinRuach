@@ -38,7 +38,7 @@ export default async function PrayerWallFeed() {
           </li>
         ))}
       </ul>
-      <Link className="mt-4 inline-block underline" href="/contact">Post a prayer →</Link>
+      <Link href="/contact"><span className="mt-4 inline-block underline">Post a prayer →</span></Link>
     </div>
   );
 }

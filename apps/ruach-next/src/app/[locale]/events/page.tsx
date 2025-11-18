@@ -21,8 +21,8 @@ export default async function EventsPage(){
             <Link
               key={event.id}
               href={`/events/${a.slug}`}
-              className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5 transition hover:border-amber-300/60"
             >
+              <div className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5 transition hover:border-amber-300/60">
               <div className="relative aspect-[4/3] bg-white/5">
                 {a.cover?.data?.attributes?.url ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -46,6 +46,7 @@ export default async function EventsPage(){
                   <p className="line-clamp-3 text-white/70">{a.description}</p>
                 ) : null}
               </div>
+            </div>
             </Link>
           );
         })}

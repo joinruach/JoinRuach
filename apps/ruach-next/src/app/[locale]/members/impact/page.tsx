@@ -99,11 +99,10 @@ export default async function ImpactDashboardPage() {
               </div>
             </div>
           </div>
-          <Link
-            href="/partners"
-            className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
-          >
-            Upgrade Partnership
+          <Link href="/partners">
+            <span className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10">
+              Upgrade Partnership
+            </span>
           </Link>
         </div>
       </section>
@@ -118,11 +117,10 @@ export default async function ImpactDashboardPage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-white">Donation History</h2>
-          <Link
-            href="/give"
-            className="text-sm font-semibold text-amber-300 hover:text-amber-200"
-          >
-            Make a Donation →
+          <Link href="/give">
+            <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">
+              Make a Donation →
+            </span>
           </Link>
         </div>
         <DonationHistory donations={donationHistory} />
@@ -140,11 +138,10 @@ export default async function ImpactDashboardPage() {
             <p className="text-sm text-white/70">
               Access partner-only videos, behind-the-scenes content, and early releases.
             </p>
-            <Link
-              href="/members/downloads"
-              className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200"
-            >
-              Browse Content →
+            <Link href="/members/downloads">
+              <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
+                Browse Content →
+              </span>
             </Link>
           </div>
 
@@ -172,11 +169,10 @@ export default async function ImpactDashboardPage() {
             <p className="text-sm text-white/70">
               Receive appreciation gifts and ministry resources throughout the year.
             </p>
-            <Link
-              href="/members/account"
-              className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200"
-            >
-              Update Shipping Info →
+            <Link href="/members/account">
+              <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
+                Update Shipping Info →
+              </span>
             </Link>
           </div>
 
@@ -188,11 +184,10 @@ export default async function ImpactDashboardPage() {
             <p className="text-sm text-white/70">
               Submit prayer requests and receive intercession from our team.
             </p>
-            <Link
-              href="/contact"
-              className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200"
-            >
-              Submit Request →
+            <Link href="/contact">
+              <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
+                Submit Request →
+              </span>
             </Link>
           </div>
         </div>

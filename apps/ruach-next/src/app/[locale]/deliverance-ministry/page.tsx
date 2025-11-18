@@ -25,9 +25,9 @@ export default async function DeliveranceMinistryPage({
         <h1 className="text-3xl font-extrabold">Deliverance Ministry — Find Freedom in Christ</h1>
         <p className="mt-3 text-white/80">Jesus still sets captives free. Discover the truth, receive ministry, and walk it out daily.</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/give" className="rounded bg-amber-500 px-5 py-2.5 text-black">Give to Set People Free</Link>
-          <Link href="/media" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Watch Testimonies</Link>
-          <Link href="/courses" className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Learn Biblical Deliverance</Link>
+          <Link href="/give"><span className="rounded bg-amber-500 px-5 py-2.5 text-black">Give to Set People Free</span></Link>
+          <Link href="/media"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Watch Testimonies</span></Link>
+          <Link href="/courses"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Learn Biblical Deliverance</span></Link>
         </div>
       </header>
       <section className="space-y-3">
@@ -41,7 +41,7 @@ export default async function DeliveranceMinistryPage({
           <li>Study key passages and renew your mind</li>
           <li>Partner with us to reach more families</li>
         </ul>
-        <Link href="/give" className="mt-4 inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Partner Monthly</Link>
+        <Link href="/give"><span className="mt-4 inline-flex rounded-lg bg-amber-500 px-4 py-2 font-semibold text-black hover:bg-amber-400">Partner Monthly</span></Link>
       </section>
     </div>
   );

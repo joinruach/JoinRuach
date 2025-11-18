@@ -52,17 +52,15 @@ export default async function OutreachStoriesIndex({ searchParams }: Props) {
           the sick, and discipling new believers.
         </p>
         <div className="mt-5 flex flex-wrap gap-3 text-sm">
-          <Link
-            href="/community-outreach"
-            className="rounded-full border border-white/20 px-4 py-2 text-white/80 transition hover:border-white hover:text-white"
-          >
-            Back to outreach overview
+          <Link href="/community-outreach">
+            <span className="rounded-full border border-white/20 px-4 py-2 text-white/80 transition hover:border-white hover:text-white">
+              Back to outreach overview
+            </span>
           </Link>
-          <Link
-            href="/community-outreach#support"
-            className="rounded-full bg-amber-400 px-4 py-2 font-semibold text-black transition hover:bg-amber-300"
-          >
-            Support outreach
+          <Link href="/community-outreach#support">
+            <span className="rounded-full bg-amber-400 px-4 py-2 font-semibold text-black transition hover:bg-amber-300">
+              Support outreach
+            </span>
           </Link>
         </div>
       </header>
