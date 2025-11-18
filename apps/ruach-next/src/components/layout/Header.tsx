@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { useSession } from "next-auth/react";
 import { NavLink } from "@ruach/components/components/ruach/ui/NavLink";
 import ThemeToggle from "@/components/theme/ThemeToggle";
@@ -29,7 +29,7 @@ export default function Header() {
     <header className="fixed left-0 top-0 z-50 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-md shadow-sm dark:border-white/10 dark:bg-neutral-950/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-8">
-          <Link href="/" aria-label="Ruach Ministries Home">
+          <LocalizedLink href="/" aria-label="Ruach Ministries Home">
             <span className="flex items-center gap-3">
               <Image
                 src="/ruach-logo.svg"
@@ -51,7 +51,7 @@ export default function Header() {
                 Ruach Ministries
               </span>
             </span>
-          </Link>
+          </LocalizedLink>
 
           <div className="hidden items-center gap-6 lg:flex">
             {primaryLinks.map((item) => (
@@ -67,32 +67,32 @@ export default function Header() {
           <LocaleSwitcher />
 
           {status === "authenticated" ? (
-            <Link href="/logout">
+            <LocalizedLink href="/logout">
               <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
                 Logout
               </span>
-            </Link>
+            </LocalizedLink>
           ) : (
             <>
-              <Link href="/login">
+              <LocalizedLink href="/login">
                 <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
                   Login
                 </span>
-              </Link>
-              <Link href="/signup">
+              </LocalizedLink>
+              <LocalizedLink href="/signup">
                 <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
                   Signup
                 </span>
-              </Link>
+              </LocalizedLink>
             </>
           )}
 
           {primaryAction ? (
-            <Link href={primaryAction.href}>
+            <LocalizedLink href={primaryAction.href}>
               <span className="rounded-lg bg-ruachGold px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-ruachGold/90">
                 {primaryAction.label}
               </span>
-            </Link>
+            </LocalizedLink>
           ) : null}
         </div>
 
@@ -132,7 +132,7 @@ export default function Header() {
         <div className="border-t border-neutral-200 bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-white/10 dark:bg-neutral-900">
           <div className="space-y-2">
             {primaryLinks.map((item) => (
-              <Link
+              <LocalizedLink
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
@@ -140,46 +140,46 @@ export default function Header() {
                 <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
                   {item.label}
                 </span>
-              </Link>
+              </LocalizedLink>
             ))}
             {primaryAction ? (
-              <Link
+              <LocalizedLink
                 href={primaryAction.href}
                 onClick={() => setOpen(false)}
               >
                 <span className="flex items-center justify-center rounded-lg bg-ruachGold px-4 py-2 font-semibold text-white transition hover:bg-ruachGold/90">
                   {primaryAction.label}
                 </span>
-              </Link>
+              </LocalizedLink>
             ) : null}
 
             {status === "authenticated" ? (
-              <Link
+              <LocalizedLink
                 href="/logout"
                 onClick={() => setOpen(false)}
               >
                 <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
                   Logout
                 </span>
-              </Link>
+              </LocalizedLink>
             ) : (
               <div className="flex flex-col gap-2">
-                <Link
+                <LocalizedLink
                   href="/login"
                   onClick={() => setOpen(false)}
                 >
                   <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
                     Login
                   </span>
-                </Link>
-                <Link
+                </LocalizedLink>
+                <LocalizedLink
                   href="/signup"
                   onClick={() => setOpen(false)}
                 >
                   <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
                     Signup
                   </span>
-                </Link>
+                </LocalizedLink>
               </div>
             )}
           </div>
