@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "next-intl/link";
 import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import EmbedScript from "@/components/ruach/embeds/EmbedScript";
 import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";

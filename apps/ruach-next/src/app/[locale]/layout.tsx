@@ -100,7 +100,7 @@ export default async function LocaleLayout({
         <meta name="theme-color" content="#fbbf24" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
       </head>
-      <body className="bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="bg-ruachSoft text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {plausibleDomain ? (
           <Script
             defer
@@ -113,7 +113,7 @@ export default async function LocaleLayout({
             <Providers>
               <LivePreview />
               <Header />
-              <main className="mx-auto max-w-6xl px-4 py-12 lg:py-16">
+              <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 lg:pt-28">
                 {children}
               </main>
               <Footer />

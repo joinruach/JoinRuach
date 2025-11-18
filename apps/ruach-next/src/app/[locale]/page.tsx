@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { Suspense } from "react";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";

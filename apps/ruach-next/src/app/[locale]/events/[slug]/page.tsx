@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getEventBySlug, imgUrl } from "@/lib/strapi";
 import { LiveIndicator, LivestreamPlayer, UpcomingStream } from "@/components/livestream";
 import { isStreamLive, getLivestreamStatus, extractYouTubeVideoId } from "@/lib/livestream";

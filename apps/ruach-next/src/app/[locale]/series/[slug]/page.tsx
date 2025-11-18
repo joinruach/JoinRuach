@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next-intl/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getSeriesBySlug, imgUrl } from "@/lib/strapi";

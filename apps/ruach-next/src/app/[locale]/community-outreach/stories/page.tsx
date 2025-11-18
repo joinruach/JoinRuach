@@ -1,6 +1,6 @@
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getOutreachStories } from "@/lib/strapi";
 import { mapStoryToMediaCard } from "../story-helpers";
 

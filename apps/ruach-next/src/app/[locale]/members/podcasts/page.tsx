@@ -1,6 +1,6 @@
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getMediaItems } from "@/lib/strapi";
 import { extractAttributes, extractManyRelation, extractSingleRelation } from "@/lib/strapi-normalize";

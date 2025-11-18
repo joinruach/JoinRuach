@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getUser } from "@/lib/strapi-user";
 import ImpactMetrics from "@/components/partners/ImpactMetrics";
 import DonationHistory from "@/components/partners/DonationHistory";

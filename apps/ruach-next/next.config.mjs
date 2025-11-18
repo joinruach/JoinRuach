@@ -1,5 +1,9 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import withPWA from "@ducanh2912/next-pwa";
 import createNextIntlPlugin from 'next-intl/plugin';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
@@ -90,6 +94,13 @@ const nextConfig = {
     // Suppress warnings for optional @resvg platform-specific binaries
     config.ignoreWarnings = config.ignoreWarnings || [];
     config.ignoreWarnings.push({ module: /node_modules\/@resvg\/resvg-js/ });
+
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+    config.resolve.alias["next-intl/link"] = path.resolve(
+      __dirname,
+      "src/components/navigation/LocalizedLink.tsx"
+    );
 
     return config;
   },

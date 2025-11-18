@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import DonationEmbedSwitcher from "@/components/ruach/DonationEmbedSwitcher";
 import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";
 import TrackedLink from "@/components/ruach/TrackedLink";

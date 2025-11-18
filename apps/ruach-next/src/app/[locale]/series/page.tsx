@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import Image from "next/image";
 import { getAllSeries, imgUrl } from "@/lib/strapi";
 import { extractAttributes, extractSingleRelation } from "@/lib/strapi-normalize";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getMediaCategories, getMediaItems } from "@/lib/strapi";

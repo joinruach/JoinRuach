@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import LessonPlayer from "@/components/ruach/LessonPlayer";
 import LessonTranscript from "@/components/ruach/LessonTranscript";
 import LessonDiscussion, { type Comment } from "@/components/ruach/LessonDiscussion";

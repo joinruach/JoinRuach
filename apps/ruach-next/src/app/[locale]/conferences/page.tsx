@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import EmbedScript from "@/components/ruach/embeds/EmbedScript";
 import SpeakerCard from "@/components/ruach/SpeakerCard";
 import { getConferencePage, getEvents, imgUrl } from "@/lib/strapi";

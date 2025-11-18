@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";

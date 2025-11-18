@@ -6,7 +6,15 @@ const config: Config = {
   darkMode: "class",
   content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
   presets: [preset],
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      colors: {
+        ruachSoft: "#F8F8F6",
+        ruachGold: "#D8A85E",
+        ruachDark: "#1A1A1A",
+      },
+    },
+  },
   plugins: [typography],
 };
 

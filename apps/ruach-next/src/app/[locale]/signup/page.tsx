@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { Button } from "@/components/ruach/ui/Button";
 import { track } from "@/lib/analytics";
 

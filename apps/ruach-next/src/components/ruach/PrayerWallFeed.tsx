@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getPrayers } from "@/lib/strapi";
 
 const createdAtFormatter = new Intl.DateTimeFormat("en-US", {

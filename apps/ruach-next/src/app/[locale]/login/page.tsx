@@ -2,7 +2,7 @@
 import { signIn } from "next-auth/react";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { Button } from "@/components/ruach/ui/Button";
 
 function LoginForm() {

@@ -1,6 +1,7 @@
 "use client";
 
-import Link, { type LinkProps } from "next/link";
+import Link from "next-intl/link";
+import type { LinkProps } from "next/link";
 import { track } from "@/lib/analytics";
 import type { AnchorHTMLAttributes, MouseEvent } from "react";
 

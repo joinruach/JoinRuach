@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getBlogPosts, imgUrl, type BlogPostEntity } from "@/lib/strapi";
 import TrackedLink from "@/components/ruach/TrackedLink";

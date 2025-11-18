@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import Link from "next/link";
+import Link from "next-intl/link";
 import type { ComponentPropsWithoutRef } from "react";
 
 type ButtonVariant = "black" | "white" | "gold";

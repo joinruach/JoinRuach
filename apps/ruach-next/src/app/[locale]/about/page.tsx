@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Link from "next/link";
+import Link from "next-intl/link";
 import { imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-static";

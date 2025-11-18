@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 
 type PartnerTier = {
   name: string;

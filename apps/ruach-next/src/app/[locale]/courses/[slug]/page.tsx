@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getServerSession } from "next-auth";
 import type { AuthOptions } from "next-auth";
 import { notFound } from "next/navigation";

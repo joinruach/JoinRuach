@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
 import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, imgUrl } from "@/lib/strapi";

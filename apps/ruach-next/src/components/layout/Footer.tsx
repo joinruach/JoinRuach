@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 
 type SocialPlatform = "instagram" | "youtube" | "facebook" | "spotify";

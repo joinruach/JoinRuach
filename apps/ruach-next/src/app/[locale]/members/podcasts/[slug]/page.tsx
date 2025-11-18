@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { notFound } from "next/navigation";
 import AudioPlayer from "@/components/ruach/AudioPlayer";
 import MediaPlayer from "@/components/ruach/MediaPlayer";

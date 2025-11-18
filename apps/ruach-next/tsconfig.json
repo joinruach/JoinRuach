@@ -11,6 +11,9 @@
       ],
       "@ruach/addons/*": [
         "../../packages/ruach-next-addons/src/*"
+      ],
+      "next-intl/link": [
+        "src/components/navigation/LocalizedLink.tsx"
       ]
     },
     "incremental": true,

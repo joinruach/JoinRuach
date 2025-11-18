@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import { getEvents, imgUrl } from "@/lib/strapi";
 
 export default async function EventsPage(){

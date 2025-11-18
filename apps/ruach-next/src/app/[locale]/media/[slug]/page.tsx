@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next-intl/link";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
