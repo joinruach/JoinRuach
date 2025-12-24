@@ -116,4 +116,85 @@ module.exports = async ({ strapi } = {}) => {
   advancedSettings.email_reset_password = resetRedirect;
 
   await pluginStore.set({ key: "advanced", value: advancedSettings });
+
+  // ============================================================================
+  // Configure Webhooks for Cache Revalidation
+  // ============================================================================
+  const frontendUrl = getEnv("FRONTEND_URL", "https://www.joinruach.org");
+  const revalidateSecret = getEnv("STRAPI_REVALIDATE_SECRET", "");
+
+  if (!frontendUrl || !revalidateSecret) {
+    strapi.log.warn(
+      "⚠️  Skipping webhook configuration: FRONTEND_URL or STRAPI_REVALIDATE_SECRET not set"
+    );
+    return;
+  }
+
+  const webhookStore = strapi.store({ type: "core", name: "webhook" });
+  const existingWebhooks = (await webhookStore.get({ key: "webhooks" })) || [];
+
+  const revalidateWebhookUrl = `${trimTrailingSlash(frontendUrl)}/api/strapi-revalidate`;
+
+  // Check if webhook already exists
+  const webhookExists = existingWebhooks.some(
+    (webhook) => webhook.url === revalidateWebhookUrl
+  );
+
+  if (webhookExists) {
+    strapi.log.info("✅ Cache revalidation webhook already configured");
+    return;
+  }
+
+  // Content types that should trigger revalidation
+  const contentTypesToWatch = [
+    "api::media-item.media-item",
+    "api::course.course",
+    "api::blog-post.blog-post",
+    "api::event.event",
+    "api::article.article",
+    "api::series.series",
+    "api::outreach-story.outreach-story",
+  ];
+
+  const newWebhook = {
+    name: "Frontend Cache Revalidation",
+    url: revalidateWebhookUrl,
+    headers: {
+      "Content-Type": "application/json",
+      "x-ruach-signature": revalidateSecret,
+    },
+    events: [
+      "entry.publish",
+      "entry.unpublish",
+      "entry.update",
+      "entry.delete",
+    ],
+    enabled: true,
+  };
+
+  // Add webhook to store
+  const updatedWebhooks = [...existingWebhooks, newWebhook];
+  await webhookStore.set({ key: "webhooks", value: updatedWebhooks });
+
+  strapi.log.info("✅ Cache revalidation webhook configured successfully");
+  strapi.log.info(`   → URL: ${revalidateWebhookUrl}`);
+  strapi.log.info(`   → Watching: ${contentTypesToWatch.length} content types`);
+
+  // ============================================================================
+  // Initialize Redis for Global State Management
+  // ============================================================================
+  try {
+    const redisService = require('../src/services/redis');
+    const redisClient = await redisService.initialize();
+
+    // Make Redis available globally on strapi instance
+    strapi.redis = redisClient;
+
+    strapi.log.info('✅ Redis service initialized for state management');
+  } catch (error) {
+    strapi.log.error('⚠️ Failed to initialize Redis service', {
+      error: error.message,
+    });
+    strapi.log.warn('Direct upload functionality will be unavailable');
+  }
 };

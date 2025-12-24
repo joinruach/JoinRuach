@@ -110,21 +110,59 @@ module.exports = async ({ strapi }) => {
     });
 
     publishWorker.on('failed', async (job, error) => {
+      const { mediaItem, platform } = job.data;
+      const attemptsMade = job.attemptsMade || 0;
+      const maxAttempts = 3;
+      const isFinalFailure = attemptsMade >= maxAttempts;
+
       logger.error(`Job failed: ${job.id}`, {
         category: 'publisher',
         jobId: job.id,
-        platform: job.data.platform,
+        platform,
         error: error.message,
         stack: error.stack,
+        attemptsMade,
+        isFinalFailure,
       });
 
       // Update publishStatus in media-item
-      await updatePublishStatus(job.data.mediaItem.id, job.data.platform, {
+      await updatePublishStatus(mediaItem.id, platform, {
         status: 'failed',
         error: error.message,
         failedAt: new Date().toISOString(),
-        attempts: job.attemptsMade,
+        attempts: attemptsMade,
       });
+
+      // Send failure notification
+      try {
+        const notificationService = strapi
+          .plugin('ruach-publisher')
+          .service('notifications');
+
+        if (isFinalFailure) {
+          // All retries exhausted - send urgent notification
+          await notificationService.notifyFinalFailure(
+            mediaItem,
+            platform,
+            error,
+            maxAttempts
+          );
+        } else {
+          // Still retrying - send standard notification
+          await notificationService.notifyPublishingFailure(
+            mediaItem,
+            platform,
+            error,
+            attemptsMade
+          );
+        }
+      } catch (notificationError) {
+        // Don't let notification failures break the workflow
+        logger.error('Failed to send failure notification', {
+          category: 'publisher',
+          error: notificationError.message,
+        });
+      }
     });
 
     publishWorker.on('error', (error) => {

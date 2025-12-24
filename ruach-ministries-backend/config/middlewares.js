@@ -145,14 +145,20 @@ module.exports = [
   {
     name: 'strapi::body',
     config: {
-      formLimit: '500mb',  // Increased for large file uploads
-      jsonLimit: '500mb',  // Increased for large file uploads
-      textLimit: '500mb',  // Increased for large file uploads
+      formLimit: '50mb',  // Reasonable limit for form data
+      jsonLimit: '10mb',  // Reasonable limit for JSON payloads
+      textLimit: '10mb',  // Reasonable limit for text data
       formidable: {
-        maxFileSize: 4 * 1024 * 1024 * 1024,  // 4GB max
-        timeout: 600000,  // 10 minutes
+        maxFileSize: 2 * 1024 * 1024 * 1024,  // 2GB max (validated per-type by upload-validator)
+        timeout: 1200000,  // 20 minutes for large video uploads
       },
     },
+  },
+
+  // Upload validation middleware (validates file types, sizes, dimensions)
+  {
+    name: 'global::upload-validator',
+    config: {},
   },
 
   'strapi::session',

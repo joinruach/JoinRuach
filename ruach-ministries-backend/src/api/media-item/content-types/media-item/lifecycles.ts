@@ -1,4 +1,5 @@
 import createSlugFreezeLifecycle from '../../../../utils/freeze-slug';
+import { revalidateContent } from '../../../../utils/cache-revalidation';
 
 type LifecycleEvent = {
   result: Record<string, any>;
@@ -26,6 +27,15 @@ export default {
     }
 
     const { result } = event;
+
+    // Trigger cache revalidation if published
+    if (result.publishedAt) {
+      const additionalTags = ['media-items'];
+      if (result.category) {
+        additionalTags.push(`media-category:${result.category}`);
+      }
+      await revalidateContent('api::media-item.media-item', result, additionalTags);
+    }
 
     // Check if the media item was just published AND has autoPublish enabled
     if (result.publishedAt && result.autoPublish) {
@@ -66,6 +76,15 @@ export default {
 
     const { result } = event;
 
+    // Trigger cache revalidation if published
+    if (result.publishedAt) {
+      const additionalTags = ['media-items'];
+      if (result.category) {
+        additionalTags.push(`media-category:${result.category}`);
+      }
+      await revalidateContent('api::media-item.media-item', result, additionalTags);
+    }
+
     // Check if created as published with autoPublish enabled
     if (result.publishedAt && result.autoPublish) {
       // Check if at least one platform is enabled
@@ -86,5 +105,19 @@ export default {
         }
       }
     }
+  },
+
+  /**
+   * After Delete Hook
+   * Triggered when a media-item is deleted
+   */
+  async afterDelete(event: LifecycleEvent) {
+    const { result } = event;
+    // Revalidate to remove from cache
+    const additionalTags = ['media-items'];
+    if (result.category) {
+      additionalTags.push(`media-category:${result.category}`);
+    }
+    await revalidateContent('api::media-item.media-item', result, additionalTags);
   },
 };

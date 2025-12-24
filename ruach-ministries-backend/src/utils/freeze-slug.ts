@@ -51,7 +51,13 @@ function throwValidationError(message: string): never {
   throw error;
 }
 
-export function createSlugFreezeLifecycle(uid: string) {
+type SlugLifecycle = {
+  beforeUpdate(event: BeforeUpdateEvent): Promise<void>;
+  afterCreate?(event: any): Promise<void>;
+  afterUpdate?(event: any): Promise<void>;
+};
+
+export function createSlugFreezeLifecycle(uid: string): SlugLifecycle {
   return {
     async beforeUpdate(event: BeforeUpdateEvent) {
       const data = event.params?.data;
