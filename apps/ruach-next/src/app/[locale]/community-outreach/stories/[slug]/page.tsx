@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
@@ -83,19 +83,19 @@ export default async function OutreachStoryPage({ params }: Props) {
   return (
     <article className="space-y-12">
       <nav className="text-sm">
-        <Link href="/community-outreach">
+        <LocalizedLink href="/community-outreach">
           <span className="text-amber-300 hover:text-amber-200">← Back to Community Outreach</span>
-        </Link>
+        </LocalizedLink>
       </nav>
 
-      <header className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-10 text-white">
-        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-white/60">
+      <header className="space-y-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-10 text-zinc-900 dark:text-white">
+        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-zinc-500 dark:text-white/60">
           <span>{storyDate ?? "Outreach Story"}</span>
           {campaign?.name ? <span>• {campaign.name}</span> : null}
         </div>
-        <h1 className="text-3xl font-semibold text-white">{attributes.title}</h1>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">{attributes.title}</h1>
         {attributes.summary ? (
-          <p className="max-w-2xl text-sm text-white/70">{attributes.summary}</p>
+          <p className="max-w-2xl text-sm text-zinc-600 dark:text-white/70">{attributes.summary}</p>
         ) : null}
         {heroMedia ? (
           <Image
@@ -103,13 +103,13 @@ export default async function OutreachStoryPage({ params }: Props) {
             alt={heroMedia.alternativeText || attributes.title}
             width={heroMedia.width || 1200}
             height={heroMedia.height || 630}
-            className="w-full rounded-3xl border border-white/10 object-cover"
+            className="w-full rounded-3xl border border-zinc-200 dark:border-white/10 object-cover"
             priority
           />
         ) : null}
       </header>
 
-      <section className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
         <div
           className="prose prose-neutral max-w-none"
           dangerouslySetInnerHTML={{ __html: attributes.body ?? "" }}
@@ -129,19 +129,19 @@ export default async function OutreachStoryPage({ params }: Props) {
       </section>
 
       {campaign ? (
-        <section className="rounded-3xl border border-white/10 bg-black/40 p-8 text-white">
-          <h2 className="text-xl font-semibold text-white">About this Campaign</h2>
+        <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-zinc-900 shadow-sm dark:border-white/10 dark:bg-black/40 dark:text-white dark:shadow-none">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">About this Campaign</h2>
           {campaign.summary ? (
-            <p className="mt-3 text-sm text-white/70">{campaign.summary}</p>
+            <p className="mt-3 text-sm text-zinc-600 dark:text-white/70">{campaign.summary}</p>
           ) : null}
           {campaign.donationLink ? (
-            <Link href={campaign.donationLink}>
+            <LocalizedLink href={campaign.donationLink}>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200">
                 Support this campaign →
               </span>
-            </Link>
+            </LocalizedLink>
           ) : campaign.giveCode ? (
-            <p className="mt-5 text-xs uppercase tracking-[0.3em] text-white/60">
+            <p className="mt-5 text-xs uppercase tracking-[0.3em] text-zinc-500 dark:text-white/60">
               Give Code: {campaign.giveCode}
             </p>
           ) : null}
@@ -151,12 +151,12 @@ export default async function OutreachStoryPage({ params }: Props) {
       {relatedStories.length > 0 ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">More outreach impact</h2>
-            <Link href="/community-outreach/stories">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">More outreach impact</h2>
+            <LocalizedLink href="/community-outreach/stories">
               <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">View all stories →</span>
-            </Link>
+            </LocalizedLink>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
             <MediaGrid items={relatedStories} />
           </div>
         </section>

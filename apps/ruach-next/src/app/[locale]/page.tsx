@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Suspense } from "react";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
@@ -147,79 +147,75 @@ export default async function Home({
   return (
     <div className="space-y-16">
       <SEOHead jsonLd={organizationSchema} />
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent px-6 py-16 shadow-2xl sm:px-10">
+      <section className="relative overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent px-6 py-16 shadow-2xl sm:px-10">
         <div className="relative z-10 max-w-3xl space-y-6">
-          <span className="text-xs uppercase tracking-[0.4em] text-white/70">Ruach Ministries</span>
-          <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+          <span className="text-xs uppercase tracking-[0.4em] text-zinc-600 dark:text-white/70">Ruach Ministries</span>
+          <h1 className="text-4xl font-semibold leading-tight text-zinc-900 dark:text-white sm:text-5xl">
             Ruach is a prophetic media ministry that forms, equips, and sends believers to carry freedom and establish Kingdom communities.
           </h1>
-          <p className="text-lg text-white/80">
+          <p className="text-lg text-zinc-700 dark:text-white/80">
             We tell testimonies, disciple believers in the Word and the gifts of the Spirit, and mobilize outreach teams—so what God does in private lives is carried into public places.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link
+            <LocalizedLink
               href="/start"
             >
               <span className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400">
                 Start Here
               </span>
-            </Link>
-            <Link
+            </LocalizedLink>
+            <LocalizedLink
               href="/media"
             >
-              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+              <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-2.5 text-sm font-semibold text-zinc-800 dark:text-white/90 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
                 Watch Testimonies
               </span>
-            </Link>
-            <Link
+            </LocalizedLink>
+            <LocalizedLink
               href="/community-outreach"
             >
-              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+              <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-2.5 text-sm font-semibold text-zinc-800 dark:text-white/90 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
                 Join the Community
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_40%),radial-gradient(circle_at_80%_40%,rgba(255,120,0,0.2),transparent_45%)]" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr,1.1fr]">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-          <div className="text-xs uppercase tracking-wide text-white/60">Mission Statement</div>
-                <p className="mt-4 text-3xl font-bold text-center text-white">
-        Spirit-Led Media. Bold Truth. Kingdom Impact.
-      </p>
-        <p className="mt-4 text-2xl font-semibold text-white"> 
-          Ruach Ministries exists to awaken sons and daughters to Jesus, equipping them in the Word and the gifts of the Spirit, so they can carry the breath of God into every sphere of culture.
-        </p>
+        <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8">
+          <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Mission Statement</div>
+          <p className="mt-4 text-3xl font-bold text-center text-zinc-900 dark:text-white">
+            Spirit-Led Media. Bold Truth. Kingdom Impact.
+          </p>
+          <p className="mt-4 text-2xl font-semibold text-zinc-900 dark:text-white">
+            Ruach Ministries exists to awaken sons and daughters to Jesus, equipping them in the Word and the gifts of the Spirit, so they can carry the breath of God into every sphere of culture.
+          </p>
         </div>
-        <div className="rounded-3xl border border-amber-300/40 bg-amber-500/10 p-8">
-          <div className="text-xs uppercase tracking-wide text-amber-200">Get Involved</div>
-          <p className="mt-4 text-sm text-amber-100/80">
+        <div className="rounded-3xl border border-zinc-200 bg-surface p-8 shadow-sm dark:border-white/10 dark:bg-white/5">
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Get Involved</h3>
+          <p className="mt-4 text-sm leading-relaxed text-zinc-700 dark:text-white/80">
             Partner with Ruach as we disciple nations, cultivate community, and tell stories that unlock freedom.
           </p>
           <div className="mt-6 flex flex-col gap-3">
-            <Link
-              href="/give"
-            >
+            <LocalizedLink href="/give">
               <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 font-semibold text-black transition hover:bg-amber-300">
                 Become a Partner
               </span>
-            </Link>
-            <Link
-              href="/community-outreach"
-            >
-              <span className="inline-flex items-center justify-center rounded-full border border-amber-200/60 px-5 py-2 font-semibold text-amber-100 transition hover:border-amber-100">
-                Join Community Outreach
+            </LocalizedLink>
+            <LocalizedLink href="/community-outreach">
+              <span className="inline-flex items-center gap-1 text-amber-700 font-medium hover:text-amber-800 underline-offset-4 hover:underline">
+                Join Community Outreach →
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </section>
 
       {featuredAttributes ? (
         <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
-          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white text-neutral-900 shadow-xl">
+          <div className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white text-neutral-900 shadow-xl">
             <div className="relative aspect-video bg-neutral-200">
               {featuredThumbnail?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -236,23 +232,23 @@ export default async function Home({
               {featuredAttributes.description ? (
                 <p className="text-neutral-600">{featuredAttributes.description}</p>
               ) : null}
-              <Link href={`/media/${featuredAttributes.slug}`}>
+              <LocalizedLink href={`/media/${featuredAttributes.slug}`}>
                 <span className="inline-flex items-center text-sm font-semibold text-amber-700 hover:text-amber-600">Watch the story →</span>
-              </Link>
+              </LocalizedLink>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/80">
-            <h3 className="text-lg font-semibold text-white">Why Stories Matter</h3>
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-700 dark:text-white/80">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Why Stories Matter</h3>
             <p className="mt-3">
               Every testimony is a breath of the Spirit—evidence that Jesus is still setting captives free. Share these stories with friends who need hope.
             </p>
-            <Link
+            <LocalizedLink
               href="/media"
             >
-              <span className="mt-6 inline-flex items-center rounded-full border border-white/20 px-5 py-2 font-semibold text-white/80 transition hover:border-white hover:text-white">
+              <span className="mt-6 inline-flex items-center rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
                 Explore the media library
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </section>
       ) : null}
@@ -261,14 +257,14 @@ export default async function Home({
         <section className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="text-xs uppercase tracking-wide text-white/60">Featured Media</span>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Testimonies of Freedom</h2>
+              <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Featured Media</span>
+              <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">Testimonies of Freedom</h2>
             </div>
-            <Link href="/media">
+            <LocalizedLink href="/media">
               <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">View all media →</span>
-            </Link>
+            </LocalizedLink>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
             <MediaGrid items={testimonyList} />
           </div>
         </section>
@@ -278,14 +274,14 @@ export default async function Home({
         <section className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="text-xs uppercase tracking-wide text-white/60">Featured Courses</span>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Grow as a Disciple</h2>
+              <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Featured Courses</span>
+              <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">Grow as a Disciple</h2>
             </div>
-            <Link href="/courses">
+            <LocalizedLink href="/courses">
               <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Explore courses →</span>
-            </Link>
+            </LocalizedLink>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
             <CourseGrid courses={courseList} />
           </div>
         </section>
@@ -295,17 +291,17 @@ export default async function Home({
         <section className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="text-xs uppercase tracking-wide text-white/60">Upcoming Events</span>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Conferences & Gatherings</h2>
+              <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Upcoming Events</span>
+              <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">Conferences & Gatherings</h2>
             </div>
-            <Link href="/conferences">
+            <LocalizedLink href="/conferences">
               <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">See all conferences →</span>
-            </Link>
+            </LocalizedLink>
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
             {eventCards.map((event) => (
-              <div key={event.slug} className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5">
-                <div className="relative aspect-[4/3] bg-white/5">
+              <div key={event.slug} className="flex h-full flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5">
+                <div className="relative aspect-[4/3] bg-white dark:bg-white/5">
                   {event.cover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -316,26 +312,26 @@ export default async function Home({
                   ) : null}
                 </div>
                 <div className="flex flex-1 flex-col gap-3 p-6">
-                  <div className="text-xs uppercase tracking-wide text-white/60">
+                  <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
                     {event.date ? new Date(event.date).toLocaleDateString() : "Coming Soon"}
                   </div>
-                  <h3 className="text-xl font-semibold text-white">{event.title}</h3>
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">{event.title}</h3>
                   {event.description ? (
-                    <p className="text-sm text-white/70">{event.description}</p>
+                    <p className="text-sm text-zinc-600 dark:text-white/70">{event.description}</p>
                   ) : null}
                   {event.location ? (
-                    <div className="text-xs font-semibold uppercase tracking-wide text-white/50">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-white/50">
                       {event.location}
                     </div>
                   ) : null}
                   <div className="mt-auto">
-                    <Link
+                    <LocalizedLink
                       href={`/events/${event.slug}`}
                     >
-                      <span className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+                      <span className="inline-flex items-center rounded-full border border-zinc-300 dark:border-white/20 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
                         View details
                       </span>
-                    </Link>
+                    </LocalizedLink>
                   </div>
                 </div>
               </div>
@@ -351,50 +347,48 @@ export default async function Home({
       ) : null}
 
       {/* Builder Callout - Carry the Fire */}
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="max-w-2xl space-y-3">
-          <span className="text-xs uppercase tracking-wide text-white/60">For Builders & Senders</span>
+          <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">For Builders & Senders</span>
           <h2 className="text-2xl font-semibold">Some Are Called Beyond Participation</h2>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-zinc-600 dark:text-white/70">
             If you sense God is calling you not just to follow Ruach, but to replicate, lead, or carry what He&apos;s doing into your city—we want to equip and send you.
           </p>
-          <Link href="/carry">
-            <span className="inline-flex items-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+          <LocalizedLink href="/carry">
+            <span className="inline-flex items-center rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
               Discover the Builder Pathway →
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-amber-500/10 p-10 text-white">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <section className="py-16">
+        <div className="mx-auto flex flex-col gap-6 rounded-3xl border border-subtle bg-surface p-10 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-3">
-            <span className="text-xs uppercase tracking-[0.3em] text-amber-200">Partner With Us</span>
-            <h2 className="text-3xl font-semibold text-white">Help us disciple nations and tell stories that release freedom.</h2>
-            <p className="text-sm text-amber-100/80">
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-100 dark:text-amber-100">Partner With Us</span>
+            <h2 className="text-3xl font-semibold text-primary dark:text-white">
+              Help us disciple nations and tell stories that release freedom.
+            </h2>
+            <p className="text-sm text-secondary font-medium dark:text-white/80">
               Your giving fuels media production, conferences, and community outreach that ushers people into encounters with Jesus.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/give"
-            >
-              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-amber-300">
+            <LocalizedLink href="/give">
+            <span className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-amber-300 dark:bg-amber-500/90 dark:hover:bg-amber-400">
                 Give a One-Time Gift
               </span>
-            </Link>
-            <Link
-              href="/give#partner"
-            >
-              <span className="inline-flex items-center justify-center rounded-full border border-amber-200/70 px-6 py-3 text-sm font-semibold text-amber-100 transition hover:border-amber-100">
+            </LocalizedLink>
+            <LocalizedLink href="/give#partner">
+            <span className="inline-flex items-center justify-center rounded-full border border-amber-200/70 px-6 py-3 text-sm font-semibold text-zinc-900 transition hover:border-amber-100 dark:border-amber-300 dark:text-amber-50 dark:hover:border-amber-200">
                 Become a Monthly Partner
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white p-10 text-neutral-900">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-10 text-neutral-900">
         <div className="grid gap-8 lg:grid-cols-[1.1fr,1fr]">
           <div className="space-y-4">
             <span className="text-xs uppercase tracking-wide text-neutral-500">Stay in the Flow</span>

@@ -24,7 +24,7 @@ export default function MembersError({
         </p>
         <button
           onClick={() => reset()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          className="rounded-md bg-blue-600 px-4 py-2 text-zinc-900 dark:text-white hover:bg-blue-700"
         >
           Retry
         </button>

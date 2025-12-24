@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { getUser } from "@/lib/strapi-user";
 import ImpactMetrics from "@/components/partners/ImpactMetrics";
 import DonationHistory from "@/components/partners/DonationHistory";
@@ -11,12 +11,17 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function ImpactDashboardPage() {
+export default async function ImpactDashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   // Check authentication
   const user = await getUser();
 
   if (!user) {
-    redirect("/login?redirect=/members/impact");
+    redirect(`/${locale}/login?redirect=/${locale}/members/impact`);
   }
 
   // TODO: Fetch real partner data from Stripe/Strapi
@@ -80,9 +85,9 @@ export default async function ImpactDashboardPage() {
     <div className="space-y-10">
       {/* Header */}
       <header className="space-y-3">
-        <span className="text-xs uppercase tracking-wide text-white/60">Partner Dashboard</span>
-        <h1 className="text-3xl font-semibold text-white">Your Impact</h1>
-        <p className="text-sm text-white/70">
+        <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Partner Dashboard</span>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">Your Impact</h1>
+        <p className="text-sm text-zinc-600 dark:text-white/70">
           Track your partnership journey and see the eternal difference you&apos;re making.
         </p>
       </header>
@@ -94,63 +99,63 @@ export default async function ImpactDashboardPage() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">🌟</span>
               <div>
-                <h2 className="text-2xl font-bold text-white">{partnerTier} Partner</h2>
-                <p className="text-sm text-white/70">Member since {memberSince}</p>
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{partnerTier} Partner</h2>
+                <p className="text-sm text-zinc-600 dark:text-white/70">Member since {memberSince}</p>
               </div>
             </div>
           </div>
-          <Link href="/partners">
-            <span className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10">
+          <LocalizedLink href="/partners">
+            <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-2 text-sm font-semibold text-zinc-900 dark:text-white transition hover:border-white hover:bg-white dark:hover:bg-white/10">
               Upgrade Partnership
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
 
       {/* Impact Metrics */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-white">Your Impact Metrics</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Your Impact Metrics</h2>
         <ImpactMetrics metrics={impactMetrics} />
       </section>
 
       {/* Donation History */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-white">Donation History</h2>
-          <Link href="/give">
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Donation History</h2>
+          <LocalizedLink href="/give">
             <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">
               Make a Donation →
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
         <DonationHistory donations={donationHistory} />
       </section>
 
       {/* Partner Benefits */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-white">Your Partner Benefits</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Your Partner Benefits</h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎥</span>
-              <h3 className="text-lg font-semibold text-white">Exclusive Content</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Exclusive Content</h3>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Access partner-only videos, behind-the-scenes content, and early releases.
             </p>
-            <Link href="/members/downloads">
+            <LocalizedLink href="/members/downloads">
               <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
                 Browse Content →
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📅</span>
-              <h3 className="text-lg font-semibold text-white">Quarterly Calls</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Quarterly Calls</h3>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Join video calls with leadership to hear updates and share feedback.
             </p>
             <a
@@ -161,44 +166,44 @@ export default async function ImpactDashboardPage() {
             </a>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎁</span>
-              <h3 className="text-lg font-semibold text-white">Partner Gifts</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Partner Gifts</h3>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Receive appreciation gifts and ministry resources throughout the year.
             </p>
-            <Link href="/members/account">
+            <LocalizedLink href="/members/account">
               <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
                 Update Shipping Info →
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">💬</span>
-              <h3 className="text-lg font-semibold text-white">Prayer Support</h3>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Prayer Support</h3>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Submit prayer requests and receive intercession from our team.
             </p>
-            <Link href="/contact">
+            <LocalizedLink href="/contact">
               <span className="inline-block text-sm font-semibold text-amber-300 hover:text-amber-200">
                 Submit Request →
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </section>
 
       {/* Year-End Giving */}
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center space-y-4">
-        <h3 className="text-xl font-semibold text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-center space-y-4">
+        <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">
           Tax Receipt for Year-End Giving
         </h3>
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-zinc-600 dark:text-white/70">
           Download your complete donation statement for tax purposes.
         </p>
         <button className="rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-500">

@@ -2,7 +2,7 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Button } from "@/components/ruach/ui/Button";
 
 const SUCCESS_MESSAGE =
@@ -68,9 +68,9 @@ function ForgotPasswordForm() {
       </form>
       <p className="text-sm text-neutral-600">
         Remembered your password?{" "}
-        <Link href="/login">
+        <LocalizedLink href="/login">
           <span className="text-amber-700 underline">Return to login</span>
-        </Link>
+        </LocalizedLink>
       </p>
     </div>
   );
@@ -163,9 +163,9 @@ function ResetPasswordForm({ code }: { code: string }) {
       </form>
       <p className="text-sm text-neutral-600">
         Link expired or not working?{" "}
-        <Link href="/reset-password">
+        <LocalizedLink href="/reset-password">
           <span className="text-amber-700 underline">Request a new reset email</span>
-        </Link>
+        </LocalizedLink>
       </p>
     </div>
   );

@@ -70,20 +70,18 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <head>
         {/* Anti-flash script for theme */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem('theme') || 'system';
-                  const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  const resolved = theme === 'system' ? getSystemTheme() : theme;
-                  document.documentElement.classList.add(resolved);
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
+        <Script id="theme-init" strategy="afterInteractive">
+          {`
+            (function() {
+              try {
+                const theme = localStorage.getItem('theme') || 'system';
+                const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                const resolved = theme === 'system' ? getSystemTheme() : theme;
+                document.documentElement.classList.add(resolved);
+              } catch (e) {}
+            })();
+          `}
+        </Script>
 
         {/* Favicons */}
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />

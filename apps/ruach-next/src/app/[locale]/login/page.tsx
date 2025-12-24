@@ -2,11 +2,13 @@
 import { signIn } from "next-auth/react";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next-intl/link";
+import { useLocale } from "next-intl";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Button } from "@/components/ruach/ui/Button";
 
 function LoginForm() {
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -37,7 +39,7 @@ function LoginForm() {
         setLoading(false);
       } else {
         // Keep loading state while redirecting
-        window.location.href = res?.url || "/";
+        window.location.href = res?.url || `/${locale}`;
       }
     } catch (error) {
       setErr("Something went wrong. Please try again.");
@@ -90,7 +92,7 @@ function LoginForm() {
         </div>
       </form>
       <p className="text-sm text-neutral-600">
-        No account? <Link href="/signup"><span className="text-amber-700 underline">Create one</span></Link>
+        No account? <LocalizedLink href="/signup"><span className="text-amber-700 underline">Create one</span></LocalizedLink>
       </p>
     </div>
   );

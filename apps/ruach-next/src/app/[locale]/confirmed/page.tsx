@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 
 export default function ConfirmedPage({
   params
@@ -31,7 +31,7 @@ export default function ConfirmedPage({
 
   if (status === "loading") {
     return (
-      <main className="flex h-screen items-center justify-center bg-black text-white">
+      <main className="flex h-screen items-center justify-center bg-zinc-50 text-zinc-900 dark:bg-black dark:text-white">
         <p>Confirming your email...</p>
       </main>
     );
@@ -39,32 +39,32 @@ export default function ConfirmedPage({
 
   if (status === "success") {
     return (
-      <main className="flex h-screen items-center justify-center bg-black text-white">
+      <main className="flex h-screen items-center justify-center bg-zinc-50 text-zinc-900 dark:bg-black dark:text-white">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-green-400">✅ Email Confirmed</h1>
           <p className="mt-2">You can now log in to your account.</p>
-          <Link href="/login">
+          <LocalizedLink href="/login">
             <span className="mt-4 inline-block rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600">
               Go to Login
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex h-screen items-center justify-center bg-black text-white">
+    <main className="flex h-screen items-center justify-center bg-zinc-50 text-zinc-900 dark:bg-black dark:text-white">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-red-500">❌ Confirmation Failed</h1>
         <p className="mt-2">
           Your link may have expired. Please request a new one.
         </p>
-        <Link href="/login">
-          <span className="mt-4 inline-block rounded bg-white/10 px-4 py-2 text-white hover:bg-white/20">
+        <LocalizedLink href="/login">
+          <span className="mt-4 inline-block rounded border border-zinc-300 bg-white px-4 py-2 text-zinc-900 hover:bg-zinc-50 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20">
             Back to Login
           </span>
-        </Link>
+        </LocalizedLink>
       </div>
     </main>
   );

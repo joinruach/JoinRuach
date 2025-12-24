@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
@@ -168,7 +168,7 @@ export default async function MediaDetail({ params }: Props){
   const a = extractAttributes<MediaAttributes>(data);
   if (!data || !a) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/80">
+      <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-700 dark:text-white/80">
         Media not found.
       </div>
     );
@@ -305,9 +305,9 @@ export default async function MediaDetail({ params }: Props){
         <section className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Related Media</h2>
-            <Link href="/media">
+            <LocalizedLink href="/media">
               <span className="text-sm font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-300 dark:hover:text-amber-200">Browse all media →</span>
-            </Link>
+            </LocalizedLink>
           </div>
           <div className="rounded-3xl border border-neutral-200 bg-white p-8 text-neutral-900 dark:border-white/10 dark:bg-white dark:text-neutral-900">
             <MediaGrid items={related} />

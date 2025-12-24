@@ -19,11 +19,15 @@ export function NavLink({ href, children, className, ...props }:
       : false;
   return (
     <Link href={href} {...props}>
-      <span className={cn(
-        "text-sm font-medium text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold/90",
-        active && "text-ruachDark font-semibold dark:text-white",
-        className
-      )}>{children}</span>
+      <span
+        className={cn(
+          "text-sm font-medium text-zinc-900 transition hover:text-zinc-950 dark:text-white dark:hover:text-white/80",
+          active && "text-zinc-900 font-semibold dark:text-white",
+          className
+        )}
+      >
+        {children}
+      </span>
     </Link>
   );
 }

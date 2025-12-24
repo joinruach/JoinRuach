@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getSeriesBySlug, imgUrl } from "@/lib/strapi";
@@ -120,31 +120,31 @@ export default async function SeriesDetailPage({ params }: Props) {
   return (
     <div className="space-y-10">
       {/* Hero Section */}
-      <section className="relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 overflow-hidden">
+      <section className="relative rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-br from-white/10 to-white/5 overflow-hidden">
         <div className="grid lg:grid-cols-2 gap-8 p-8 lg:p-12">
           <div className="space-y-6">
             <div>
-              <Link href="/series">
-                <span className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition">
+              <LocalizedLink href="/series">
+                <span className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-white/70 hover:text-zinc-900 dark:hover:text-white transition">
                   ← Back to Series
                 </span>
-              </Link>
+              </LocalizedLink>
             </div>
 
             <div className="space-y-3">
-              <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-white leading-tight">
                 {title}
               </h1>
               {description && (
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-lg text-white/80 leading-relaxed">
+                  <p className="text-lg text-zinc-700 dark:text-white/80 leading-relaxed">
                     {description}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-white/70">
+            <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-white/70">
               <span>{items.length} {items.length === 1 ? 'episode' : 'episodes'}</span>
             </div>
           </div>
@@ -166,10 +166,10 @@ export default async function SeriesDetailPage({ params }: Props) {
       {/* Episodes Grid */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-white">Episodes</h2>
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Episodes</h2>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+        <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
           {items.length > 0 ? (
             <MediaGrid items={items} />
           ) : (

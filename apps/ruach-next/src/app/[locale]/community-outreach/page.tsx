@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import Image from "next/image";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
@@ -272,16 +272,16 @@ export default async function CommunityOutreachPage({
         <h1 className="mt-4 text-3xl font-semibold text-foreground">{heroTitle}</h1>
         <p className="mt-3 max-w-3xl text-base text-muted-foreground">{heroDescription}</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={heroPrimaryCta.href}>
+          <LocalizedLink href={heroPrimaryCta.href}>
             <span className="rounded-full bg-[hsl(var(--primary))] px-5 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
               {heroPrimaryCta.label}
             </span>
-          </Link>
-          <Link href={heroSecondaryCta.href}>
+          </LocalizedLink>
+          <LocalizedLink href={heroSecondaryCta.href}>
             <span className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground transition hover:bg-[rgba(43,43,43,0.05)]">
               {heroSecondaryCta.label}
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
 
@@ -289,11 +289,11 @@ export default async function CommunityOutreachPage({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">{storiesHeading}</h2>
           {storiesCtaUrl ? (
-            <Link href={storiesCtaUrl}>
+            <LocalizedLink href={storiesCtaUrl}>
               <span className="text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
                 {storiesCtaLabel}
               </span>
-            </Link>
+            </LocalizedLink>
           ) : null}
         </div>
         <div className="rounded-3xl border border-border bg-card p-8 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
@@ -352,11 +352,11 @@ export default async function CommunityOutreachPage({
                 ) : null}
                 {campaign.donationLink ? (
                   <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <Link href={campaign.donationLink}>
+                    <LocalizedLink href={campaign.donationLink}>
                       <span className="rounded-full bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
                         Support this campaign
                       </span>
-                    </Link>
+                    </LocalizedLink>
                     {campaign.giveCode ? (
                       <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
                         Give Code: {campaign.giveCode}
@@ -465,11 +465,11 @@ export default async function CommunityOutreachPage({
                 <p className="text-sm text-muted-foreground">{subscriptionBanner.body}</p>
               ) : null}
               {subscriptionBanner.ctaLabel && subscriptionBanner.ctaUrl ? (
-                <Link href={subscriptionBanner.ctaUrl}>
+                <LocalizedLink href={subscriptionBanner.ctaUrl}>
                   <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
                     {subscriptionBanner.ctaLabel} →
                   </span>
-                </Link>
+                </LocalizedLink>
               ) : null}
             </div>
             {subscriptionBanner?.image ? (
@@ -487,20 +487,20 @@ export default async function CommunityOutreachPage({
       ) : null}
 
       {/* Called to Lead? - Carry the Fire Cross-Link */}
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="max-w-2xl space-y-4">
           <h2 className="text-2xl font-semibold">Called to Lead?</h2>
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-zinc-700 dark:text-white/80">
             Some are called to participate. Others are called to lead, replicate, or build outreach where they live.
           </p>
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-zinc-700 dark:text-white/80">
             If you sense God calling you beyond volunteering—to plant something, lead something, or carry this fire into your city—we want to equip and send you.
           </p>
-          <Link href="/carry">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+          <LocalizedLink href="/carry">
+            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 text-sm font-semibold text-zinc-800 dark:text-white/90 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
               Learn More →
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
     </div>

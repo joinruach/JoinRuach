@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useToast } from "@ruach/components/components/ruach/toast/useToast";
 import { useSessionExpiry } from "@/hooks/useSessionExpiry";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
@@ -36,6 +37,7 @@ function ExpiredMessageHandler() {
 export function SessionChecker() {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const locale = useLocale();
 
   // Track session expiry and show warnings
   useSessionExpiry();
@@ -51,16 +53,16 @@ export function SessionChecker() {
         description: "Your session expired due to 30 minutes of inactivity. Please log in again.",
         variant: "error",
       });
-      signOut({ callbackUrl: "/login?expired=idle" });
+      signOut({ callbackUrl: `/${locale}/login?expired=idle` });
     } else if (session?.error === "RefreshAccessTokenError") {
       toast({
         title: "Session Expired",
         description: "Your session has expired. Please log in again.",
         variant: "error",
       });
-      signOut({ callbackUrl: "/login?expired=true" });
+      signOut({ callbackUrl: `/${locale}/login?expired=true` });
     }
-  }, [session, toast]);
+  }, [session, toast, locale]);
 
   return (
     <Suspense fallback={null}>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { getServerSession, type Session } from "next-auth";
 import type { AuthOptions } from "next-auth";
 import { redirect } from "next/navigation";
@@ -265,16 +265,23 @@ function membershipStatusBadgeClasses(status?: string | null): string {
     case "incomplete":
     case "incomplete_expired":
     default:
-      return "border-white/25 bg-white/5 text-white/70";
+      return "border-zinc-300/70 dark:border-white/25 bg-white dark:bg-white/5 text-zinc-600 dark:text-white/70";
   }
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const session = await getServerSession(authOptions as AuthOptions) as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
 
   if (!jwt) {
-    redirect(`/login?callbackUrl=${encodeURIComponent("/members/account")}`);
+    redirect(
+      `/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/members/account`)}`
+    );
   }
 
   const [user, progressEntries] = await Promise.all([fetchUser(jwt), fetchLessonProgress(jwt)]);
@@ -360,10 +367,10 @@ export default async function AccountPage() {
 
   return (
     <div className="space-y-10">
-      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-lg">
+      <header className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white shadow-lg">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/20 bg-white/10">
+            <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-zinc-300 dark:border-white/20 bg-white dark:bg-white/10">
               {avatarUrl ? (
                 <Image src={avatarUrl} alt={displayName} fill className="object-cover" sizes="80px" />
               ) : (
@@ -373,13 +380,13 @@ export default async function AccountPage() {
               )}
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/60">Member Dashboard</p>
-              <h1 className="mt-2 text-3xl font-semibold text-white">Welcome back, {displayName}</h1>
-              <p className="mt-2 text-sm text-white/70">{user.email}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-wide text-white/60">
-                {roleLabel ? <span className="rounded-full border border-white/15 px-3 py-1">{roleLabel}</span> : null}
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 dark:text-white/60">Member Dashboard</p>
+              <h1 className="mt-2 text-3xl font-semibold text-zinc-900 dark:text-white">Welcome back, {displayName}</h1>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{user.email}</p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
+                {roleLabel ? <span className="rounded-full border border-zinc-200/70 dark:border-white/15 px-3 py-1">{roleLabel}</span> : null}
                 {userProfile?.location ? (
-                  <span className="rounded-full border border-white/15 px-3 py-1">{userProfile.location}</span>
+                  <span className="rounded-full border border-zinc-200/70 dark:border-white/15 px-3 py-1">{userProfile.location}</span>
                 ) : null}
                 {user.confirmed ? (
                   <span className="rounded-full border border-emerald-400/60 bg-emerald-500/10 px-3 py-1 text-emerald-200">
@@ -394,7 +401,7 @@ export default async function AccountPage() {
             </div>
           </div>
           <div className="flex flex-col gap-3 md:items-end">
-            {bioText ? <p className="max-w-md text-sm text-white/70">{bioText}</p> : null}
+            {bioText ? <p className="max-w-md text-sm text-zinc-600 dark:text-white/70">{bioText}</p> : null}
             <div className="flex flex-wrap gap-3">
               <Button as="a" href="/logout" variant="white">
                 Sign out
@@ -407,17 +414,17 @@ export default async function AccountPage() {
         </div>
       </header>
 
-      <section className="grid gap-6 rounded-3xl border border-white/10 bg-white/5 p-8 text-white lg:grid-cols-3">
+      <section className="grid gap-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white lg:grid-cols-3">
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-white">Membership</h2>
-          <p className="text-sm text-white/70">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Membership</h2>
+          <p className="text-sm text-zinc-600 dark:text-white/70">
             Access partner perks, livestreams, and billing history. See your current status and manage billing through the
             Stripe portal.
           </p>
-          <div className="space-y-4 rounded-2xl border border-white/15 bg-white/5 p-5">
-            <dl className="space-y-3 text-sm text-white/70">
+          <div className="space-y-4 rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-5">
+            <dl className="space-y-3 text-sm text-zinc-600 dark:text-white/70">
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-xs uppercase tracking-wide text-white/60">Status</dt>
+                <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Status</dt>
                 <dd>
                   <span
                     className={cn(
@@ -431,16 +438,16 @@ export default async function AccountPage() {
               </div>
               {membershipPlanName ? (
                 <div className="flex items-center justify-between gap-3">
-                  <dt className="text-xs uppercase tracking-wide text-white/60">Plan</dt>
-                  <dd className="text-sm text-white">{membershipPlanName}</dd>
+                  <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Plan</dt>
+                  <dd className="text-sm text-zinc-900 dark:text-white">{membershipPlanName}</dd>
                 </div>
               ) : null}
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-xs uppercase tracking-wide text-white/60">Next charge</dt>
-                <dd className="text-sm text-white">{membershipNextChargeLabel}</dd>
+                <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Next charge</dt>
+                <dd className="text-sm text-zinc-900 dark:text-white">{membershipNextChargeLabel}</dd>
               </div>
               {!hasActiveMembership ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/60">
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-xs text-zinc-500 dark:text-white/60">
                   Start a monthly partnership to unlock the member library, live calls, and exclusive updates.
                 </div>
               ) : null}
@@ -455,18 +462,18 @@ export default async function AccountPage() {
               manageVariant="white"
               size="md"
             />
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-zinc-500 dark:text-white/60">
               {membershipSupportMessage}{" "}
-              <Link href="/contact">
+              <LocalizedLink href="/contact">
                 <span className="text-amber-300 hover:text-amber-200">Contact support</span>
-              </Link>
+              </LocalizedLink>
               .
             </p>
           </div>
         </div>
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">Giving</h2>
-          <p className="text-sm text-white/70">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Giving</h2>
+          <p className="text-sm text-zinc-600 dark:text-white/70">
             Manage your donations or send a one-time gift to advance Ruach testimonies and discipleship courses.
           </p>
           {GIVEBUTTER_URL ? (
@@ -474,7 +481,7 @@ export default async function AccountPage() {
               Manage my donations
             </Button>
           ) : (
-            <p className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-xs text-white/60">
+            <p className="rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 px-4 py-3 text-xs text-zinc-500 dark:text-white/60">
               Set <code>NEXT_PUBLIC_GIVEBUTTER_URL</code> to link donor management.
             </p>
           )}
@@ -483,25 +490,25 @@ export default async function AccountPage() {
           </Button>
         </div>
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">Next steps</h2>
-          <ul className="space-y-2 text-sm text-white/70">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Next steps</h2>
+          <ul className="space-y-2 text-sm text-zinc-600 dark:text-white/70">
             <li>
-              <Link href="/courses">
+              <LocalizedLink href="/courses">
                 <span className="text-amber-300 hover:text-amber-200">Explore discipleship courses →</span>
-              </Link>
+              </LocalizedLink>
             </li>
             <li>
-              <Link href="/media">
+              <LocalizedLink href="/media">
                 <span className="text-amber-300 hover:text-amber-200">Watch the latest testimonies →</span>
-              </Link>
+              </LocalizedLink>
             </li>
             <li>
-              <Link href="/community-outreach">
+              <LocalizedLink href="/community-outreach">
                 <span className="text-amber-300 hover:text-amber-200">Join a local outreach →</span>
-              </Link>
+              </LocalizedLink>
             </li>
           </ul>
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-zinc-500 dark:text-white/60">
             Questions? Email{" "}
             <a className="text-amber-300 hover:text-amber-200" href="mailto:hello@joinruach.org">
               hello@joinruach.org
@@ -511,11 +518,11 @@ export default async function AccountPage() {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="space-y-4 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">Learning journey</h2>
-            <p className="text-sm text-white/70">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Learning journey</h2>
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Track your course progress, pick up where you left off, and download completion certificates.
             </p>
           </div>
@@ -525,7 +532,7 @@ export default async function AccountPage() {
         </div>
 
         {courseSummaries.length === 0 ? (
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-6 text-center text-sm text-white/70">
+          <div className="rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-6 text-center text-sm text-zinc-600 dark:text-white/70">
             You haven&rsquo;t started a course yet. Choose a course to begin your discipleship journey.
           </div>
         ) : (
@@ -533,24 +540,24 @@ export default async function AccountPage() {
             {courseSummaries.map((course) => (
               <div
                 key={course.slug}
-                className="space-y-4 rounded-2xl border border-white/15 bg-white/5 p-6 shadow-inner transition hover:border-white/25"
+                className="space-y-4 rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-6 shadow-inner transition hover:border-zinc-300/70 dark:hover:border-white/25"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">{course.title}</h3>
-                    <p className="text-xs uppercase tracking-wide text-white/60">
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{course.title}</h3>
+                    <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
                       {course.completedLessons} of {course.totalLessons} lessons complete
                     </p>
                   </div>
                   {course.coverUrl ? (
-                    <div className="relative h-16 w-24 overflow-hidden rounded-lg border border-white/10">
+                    <div className="relative h-16 w-24 overflow-hidden rounded-lg border border-zinc-200 dark:border-white/10">
                       <Image src={course.coverUrl} alt={`${course.title} cover`} fill className="object-cover" />
                     </div>
                   ) : null}
                 </div>
 
                 <div className="space-y-2">
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-white dark:bg-white/10">
                     <div
                       className={cn(
                         "h-full rounded-full bg-amber-400 transition-all",
@@ -559,7 +566,7 @@ export default async function AccountPage() {
                       style={{ width: `${course.percent}%` }}
                     />
                   </div>
-                  <p className="text-xs uppercase tracking-wide text-white/60">
+                  <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
                     Last activity {formatDateTime(course.lastUpdated)}
                   </p>
                 </div>
@@ -590,16 +597,16 @@ export default async function AccountPage() {
         )}
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="space-y-4 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">Recent activity</h2>
-            <p className="text-sm text-white/70">Your most recent course sessions and lesson completions.</p>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Recent activity</h2>
+            <p className="text-sm text-zinc-600 dark:text-white/70">Your most recent course sessions and lesson completions.</p>
           </div>
         </div>
 
         {latestActivities.length === 0 ? (
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-6 text-sm text-white/70">
+          <div className="rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-6 text-sm text-zinc-600 dark:text-white/70">
             Start a course to see your activity timeline.
           </div>
         ) : (
@@ -607,24 +614,24 @@ export default async function AccountPage() {
             {latestActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex flex-col gap-1 rounded-2xl border border-white/15 bg-white/5 p-4 text-sm text-white/70 md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-1 rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-4 text-sm text-zinc-600 dark:text-white/70 md:flex-row md:items-center md:justify-between"
               >
                 <div>
-                  <div className="font-semibold text-white">{activity.courseTitle}</div>
-                  <div className="text-white/70">
+                  <div className="font-semibold text-zinc-900 dark:text-white">{activity.courseTitle}</div>
+                  <div className="text-zinc-600 dark:text-white/70">
                     Lesson: {activity.lessonTitle}{" "}
                     {activity.completed ? (
                       <span className="ml-2 inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">
                         Completed
                       </span>
                     ) : (
-                      <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/70">
+                      <span className="ml-2 inline-flex items-center rounded-full bg-white dark:bg-white/10 px-2 py-0.5 text-xs font-semibold text-zinc-600 dark:text-white/70">
                         In progress
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-xs uppercase tracking-wide text-white/60">
+                <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
                   {formatDateTime(activity.updatedAt)}
                 </div>
               </div>

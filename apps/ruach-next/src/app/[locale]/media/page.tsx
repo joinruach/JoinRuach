@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import { getMediaCategories, getMediaItems } from "@/lib/strapi";
@@ -159,7 +159,7 @@ export default async function MediaPage({
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Category</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {categoryOptions.map((option) => (
-                <Link
+                <LocalizedLink
                   key={option.value}
                   href={buildHref(searchParams, "category", option.value)}
                 >
@@ -170,7 +170,7 @@ export default async function MediaPage({
                   }`}>
                     {option.label}
                   </span>
-                </Link>
+                </LocalizedLink>
               ))}
             </div>
           </div>
@@ -178,7 +178,7 @@ export default async function MediaPage({
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Sort</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {sortOptions.map((option) => (
-                <Link
+                <LocalizedLink
                   key={option.value}
                   href={buildHref(searchParams, "sort", option.value)}
                 >
@@ -189,7 +189,7 @@ export default async function MediaPage({
                   }`}>
                     {option.label}
                   </span>
-                </Link>
+                </LocalizedLink>
               ))}
             </div>
           </div>
@@ -197,7 +197,7 @@ export default async function MediaPage({
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Date</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {dateOptions.map((option) => (
-                <Link
+                <LocalizedLink
                   key={option.value}
                   href={buildHref(searchParams, "range", option.value)}
                 >
@@ -208,7 +208,7 @@ export default async function MediaPage({
                   }`}>
                     {option.label}
                   </span>
-                </Link>
+                </LocalizedLink>
               ))}
             </div>
           </div>
@@ -218,9 +218,9 @@ export default async function MediaPage({
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">{total} media items</h2>
-          <Link href="/contact">
+          <LocalizedLink href="/contact">
             <span className="text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">Submit a testimony →</span>
-          </Link>
+          </LocalizedLink>
         </div>
         <div className="rounded-3xl border border-border bg-card p-8 text-foreground">
           {items.length ? (

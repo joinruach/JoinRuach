@@ -63,9 +63,14 @@ function formatDate(value?: string | null) {
   }).format(date);
 }
 
-export default async function MemberDownloadsPage() {
+export default async function MemberDownloadsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const path = "/members/downloads";
-  await requireActiveMembership(path);
+  await requireActiveMembership(path, locale);
 
   const { data } = await getDownloadableMediaItems({ pageSize: 30 });
   const resources = data
@@ -75,9 +80,9 @@ export default async function MemberDownloadsPage() {
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">Member Library</span>
-        <h1 className="text-3xl font-semibold text-white">Downloads &amp; Resources</h1>
-        <p className="max-w-2xl text-sm text-white/70">
+        <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Member Library</span>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">Downloads &amp; Resources</h1>
+        <p className="max-w-2xl text-sm text-zinc-600 dark:text-white/70">
           Access partner-only study guides, eBooks, and sermon notes bundled with your membership or released as standalone products.
         </p>
       </header>
@@ -90,11 +95,11 @@ export default async function MemberDownloadsPage() {
               return (
                 <article
                   key={resource.id}
-                  className="flex h-full flex-col rounded-3xl border border-white/10 bg-white/5 p-6 text-white"
+                  className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-900 dark:text-white"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row">
                     {resource.thumbnail?.src ? (
-                      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/10">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={resource.thumbnail.src}
@@ -105,14 +110,14 @@ export default async function MemberDownloadsPage() {
                     ) : null}
                     <div className="flex-1 space-y-2">
                       {releaseLabel ? (
-                        <span className="text-xs uppercase tracking-wide text-white/60">{releaseLabel}</span>
+                        <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">{releaseLabel}</span>
                       ) : null}
                       <h2 className="text-lg font-semibold">{resource.title}</h2>
                       {resource.description ? (
-                        <p className="text-sm text-white/70">{resource.description}</p>
+                        <p className="text-sm text-zinc-600 dark:text-white/70">{resource.description}</p>
                       ) : null}
                       {resource.type ? (
-                        <p className="text-xs uppercase tracking-wide text-white/50">{resource.type}</p>
+                        <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">{resource.type}</p>
                       ) : null}
                     </div>
                   </div>
@@ -134,7 +139,7 @@ export default async function MemberDownloadsPage() {
               );
             })
           ) : (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/70">
+            <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-600 dark:text-white/70">
               Downloadable resources will appear here once they are published for members.
             </div>
           )}

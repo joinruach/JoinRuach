@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { notFound } from "next/navigation";
 import AudioPlayer from "@/components/ruach/AudioPlayer";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
@@ -11,7 +11,7 @@ import type { MediaItemEntity } from "@/lib/types/strapi-types";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 };
 
 const AUDIO_EXTENSIONS = new Set(["mp3", "m4a", "aac", "wav", "ogg", "flac"]);
@@ -93,9 +93,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function MemberPodcastDetail({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const path = `/members/podcasts/${slug}`;
-  await requireActiveMembership(path);
+  await requireActiveMembership(path, locale);
 
   const entity = await getMediaBySlug(slug);
   const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity);
@@ -135,22 +135,22 @@ export default async function MemberPodcastDetail({ params }: Props) {
     <div className="space-y-10">
       <SEOHead jsonLd={jsonLd} />
 
-      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
-        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-white/60">
+      <header className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">
           <span>Partner Podcast</span>
           {attributes.releasedAt ? (
-            <span className="text-white/40">
+            <span className="text-zinc-400 dark:text-white/40">
               {new Date(attributes.releasedAt).toLocaleDateString()}
             </span>
           ) : null}
         </div>
-        <h1 className="mt-3 text-3xl font-semibold text-white">{attributes.title}</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-zinc-900 dark:text-white">{attributes.title}</h1>
         {attributes.description ? (
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70">{attributes.description}</p>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-white/70">{attributes.description}</p>
         ) : null}
       </header>
 
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-black p-6 text-white">
+      <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-sm dark:border-white/10 dark:bg-black dark:text-white dark:shadow-none">
         {playback.kind === "audio" && playback.url ? (
           <AudioPlayer mediaId={mediaId} src={playback.url} title={attributes.title ?? ""} />
         ) : playback.kind === "video" && playback.url ? (
@@ -170,7 +170,7 @@ export default async function MemberPodcastDetail({ params }: Props) {
             allowFullScreen
           />
         ) : (
-          <div className="rounded-3xl border border-dashed border-white/10 p-6 text-sm text-white/60">
+          <div className="rounded-3xl border border-dashed border-zinc-200 dark:border-white/10 p-6 text-sm text-zinc-500 dark:text-white/60">
             Playback will be available soon. Check back shortly.
           </div>
         )}
@@ -179,26 +179,26 @@ export default async function MemberPodcastDetail({ params }: Props) {
       {Array.isArray(related) && related.length ? (
         <section className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-white">More partner episodes</h2>
-            <Link href="/members/podcasts">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">More partner episodes</h2>
+            <LocalizedLink href="/members/podcasts">
               <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Back to podcast hub →</span>
-            </Link>
+            </LocalizedLink>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {related.map((attrs) => {
               if (!attrs.slug) return null;
               return (
-                <Link key={attrs.slug} href={`/members/podcasts/${attrs.slug}`}>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white transition hover:border-amber-300">
-                    <div className="text-xs uppercase tracking-wide text-white/50">
+                <LocalizedLink key={attrs.slug} href={`/members/podcasts/${attrs.slug}`}>
+                  <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-5 text-zinc-900 dark:text-white transition hover:border-amber-300">
+                    <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
                       Released {attrs.releasedAt ? new Date(attrs.releasedAt).toLocaleDateString() : ""}
                     </div>
                     <div className="mt-2 text-base font-semibold">{attrs.title}</div>
                     {attrs.excerpt ? (
-                      <p className="mt-2 text-sm text-white/70">{attrs.excerpt}</p>
+                      <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{attrs.excerpt}</p>
                     ) : null}
                   </div>
-                </Link>
+                </LocalizedLink>
               );
             })}
           </div>

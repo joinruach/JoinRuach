@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import LessonPlayer from "@/components/ruach/LessonPlayer";
 import LessonTranscript from "@/components/ruach/LessonTranscript";
 import LessonDiscussion, { type Comment } from "@/components/ruach/LessonDiscussion";
@@ -31,7 +31,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const lessonsRaw = (course?.attributes?.lessons?.data ?? []).map((d:any)=>d.attributes).sort((x:any,y:any)=>(x.order||0)-(y.order||0));
   const lesson = lessonsRaw.find((x:any)=>x.slug===lessonSlug);
   if (!course || !lesson) {
-    return <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/70">Lesson not found.</div>;
+    return <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-600 dark:text-white/70">Lesson not found.</div>;
   }
 
   const comments = await getComments(slug, lessonSlug);
@@ -63,45 +63,45 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   return (
     <div className="space-y-12">
       <SEOHead jsonLd={lessonSchema} />
-      <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/50">
-        <Link href="/courses"><span className="text-white/60 transition hover:text-white">Courses</span></Link>
+      <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
+        <LocalizedLink href="/courses"><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">Courses</span></LocalizedLink>
         <span>/</span>
-        <Link href={`/courses/${slug}`}><span className="text-white/60 transition hover:text-white">{course.attributes?.title}</span></Link>
+        <LocalizedLink href={`/courses/${slug}`}><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">{course.attributes?.title}</span></LocalizedLink>
         <span>/</span>
-        <span className="text-white">{lesson.title}</span>
+        <span className="text-zinc-900 dark:text-white">{lesson.title}</span>
       </nav>
 
-      <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-8">
+      <section className="space-y-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8">
         <div className="space-y-3">
-          <span className="text-xs uppercase tracking-[0.3em] text-white/60">Lesson {lesson.order || currentIndex + 1}</span>
-          <h1 className="text-3xl font-semibold text-white">{lesson.title}</h1>
+          <span className="text-xs uppercase tracking-[0.3em] text-zinc-500 dark:text-white/60">Lesson {lesson.order || currentIndex + 1}</span>
+          <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">{lesson.title}</h1>
           {lesson.summary ? (
-            <p className="text-sm text-white/70">{lesson.summary}</p>
+            <p className="text-sm text-zinc-600 dark:text-white/70">{lesson.summary}</p>
           ) : null}
         </div>
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-black">
           <LessonPlayer src={lesson.video_url || lesson.videoUrl} courseSlug={slug} lessonSlug={lessonSlug} />
         </div>
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           {lesson.duration ? (
-            <div className="text-xs uppercase tracking-wide text-white/50">
+            <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
               {lesson.duration} minutes
             </div>
           ) : null}
           <div className="flex gap-3 sm:ml-auto">
             {prevLesson ? (
-              <Link href={`/courses/${slug}/${prevLesson.slug}`}>
-                <span className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              <LocalizedLink href={`/courses/${slug}/${prevLesson.slug}`}>
+                <span className="inline-flex items-center rounded-full border border-zinc-300 dark:border-white/20 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
                   ← Previous Lesson
                 </span>
-              </Link>
+              </LocalizedLink>
             ) : null}
             {nextLesson ? (
-              <Link href={`/courses/${slug}/${nextLesson.slug}`}>
+              <LocalizedLink href={`/courses/${slug}/${nextLesson.slug}`}>
                 <span className="inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
                   Next Lesson →
                 </span>
-              </Link>
+              </LocalizedLink>
             ) : null}
           </div>
         </div>

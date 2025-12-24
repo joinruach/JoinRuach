@@ -7,3 +7,34 @@
 
 /* Global base styles */
 html, body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+
+:root {
+  --ruach-text-primary: #111827;
+  --ruach-text-secondary: #1f2937;
+  --ruach-text-muted: #374151;
+  --ruach-bg-surface: #ffffff;
+  --ruach-bg-section: #fef3c7;
+  --ruach-border-subtle: #e5e7eb;
+}
+
+@layer utilities {
+  .text-primary {
+    color: var(--ruach-text-primary);
+  }
+  .text-secondary {
+    color: var(--ruach-text-secondary);
+  }
+  .text-muted {
+    color: var(--ruach-text-muted);
+    font-weight: 500;
+  }
+  .bg-surface {
+    background-color: var(--ruach-bg-surface);
+  }
+  .bg-section {
+    background-color: var(--ruach-bg-section);
+  }
+  .border-subtle {
+    border-color: var(--ruach-border-subtle);
+  }
+}

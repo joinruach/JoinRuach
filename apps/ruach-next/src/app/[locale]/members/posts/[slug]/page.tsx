@@ -6,7 +6,7 @@ import { getBlogPostBySlug, imgUrl, type BlogPostEntity } from "@/lib/strapi";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
@@ -73,20 +73,20 @@ function renderBlocks(blocks: unknown) {
         const level = Math.min(Math.max(Number(block.level ?? 2), 2), 4);
         if (level === 4) {
           return (
-            <h4 key={key} className="mt-6 text-lg font-semibold text-white">
+            <h4 key={key} className="mt-6 text-lg font-semibold text-zinc-900 dark:text-white">
               {text}
             </h4>
           );
         }
         if (level === 3) {
           return (
-            <h3 key={key} className="mt-7 text-xl font-semibold text-white">
+            <h3 key={key} className="mt-7 text-xl font-semibold text-zinc-900 dark:text-white">
               {text}
             </h3>
           );
         }
         return (
-          <h2 key={key} className="mt-8 text-2xl font-semibold text-white">
+          <h2 key={key} className="mt-8 text-2xl font-semibold text-zinc-900 dark:text-white">
             {text}
           </h2>
         );
@@ -95,7 +95,7 @@ function renderBlocks(blocks: unknown) {
         return (
           <blockquote
             key={key}
-            className="mt-6 border-l-4 border-amber-400/80 pl-4 text-lg italic text-white/80"
+            className="mt-6 border-l-4 border-amber-400/80 pl-4 text-lg italic text-zinc-700 dark:text-white/80"
           >
             {text}
           </blockquote>
@@ -109,13 +109,13 @@ function renderBlocks(blocks: unknown) {
         if (!items.length) return null;
         const isOrdered = block.format === "ordered";
         return isOrdered ? (
-          <ol key={key} className="mt-4 list-decimal space-y-2 pl-5 text-white/80">
+          <ol key={key} className="mt-4 list-decimal space-y-2 pl-5 text-zinc-700 dark:text-white/80">
             {items.map((item: string, itemIndex: number) => (
               <li key={`${key}-${itemIndex}`}>{item}</li>
             ))}
           </ol>
         ) : (
-          <ul key={key} className="mt-4 list-disc space-y-2 pl-5 text-white/80">
+          <ul key={key} className="mt-4 list-disc space-y-2 pl-5 text-zinc-700 dark:text-white/80">
             {items.map((item: string, itemIndex: number) => (
               <li key={`${key}-${itemIndex}`}>{item}</li>
             ))}
@@ -124,7 +124,7 @@ function renderBlocks(blocks: unknown) {
       }
       default:
         return (
-          <p key={key} className="mt-5 text-base leading-relaxed text-white/80">
+          <p key={key} className="mt-5 text-base leading-relaxed text-zinc-700 dark:text-white/80">
             {text}
           </p>
         );
@@ -154,9 +154,9 @@ function formatPublishedDate(value?: string | null) {
 }
 
 export default async function MemberPostDetail({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const path = `/members/posts/${slug}`;
-  await requireActiveMembership(path);
+  await requireActiveMembership(path, locale);
 
   const post = await getBlogPostBySlug(slug);
   if (!post || !post.attributes) {
@@ -170,14 +170,14 @@ export default async function MemberPostDetail({ params }: Props) {
 
   return (
     <div className="space-y-10">
-      <header className="space-y-3 text-white">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">Member Post</span>
+      <header className="space-y-3 text-zinc-900 dark:text-white">
+        <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Member Post</span>
         <h1 className="text-3xl font-semibold">{title}</h1>
-        {published ? <p className="text-sm text-white/60">{published}</p> : null}
+        {published ? <p className="text-sm text-zinc-500 dark:text-white/60">{published}</p> : null}
       </header>
 
       {image ? (
-        <div className="overflow-hidden rounded-3xl border border-white/10">
+        <div className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10">
           <Image
             src={image.src}
             alt={image.alt}
@@ -189,9 +189,9 @@ export default async function MemberPostDetail({ params }: Props) {
         </div>
       ) : null}
 
-      <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-white/80 prose-strong:text-white">
+      <article className="prose prose-invert max-w-none prose-headings:text-zinc-900 dark:prose-headings:text-white prose-p:text-zinc-700 dark:prose-p:text-white/80 prose-strong:text-zinc-900 dark:prose-strong:text-white">
         {content ?? (
-          <p className="text-white/70">
+          <p className="text-zinc-600 dark:text-white/70">
             This post will be available shortly. Please check back for the full update.
           </p>
         )}

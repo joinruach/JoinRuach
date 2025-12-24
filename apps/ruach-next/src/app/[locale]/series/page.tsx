@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import Image from "next/image";
 import { getAllSeries, imgUrl } from "@/lib/strapi";
 import { extractAttributes, extractSingleRelation } from "@/lib/strapi-normalize";
@@ -48,26 +48,26 @@ export default async function SeriesPage({
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <span className="text-xs uppercase tracking-wide text-white/60">Content Collections</span>
-        <h1 className="text-3xl font-semibold text-white">Series</h1>
-        <p className="text-sm text-white/70">
+        <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Content Collections</span>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">Series</h1>
+        <p className="text-sm text-zinc-600 dark:text-white/70">
           Dive deep into themed collections of teachings, testimonies, and discipleship content curated for spiritual growth.
         </p>
       </header>
 
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-white">{seriesCards.length} series available</h2>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{seriesCards.length} series available</h2>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {seriesCards.length > 0 ? (
             seriesCards.map((series) => (
-              <Link
+              <LocalizedLink
                 key={series.slug}
                 href={`/series/${series.slug}`}
               >
-                <div className="group rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/10">
+                <div className="group rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 transition hover:border-zinc-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10">
                 {series.coverImage ? (
                   <div className="relative mb-4 aspect-video overflow-hidden rounded-lg">
                     <Image
@@ -78,30 +78,30 @@ export default async function SeriesPage({
                     />
                   </div>
                 ) : (
-                  <div className="mb-4 flex aspect-video items-center justify-center rounded-lg bg-white/10">
-                    <span className="text-5xl text-white/20">📚</span>
+                  <div className="mb-4 flex aspect-video items-center justify-center rounded-lg bg-white dark:bg-white/10">
+                    <span className="text-5xl text-zinc-300 dark:text-white/20">📚</span>
                   </div>
                 )}
 
-                <h3 className="mb-2 text-lg font-semibold text-white group-hover:text-amber-300">
+                <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-white group-hover:text-amber-300">
                   {series.title}
                 </h3>
 
                 {series.description && (
-                  <p className="mb-3 text-sm leading-relaxed text-white/70 line-clamp-2">
+                  <p className="mb-3 text-sm leading-relaxed text-zinc-600 dark:text-white/70 line-clamp-2">
                     {series.description}
                   </p>
                 )}
 
-                <div className="flex items-center gap-2 text-xs text-white/50">
+                <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-white/50">
                   <span>{series.itemCount} {series.itemCount === 1 ? 'episode' : 'episodes'}</span>
                 </div>
               </div>
-              </Link>
+              </LocalizedLink>
             ))
           ) : (
-            <div className="col-span-full rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-              <p className="text-sm text-white/60">
+            <div className="col-span-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-12 text-center">
+              <p className="text-sm text-zinc-500 dark:text-white/60">
                 No series available yet. Check back soon for curated content collections.
               </p>
             </div>

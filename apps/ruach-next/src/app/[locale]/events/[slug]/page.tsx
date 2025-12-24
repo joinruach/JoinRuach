@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { getEventBySlug, imgUrl } from "@/lib/strapi";
 import { LiveIndicator, LivestreamPlayer, UpcomingStream } from "@/components/livestream";
 import { isStreamLive, getLivestreamStatus, extractYouTubeVideoId } from "@/lib/livestream";
@@ -19,7 +19,7 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const ev = await getEventBySlug(slug);
   if (!ev) {
-    return <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white/70">Event not found.</div>;
+    return <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-600 dark:text-white/70">Event not found.</div>;
   }
   const a: any = ev.attributes;
   const date = a.date || a.startDate;
@@ -37,7 +37,7 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   return (
     <div className="space-y-10">
       <nav className="text-xs uppercase tracking-wide text-neutral-600 dark:text-white/50">
-        <Link href="/events"><span className="text-neutral-700 transition hover:text-neutral-900 dark:text-white/70 dark:hover:text-white">Events</span></Link>
+        <LocalizedLink href="/events"><span className="text-neutral-700 transition hover:text-neutral-900 dark:text-white/70 dark:hover:text-white">Events</span></LocalizedLink>
         <span className="mx-1">/</span>
         <span className="text-neutral-900 dark:text-white">{a.title}</span>
       </nav>
@@ -87,16 +87,16 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
                 href={a.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-black dark:hover:bg-amber-300"
+                className="inline-flex items-center rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-zinc-900 dark:text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-black dark:hover:bg-amber-300"
               >
                 Register now
               </a>
             ) : null}
-            <Link href="/conferences">
+            <LocalizedLink href="/conferences">
               <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900 dark:border-white/20 dark:text-white/80 dark:hover:border-white dark:hover:text-white">
                 Back to conferences
               </span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       </section>

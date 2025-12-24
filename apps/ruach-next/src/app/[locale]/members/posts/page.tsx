@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { requireActiveMembership } from "@/lib/require-membership";
 import { getBlogPosts, imgUrl, type BlogPostEntity } from "@/lib/strapi";
 import TrackedLink from "@/components/ruach/TrackedLink";
@@ -62,18 +62,23 @@ function resolveFeaturedImage(post: BlogPostEntity) {
   };
 }
 
-export default async function MemberPostsPage() {
+export default async function MemberPostsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const path = "/members/posts";
-  await requireActiveMembership(path);
+  await requireActiveMembership(path, locale);
 
   const { data: posts } = await getBlogPosts({ pageSize: 24 });
 
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">Member Library</span>
-        <h1 className="text-3xl font-semibold text-white">Partner-Only Posts</h1>
-        <p className="max-w-2xl text-sm text-white/70">
+        <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Member Library</span>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-white">Partner-Only Posts</h1>
+        <p className="max-w-2xl text-sm text-zinc-600 dark:text-white/70">
           Read the latest ministry briefings, prophetic encouragements, and behind-the-scenes stories released exclusively to active partners.
         </p>
       </header>
@@ -91,7 +96,7 @@ export default async function MemberPostsPage() {
             return (
               <article
                 key={post.id}
-                className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5"
+                className="flex h-full flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5"
               >
                 <div className="relative aspect-[4/3] bg-black/20">
                   {image?.src ? (
@@ -104,18 +109,18 @@ export default async function MemberPostsPage() {
                     />
                   ) : null}
                 </div>
-                <div className="flex flex-1 flex-col p-6 text-white">
+                <div className="flex flex-1 flex-col p-6 text-zinc-900 dark:text-white">
                   {published ? (
-                    <span className="text-xs uppercase tracking-wide text-white/60">{published}</span>
+                    <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">{published}</span>
                   ) : null}
                   {href ? (
-                    <Link href={href}>
-                      <span className="mt-2 text-lg font-semibold text-white hover:text-amber-300">{title}</span>
-                    </Link>
+                    <LocalizedLink href={href}>
+                      <span className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white hover:text-amber-300">{title}</span>
+                    </LocalizedLink>
                   ) : (
-                    <p className="mt-2 text-lg font-semibold text-white">{title}</p>
+                    <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">{title}</p>
                   )}
-                  <p className="mt-3 text-sm text-white/70">{summary}</p>
+                  <p className="mt-3 text-sm text-zinc-600 dark:text-white/70">{summary}</p>
                   {href && slug ? (
                     <TrackedLink
                       href={href}
@@ -131,7 +136,7 @@ export default async function MemberPostsPage() {
             );
           })
         ) : (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/70">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-600 dark:text-white/70">
             No member posts are published yet. Check back soon to catch the latest partner briefings.
           </div>
         )}

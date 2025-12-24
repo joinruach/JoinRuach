@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 
 export default function OfflinePage() {
   return (
@@ -10,15 +10,15 @@ export default function OfflinePage() {
 
       {/* Title */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-white">You&apos;re Offline</h1>
-        <p className="text-lg text-white/70">
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">You&apos;re Offline</h1>
+        <p className="text-lg text-zinc-600 dark:text-white/70">
           It looks like you&apos;ve lost your internet connection.
         </p>
       </div>
 
       {/* Message */}
       <div className="max-w-md space-y-4">
-        <p className="text-sm text-white/60">
+        <p className="text-sm text-zinc-500 dark:text-white/60">
           Don&apos;t worry! Some content may still be available from your previous visits.
           Once you&apos;re back online, you&apos;ll have full access to all features.
         </p>
@@ -32,19 +32,19 @@ export default function OfflinePage() {
         >
           Try Again
         </button>
-        <Link
+        <LocalizedLink
           href="/"
         >
-          <span className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10">
+          <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-3 font-semibold text-zinc-900 dark:text-white transition hover:border-white hover:bg-white dark:hover:bg-white/10">
             Go to Homepage
           </span>
-        </Link>
+        </LocalizedLink>
       </div>
 
       {/* Cached Content Info */}
-      <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 max-w-md">
-        <h2 className="mb-3 text-lg font-semibold text-white">Offline Features</h2>
-        <ul className="space-y-2 text-left text-sm text-white/70">
+      <div className="mt-8 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 max-w-md">
+        <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-white">Offline Features</h2>
+        <ul className="space-y-2 text-left text-sm text-zinc-600 dark:text-white/70">
           <li className="flex items-start gap-2">
             <span className="text-amber-400">✓</span>
             <span>Previously viewed pages are cached</span>
@@ -58,12 +58,12 @@ export default function OfflinePage() {
             <span>Course progress is saved locally</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-white/40">✗</span>
-            <span className="text-white/40">New content requires internet</span>
+            <span className="text-zinc-400 dark:text-white/40">✗</span>
+            <span className="text-zinc-400 dark:text-white/40">New content requires internet</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-white/40">✗</span>
-            <span className="text-white/40">Video streaming not available</span>
+            <span className="text-zinc-400 dark:text-white/40">✗</span>
+            <span className="text-zinc-400 dark:text-white/40">Video streaming not available</span>
           </li>
         </ul>
       </div>

@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 
 export const dynamic = "force-static";
 
@@ -18,13 +18,13 @@ export default async function EndTimesCourseLanding({
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl bg-black p-8 text-white">
+      <header className="rounded-2xl border border-zinc-200 bg-white p-8 text-zinc-900 shadow-sm dark:border-white/10 dark:bg-black dark:text-white dark:shadow-none">
         <h1 className="text-3xl font-extrabold">End Times Discipleship Course</h1>
-        <p className="mt-3 text-white/80">Grow in faithfulness, hope, and clarity. Jesus is returning — we prepare in love.</p>
+        <p className="mt-3 text-zinc-700 dark:text-white/80">Grow in faithfulness, hope, and clarity. Jesus is returning — we prepare in love.</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/courses"><span className="rounded bg-amber-500 px-5 py-2.5 text-black">Explore the Course</span></Link>
-          <Link href="/give"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Support the Teaching</span></Link>
-          <Link href="/signup"><span className="rounded border border-white/20 bg-white/10 px-5 py-2.5">Get Study Guides</span></Link>
+          <LocalizedLink href="/courses"><span className="rounded bg-amber-500 px-5 py-2.5 text-black">Explore the Course</span></LocalizedLink>
+          <LocalizedLink href="/give"><span className="rounded border border-zinc-300 dark:border-white/20 bg-white dark:bg-white/10 px-5 py-2.5">Support the Teaching</span></LocalizedLink>
+          <LocalizedLink href="/signup"><span className="rounded border border-zinc-300 dark:border-white/20 bg-white dark:bg-white/10 px-5 py-2.5">Get Study Guides</span></LocalizedLink>
         </div>
       </header>
       <section className="space-y-3">
@@ -38,4 +38,3 @@ export default async function EndTimesCourseLanding({
     </div>
   );
 }
-

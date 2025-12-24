@@ -3,7 +3,6 @@ import { useState } from "react";
 import Image from "next/image";
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { useSession } from "next-auth/react";
-import { NavLink } from "@ruach/components/components/ruach/ui/NavLink";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
 
@@ -11,98 +10,95 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/start", label: "Start Here" },
   { href: "/media", label: "Media" },
-  { href: "/courses", label: "Courses" },
-  { href: "/community-outreach", label: "Community Outreach" },
-  { href: "/carry", label: "Carry the Fire" },
-  { href: "/give", label: "Give", highlight: true },
+  { href: "/community-outreach", label: "Community" },
   { href: "/about", label: "About" },
 ];
 
 export default function Header() {
   const { status } = useSession();
   const [open, setOpen] = useState(false);
-  const primaryLinks = NAV_LINKS.filter((link) => !link.highlight);
-  const primaryAction = NAV_LINKS.find((link) => link.highlight);
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-md shadow-sm dark:border-white/10 dark:bg-neutral-950/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-8">
-          <LocalizedLink href="/" aria-label="Ruach Ministries Home">
-            <span className="flex items-center gap-3">
-              <Image
-                src="/ruach-logo.svg"
-                alt="Ruach Ministries logo"
-                width={42}
-                height={42}
-                className="h-11 w-11"
-                priority
-              />
-              <span className="hidden leading-tight sm:flex sm:flex-col">
-                <span className="text-base font-bold uppercase tracking-[0.35em] text-ruachDark dark:text-white">
-                  Ruach
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-[0.45em] text-neutral-500 dark:text-neutral-400">
-                  Ministries
-                </span>
-              </span>
-              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-300 sm:hidden">
-                Ruach Ministries
-              </span>
+    <header className="fixed left-0 top-0 z-50 w-full border-b border-subtle bg-white/95 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        {/* Brand */}
+        <LocalizedLink
+          href="/"
+          aria-label="Ruach Ministries Home"
+          className="flex items-center gap-3"
+        >
+          <Image
+            src="/ruach-logo.svg"
+            alt="Ruach Ministries logo"
+            width={42}
+            height={42}
+            className="h-11 w-11"
+            priority
+          />
+          <span className="hidden leading-tight sm:flex sm:flex-col">
+            <span className="text-base font-bold uppercase tracking-[0.35em] text-zinc-900 dark:text-white">
+              Ruach
             </span>
-          </LocalizedLink>
+            <span className="text-xs font-semibold uppercase tracking-[0.45em] text-zinc-700 dark:text-neutral-400">
+              Ministries
+            </span>
+          </span>
+          <span className="text-sm font-semibold uppercase tracking-[0.3em] text-zinc-700 dark:text-neutral-300 sm:hidden">
+            Ruach Ministries
+          </span>
+        </LocalizedLink>
 
-          <div className="hidden items-center gap-6 lg:flex">
-            {primaryLinks.map((item) => (
-              <NavLink key={item.href} href={item.href}>
-                {item.label}
-              </NavLink>
-            ))}
+        {/* Navigation */}
+        <nav className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium lg:flex">
+          {NAV_LINKS.map((link) => (
+            <LocalizedLink
+              key={link.href}
+              href={link.href}
+              className="rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+            >
+              {link.label}
+            </LocalizedLink>
+          ))}
+        </nav>
+
+        {/* Utilities + Actions */}
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-2 text-zinc-500 dark:text-zinc-400 lg:flex">
+            <LocaleSwitcher />
+            <ThemeToggle />
           </div>
-        </div>
-
-        <div className="hidden items-center gap-4 md:flex">
-          <ThemeToggle />
-          <LocaleSwitcher />
-
-          {status === "authenticated" ? (
-            <LocalizedLink href="/logout">
-              <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
-                Logout
-              </span>
-            </LocalizedLink>
-          ) : (
-            <>
-              <LocalizedLink href="/login">
-                <span className="text-sm font-semibold text-neutral-600 transition hover:text-ruachGold dark:text-neutral-200 dark:hover:text-ruachGold">
-                  Login
+          <div className="flex items-center gap-3">
+            {status === "authenticated" ? (
+              <LocalizedLink href="/logout">
+                <span className="text-sm font-semibold text-zinc-900 transition hover:text-ruachGold dark:text-white dark:hover:text-ruachGold">
+                  Logout
                 </span>
               </LocalizedLink>
-              <LocalizedLink href="/signup">
-                <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
-                  Signup
-                </span>
-              </LocalizedLink>
-            </>
-          )}
-
-          {primaryAction ? (
-            <LocalizedLink href={primaryAction.href}>
+            ) : (
+              <>
+                <LocalizedLink href="/login">
+                  <span className="text-sm font-semibold text-zinc-900 transition hover:text-ruachGold dark:text-white dark:hover:text-ruachGold">
+                    Login
+                  </span>
+                </LocalizedLink>
+                <LocalizedLink href="/signup">
+                  <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                    Signup
+                  </span>
+                </LocalizedLink>
+              </>
+            )}
+            <LocalizedLink href="/give">
               <span className="rounded-lg bg-ruachGold px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-ruachGold/90">
-                {primaryAction.label}
+                Give
               </span>
             </LocalizedLink>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-3 md:hidden">
-          <LocaleSwitcher />
-          <ThemeToggle />
+          </div>
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen((value) => !value)}
             aria-label="Toggle navigation menu"
-            className="rounded-md p-2 text-ruachDark transition hover:bg-neutral-100 dark:text-white dark:hover:bg-white/10"
+            className="md:hidden rounded-md p-2 text-ruachDark transition hover:bg-neutral-100 dark:text-white dark:hover:bg-white/10"
           >
             <svg
               className="h-6 w-6"
@@ -128,46 +124,39 @@ export default function Header() {
       </div>
 
       {open ? (
-        <div className="border-t border-neutral-200 bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-white/10 dark:bg-neutral-900">
+        <div className="border-t border-subtle bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-zinc-800 dark:bg-zinc-900/90">
           <div className="space-y-2">
-            {primaryLinks.map((item) => (
+            {NAV_LINKS.map((link) => (
               <LocalizedLink
-                key={item.href}
-                href={item.href}
+                key={link.href}
+                href={link.href}
                 onClick={() => setOpen(false)}
               >
-                <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
-                  {item.label}
+                <span className="block rounded-lg px-3 py-2 text-zinc-900 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-white dark:hover:bg-white/5">
+                  {link.label}
                 </span>
               </LocalizedLink>
             ))}
-            {primaryAction ? (
-              <LocalizedLink
-                href={primaryAction.href}
-                onClick={() => setOpen(false)}
-              >
-                <span className="flex items-center justify-center rounded-lg bg-ruachGold px-4 py-2 font-semibold text-white transition hover:bg-ruachGold/90">
-                  {primaryAction.label}
-                </span>
-              </LocalizedLink>
-            ) : null}
-
+            <div className="flex items-center gap-3">
+              <LocaleSwitcher />
+              <ThemeToggle />
+            </div>
             {status === "authenticated" ? (
               <LocalizedLink
                 href="/logout"
                 onClick={() => setOpen(false)}
               >
-                <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
+                <span className="block rounded-lg px-3 py-2 text-zinc-900 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-white dark:hover:bg-white/5">
                   Logout
                 </span>
               </LocalizedLink>
             ) : (
-              <div className="flex flex-col gap-2">
+              <>
                 <LocalizedLink
                   href="/login"
                   onClick={() => setOpen(false)}
                 >
-                  <span className="block rounded-lg px-3 py-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-neutral-100 dark:hover:bg-white/5">
+                  <span className="block rounded-lg px-3 py-2 text-zinc-900 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-white dark:hover:bg-white/5">
                     Login
                   </span>
                 </LocalizedLink>
@@ -175,12 +164,20 @@ export default function Header() {
                   href="/signup"
                   onClick={() => setOpen(false)}
                 >
-                  <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-neutral-900 transition hover:border-neutral-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                  <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
                     Signup
                   </span>
                 </LocalizedLink>
-              </div>
+              </>
             )}
+            <LocalizedLink
+              href="/give"
+              onClick={() => setOpen(false)}
+            >
+              <span className="flex items-center justify-center rounded-lg bg-ruachGold px-4 py-2 font-semibold text-white transition hover:bg-ruachGold/90">
+                Give
+              </span>
+            </LocalizedLink>
           </div>
         </div>
       ) : null}

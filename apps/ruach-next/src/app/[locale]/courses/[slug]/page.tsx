@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { getServerSession } from "next-auth";
 import type { AuthOptions } from "next-auth";
 import { notFound } from "next/navigation";
@@ -104,7 +104,7 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   return (
     <div className="space-y-12">
       <SEOHead jsonLd={courseSchema} />
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white text-neutral-900 shadow-xl">
+      <section className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white text-neutral-900 shadow-xl">
         <div className="grid gap-6 md:grid-cols-[1.3fr,1fr]">
           <div className="relative min-h-[240px] bg-neutral-200">
             {a.cover?.data?.attributes?.url ? (
@@ -136,23 +136,23 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
             </div>
             <div className="mt-auto flex flex-wrap gap-3">
               {isAuthenticated && firstLesson ? (
-                <Link href={`/courses/${slug}/${firstLesson.slug}`}>
+                <LocalizedLink href={`/courses/${slug}/${firstLesson.slug}`}>
                   <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
                     Resume Course
                   </span>
-                </Link>
+                </LocalizedLink>
               ) : (
                 <>
-                  <Link href="/login">
+                  <LocalizedLink href="/login">
                     <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
                       Login to start
                     </span>
-                  </Link>
-                  <Link href="/signup">
+                  </LocalizedLink>
+                  <LocalizedLink href="/signup">
                     <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500">
                       Create an account
                     </span>
-                  </Link>
+                  </LocalizedLink>
                 </>
               )}
               <CertificateButton
@@ -167,35 +167,35 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">Course Outline</h2>
-            <p className="text-sm text-white/70">Work through each lesson to unlock your completion certificate.</p>
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Course Outline</h2>
+            <p className="text-sm text-zinc-600 dark:text-white/70">Work through each lesson to unlock your completion certificate.</p>
           </div>
-          <div className="text-xs uppercase tracking-wide text-white/50">
+          <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
             {total} lessons
           </div>
         </div>
         <ol className="mt-6 space-y-3">
           {lessons.map((lesson:any, index:number)=>(
-            <li key={lesson.slug} className="rounded-2xl border border-white/10 bg-white/5 transition hover:border-amber-300/60">
-              <Link href={`/courses/${slug}/${lesson.slug}`}>
+            <li key={lesson.slug} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 transition hover:border-amber-300/60">
+              <LocalizedLink href={`/courses/${slug}/${lesson.slug}`}>
                 <span className="flex items-center gap-4 p-5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-white/10 text-sm font-semibold text-zinc-900 dark:text-white">
                     {lesson.order || index + 1}
                   </span>
                 <div className="flex-1">
-                  <div className="text-base font-semibold text-white">{lesson.title}</div>
+                  <div className="text-base font-semibold text-zinc-900 dark:text-white">{lesson.title}</div>
                   {lesson.summary ? (
-                    <p className="text-sm text-white/60">{lesson.summary}</p>
+                    <p className="text-sm text-zinc-500 dark:text-white/60">{lesson.summary}</p>
                   ) : null}
                 </div>
-                  <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-white/40"}`}>
+                  <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-zinc-400 dark:text-white/40"}`}>
                     {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
                   </span>
                 </span>
-              </Link>
+              </LocalizedLink>
             </li>
           ))}
         </ol>

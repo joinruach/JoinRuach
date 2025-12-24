@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Button } from "@/components/ruach/ui/Button";
 import { track } from "@/lib/analytics";
 
@@ -111,7 +111,7 @@ export default function SignupPage({
           {status==="loading"?"Creating account…":"Create account"}
         </Button>
       </form>
-      <p className="text-sm text-muted-foreground">Already registered? <Link href="/login"><span className="text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">Sign in</span></Link></p>
+      <p className="text-sm text-muted-foreground">Already registered? <LocalizedLink href="/login"><span className="text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">Sign in</span></LocalizedLink></p>
     </div>
   );
 }

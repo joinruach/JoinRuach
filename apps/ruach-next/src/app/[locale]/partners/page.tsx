@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import PartnerTierCard from "@/components/partners/PartnerTierCard";
 
 export const metadata = {
@@ -75,32 +75,32 @@ export default async function PartnersPage({
       {/* Hero Section */}
       <section className="space-y-6 text-center">
         <div className="space-y-3">
-          <span className="text-xs uppercase tracking-wide text-white/60">Partnership</span>
-          <h1 className="text-4xl font-bold text-white lg:text-5xl">
+          <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Partnership</span>
+          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white lg:text-5xl">
             Join the Mission
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-white/80">
+          <p className="mx-auto max-w-2xl text-lg text-zinc-700 dark:text-white/80">
             Partner with Ruach Ministries to advance discipleship, outreach, and media ministry
             that transforms lives and communities around the world.
           </p>
         </div>
 
-        <Link
+        <LocalizedLink
           href="#tiers"
         >
           <span className="inline-block rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500">
             See Partnership Levels
           </span>
-        </Link>
+        </LocalizedLink>
       </section>
 
       {/* Impact Stats */}
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {impactStats.map((stat) => (
             <div key={stat.label} className="text-center space-y-2">
               <div className="text-4xl font-bold text-amber-400">{stat.value}</div>
-              <div className="text-sm text-white/70">{stat.label}</div>
+              <div className="text-sm text-zinc-600 dark:text-white/70">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -109,33 +109,33 @@ export default async function PartnersPage({
       {/* Why Partner Section */}
       <section className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-white">Why Partner With Us?</h2>
-          <p className="text-white/70">Your partnership makes eternal impact</p>
+          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Why Partner With Us?</h2>
+          <p className="text-zinc-600 dark:text-white/70">Your partnership makes eternal impact</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="text-4xl">🎥</div>
-            <h3 className="text-xl font-semibold text-white">Media Ministry</h3>
-            <p className="text-sm text-white/70">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">Media Ministry</h3>
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Fund the creation of testimonies, teachings, and cinematic content that reaches
               millions with the Gospel.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="text-4xl">📖</div>
-            <h3 className="text-xl font-semibold text-white">Discipleship</h3>
-            <p className="text-sm text-white/70">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">Discipleship</h3>
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Support deep-dive courses, resources, and mentorship programs that equip believers
               for Kingdom work.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 space-y-3">
             <div className="text-4xl">🌍</div>
-            <h3 className="text-xl font-semibold text-white">Global Outreach</h3>
-            <p className="text-sm text-white/70">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">Global Outreach</h3>
+            <p className="text-sm text-zinc-600 dark:text-white/70">
               Enable on-the-ground ministry, community transformation, and humanitarian aid in
               underserved regions.
             </p>
@@ -146,8 +146,8 @@ export default async function PartnersPage({
       {/* Partnership Tiers */}
       <section id="tiers" className="space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-white">Choose Your Partnership Level</h2>
-          <p className="text-white/70">Select the level that fits your calling and capacity</p>
+          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Choose Your Partnership Level</h2>
+          <p className="text-zinc-600 dark:text-white/70">Select the level that fits your calling and capacity</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
@@ -157,7 +157,7 @@ export default async function PartnersPage({
         </div>
 
         <div className="text-center">
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-zinc-500 dark:text-white/60">
             All donations are tax-deductible. Ruach Ministries is a 501(c)(3) nonprofit organization.
           </p>
         </div>
@@ -165,28 +165,28 @@ export default async function PartnersPage({
 
       {/* CTA Section */}
       <section className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-400/10 to-white/5 p-12 text-center space-y-6">
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">
           Ready to Make a Difference?
         </h2>
-        <p className="mx-auto max-w-xl text-white/80">
+        <p className="mx-auto max-w-xl text-zinc-700 dark:text-white/80">
           Your partnership today will create lasting impact for eternity. Join hundreds of partners
           advancing the Kingdom through Ruach Ministries.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-          <Link
+          <LocalizedLink
             href="/give"
           >
             <span className="rounded-full bg-amber-400 px-8 py-3 font-semibold text-black transition hover:bg-amber-500">
               Become a Partner Today
             </span>
-          </Link>
-          <Link
+          </LocalizedLink>
+          <LocalizedLink
             href="/members/impact"
           >
-            <span className="rounded-full border border-white/20 px-8 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10">
+            <span className="rounded-full border border-zinc-300 dark:border-white/20 px-8 py-3 font-semibold text-zinc-900 dark:text-white transition hover:border-white hover:bg-white dark:hover:bg-white/10">
               View Partner Dashboard
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
     </div>

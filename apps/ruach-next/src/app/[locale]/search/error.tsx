@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next-intl/link';
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 
 export default function Error({
   error,
@@ -17,12 +17,12 @@ export default function Error({
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-6 text-center">
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold text-white">Search Unavailable</h2>
-        <p className="text-sm text-white/70">
+        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Search Unavailable</h2>
+        <p className="text-sm text-zinc-600 dark:text-white/70">
           We encountered an error while searching. Please try again.
         </p>
         {error.digest && (
-          <p className="text-xs text-white/50">Error ID: {error.digest}</p>
+          <p className="text-xs text-zinc-500 dark:text-white/50">Error ID: {error.digest}</p>
         )}
       </div>
 
@@ -33,11 +33,11 @@ export default function Error({
         >
           Try Again
         </button>
-        <Link href="/">
-          <span className="rounded-full border border-white/20 px-6 py-2 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10">
+        <LocalizedLink href="/">
+          <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-2 text-sm font-semibold text-zinc-900 dark:text-white transition hover:border-white hover:bg-white dark:hover:bg-white/10">
             Go Home
           </span>
-        </Link>
+        </LocalizedLink>
       </div>
     </div>
   );

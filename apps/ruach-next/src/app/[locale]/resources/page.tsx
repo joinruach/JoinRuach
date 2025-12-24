@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
@@ -345,29 +345,29 @@ export default async function ResourcesPage({
     <div className="space-y-12">
       <SEOHead jsonLd={resourceSchema} />
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-10 text-white">
-        <span className="text-xs uppercase tracking-[0.35em] text-white/60">Resource Hub</span>
-        <h1 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">{heroTitle}</h1>
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-10 text-zinc-900 dark:text-white">
+        <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Resource Hub</span>
+        <h1 className="mt-4 text-3xl font-semibold text-zinc-900 dark:text-white sm:text-4xl">{heroTitle}</h1>
         <div
-          className="mt-3 max-w-3xl text-sm text-white/80 space-y-3 [&>p]:m-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mt-1"
+          className="mt-3 max-w-3xl text-sm text-zinc-700 dark:text-white/80 space-y-3 [&>p]:m-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mt-1"
           dangerouslySetInnerHTML={{ __html: heroCopyHtml }}
         />
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/media">
+          <LocalizedLink href="/media">
             <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
               Watch testimonies
             </span>
-          </Link>
-          <Link href="/courses">
-            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+          </LocalizedLink>
+          <LocalizedLink href="/courses">
+            <span className="rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
               Explore courses
             </span>
-          </Link>
-          <Link href="/signup">
-            <span className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+          </LocalizedLink>
+          <LocalizedLink href="/signup">
+            <span className="rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
               Join partner community
             </span>
-          </Link>
+          </LocalizedLink>
         </div>
       </section>
 
@@ -376,22 +376,22 @@ export default async function ResourcesPage({
           {directory.highlights.map((highlight) => (
             <article
               key={highlight.id}
-              className="flex h-full flex-col rounded-3xl border border-white/10 bg-white/5 p-6 text-white transition hover:border-amber-300 hover:bg-white/10"
+              className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-900 dark:text-white transition hover:border-amber-300 hover:bg-white dark:hover:bg-white/10"
               style={highlight.accentColor ? { borderColor: `${highlight.accentColor}33` } : undefined}
             >
               {highlight.eyebrow ? (
-                <span className="text-xs uppercase tracking-[0.35em] text-white/60">{highlight.eyebrow}</span>
+                <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">{highlight.eyebrow}</span>
               ) : null}
-              <h2 className="mt-3 text-lg font-semibold text-white">{highlight.title}</h2>
+              <h2 className="mt-3 text-lg font-semibold text-zinc-900 dark:text-white">{highlight.title}</h2>
               {highlight.description ? (
-                <p className="mt-2 text-sm text-white/70">{highlight.description}</p>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{highlight.description}</p>
               ) : null}
               {highlight.ctaLabel && highlight.ctaUrl ? (
-                <Link href={highlight.ctaUrl}>
+                <LocalizedLink href={highlight.ctaUrl}>
                   <span className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 transition hover:text-amber-200">
                     {highlight.ctaLabel} →
                   </span>
-                </Link>
+                </LocalizedLink>
               ) : null}
             </article>
           ))}
@@ -400,12 +400,12 @@ export default async function ResourcesPage({
 
       {filteredSections.map((section) => renderSection(section))}
 
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent p-8 text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent p-8 text-zinc-900 dark:text-white">
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div className="space-y-3">
-            <span className="text-xs uppercase tracking-[0.35em] text-white/60">Stay resourced</span>
-            <h2 className="text-2xl font-semibold text-white">Get fresh testimonies and tools by email</h2>
-            <p className="text-sm text-white/80">
+            <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Stay resourced</span>
+            <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Get fresh testimonies and tools by email</h2>
+            <p className="text-sm text-zinc-700 dark:text-white/80">
               Monthly stories, practical outreach tips, and course releases delivered to your inbox so you can keep
               equipping your community.
             </p>
@@ -646,7 +646,7 @@ function renderSection(section: SectionRenderData) {
       return (
         <section key={section.id} className="space-y-6">
           <SectionHeading section={section} />
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
             {section.items.length ? (
               <MediaGrid items={section.items} />
             ) : (
@@ -663,7 +663,7 @@ function renderSection(section: SectionRenderData) {
             {section.items.length ? (
               section.items.map((item) => <LessonCard key={item.id} lesson={item} />)
             ) : (
-              <p className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/70">
+              <p className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-600 dark:text-white/70">
                 Downloadable resources will appear once they are published.
               </p>
             )}
@@ -678,7 +678,7 @@ function renderSection(section: SectionRenderData) {
             {section.items.length ? (
               section.items.map((item) => <ArticleCardView key={item.id} article={item} />)
             ) : (
-              <p className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/70">
+              <p className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-600 dark:text-white/70">
                 Toolkits and articles are coming soon. Subscribe below to hear when they launch.
               </p>
             )}
@@ -689,7 +689,7 @@ function renderSection(section: SectionRenderData) {
       return (
         <section key={section.id} className="space-y-6">
           <SectionHeading section={section} />
-          <div className="rounded-3xl border border-white/10 bg-white p-8 text-neutral-900">
+          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
             {section.items.length ? (
               <CourseGrid courses={section.items} />
             ) : (
@@ -706,7 +706,7 @@ function renderSection(section: SectionRenderData) {
             {section.items.length ? (
               section.items.map((item) => <CustomResourceCardView key={item.id ?? item.label} resource={item} />)
             ) : (
-              <p className="rounded-3xl border border-white/10 bg-white/5 p-8 text-sm text-white/70">
+              <p className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-sm text-zinc-600 dark:text-white/70">
                 Add custom resource links in Strapi to populate this section.
               </p>
             )}
@@ -726,13 +726,13 @@ function SectionHeading({
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 className="text-xl font-semibold text-white">{section.title}</h2>
-        {section.description ? <p className="text-sm text-white/70">{section.description}</p> : null}
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">{section.title}</h2>
+        {section.description ? <p className="text-sm text-zinc-600 dark:text-white/70">{section.description}</p> : null}
       </div>
       {section.ctaLabel && section.ctaUrl ? (
-        <Link href={section.ctaUrl}>
+        <LocalizedLink href={section.ctaUrl}>
           <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">{section.ctaLabel}</span>
-        </Link>
+        </LocalizedLink>
       ) : null}
     </div>
   );
@@ -745,15 +745,15 @@ function LessonCard({ lesson }: { lesson: LessonDownload }) {
   const requiresLogin = Boolean(primaryResource?.requiresLogin);
 
   return (
-    <article className="flex h-full flex-col rounded-3xl border border-white/10 bg-white/5 p-6 text-white">
+    <article className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-900 dark:text-white">
       <div className="space-y-2">
         {lesson.courseTitle ? (
-          <span className="text-xs uppercase tracking-wide text-white/50">{lesson.courseTitle}</span>
+          <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">{lesson.courseTitle}</span>
         ) : null}
         <h3 className="text-lg font-semibold">{lesson.title}</h3>
-        {lesson.summary ? <p className="text-sm text-white/70">{lesson.summary}</p> : null}
+        {lesson.summary ? <p className="text-sm text-zinc-600 dark:text-white/70">{lesson.summary}</p> : null}
         {lesson.categoryName ? (
-          <p className="text-xs uppercase tracking-wide text-white/40">{lesson.categoryName}</p>
+          <p className="text-xs uppercase tracking-wide text-zinc-400 dark:text-white/40">{lesson.categoryName}</p>
         ) : null}
       </div>
       <div className="mt-6 flex flex-col gap-2">
@@ -770,10 +770,10 @@ function LessonCard({ lesson }: { lesson: LessonDownload }) {
             {requiresLogin ? <span className="ml-2 text-xs uppercase text-black/70">Partners</span> : null}
           </TrackedLink>
         ) : (
-          <span className="text-sm text-white/60">Resources coming soon.</span>
+          <span className="text-sm text-zinc-500 dark:text-white/60">Resources coming soon.</span>
         )}
         {secondary.length ? (
-          <div className="space-y-1 text-xs text-white/60">
+          <div className="space-y-1 text-xs text-zinc-500 dark:text-white/60">
             {secondary.map((resource, index) => (
               <div key={`${resource.id ?? resource.url}-${index}`} className="flex items-center gap-2">
                 <span className="inline-flex h-2 w-2 rounded-full bg-amber-300" aria-hidden />
@@ -785,7 +785,7 @@ function LessonCard({ lesson }: { lesson: LessonDownload }) {
                 >
                   {resource.label || "Additional resource"}
                 </a>
-                {resource.requiresLogin ? <span className="text-[10px] uppercase text-white/40">Partners</span> : null}
+                {resource.requiresLogin ? <span className="text-[10px] uppercase text-zinc-400 dark:text-white/40">Partners</span> : null}
               </div>
             ))}
           </div>
@@ -800,8 +800,8 @@ function ArticleCardView({ article }: { article: ArticleCard }) {
   const href = article.href || "#";
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 text-white">
-      <div className="relative aspect-[4/3] bg-white/10">
+    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-900 dark:text-white">
+      <div className="relative aspect-[4/3] bg-white dark:bg-white/10">
         {imageSrc ? (
           <Image
             src={imageSrc}
@@ -814,16 +814,16 @@ function ArticleCardView({ article }: { article: ArticleCard }) {
       </div>
       <div className="flex flex-1 flex-col p-6">
         {article.label ? (
-          <span className="text-xs uppercase tracking-wide text-white/60">{article.label}</span>
+          <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">{article.label}</span>
         ) : null}
         <h3 className="mt-2 text-lg font-semibold">{article.title}</h3>
-        {article.summary ? <p className="mt-2 text-sm text-white/70">{article.summary}</p> : null}
+        {article.summary ? <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{article.summary}</p> : null}
         {article.href ? (
-          <Link href={href}>
+          <LocalizedLink href={href}>
             <span className="mt-6 inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200">
               Read resource →
             </span>
-          </Link>
+          </LocalizedLink>
         ) : null}
       </div>
     </article>
@@ -833,11 +833,11 @@ function ArticleCardView({ article }: { article: ArticleCard }) {
 function CustomResourceCardView({ resource }: { resource: CustomResourceCard }) {
   const isExternal = resource.url.startsWith("http");
   return (
-    <article className="flex h-full flex-col rounded-3xl border border-white/10 bg-white/5 p-6 text-white transition hover:border-amber-300">
+    <article className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-900 dark:text-white transition hover:border-amber-300">
       <h3 className="text-lg font-semibold">{resource.label}</h3>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-white/50">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
         {resource.type ? <span>{resource.type}</span> : null}
-        {resource.requiresLogin ? <span className="rounded-full border border-white/30 px-2 py-0.5 text-[10px]">Partners</span> : null}
+        {resource.requiresLogin ? <span className="rounded-full border border-zinc-300/80 dark:border-white/30 px-2 py-0.5 text-[10px]">Partners</span> : null}
       </div>
       {isExternal ? (
         <a
@@ -849,11 +849,11 @@ function CustomResourceCardView({ resource }: { resource: CustomResourceCard }) 
           Open →
         </a>
       ) : (
-        <Link href={resource.url}>
+        <LocalizedLink href={resource.url}>
           <span className="mt-auto inline-flex items-center text-sm font-semibold text-amber-300 hover:text-amber-200">
             Open →
           </span>
-        </Link>
+        </LocalizedLink>
       )}
     </article>
   );

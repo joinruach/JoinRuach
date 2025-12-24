@@ -1,4 +1,4 @@
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import EmbedScript from "@/components/ruach/embeds/EmbedScript";
 import SpeakerCard from "@/components/ruach/SpeakerCard";
 import { getConferencePage, getEvents, imgUrl } from "@/lib/strapi";
@@ -306,7 +306,7 @@ export default async function ConferencesPage(){
 
   return (
     <div className="space-y-12">
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-white text-neutral-900 shadow-xl">
+      <section className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-white text-neutral-900 shadow-xl">
         {heroImage ? (
           <div className="relative h-64 w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -336,11 +336,11 @@ export default async function ConferencesPage(){
                   {primaryCtaLabel}
                 </a>
               ) : (
-                <Link href={primaryCtaUrl}>
+                <LocalizedLink href={primaryCtaUrl}>
                   <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
                     {primaryCtaLabel}
                   </span>
-                </Link>
+                </LocalizedLink>
               )}
               {isExternal(secondaryCtaUrl) ? (
                 <a
@@ -352,15 +352,15 @@ export default async function ConferencesPage(){
                   {secondaryCtaLabel}
                 </a>
               ) : (
-                <Link href={secondaryCtaUrl}>
+                <LocalizedLink href={secondaryCtaUrl}>
                   <span className="inline-flex items-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-800 transition hover:border-neutral-500">
                     {secondaryCtaLabel}
                   </span>
-                </Link>
+                </LocalizedLink>
               )}
             </div>
           </div>
-          <div className="rounded-3xl border border-neutral-200 bg-white/70 p-5">
+          <div className="rounded-3xl border border-zinc-200 bg-white/70 p-5 shadow-sm dark:border-white/10 dark:bg-white/10 dark:shadow-none">
             <h2 className="text-sm font-semibold text-neutral-800">Secure your seat</h2>
             <p className="mt-2 text-sm text-neutral-600">Givebutter processes all registrations and donations.</p>
             <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4">
@@ -376,20 +376,20 @@ export default async function ConferencesPage(){
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
-        <h2 className="text-2xl font-semibold text-white">Schedule Preview</h2>
-        <p className="mt-2 text-sm text-white/70">We will release a full schedule closer to the event. Highlights below are sample sessions.</p>
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Schedule Preview</h2>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">We will release a full schedule closer to the event. Highlights below are sample sessions.</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {schedule.map((block, index) => {
             const key = block.id ?? `${block.title}-${block.time ?? index}`;
             return (
-              <div key={key} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <div key={key} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-5">
                 {block.time ? (
-                  <div className="text-xs uppercase tracking-wide text-white/60">{block.time}</div>
+                  <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">{block.time}</div>
                 ) : null}
-                <div className="mt-2 text-lg font-semibold text-white">{block.title}</div>
+                <div className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">{block.title}</div>
                 {block.description ? (
-                  <p className="mt-2 text-sm text-white/70">{block.description}</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{block.description}</p>
                 ) : null}
               </div>
             );
@@ -397,15 +397,15 @@ export default async function ConferencesPage(){
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white p-10 text-neutral-900">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-10 text-neutral-900">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-neutral-900">Featured Speakers</h2>
             <p className="text-sm text-neutral-600">Leaders who burn for Jesus and carry impartation for freedom.</p>
           </div>
-          <Link href="/contact">
+          <LocalizedLink href="/contact">
             <span className="text-sm font-semibold text-neutral-700 hover:text-neutral-900">Invite Ruach to your city →</span>
-          </Link>
+          </LocalizedLink>
         </div>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {speakers.map((speaker, index) => {
@@ -425,25 +425,25 @@ export default async function ConferencesPage(){
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Conference Merch</h2>
-            <p className="text-sm text-white/70">Grab limited releases to support Ruach Studios.</p>
+            <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Conference Merch</h2>
+            <p className="text-sm text-zinc-600 dark:text-white/70">Grab limited releases to support Ruach Studios.</p>
           </div>
-          <Link href="/media">
+          <LocalizedLink href="/media">
             <span className="text-sm font-semibold text-amber-300 hover:text-amber-200">Watch our latest stories →</span>
-          </Link>
+          </LocalizedLink>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {merch.map((item, index) => {
             const key = item.id ?? `${item.title}-${index}`;
             const external = isExternal(item.href);
             return (
-              <div key={key} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="text-lg font-semibold text-white">{item.title}</div>
+              <div key={key} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6">
+                <div className="text-lg font-semibold text-zinc-900 dark:text-white">{item.title}</div>
                 {item.description ? (
-                  <p className="mt-2 text-sm text-white/70">{item.description}</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{item.description}</p>
                 ) : null}
                 {external ? (
                   <a
@@ -455,11 +455,11 @@ export default async function ConferencesPage(){
                     {item.ctaLabel || "Purchase via Stripe"}
                   </a>
                 ) : (
-                  <Link href={item.href}>
+                  <LocalizedLink href={item.href}>
                     <span className="mt-4 inline-flex items-center rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
                       {item.ctaLabel || "Purchase via Stripe"}
                     </span>
-                  </Link>
+                  </LocalizedLink>
                 )}
               </div>
             );

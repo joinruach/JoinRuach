@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 
-export default function MembersIndex() {
-  redirect("/members/account");
+export default async function MembersIndex({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/members/account`);
 }
-

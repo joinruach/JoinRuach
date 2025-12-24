@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next-intl/link";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import Image from "next/image";
 import { imgUrl } from "@/lib/strapi";
 
@@ -42,8 +42,8 @@ const contentTypeColors: Record<string, string> = {
 async function SearchResults({ query, type }: { query: string; type?: string }) {
   if (!query || query.length < 2) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-        <p className="text-white/60">
+      <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-12 text-center">
+        <p className="text-zinc-500 dark:text-white/60">
           Enter at least 2 characters to search
         </p>
       </div>
@@ -70,24 +70,24 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
 
     if (results.length === 0) {
       return (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center space-y-4">
+        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-12 text-center space-y-4">
           <div className="text-5xl">🔍</div>
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-white">No Results Found</h3>
-            <p className="text-sm text-white/60">
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">No Results Found</h3>
+            <p className="text-sm text-zinc-500 dark:text-white/60">
               Try searching with different keywords or browse our content categories.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-center pt-4">
-            <Link href="/media">
+            <LocalizedLink href="/media">
               <span className="text-sm text-amber-300 hover:text-amber-200">Browse Media →</span>
-            </Link>
-            <Link href="/courses">
+            </LocalizedLink>
+            <LocalizedLink href="/courses">
               <span className="text-sm text-amber-300 hover:text-amber-200">Browse Courses →</span>
-            </Link>
-            <Link href="/series">
+            </LocalizedLink>
+            <LocalizedLink href="/series">
               <span className="text-sm text-amber-300 hover:text-amber-200">Browse Series →</span>
-            </Link>
+            </LocalizedLink>
           </div>
         </div>
       );
@@ -95,17 +95,17 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
 
     return (
       <div className="space-y-4">
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-zinc-600 dark:text-white/70">
           Found {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
         </p>
 
         <div className="space-y-4">
           {results.map((result) => (
-            <Link
+            <LocalizedLink
               key={result.id}
               href={result.url}
             >
-              <div className="group flex gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20 hover:bg-white/10">
+              <div className="group flex gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 transition hover:border-zinc-300 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10">
               {/* Thumbnail */}
               {result.thumbnail ? (
                 <div className="relative h-24 w-32 flex-shrink-0 overflow-hidden rounded-lg">
@@ -117,7 +117,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
                   />
                 </div>
               ) : (
-                <div className="flex h-24 w-32 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
+                <div className="flex h-24 w-32 flex-shrink-0 items-center justify-center rounded-lg bg-white dark:bg-white/10">
                   <span className="text-2xl">
                     {result.type === "media" && "🎥"}
                     {result.type === "series" && "📚"}
@@ -132,7 +132,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
               {/* Content */}
               <div className="flex-1 space-y-2">
                 <div className="flex items-start gap-3">
-                  <h3 className="text-lg font-semibold text-white group-hover:text-amber-300 line-clamp-2">
+                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white group-hover:text-amber-300 line-clamp-2">
                     {result.title}
                   </h3>
                   <span
@@ -145,11 +145,11 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
                 </div>
 
                 {result.excerpt && (
-                  <p className="text-sm text-white/70 line-clamp-2">{result.excerpt}</p>
+                  <p className="text-sm text-zinc-600 dark:text-white/70 line-clamp-2">{result.excerpt}</p>
                 )}
 
                 {result.publishedAt && (
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-zinc-500 dark:text-white/50">
                     {new Date(result.publishedAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -159,7 +159,7 @@ async function SearchResults({ query, type }: { query: string; type?: string }) 
                 )}
               </div>
             </div>
-            </Link>
+            </LocalizedLink>
           ))}
         </div>
       </div>
@@ -203,7 +203,7 @@ export default async function SearchPage({
     <div className="space-y-8">
       {/* Header */}
       <header className="space-y-4">
-        <h1 className="text-3xl font-bold text-white">Search</h1>
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Search</h1>
 
         {/* Search Form */}
         <form method="GET" action="/search" className="space-y-4">
@@ -213,7 +213,7 @@ export default async function SearchPage({
               name="q"
               defaultValue={query}
               placeholder="Search for teachings, testimonies, courses..."
-              className="flex-1 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-white placeholder-white/50 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+              className="flex-1 rounded-full border border-zinc-300 dark:border-white/20 bg-white dark:bg-white/10 px-6 py-3 text-zinc-900 dark:text-white placeholder-white/50 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
               autoFocus
             />
             <button
@@ -235,7 +235,7 @@ export default async function SearchPage({
                 className={`rounded-full px-4 py-1.5 text-sm transition ${
                   type === option.value
                     ? "bg-amber-400 text-black"
-                    : "border border-white/10 text-white/70 hover:border-white hover:text-white"
+                    : "border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-white/70 hover:border-white hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 {option.label}
@@ -250,12 +250,12 @@ export default async function SearchPage({
         fallback={
           <div className="space-y-4 animate-pulse">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="h-24 w-32 rounded-lg bg-white/10" />
+              <div key={i} className="flex gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-4">
+                <div className="h-24 w-32 rounded-lg bg-white dark:bg-white/10" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-6 w-3/4 rounded bg-white/10" />
-                  <div className="h-4 w-full rounded bg-white/10" />
-                  <div className="h-3 w-32 rounded bg-white/10" />
+                  <div className="h-6 w-3/4 rounded bg-white dark:bg-white/10" />
+                  <div className="h-4 w-full rounded bg-white dark:bg-white/10" />
+                  <div className="h-3 w-32 rounded bg-white dark:bg-white/10" />
                 </div>
               </div>
             ))}
