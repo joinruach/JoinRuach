@@ -213,7 +213,7 @@ export default async function About({
                   <img
                     src={storyImageDesktop}
                     alt={storyImageAlt}
-                    className="block w-full object-cover object-[center_28%] aspect-[5/4] md:aspect-[31/12] md:object-center"
+                    className="block w-full object-cover object-[center_28%] min-h-[480px] md:min-h-[640px]"
                     loading="lazy"
                   />
                 </picture>
