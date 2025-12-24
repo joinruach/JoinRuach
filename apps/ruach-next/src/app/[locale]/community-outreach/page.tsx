@@ -485,6 +485,24 @@ export default async function CommunityOutreachPage({
           </div>
         </section>
       ) : null}
+
+      {/* Called to Lead? - Carry the Fire Cross-Link */}
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+        <div className="max-w-2xl space-y-4">
+          <h2 className="text-2xl font-semibold">Called to Lead?</h2>
+          <p className="text-sm text-white/80">
+            Some are called to participate. Others are called to lead, replicate, or build outreach where they live.
+          </p>
+          <p className="text-sm text-white/80">
+            If you sense God calling you beyond volunteering—to plant something, lead something, or carry this fire into your city—we want to equip and send you.
+          </p>
+          <Link href="/carry">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+              Learn More →
+            </span>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

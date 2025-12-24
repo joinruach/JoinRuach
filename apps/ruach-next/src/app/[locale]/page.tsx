@@ -151,24 +151,17 @@ export default async function Home({
         <div className="relative z-10 max-w-3xl space-y-6">
           <span className="text-xs uppercase tracking-[0.4em] text-white/70">Ruach Ministries</span>
           <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-            Breathing life into nations through story, teaching, and compassion.
+            Ruach is a prophetic media ministry that forms, equips, and sends believers to carry freedom and establish Kingdom communities.
           </h1>
           <p className="text-lg text-white/80">
-            Ruach Studios carries the fire of the Holy Spirit into living rooms, churches, conferences, and street corners—awakening hearts to the freedom found in Jesus.
+            We tell testimonies, disciple believers in the Word and the gifts of the Spirit, and mobilize outreach teams—so what God does in private lives is carried into public places.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/give"
+              href="/start"
             >
               <span className="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400">
-                Give Today
-              </span>
-            </Link>
-            <Link
-              href="/community-outreach"
-            >
-              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
-                Join the Community
+                Start Here
               </span>
             </Link>
             <Link
@@ -176,6 +169,13 @@ export default async function Home({
             >
               <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
                 Watch Testimonies
+              </span>
+            </Link>
+            <Link
+              href="/community-outreach"
+            >
+              <span className="rounded-full border border-white/20 px-6 py-2.5 text-sm font-semibold text-white/90 transition hover:border-white hover:text-white">
+                Join the Community
               </span>
             </Link>
           </div>
@@ -349,6 +349,22 @@ export default async function Home({
           <RecommendedForYou limit={6} />
         </Suspense>
       ) : null}
+
+      {/* Builder Callout - Carry the Fire */}
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white">
+        <div className="max-w-2xl space-y-3">
+          <span className="text-xs uppercase tracking-wide text-white/60">For Builders & Senders</span>
+          <h2 className="text-2xl font-semibold">Some Are Called Beyond Participation</h2>
+          <p className="text-sm text-white/70">
+            If you sense God is calling you not just to follow Ruach, but to replicate, lead, or carry what He&apos;s doing into your city—we want to equip and send you.
+          </p>
+          <Link href="/carry">
+            <span className="inline-flex items-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 transition hover:border-white hover:text-white">
+              Discover the Builder Pathway →
+            </span>
+          </Link>
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-white/10 bg-amber-500/10 p-10 text-white">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

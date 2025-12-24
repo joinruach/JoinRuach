@@ -9,10 +9,17 @@ type SocialLink = {
   icon: SocialPlatform;
 };
 
-const quickLinks = [
-  { label: "Home", href: "/" },
+const startHereLinks = [
+  { label: "Start Here", href: "/start" },
+  { label: "Carry the Fire", href: "/carry" },
+  { label: "About Our Mission", href: "/about" },
+  { label: "Statement of Faith", href: "/about#statement-of-faith" }
+];
+
+const connectLinks = [
   { label: "Media", href: "/media" },
   { label: "Courses", href: "/courses" },
+  { label: "Community Outreach", href: "/community-outreach" },
   { label: "Give", href: "/give" },
   { label: "Contact", href: "/contact" }
 ];
@@ -91,70 +98,92 @@ export default function Footer(){
   return (
     <footer className="border-t border-white/10 bg-black text-white">
       <div className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid gap-10 md:grid-cols-[1.1fr,1fr,1fr]">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Ruach Ministries</h2>
-            <p className="text-sm text-white/70">
-              Carrying the breath of God through media, discipleship, and compassionate outreach.
-            </p>
-            <div className="mt-6">
-              <div className="text-xs uppercase tracking-wide text-white/60">Quick Links</div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {quickLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href}>
-                      <span className="text-white/70 transition hover:text-white">
-                        {link.label}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+        {/* Identity Section */}
+        <div className="mb-8 space-y-2">
+          <h2 className="text-lg font-semibold uppercase tracking-wide">
+            Ruach Ministries
+          </h2>
+          <p className="max-w-3xl text-sm text-white/70">
+            Ruach is a prophetic media ministry that forms, equips, and sends believers to carry freedom and establish Kingdom communities.
+          </p>
+        </div>
+
+        {/* Column Links */}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Start Here Column */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
+              Start Here
+            </h3>
+            <ul className="space-y-2 text-sm text-white/70">
+              {startHereLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    <span className="transition hover:text-white">
+                      {link.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-white/60">Newsletter</div>
-              <p className="mt-2 text-sm text-white/70">
-                Subscribe for testimonies, course releases, and upcoming events.
-              </p>
-            </div>
-            <NewsletterSignup variant="dark" id="footer-newsletter" />
+          {/* Connect Column */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
+              Connect
+            </h3>
+            <ul className="space-y-2 text-sm text-white/70">
+              {connectLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    <span className="transition hover:text-white">
+                      {link.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="space-y-4">
-            <div className="text-xs uppercase tracking-wide text-white/60">Connect</div>
-            <p className="text-sm text-white/70">
-              Follow Ruach Studios for behind-the-scenes stories and livestreams.
-            </p>
-            {socialLinks.length ? (
-              <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
-                  >
-                    <SocialIcon name={social.icon} />
-                  </a>
-                ))}
-              </div>
-            ) : null}
+          {/* Transparency Column */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
+              Transparency
+            </h3>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li>501(c)(3) nonprofit organization</li>
+              <li>EIN: 33-3149173</li>
+            </ul>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-xs text-white/60">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <p>© {new Date().getFullYear()} Ruach Ministries. All rights reserved.</p>
-            <div className="space-y-1 text-left md:text-right">
-              <p>Ruach Ministries is a registered 501(c)(3) organization. Gifts are tax-deductible as allowed by law.</p>
-              <p>EIN: 33-3149173</p>
+        {/* Social Media */}
+        <div className="mt-8">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
+            Follow
+          </h3>
+          {socialLinks.length ? (
+            <div className="flex gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/80 transition hover:border-amber-400 hover:text-amber-300"
+                >
+                  <SocialIcon name={social.icon} />
+                </a>
+              ))}
             </div>
-          </div>
+          ) : null}
+        </div>
+
+        {/* Copyright */}
+        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-white/60">
+          © {new Date().getFullYear()} Ruach Ministries. All rights reserved.
         </div>
       </div>
     </footer>

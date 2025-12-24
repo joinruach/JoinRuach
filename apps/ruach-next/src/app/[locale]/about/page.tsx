@@ -84,6 +84,17 @@ export default async function About({
 
   return (
     <div className="space-y-12">
+      {/* New to Ruach? Start Here Banner */}
+      <div className="rounded-2xl border border-amber-300/40 bg-amber-500/10 p-4 text-sm text-white">
+        <span className="font-semibold">New here?</span> Start with our{" "}
+        <Link href="/start">
+          <span className="underline transition hover:text-amber-300">
+            orientation page
+          </span>
+        </Link>{" "}
+        to understand what Ruach is and where you fit in the journey.
+      </div>
+
       <section className="rounded-3xl border border-white/10 bg-white/5 p-10 text-white">
         <span className="text-xs uppercase tracking-[0.35em] text-white/60">🕊️ Who We Are</span>
         <h1 className="mt-4 text-3xl font-semibold text-white">Ruach Ministries</h1>
