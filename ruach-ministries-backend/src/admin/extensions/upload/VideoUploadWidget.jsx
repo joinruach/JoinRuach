@@ -5,7 +5,8 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Box, Button, Flex, Progress, Typography, Alert } from '@strapi/design-system';
+import { Box, Button, Flex, Typography, Alert } from '@strapi/design-system';
+import { Progress } from '@strapi/design-system/Progress';
 import { Play, Pause, Cross, Upload } from '@strapi/icons';
 import R2MultipartUploader from './r2-multipart-uploader';
 
