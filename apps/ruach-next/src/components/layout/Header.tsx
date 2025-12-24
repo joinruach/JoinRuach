@@ -9,14 +9,13 @@ import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/media", label: "Media & Testimonies" },
+  { href: "/start", label: "Start Here" },
+  { href: "/media", label: "Media" },
   { href: "/courses", label: "Courses" },
-  { href: "/resources", label: "Resources" },
-  { href: "/conferences", label: "Conferences" },
   { href: "/community-outreach", label: "Community Outreach" },
+  { href: "/carry", label: "Carry the Fire" },
   { href: "/give", label: "Give", highlight: true },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export default function Header() {
