@@ -5,10 +5,16 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Box, Button, Flex, Typography, Alert } from '@strapi/design-system';
-import { Progress } from '@strapi/design-system/Progress';
-import { Play, Pause, Cross, Upload } from '@strapi/icons';
+import { Box, Button, Flex, Typography, Alert, ProgressBar } from '@strapi/design-system';
+import { Play, Cross, Upload } from '@strapi/icons';
 import R2MultipartUploader from './r2-multipart-uploader';
+
+const PauseIcon = () => (
+  <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="3" height="14" rx="1" fill="currentColor" />
+    <rect x="7" y="1" width="3" height="14" rx="1" fill="currentColor" />
+  </svg>
+);
 
 const VideoUploadWidget = ({ value, onChange, name, disabled }) => {
   const [uploading, setUploading] = useState(false);
@@ -220,16 +226,16 @@ const VideoUploadWidget = ({ value, onChange, name, disabled }) => {
               </Typography>
             </Flex>
 
-            <Progress value={progress} max={100} />
+            <ProgressBar value={progress} max={100} />
 
             <Flex gap={2} marginTop={2}>
               {!paused ? (
-                <Button
-                  variant="secondary"
-                  startIcon={<Pause />}
-                  onClick={handlePause}
-                  size="S"
-                >
+              <Button
+                variant="secondary"
+                startIcon={<PauseIcon />}
+                onClick={handlePause}
+                size="S"
+              >
                   Pause
                 </Button>
               ) : (
