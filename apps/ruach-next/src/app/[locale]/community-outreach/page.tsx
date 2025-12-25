@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import Image from "next/image";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
@@ -59,7 +60,7 @@ const fallbackGivingHighlights: GivingHighlight[] = [
 ];
 
 const defaultHeroDescription =
-  "We take testimonies beyond the camera. Every week Ruach volunteers share the gospel, deliver groceries, pray for the sick, and disciple new believers across our city.";
+  "Technology is accelerating. Narratives are being shaped. Systems are being built—not just to inform people, but to guide behavior, manage belief, and centralize authority.\n\nRuach is not here to compete with those systems. Ruach is here to build something different.\n\nNot control systems—but truth systems. Systems that help people see clearly, test what they hear, and walk faithfully in a fractured world.";
 
 type CampaignSummary = {
   id: number;
@@ -182,17 +183,17 @@ export default async function CommunityOutreachPage({
   const page = await getCommunityOutreachPage().catch(() => null);
   const attributes = page?.attributes;
 
-  const heroEyebrow = attributes?.heroEyebrow ?? "Ruach in the City";
-  const heroTitle = attributes?.heroTitle ?? "Community Outreach";
+  const heroEyebrow = attributes?.heroEyebrow ?? "Ruach in a Moment of Tension";
+  const heroTitle = attributes?.heroTitle ?? "They're Building Control Systems. We're Building Truth Systems.";
   const heroDescription = attributes?.heroDescription ?? defaultHeroDescription;
   const heroPrimaryCta =
     attributes?.heroPrimaryCtaLabel && attributes?.heroPrimaryCtaUrl
       ? { label: attributes.heroPrimaryCtaLabel, href: attributes.heroPrimaryCtaUrl }
-      : { label: "Volunteer with Ruach", href: "#volunteer" };
+      : { label: "Explore Stories", href: "/community-outreach/stories" };
   const heroSecondaryCta =
     attributes?.heroSecondaryCtaLabel && attributes?.heroSecondaryCtaUrl
       ? { label: attributes.heroSecondaryCtaLabel, href: attributes.heroSecondaryCtaUrl }
-      : { label: "Support Outreach", href: "#support" };
+      : { label: "Join Us", href: "#volunteer" };
 
   const featuredStoryEntities = attributes?.featuredStories?.data ?? [];
   let stories = featuredStoryEntities
@@ -234,7 +235,7 @@ export default async function CommunityOutreachPage({
     process.env.NEXT_PUBLIC_OUTREACH_GIVE_URL ||
     "https://givebutter.com/ruach-outreach";
 
-  const storiesHeading = attributes?.featuredStoriesHeading ?? "Stories from the Streets";
+  const storiesHeading = attributes?.featuredStoriesHeading ?? "Stories from the Field";
   const storiesCtaLabel = attributes?.featuredStoriesCtaLabel ?? "View all testimonies →";
   const storiesCtaUrl = attributes?.featuredStoriesCtaUrl ?? "/community-outreach/stories";
 
@@ -285,6 +286,41 @@ export default async function CommunityOutreachPage({
         </div>
       </section>
 
+      {/* What Makes a Truth System? */}
+      <section className="rounded-3xl border border-border bg-card p-8 text-foreground">
+        <h2 className="mb-6 text-2xl font-semibold text-foreground">What Makes a Truth System?</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-3">
+            <div className="text-3xl">📖</div>
+            <h3 className="text-lg font-semibold text-foreground">Scripture-Rooted</h3>
+            <p className="text-sm text-muted-foreground">
+              God's Word is the plumbline for all decisions, interpretations, and direction.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="text-3xl">🎙️</div>
+            <h3 className="text-lg font-semibold text-foreground">Testimony-Powered</h3>
+            <p className="text-sm text-muted-foreground">
+              Real stories over synthetic narratives. Lived faith over curated performance.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="text-3xl">🔍</div>
+            <h3 className="text-lg font-semibold text-foreground">Open to Examination</h3>
+            <p className="text-sm text-muted-foreground">
+              Truth invites testing. Questions are not threats—they're pathways to clarity.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="text-3xl">🌐</div>
+            <h3 className="text-lg font-semibold text-foreground">Resistant to Control</h3>
+            <p className="text-sm text-muted-foreground">
+              Decentralized by design. No single voice replaces conscience, Scripture, or the Spirit.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-foreground">{storiesHeading}</h2>
@@ -301,75 +337,46 @@ export default async function CommunityOutreachPage({
         </div>
       </section>
 
-      {campaigns.length > 0 ? (
-        <section className="rounded-3xl border border-border bg-card p-8 text-foreground">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-foreground">Active Campaigns</h2>
-            <span className="text-sm text-muted-foreground">
-              Strategic initiatives we are funding in the city
-            </span>
-          </div>
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            {campaigns.map((campaign) => (
-              <div
-                key={campaign.id}
-                className="rounded-3xl border border-border bg-[rgba(255,255,255,0.7)] p-6 shadow-[0_20px_60px_rgba(43,37,30,0.08)]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">{campaign.name}</h3>
-                    {campaign.summary ? (
-                      <p className="mt-2 text-sm text-muted-foreground">{campaign.summary}</p>
-                    ) : null}
-                  </div>
-                  {!campaign.active ? (
-                    <span className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground">
-                      Paused
-                    </span>
-                  ) : null}
-                </div>
-                {campaign.metrics.length > 0 ? (
-                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {campaign.metrics.map((metric) => (
-                      <div
-                        key={`${campaign.id}-${metric.id ?? metric.label}`}
-                        className="rounded-2xl border border-border bg-muted/60 p-4"
-                      >
-                        {metric.value ? (
-                          <dt className="text-lg font-semibold text-foreground">{metric.value}</dt>
-                        ) : null}
-                        {metric.label ? (
-                          <dd className="text-xs uppercase tracking-wide text-muted-foreground">
-                            {metric.label}
-                          </dd>
-                        ) : null}
-                        {metric.description ? (
-                          <p className="mt-2 text-xs text-muted-foreground">{metric.description}</p>
-                        ) : null}
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-                {campaign.donationLink ? (
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <LocalizedLink href={campaign.donationLink}>
-                      <span className="rounded-full bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
-                        Support this campaign
-                      </span>
-                    </LocalizedLink>
-                    {campaign.giveCode ? (
-                      <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                        Give Code: {campaign.giveCode}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : campaign.giveCode ? (
-                  <p className="mt-5 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    Give Code: {campaign.giveCode}
-                  </p>
-                ) : null}
+      {/* The Mirror - Optional Introduction (Feature Flag) */}
+      {process.env.NEXT_PUBLIC_MIRROR_ENABLED === "true" ? (
+        <section className="rounded-3xl border border-border bg-gradient-to-br from-card to-muted/30 p-8 text-foreground">
+          <div className="mx-auto max-w-3xl space-y-6 text-center">
+            <h2 className="text-2xl font-semibold text-foreground">🪞 The Mirror</h2>
+            <p className="text-lg text-muted-foreground">Reflection. Discernment. Witness.</p>
+            <p className="text-sm text-muted-foreground">
+              We don't tell you what to think. We help you learn how to see.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              The Mirror is a space for truth-seeking—where Scripture meets lived experience, where you
+              slow down, test ideas, and grow in spiritual clarity.
+            </p>
+            <div className="mt-8 grid gap-6 text-left md:grid-cols-3">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">Reflect</h3>
+                <p className="text-sm text-muted-foreground">
+                  Scripture-based reflection guides and journaling prompts
+                </p>
               </div>
-            ))}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">Discern</h3>
+                <p className="text-sm text-muted-foreground">
+                  Test teachings, analyze cultural trends through a biblical lens
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">Witness</h3>
+                <p className="text-sm text-muted-foreground">
+                  Share your testimony, join prayer, walk out truth in community
+                </p>
+              </div>
+            </div>
+            <div className="mt-6">
+              <LocalizedLink href="/community-outreach#volunteer">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted/50">
+                  Enter The Mirror →
+                </span>
+              </LocalizedLink>
+            </div>
           </div>
         </section>
       ) : null}
@@ -455,36 +462,6 @@ export default async function CommunityOutreachPage({
           <DonationForm processorUrl={donationFormUrl} />
         </div>
       </section>
-
-      {subscriptionBanner?.title ? (
-        <section className="rounded-3xl border border-border bg-muted/80 p-8 text-foreground">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-foreground">{subscriptionBanner.title}</h3>
-              {subscriptionBanner.body ? (
-                <p className="text-sm text-muted-foreground">{subscriptionBanner.body}</p>
-              ) : null}
-              {subscriptionBanner.ctaLabel && subscriptionBanner.ctaUrl ? (
-                <LocalizedLink href={subscriptionBanner.ctaUrl}>
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
-                    {subscriptionBanner.ctaLabel} →
-                  </span>
-                </LocalizedLink>
-              ) : null}
-            </div>
-            {subscriptionBanner?.image ? (
-              <Image
-                src={subscriptionBanner.image.url}
-                alt={subscriptionBanner.image.alt}
-                width={subscriptionBanner.image.width ?? 640}
-                height={subscriptionBanner.image.height ?? 360}
-                className="h-32 w-full max-w-sm rounded-2xl object-cover"
-                sizes="(min-width: 768px) 320px, 100vw"
-              />
-            ) : null}
-          </div>
-        </section>
-      ) : null}
 
       {/* Called to Lead? - Carry the Fire Cross-Link */}
       <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
