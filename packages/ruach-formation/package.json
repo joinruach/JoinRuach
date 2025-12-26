@@ -1,0 +1,22 @@
+{
+  "name": "@ruach/formation",
+  "version": "0.1.0",
+  "description": "Formation Engine - Event-sourced spiritual discipleship system",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["formation", "discipleship", "event-sourcing"],
+  "author": "Ruach Ministries",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@ruach/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
