@@ -17,14 +17,15 @@
     "node": ">=18.18.0"
   },
   "dependencies": {
-    "@ai-sdk/react": "^2.0.26",
     "@ai-sdk/anthropic": "^2.0.44",
+    "@ai-sdk/react": "^2.0.26",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@resvg/resvg-js": "^2.6.2",
     "@ruach/addons": "workspace:*",
     "@ruach/ai": "workspace:*",
     "@ruach/components": "workspace:*",
     "@ruach/tailwind-preset": "workspace:*",
+    "@sendgrid/mail": "^8.1.6",
     "@sentry/nextjs": "^8.40.0",
     "@upstash/ratelimit": "^1.0.2",
     "@upstash/redis": "^1.30.0",

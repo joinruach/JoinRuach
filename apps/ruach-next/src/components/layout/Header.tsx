@@ -10,13 +10,22 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/start", label: "Start Here" },
   { href: "/media", label: "Media" },
-  { href: "/community-outreach", label: "Community" },
-  { href: "/about", label: "About" },
+  { href: "/partners", label: "Partners" },
+  { href: "/community-outreach", label: "Builders" },
+];
+
+const ABOUT_LINKS = [
+  { href: "/about", label: "Our Mission" },
+  { href: "/team", label: "Team & Leadership" },
+  { href: "/beliefs", label: "What We Believe" },
+  { href: "/transparency", label: "Financial Transparency" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 export default function Header() {
   const { status } = useSession();
   const [open, setOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
     <header className="fixed left-0 top-0 z-50 w-full border-b border-subtle bg-white/95 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
@@ -55,6 +64,27 @@ export default function Header() {
               </span>
             </LocalizedLink>
           ))}
+          {/* About Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setAboutOpen(true)}
+            onMouseLeave={() => setAboutOpen(false)}
+          >
+            <button className="rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+              About ▾
+            </button>
+            {aboutOpen && (
+              <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border border-zinc-200 bg-white py-2 shadow-xl dark:border-white/10 dark:bg-zinc-900">
+                {ABOUT_LINKS.map((link) => (
+                  <LocalizedLink key={link.href} href={link.href}>
+                    <span className="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                      {link.label}
+                    </span>
+                  </LocalizedLink>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Utilities + Actions */}
@@ -133,6 +163,23 @@ export default function Header() {
                 </span>
               </LocalizedLink>
             ))}
+            {/* About submenu for mobile */}
+            <div className="border-t border-zinc-200 dark:border-white/10 pt-2 mt-2">
+              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-white/60">
+                About
+              </div>
+              {ABOUT_LINKS.map((link) => (
+                <LocalizedLink
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="block rounded-lg px-3 py-2 text-sm text-zinc-700 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-zinc-300 dark:hover:bg-white/5">
+                    {link.label}
+                  </span>
+                </LocalizedLink>
+              ))}
+            </div>
             <div className="flex items-center gap-3">
               <LocaleSwitcher />
               <ThemeToggle />

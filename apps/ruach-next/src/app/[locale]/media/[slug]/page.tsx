@@ -15,11 +15,28 @@ import {
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
 import { getAbsoluteUrl, generateShareText, getDefaultHashtags, trackShare } from "@/lib/share";
 import { trackLike } from "@/lib/likes";
+import TranscriptSection from "@/components/media/TranscriptSection";
+import WhatsNextBlock from "@/components/media/WhatsNextBlock";
 
 export const dynamic = "force-static";
 
 type Props = { params: Promise<{ slug: string }> };
 type MediaAttributes = MediaItemEntity["attributes"];
+
+function formatDuration(seconds: number | null | undefined): string {
+  if (!seconds || seconds <= 0) return "";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes} min read`;
+  }
+  return `${secs} sec`;
+}
 
 function parseYouTubeTimestamp(value: string | null | undefined): number | undefined {
   if (!value) return undefined;
@@ -250,6 +267,9 @@ export default async function MediaDetail({ params }: Props){
             {data.publishedAt ? (
               <span className="text-neutral-400 dark:text-white/40">{new Date(data.publishedAt).toLocaleDateString()}</span>
             ) : null}
+            {a.durationSec ? (
+              <span className="text-neutral-400 dark:text-white/40">• {formatDuration(a.durationSec)}</span>
+            ) : null}
           </div>
           <div className="flex items-center gap-2">
             <LikeButton
@@ -300,6 +320,17 @@ export default async function MediaDetail({ params }: Props){
           title={a.title}
         />
       </section>
+
+      {/* Transcript Section */}
+      {a.transcript && (
+        <TranscriptSection transcript={a.transcript} />
+      )}
+
+      {/* What's Next CTA Block */}
+      <WhatsNextBlock
+        relatedMedia={related.slice(0, 3)}
+        currentCategory={categoryName}
+      />
 
       {related.length ? (
         <section className="space-y-4">

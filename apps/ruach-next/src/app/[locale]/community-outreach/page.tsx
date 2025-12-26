@@ -32,9 +32,10 @@ const fallbackStories: MediaCardProps[] = [
 ];
 
 const fallbackVolunteerHighlights: Array<{ title: string; description?: string; icon?: string }> = [
-  { title: "Street evangelism & prayer tents" },
-  { title: "Food distributions & compassion projects" },
-  { title: "Follow-up discipleship and small groups" }
+  { title: "Build truth-centered platforms & tools", description: "Code, design, content systems" },
+  { title: "Create Scripture-rooted media & resources", description: "Video, writing, courses, podcasts" },
+  { title: "Develop communities of discernment", description: "Local hubs, online networks, study groups" },
+  { title: "Test & validate emerging technologies", description: "AI, blockchain, communication tools" }
 ];
 
 type GivingHighlight = {
@@ -60,7 +61,7 @@ const fallbackGivingHighlights: GivingHighlight[] = [
 ];
 
 const defaultHeroDescription =
-  "Technology is accelerating. Narratives are being shaped. Systems are being built—not just to inform people, but to guide behavior, manage belief, and centralize authority.\n\nRuach is not here to compete with those systems. Ruach is here to build something different.\n\nNot control systems—but truth systems. Systems that help people see clearly, test what they hear, and walk faithfully in a fractured world.";
+  "Technology is accelerating. Narratives are being shaped. Systems are being built—not just to inform people, but to guide behavior, manage belief, and centralize authority.\n\nRuach is not here to compete with those systems. Ruach is here to build something different.\n\nNot control systems—but truth systems. Systems that help people see clearly, test what they hear, and walk faithfully in a fractured world.\n\nWe're gathering Kingdom creators and developers—builders who will shape tools, platforms, and communities rooted in Scripture, powered by testimony, open to examination, and resistant to control.";
 
 type CampaignSummary = {
   id: number;
@@ -239,8 +240,8 @@ export default async function CommunityOutreachPage({
   const storiesCtaLabel = attributes?.featuredStoriesCtaLabel ?? "View all testimonies →";
   const storiesCtaUrl = attributes?.featuredStoriesCtaUrl ?? "/community-outreach/stories";
 
-  const volunteerSectionTitle = attributes?.volunteerSectionTitle ?? "Volunteer Sign-Up";
-  const givingSectionTitle = attributes?.givingSectionTitle ?? "Support Outreach Campaigns";
+  const volunteerSectionTitle = attributes?.volunteerSectionTitle ?? "Join the Builders";
+  const givingSectionTitle = attributes?.givingSectionTitle ?? "Fuel Kingdom Infrastructure";
 
   const rawSubscriptionImage = attributes?.subscriptionBanner?.image?.data?.attributes;
   const subscriptionBannerImage = (() => {
@@ -318,6 +319,44 @@ export default async function CommunityOutreachPage({
               Decentralized by design. No single voice replaces conscience, Scripture, or the Spirit.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Kingdom Creators & Developers */}
+      <section className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-300/30 dark:from-amber-500/10 dark:to-orange-500/10 p-10 text-zinc-900 dark:text-white">
+        <div className="max-w-3xl mx-auto space-y-6 text-center">
+          <h2 className="text-3xl font-semibold text-zinc-900 dark:text-white">
+            We're Gathering Kingdom Creators
+          </h2>
+          <p className="text-base text-zinc-700 dark:text-white/80">
+            Not everyone is called to build. But if you sense God calling you to create, develop, or shape infrastructure that serves His Kingdom—you're in the right place.
+          </p>
+          <div className="grid gap-6 md:grid-cols-3 text-left mt-8">
+            <div className="rounded-2xl border border-amber-200 bg-white dark:border-amber-300/20 dark:bg-white/5 p-6 space-y-3">
+              <div className="text-3xl">🛠️</div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Builders</h3>
+              <p className="text-sm text-zinc-600 dark:text-white/70">
+                Developers, designers, engineers creating platforms, tools, and systems that serve truth over control.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-amber-200 bg-white dark:border-amber-300/20 dark:bg-white/5 p-6 space-y-3">
+              <div className="text-3xl">✍️</div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Creators</h3>
+              <p className="text-sm text-zinc-600 dark:text-white/70">
+                Writers, filmmakers, artists producing media that awakens, equips, and challenges the Church.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-amber-200 bg-white dark:border-amber-300/20 dark:bg-white/5 p-6 space-y-3">
+              <div className="text-3xl">🧭</div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Leaders</h3>
+              <p className="text-sm text-zinc-600 dark:text-white/70">
+                Pastors, teachers, organizers building communities of discernment rooted in Scripture and Spirit.
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-zinc-600 dark:text-white/70 mt-6">
+            If this resonates, scroll down to "Join the Builders" and let us know what you're called to create.
+          </p>
         </div>
       </section>
 

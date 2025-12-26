@@ -13,14 +13,22 @@ const startHereLinks = [
   { label: "Start Here", href: "/start" },
   { label: "Carry the Fire", href: "/carry" },
   { label: "About Our Mission", href: "/about" },
-  { label: "Statement of Faith", href: "/about#statement-of-faith" }
+  { label: "Team & Leadership", href: "/team" }
+];
+
+const trustLinks = [
+  { label: "What We Believe", href: "/beliefs" },
+  { label: "Financial Transparency", href: "/transparency" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "FAQ", href: "/faq" }
 ];
 
 const connectLinks = [
   { label: "Media", href: "/media" },
   { label: "Courses", href: "/courses" },
   { label: "Community Outreach", href: "/community-outreach" },
-  { label: "Give", href: "/give" },
+  { label: "Partners", href: "/partners" },
+  { label: "Prayer Requests", href: "/prayer" },
   { label: "Contact", href: "/contact" }
 ];
 
@@ -109,7 +117,7 @@ export default function Footer(){
         </div>
 
         {/* Column Links */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Start Here Column */}
           <div>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
@@ -146,14 +154,37 @@ export default function Footer(){
             </ul>
           </div>
 
-          {/* Transparency Column */}
+          {/* Trust Column */}
           <div>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
-              Transparency
+              Trust
             </h3>
             <ul className="space-y-2 text-sm text-white/70">
-              <li>501(c)(3) nonprofit organization</li>
+              {trustLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    <span className="transition hover:text-white">
+                      {link.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal & Contact Column */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">
+              Legal
+            </h3>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li>501(c)(3) nonprofit</li>
               <li>EIN: 33-3149173</li>
+              <li className="mt-4">
+                <a href="mailto:hello@joinruach.org" className="transition hover:text-white">
+                  hello@joinruach.org
+                </a>
+              </li>
             </ul>
           </div>
         </div>

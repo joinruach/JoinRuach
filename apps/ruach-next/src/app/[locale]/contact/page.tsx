@@ -1,4 +1,5 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
+import ContactForm from "./ContactForm";
 
 export const dynamic = "force-static";
 
@@ -45,43 +46,30 @@ export default async function Contact({
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
           Whether you are carrying a testimony, planning an outreach, or needing prayer, our team wants to partner with what the Holy Spirit is doing in your life.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          {isInternalTestimonyLink ? (
-            <LocalizedLink href={testimonyHref}>
-              <span className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-6 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
-                Submit a testimony →
-              </span>
-            </LocalizedLink>
-          ) : (
-            <a
-              href={testimonyHref}
-              className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-6 py-2 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]"
-            >
-              Submit a testimony →
-            </a>
-          )}
-          <a
-            href="mailto:hello@joinruach.org"
-            className="inline-flex items-center justify-center rounded-full border border-border px-6 py-2 text-sm font-semibold text-foreground transition hover:bg-[rgba(43,43,43,0.05)]"
-          >
-            Email our team
-          </a>
-        </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
-        {defaultContacts.map((channel) => (
-          <div key={channel.title} className="rounded-3xl border border-border bg-card p-6 text-foreground shadow-[0_15px_50px_rgba(43,37,30,0.05)]">
-            <div className="text-sm font-semibold text-foreground">{channel.title}</div>
-            <p className="mt-3 text-sm text-muted-foreground">{channel.description}</p>
+      {/* Intent-Based Contact Form */}
+      <section>
+        <ContactForm />
+      </section>
+
+      {/* Direct Contact Options (Fallback) */}
+      <section className="rounded-3xl border border-border bg-muted/60 p-8 text-center">
+        <h2 className="text-lg font-semibold text-foreground">Prefer Email?</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You can also reach us directly at:
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+          {defaultContacts.map((channel) => (
             <a
+              key={channel.email}
               href={`mailto:${channel.email}`}
-              className="mt-5 inline-flex items-center text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4"
+              className="inline-flex items-center font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4"
             >
               {channel.email}
             </a>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
@@ -119,9 +107,9 @@ export default async function Contact({
               Your support fuels testimonies, equips disciples, and mobilizes compassion projects across the globe. We would love to connect and dream with you.
             </p>
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              <LocalizedLink href="/give">
+              <LocalizedLink href="/partners">
                 <span className="inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] px-5 py-2 font-semibold text-[hsl(var(--primary-foreground))] transition hover:bg-[#C7A574]">
-                  Give to Ruach
+                  Become a Partner
                 </span>
               </LocalizedLink>
               <LocalizedLink href="/community-outreach">
