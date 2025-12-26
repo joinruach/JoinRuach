@@ -248,28 +248,38 @@ export default async function BuildersPage({
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Fuel Kingdom Infrastructure</h2>
           <p className="text-sm text-muted-foreground">
-            Every dollar fuels groceries, Bibles, film production, and deliverance teams in the
-            field. Give a one-time gift or become a monthly partner.
+            Every dollar fuels truth systems—Scripture-rooted storytelling, discernment tools, and
+            emerging infrastructure. Give monthly or one-time to help builders, creators, and leaders
+            take the next step.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-border bg-muted/60 p-4">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Partner Favorite</div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
-                Most Impactful
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                Monthly Builder Support
               </div>
-              <div className="mt-2 text-lg font-semibold text-foreground">$75 / month</div>
+              <div className="mt-2 text-lg font-semibold text-foreground">$75+ / month</div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Feeds 5 families + funds outreach film gear.
+                Sustains the teams crafting decentralized networks and Scripture memory tools that
+                keep this movement rooted in truth.
               </p>
+              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                <li>• Local-first community platforms</li>
+                <li>• Scripture memorization & study apps</li>
+              </ul>
             </div>
             <div className="rounded-2xl border border-border bg-muted/60 p-4">
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
-                Launch Kit
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                Project Catalyst
               </div>
-              <div className="mt-2 text-lg font-semibold text-foreground">$250 one-time</div>
+              <div className="mt-2 text-lg font-semibold text-foreground">$250+ one-time</div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Covers venue, permits, and testimony cards.
+                Funds media pipelines, testimony archives, and prayer platforms that launch fresh truth
+                systems.
               </p>
+              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                <li>• Media production & testimony capture</li>
+                <li>• Prayer and intercession platforms</li>
+              </ul>
             </div>
           </div>
         </div>

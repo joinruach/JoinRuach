@@ -83,15 +83,15 @@ export default async function Team({
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <TeamMember
-            name="[Founder/Director Name]"
-            role="Founder & Executive Director"
-            bio="[Brief bio: calling to ministry, heart for discipleship and deliverance, vision for Ruach. 2-3 sentences.]"
+            name="Marc Seals"
+            role="Founder & Apostolic Director"
+            bio="Marc carries the spiritual and visionary mantle of Ruach—serving as minister, storyteller, and field director who oversees the movement’s creative output, outreach, and prophetic alignment."
             imagePlaceholder="👤"
           />
           <TeamMember
-            name="[Team Member Name]"
-            role="[Role Title]"
-            bio="[Brief bio: background, gifting, why they serve at Ruach. 2-3 sentences.]"
+            name="Jonathan Seals"
+            role="Co-Founder & Executive Director"
+            bio="Jonathan architects Ruach’s discipleship and infrastructure systems, leading Ruach Academy and digital ministry initiatives to equip the remnant with Spirit-filled teaching and strategic innovation."
             imagePlaceholder="👤"
           />
           <TeamMember

@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { href: "/start", label: "Start Here" },
   { href: "/media", label: "Media" },
   { href: "/partners", label: "Partners" },
-  { href: "/community-outreach", label: "Builders" },
+      { href: "/builders", label: "Builders" },
 ];
 
 const ABOUT_LINKS = [

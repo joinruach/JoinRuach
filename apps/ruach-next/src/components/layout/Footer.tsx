@@ -26,7 +26,7 @@ const trustLinks = [
 const connectLinks = [
   { label: "Media", href: "/media" },
   { label: "Courses", href: "/courses" },
-  { label: "Community Outreach", href: "/community-outreach" },
+  { label: "Builders", href: "/builders" },
   { label: "Partners", href: "/partners" },
   { label: "Prayer Requests", href: "/prayer" },
   { label: "Contact", href: "/contact" }

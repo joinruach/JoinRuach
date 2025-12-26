@@ -18,7 +18,7 @@ const defaultBoard = [
   {
     name: "Advisory Pastor",
     role: "Pastoral Overseer & Board Advisor",
-    bio: "Provides pastoral covering, doctrinal integrity, and intercessory oversight so every Ruach initiative flows from biblical truth and the leading of the Holy Spirit.",
+    bio: "Anchors the advisory board that safeguards Ruach theology, finances, and culture—ensuring every initiative remains rooted in Scripture, stewarded with integrity, and responsive to the Spirit.",
   },
 ];
 
