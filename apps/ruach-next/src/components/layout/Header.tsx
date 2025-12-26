@@ -101,18 +101,11 @@ export default function Header() {
                 </span>
               </LocalizedLink>
             ) : (
-              <>
-                <LocalizedLink href="/login">
-                  <span className="text-sm font-semibold text-zinc-900 transition hover:text-ruachGold dark:text-white dark:hover:text-ruachGold">
-                    Login
-                  </span>
-                </LocalizedLink>
-                <LocalizedLink href="/signup">
-                  <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
-                    Signup
-                  </span>
-                </LocalizedLink>
-              </>
+              <LocalizedLink href="/signup">
+                <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                  Login / Signup
+                </span>
+              </LocalizedLink>
             )}
             <LocalizedLink href="/give">
               <span className="rounded-lg bg-ruachGold px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-ruachGold/90">
@@ -194,24 +187,14 @@ export default function Header() {
                 </span>
               </LocalizedLink>
             ) : (
-              <>
-                <LocalizedLink
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                >
-                  <span className="block rounded-lg px-3 py-2 text-zinc-900 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-white dark:hover:bg-white/5">
-                    Login
-                  </span>
-                </LocalizedLink>
-                <LocalizedLink
-                  href="/signup"
-                  onClick={() => setOpen(false)}
-                >
-                  <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
-                    Signup
-                  </span>
-                </LocalizedLink>
-              </>
+              <LocalizedLink
+                href="/signup"
+                onClick={() => setOpen(false)}
+              >
+                <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                  Login / Signup
+                </span>
+              </LocalizedLink>
             )}
             <LocalizedLink
               href="/give"
