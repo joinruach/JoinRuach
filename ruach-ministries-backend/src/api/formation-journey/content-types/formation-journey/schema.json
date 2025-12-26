@@ -1,0 +1,82 @@
+{
+  "kind": "collectionType",
+  "collectionName": "formation_journeys",
+  "info": {
+    "singularName": "formation-journey",
+    "pluralName": "formation-journeys",
+    "displayName": "Formation Journey",
+    "description": "User's current formation state pointer (one per user)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "covenantType": {
+      "type": "enumeration",
+      "enum": [
+        "formation_journey",
+        "resource_explorer"
+      ],
+      "required": true
+    },
+    "currentPhase": {
+      "type": "enumeration",
+      "enum": [
+        "awakening",
+        "separation",
+        "discernment",
+        "commission",
+        "stewardship"
+      ],
+      "default": "awakening"
+    },
+    "phaseEnteredAt": {
+      "type": "datetime"
+    },
+    "covenantEnteredAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "lastActivityAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "sectionsViewed": {
+      "type": "json",
+      "default": []
+    },
+    "checkpointsReached": {
+      "type": "json",
+      "default": []
+    },
+    "checkpointsCompleted": {
+      "type": "json",
+      "default": []
+    },
+    "reflectionsSubmitted": {
+      "type": "integer",
+      "default": 0
+    },
+    "unlockedCanonAxioms": {
+      "type": "json",
+      "default": []
+    },
+    "unlockedCourses": {
+      "type": "json",
+      "default": []
+    },
+    "unlockedCannonReleases": {
+      "type": "json",
+      "default": []
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "anonymousUserId": {
+      "type": "string",
+      "unique": true
+    }
+  }
+}

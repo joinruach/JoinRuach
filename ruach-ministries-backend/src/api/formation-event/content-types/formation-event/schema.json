@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "formation_events",
+  "info": {
+    "singularName": "formation-event",
+    "pluralName": "formation-events",
+    "displayName": "Formation Event",
+    "description": "Immutable event store for formation journey tracking"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "eventId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "eventType": {
+      "type": "enumeration",
+      "enum": [
+        "covenant_entered",
+        "phase_started",
+        "phase_completed",
+        "section_viewed",
+        "section_completed",
+        "checkpoint_reached",
+        "checkpoint_completed",
+        "reflection_submitted",
+        "reflection_analyzed",
+        "canon_definition_viewed",
+        "canon_axiom_cited",
+        "pause_triggered",
+        "recommendation_issued",
+        "content_unlocked",
+        "content_gated",
+        "readiness_level_changed",
+        "formation_gap_detected"
+      ],
+      "required": true
+    },
+    "eventData": {
+      "type": "json",
+      "required": true
+    },
+    "eventMetadata": {
+      "type": "json"
+    },
+    "timestamp": {
+      "type": "datetime",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "anonymousUserId": {
+      "type": "string"
+    }
+  }
+}
