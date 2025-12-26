@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { moderateLimiter, requireRateLimit, rateLimitResponse, RateLimitError } from "@/lib/ratelimit";
 import { isModerator } from "@/lib/strapi-user";
 
@@ -8,7 +7,7 @@ const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }){
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const jwt = session?.strapiJwt;
     const email = session?.user?.email;
 

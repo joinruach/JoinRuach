@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { commentsGetLimiter, commentsPostLimiter, ipFromHeaders, requireRateLimit, rateLimitResponse, RateLimitError } from "@/lib/ratelimit";
 import { isModerator } from "@/lib/strapi-user";
 
@@ -87,7 +86,7 @@ export async function GET(req: NextRequest){
 // POST /api/comments { courseSlug, lessonSlug, text }
 export async function POST(req: NextRequest){
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const jwt = session?.strapiJwt;
     if (!jwt) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

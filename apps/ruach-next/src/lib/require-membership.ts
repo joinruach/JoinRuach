@@ -1,8 +1,7 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import { fetchStrapiMembership, isMembershipActive, type StrapiMembership } from "@/lib/strapi-membership";
-import type { AuthOptions } from "next-auth";
 import { defaultLocale } from "@/i18n";
 
 // Extended session type with Strapi JWT
@@ -12,7 +11,7 @@ interface ExtendedSession {
 }
 
 type RequireMemberResult = {
-  session: Awaited<ReturnType<typeof getServerSession>>;
+  session: Session | null;
   jwt: string;
   membership: StrapiMembership;
 };
@@ -21,7 +20,7 @@ export async function requireActiveMembership(
   callbackPath: string,
   locale?: string
 ): Promise<RequireMemberResult> {
-  const session = await getServerSession(authOptions as AuthOptions);
+  const session: Session | null = await auth();
   const jwt = (session as ExtendedSession | null)?.strapiJwt;
   const resolvedLocale = locale ?? defaultLocale;
   const localizedCallbackPath = `/${resolvedLocale}${callbackPath}`;

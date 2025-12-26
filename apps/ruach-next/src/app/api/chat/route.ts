@@ -1,7 +1,7 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from "@/lib/auth";
 import { SYSTEM_PROMPT, formatContextForPrompt } from '@ruach/ai/chat';
 import { getRelevantContext } from '@/lib/ai/rag';
 import { createConversation, saveMessage } from '@/lib/db/ai';
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     // Get user session for personalization
-    const session = await getServerSession();
+    const session = await auth();
     const userEmail = session?.user?.email;
     const userId = userEmail ? hashEmail(userEmail) : undefined;
 

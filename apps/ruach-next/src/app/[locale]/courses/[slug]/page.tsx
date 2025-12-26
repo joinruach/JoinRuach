@@ -1,10 +1,8 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
-import { getServerSession } from "next-auth";
-import type { AuthOptions } from "next-auth";
+import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import CertificateButton from "@/components/ruach/CertificateButton";
 import SEOHead from "@/components/ruach/SEOHead";
-import { authOptions } from "@/lib/auth";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
 
 // Extended session type with Strapi JWT
@@ -65,7 +63,7 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const course = await getCourseBySlug(slug);
   if (!course) return notFound();
 
-  const session = await getServerSession(authOptions as AuthOptions);
+  const session = await auth();
   const jwt = (session as ExtendedSession | null)?.strapiJwt;
   const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
 

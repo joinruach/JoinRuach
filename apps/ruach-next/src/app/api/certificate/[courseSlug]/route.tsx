@@ -2,8 +2,7 @@ import { NextRequest } from "next/server";
 import satori from "satori";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -33,7 +32,7 @@ async function getCompletedLessonSlugsForUser(jwt: string, courseSlug: string){
 
 export async function GET(req: NextRequest, context: { params: Promise<{ courseSlug: string }> }){
   const { courseSlug } = await context.params;
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const jwt = session?.strapiJwt;
   const userName = session?.user?.name || session?.user?.email || "Student";
   if (!jwt) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

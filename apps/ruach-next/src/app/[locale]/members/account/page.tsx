@@ -1,9 +1,8 @@
 import Image from "next/image";
 import LocalizedLink from "@/components/navigation/LocalizedLink";
-import { getServerSession, type Session } from "next-auth";
-import type { AuthOptions } from "next-auth";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import { imgUrl } from "@/lib/strapi";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ruach/ui/Button";
@@ -275,7 +274,7 @@ export default async function AccountPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const session = await getServerSession(authOptions as AuthOptions) as StrapiSession | null;
+  const session = await auth() as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
 
   if (!jwt) {

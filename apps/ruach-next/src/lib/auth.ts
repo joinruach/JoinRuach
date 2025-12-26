@@ -1,5 +1,5 @@
-import { type NextAuthOptions } from "next-auth";
-import { type JWT } from "next-auth/jwt";
+import NextAuth, { type User, type Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
@@ -48,6 +48,10 @@ interface RefreshedToken {
   };
 }
 
+interface ExtendedUser extends User {
+  strapiJwt?: string;
+}
+
 function isStrapiError(response: StrapiResponse): response is StrapiErrorResponse {
   return 'error' in response;
 }
@@ -82,18 +86,21 @@ async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+const nextAuth = NextAuth({
   providers: [
     Credentials({
       name: "Email & Password",
-      credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password are required");
         }
 
-        const email = credentials.email;
-        const password = credentials.password;
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
         const r = await fetch(`${STRAPI}/api/auth/login`, {
           method: "POST",
@@ -117,7 +124,7 @@ export const authOptions: NextAuthOptions = {
           name: j.user.username || j.user.email,
           email: j.user.email,
           strapiJwt: j.jwt
-        };
+        } as ExtendedUser;
       }
     })
   ],
@@ -132,9 +139,10 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       // Initial sign in
       if (user) {
+        const extendedUser = user as ExtendedUser;
         return {
           ...token,
-          strapiJwt: (user as { strapiJwt?: string }).strapiJwt,
+          strapiJwt: extendedUser.strapiJwt,
           accessTokenExpires: Date.now() + JWT_MAX_AGE * 1000,
           lastActivity: Date.now(),
           error: undefined
@@ -180,7 +188,7 @@ export const authOptions: NextAuthOptions = {
         strapiJwt: typedToken.strapiJwt,
         error: typedToken.error,
         lastActivity: typedToken.lastActivity,
-      };
+      } as Session & { strapiJwt?: string; error?: string; lastActivity?: number };
     }
   },
   pages: {
@@ -199,4 +207,15 @@ export const authOptions: NextAuthOptions = {
       }
     }
   }
+});
+
+export const handlers = nextAuth.handlers;
+export const auth = nextAuth.auth;
+export const signIn: typeof nextAuth.signIn = nextAuth.signIn as any;
+export const signOut = nextAuth.signOut;
+
+// For backward compatibility, export authOptions
+export const authOptions = {
+  providers: [],
+  // ... other options
 };

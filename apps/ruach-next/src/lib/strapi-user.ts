@@ -1,8 +1,7 @@
 /**
  * Helper functions for fetching Strapi user information
  */
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+import { auth } from "./auth";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
@@ -81,7 +80,7 @@ export async function hasRole(jwt: string, roleName: string): Promise<boolean> {
  * Returns null when the visitor is unauthenticated or the Strapi request fails.
  */
 export async function getUser(): Promise<StrapiUser | null> {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const jwt = (session as ExtendedSession | null)?.strapiJwt;
   if (!jwt) return null;
   return fetchStrapiUser(jwt);
