@@ -4,12 +4,22 @@
 
 import { factories } from '@strapi/strapi';
 
+type AgeRangeOption =
+  | "Under 18"
+  | "Age 18-24"
+  | "Age 25-34"
+  | "Age 35-44"
+  | "Age 45-54"
+  | "Age 55+";
+type ReferralSourceOption = "Friend" | "Church" | "Social Media" | "Event" | "Other";
+type ContactPreferenceOption = "Email" | "Phone" | "Text" | "None";
+
 type TestimonyRequestBody = {
   name?: string;
   email?: string;
   phone?: string;
   location?: string;
-  ageRange?: string;
+  ageRange?: AgeRangeOption;
   socialHandles?: string;
   story_before?: string;
   story_encounter?: string;
@@ -18,10 +28,10 @@ type TestimonyRequestBody = {
   core_message?: string;
   on_camera?: boolean;
   media_consent?: boolean;
-  referral_source?: string;
+  referral_source?: ReferralSourceOption;
   join_future_projects?: boolean;
   prayer_request?: string;
-  contact_preference?: string;
+  contact_preference?: ContactPreferenceOption;
 };
 
 export default factories.createCoreController('api::testimony.testimony', ({ strapi }) => ({
