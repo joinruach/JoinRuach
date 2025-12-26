@@ -11,7 +11,9 @@ import {
   FormationEventType,
   CovenantEnteredEvent,
   PhaseStartedEvent,
+  SectionViewedEvent,
   CheckpointReachedEvent,
+  CheckpointCompletedEvent,
   ReflectionSubmittedEvent,
   PauseTriggeredEvent,
   EventMetadata,
@@ -77,6 +79,27 @@ export function createPhaseStartedEvent(
 }
 
 // ============================================================================
+// SECTION EVENT FACTORIES
+// ============================================================================
+
+export function createSectionViewedEvent(
+  userId: string,
+  sectionId: string,
+  phase: FormationPhase,
+  dwellTimeSeconds: number,
+  metadata?: EventMetadata
+): SectionViewedEvent {
+  return {
+    ...createBaseEvent(userId, FormationEventType.SectionViewed, metadata),
+    data: {
+      sectionId,
+      phase,
+      dwellTimeSeconds,
+    },
+  };
+}
+
+// ============================================================================
 // CHECKPOINT EVENT FACTORIES
 // ============================================================================
 
@@ -93,6 +116,27 @@ export function createCheckpointReachedEvent(
       checkpointId,
       sectionId,
       phase,
+    },
+  };
+}
+
+export function createCheckpointCompletedEvent(
+  userId: string,
+  checkpointId: string,
+  sectionId: string,
+  phase: FormationPhase,
+  reflectionId: string,
+  timeSinceReached: number,
+  metadata?: EventMetadata
+): CheckpointCompletedEvent {
+  return {
+    ...createBaseEvent(userId, FormationEventType.CheckpointCompleted, metadata),
+    data: {
+      checkpointId,
+      sectionId,
+      phase,
+      reflectionId,
+      timeSinceReached,
     },
   };
 }
