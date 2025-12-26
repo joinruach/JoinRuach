@@ -16,7 +16,6 @@
     "noEmit": true,
     "incremental": true,
     "composite": true,
-    "tsBuildInfoFile": ".tsbuildinfo",
     "jsx": "preserve",
     "typeRoots": [
       "./types",
