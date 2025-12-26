@@ -141,6 +141,9 @@ importers:
       '@ruach/components':
         specifier: workspace:*
         version: link:../../packages/ruach-components
+      '@ruach/formation':
+        specifier: workspace:*
+        version: link:../../packages/ruach-formation
       '@ruach/tailwind-preset':
         specifier: workspace:*
         version: link:../../packages/tailwind-preset
