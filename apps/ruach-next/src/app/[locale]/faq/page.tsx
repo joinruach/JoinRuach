@@ -63,7 +63,10 @@ export default function FAQ() {
               </p>
               <p className="mt-3">
                 For a full statement of faith, visit our{" "}
-                <a href="/beliefs" className="underline text-amber-700 dark:text-amber-300">What We Believe</a> page.
+                <LocalizedLink href="/beliefs" className="underline text-amber-700 dark:text-amber-300">
+                  What We Believe
+                </LocalizedLink>{" "}
+                page.
               </p>
             </>
           ),
@@ -82,7 +85,10 @@ export default function FAQ() {
               </p>
               <p className="mt-3">
                 Learn more about our team on the{" "}
-                <a href="/team" className="underline text-amber-700 dark:text-amber-300">Leadership & Team</a> page.
+                <LocalizedLink href="/team" className="underline text-amber-700 dark:text-amber-300">
+                  Leadership & Team
+                </LocalizedLink>{" "}
+                page.
               </p>
             </>
           ),
@@ -98,7 +104,10 @@ export default function FAQ() {
             <>
               <p>
                 Start with our{" "}
-                <a href="/start" className="underline text-amber-700 dark:text-amber-300">Start Here</a> page, which explains who Ruach is for, how most people move through the ministry, and what your next step could be.
+                <LocalizedLink href="/start" className="underline text-amber-700 dark:text-amber-300">
+                  Start Here
+                </LocalizedLink>{" "}
+                page, which explains who Ruach is for, how most people move through the ministry, and what your next step could be.
               </p>
               <p className="mt-3">
                 From there, you can:
@@ -106,15 +115,33 @@ export default function FAQ() {
               <ul className="mt-2 space-y-1 pl-4">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 dark:text-amber-300">•</span>
-                  <span>Watch a <a href="/media" className="underline">testimony</a> to see real stories of freedom</span>
+                  <span>
+                    Watch a{" "}
+                    <LocalizedLink href="/media" className="underline">
+                      testimony
+                    </LocalizedLink>{" "}
+                    to see real stories of freedom
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 dark:text-amber-300">•</span>
-                  <span>Take a <a href="/courses" className="underline">course</a> to grow in biblical knowledge and spiritual gifts</span>
+                  <span>
+                    Take a{" "}
+                    <LocalizedLink href="/courses" className="underline">
+                      course
+                    </LocalizedLink>{" "}
+                    to grow in biblical knowledge and spiritual gifts
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 dark:text-amber-300">•</span>
-                  <span>Join <a href="/community-outreach" className="underline">community outreach</a> to serve alongside us</span>
+                  <span>
+                    Join{" "}
+                    <LocalizedLink href="/community-outreach" className="underline">
+                      community outreach
+                    </LocalizedLink>{" "}
+                    to serve alongside us
+                  </span>
                 </li>
               </ul>
             </>
@@ -156,7 +183,10 @@ export default function FAQ() {
             <>
               <p>
                 If you have a story of deliverance, healing, or transformation that would strengthen the Church, we'd love to hear it. Visit our{" "}
-                <a href="/contact" className="underline text-amber-700 dark:text-amber-300">Contact page</a> and reach out to our Stories team.
+                <LocalizedLink href="/contact" className="underline text-amber-700 dark:text-amber-300">
+                  Contact page
+                </LocalizedLink>{" "}
+                and reach out to our Stories team.
               </p>
               <p className="mt-3">
                 We review every submission prayerfully and will follow up to discuss next steps if we believe it should be featured publicly.
@@ -205,7 +235,10 @@ export default function FAQ() {
             <>
               <p>
                 We need faithful servants in media production, outreach coordination, prayer ministry, technology, partner care, and administration. If you sense God calling you to serve, reach out via our{" "}
-                <a href="/contact" className="underline text-amber-700 dark:text-amber-300">Contact page</a> or email{" "}
+                <LocalizedLink href="/contact" className="underline text-amber-700 dark:text-amber-300">
+                  Contact page
+                </LocalizedLink>{" "}
+                or email{" "}
                 <a href="mailto:hello@joinruach.org" className="underline">hello@joinruach.org</a>.
               </p>
             </>
@@ -236,7 +269,10 @@ export default function FAQ() {
               </p>
               <p className="mt-3">
                 Learn more on our{" "}
-                <a href="/transparency" className="underline text-amber-700 dark:text-amber-300">Financial Transparency</a> page.
+                <LocalizedLink href="/transparency" className="underline text-amber-700 dark:text-amber-300">
+                  Financial Transparency
+                </LocalizedLink>{" "}
+                page.
               </p>
             </>
           ),
@@ -270,7 +306,10 @@ export default function FAQ() {
               </p>
               <p className="mt-3">
                 Read our full{" "}
-                <a href="/privacy" className="underline text-amber-700 dark:text-amber-300">Privacy Policy</a> for details.
+                <LocalizedLink href="/privacy" className="underline text-amber-700 dark:text-amber-300">
+                  Privacy Policy
+                </LocalizedLink>{" "}
+                for details.
               </p>
             </>
           ),

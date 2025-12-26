@@ -1,5 +1,6 @@
 // apps/ruach-next/src/app/[locale]/prayer/page.tsx
 import type { Metadata } from "next";
+import LocalizedLink from "@/components/navigation/LocalizedLink";
 import PrayerRequestForm from "./PrayerRequestForm";
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ export default function PrayerPage() {
       <section className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="text-lg font-semibold">Ways to go deeper</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <a
+          <LocalizedLink
             className="rounded-xl border border-zinc-200 px-4 py-3 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
             href="/give"
           >
@@ -42,8 +43,8 @@ export default function PrayerPage() {
             <div className="mt-1 text-zinc-600 dark:text-zinc-400">
               Fuel the work and help more people.
             </div>
-          </a>
-          <a
+          </LocalizedLink>
+          <LocalizedLink
             className="rounded-xl border border-zinc-200 px-4 py-3 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
             href="/media"
           >
@@ -51,10 +52,13 @@ export default function PrayerPage() {
             <div className="mt-1 text-zinc-600 dark:text-zinc-400">
               Strengthen your faith with real stories.
             </div>
-          </a>
+          </LocalizedLink>
         </div>
         <p className="mt-4 text-xs text-zinc-500">
-          Privacy details: <a className="underline" href="/privacy">Privacy Policy</a>
+          Privacy details:{" "}
+          <LocalizedLink className="underline" href="/privacy">
+            Privacy Policy
+          </LocalizedLink>
         </p>
       </section>
     </main>

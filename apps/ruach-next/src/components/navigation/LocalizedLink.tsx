@@ -3,8 +3,7 @@
 import NextLink, { type LinkProps } from "next/link";
 import { useLocale } from "next-intl";
 import { useParams } from "next/navigation";
-import { forwardRef, useMemo } from "react";
-import type { ReactNode } from "react";
+import { forwardRef, useMemo, type ComponentPropsWithoutRef } from "react";
 
 const SUPPORTED_LOCALES = new Set(["en", "es", "fr", "pt"]);
 
@@ -29,7 +28,7 @@ function prefixHref(href: LinkProps["href"], locale?: string) {
   return `/${locale}${href}`;
 }
 
-type Props = LinkProps & { children: ReactNode };
+type Props = ComponentPropsWithoutRef<typeof NextLink>;
 
 const LocalizedLink = forwardRef<HTMLAnchorElement, Props>(function LocalizedLink(
   { href, ...rest },
