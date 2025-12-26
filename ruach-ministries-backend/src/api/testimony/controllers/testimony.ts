@@ -4,6 +4,26 @@
 
 import { factories } from '@strapi/strapi';
 
+type TestimonyRequestBody = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  ageRange?: string;
+  socialHandles?: string;
+  story_before?: string;
+  story_encounter?: string;
+  story_after?: string;
+  scripture_anchor?: string;
+  core_message?: string;
+  on_camera?: boolean;
+  media_consent?: boolean;
+  referral_source?: string;
+  join_future_projects?: boolean;
+  prayer_request?: string;
+  contact_preference?: string;
+};
+
 export default factories.createCoreController('api::testimony.testimony', ({ strapi }) => ({
   /**
    * Custom submit action for testimony form
@@ -11,7 +31,8 @@ export default factories.createCoreController('api::testimony.testimony', ({ str
    */
   async submit(ctx) {
     try {
-      const body = ctx.request.body;
+      const requestBody = (ctx.request as { body?: TestimonyRequestBody }).body ?? {};
+      const body = requestBody;
 
       // Validate required fields
       if (!body.name || !body.email || !body.story_before || !body.story_encounter || !body.story_after) {

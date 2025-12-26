@@ -4,21 +4,38 @@
 
 import { factories } from '@strapi/strapi';
 
+type LessonProgressRequestData = {
+  courseSlug?: string;
+  lessonSlug?: string;
+  secondsWatched?: number;
+  completed?: boolean;
+  user?: number | string;
+};
+
+type LessonProgressRequest = {
+  request: {
+    body?: {
+      data?: LessonProgressRequestData;
+    };
+  };
+};
+
 export default factories.createCoreController('api::lesson-progress.lesson-progress', ({ strapi }) => ({
   async create(ctx) {
+    const request = ctx.request as LessonProgressRequest['request'];
     const user = ctx.state.user;
     if (!user) {
       return ctx.unauthorized('Authentication required');
     }
 
-    const body = ctx.request.body?.data ?? {};
+    const body = (request.body?.data ?? {}) as LessonProgressRequestData;
     const courseSlug = body.courseSlug;
     const lessonSlug = body.lessonSlug;
     if (!courseSlug || !lessonSlug) {
       return ctx.badRequest('courseSlug and lessonSlug are required');
     }
 
-    const payload = {
+    const payload: LessonProgressRequestData = {
       courseSlug,
       lessonSlug,
       secondsWatched: body.secondsWatched ?? 0,
@@ -34,7 +51,8 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       },
     });
 
-    ctx.request.body.data = payload;
+    request.body = request.body ?? {};
+    request.body.data = payload;
 
     if (existing) {
       ctx.params = { ...(ctx.params || {}), id: existing.id };

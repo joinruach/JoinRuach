@@ -30,9 +30,14 @@ const ensureUniqueSlug = async (strapi: any, rawTitle: string) => {
   }
 };
 
+type VideoUploadRequestFile = {
+  video?: formidable.File | formidable.File[];
+};
+
 export default factories.createCoreController('api::video.video', ({ strapi }) => ({
   async upload(ctx) {
-    const { files } = ctx.request;
+    const request = ctx.request as { files?: VideoUploadRequestFile };
+    const { files } = request;
     if (!files || !files.video) {
       return ctx.badRequest('No video file provided');
     }

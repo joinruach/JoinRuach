@@ -51,7 +51,7 @@ const ensureStripe = () => {
   }
   if (!stripeClient) {
     stripeClient = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2024-06-20",
+      apiVersion: "2025-12-15.clover",
     });
   }
   return stripeClient;
@@ -180,8 +180,12 @@ async function applySubscriptionToUser(
   const price = firstItem?.price ?? null;
   const planNickname = price?.nickname ?? resolveProductName(price?.product ?? null);
 
-  const currentPeriodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
+  const maxItemPeriodEnd = (subscription.items?.data ?? []).reduce(
+    (max, item) => Math.max(max, item.current_period_end ?? 0),
+    0
+  );
+  const currentPeriodEnd = maxItemPeriodEnd
+    ? new Date(maxItemPeriodEnd * 1000).toISOString()
     : null;
 
   const membershipStatus = subscription.status;

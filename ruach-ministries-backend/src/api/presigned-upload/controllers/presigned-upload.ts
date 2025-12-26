@@ -10,6 +10,21 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 
+type PresignedUploadRequestBody = {
+  filename?: string;
+  type?: string;
+  size?: number;
+  key?: string;
+  title?: string;
+  description?: string;
+};
+
+type PresignedUploadRequest = {
+  request: {
+    body?: PresignedUploadRequestBody;
+  };
+};
+
 // Initialize R2 client
 const getR2Client = () => {
   const endpoint = process.env.R2_ENDPOINT;
@@ -44,7 +59,9 @@ export default factories.createCoreController('api::presigned-upload.presigned-u
    */
   async generate(ctx) {
     try {
-      const { filename, type, size } = ctx.request.body;
+      const request = ctx.request as PresignedUploadRequest['request'];
+      const requestBody = request.body ?? {};
+      const { filename, type, size } = requestBody;
 
       // Validate required fields
       if (!filename || !type || !size) {
@@ -126,7 +143,9 @@ export default factories.createCoreController('api::presigned-upload.presigned-u
    */
   async complete(ctx) {
     try {
-      const { key, filename, type, size, title, description } = ctx.request.body;
+      const request = ctx.request as PresignedUploadRequest['request'];
+      const requestBody = request.body ?? {};
+      const { key, filename, type, size, title, description } = requestBody;
 
       // Validate required fields
       if (!key || !filename || !type || !size) {

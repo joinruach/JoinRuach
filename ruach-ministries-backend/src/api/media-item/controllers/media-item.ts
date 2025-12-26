@@ -49,7 +49,7 @@ export default factories.createCoreController('api::media-item.media-item', ({ s
     const updated = await strapi.entityService.update('api::media-item.media-item', id, {
       data: {
         views: (item.views || 0) + 1,
-      },
+      } as any,
       fields: ['id', 'views'],
     });
 

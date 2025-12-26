@@ -35,6 +35,7 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  serverExternalPackages: ["@resvg/resvg-js"],
   images: {
     remotePatterns: [
       {
