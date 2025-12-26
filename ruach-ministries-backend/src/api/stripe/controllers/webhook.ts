@@ -50,8 +50,11 @@ const ensureStripe = () => {
     throw new Error("STRIPE_WEBHOOK_SECRET env var is not configured");
   }
   if (!stripeClient) {
+    const apiVersion =
+      (process.env.STRIPE_API_VERSION as unknown) ??
+      "2025-12-15.clover";
     stripeClient = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2025-12-15.clover",
+      apiVersion: apiVersion as Stripe.StripeConfig["apiVersion"],
     });
   }
   return stripeClient;
@@ -180,12 +183,19 @@ async function applySubscriptionToUser(
   const price = firstItem?.price ?? null;
   const planNickname = price?.nickname ?? resolveProductName(price?.product ?? null);
 
+  const subscriptionPeriodEnd =
+    (subscription as { current_period_end?: number }).current_period_end ?? 0;
   const maxItemPeriodEnd = (subscription.items?.data ?? []).reduce(
-    (max, item) => Math.max(max, item.current_period_end ?? 0),
+    (max, item) =>
+      Math.max(
+        max,
+        ((item as { current_period_end?: number }).current_period_end ?? 0)
+      ),
     0
   );
-  const currentPeriodEnd = maxItemPeriodEnd
-    ? new Date(maxItemPeriodEnd * 1000).toISOString()
+  const periodEndValue = Math.max(subscriptionPeriodEnd, maxItemPeriodEnd);
+  const currentPeriodEnd = periodEndValue
+    ? new Date(periodEndValue * 1000).toISOString()
     : null;
 
   const membershipStatus = subscription.status;
