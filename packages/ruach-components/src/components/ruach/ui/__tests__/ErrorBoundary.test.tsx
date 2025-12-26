@@ -30,7 +30,7 @@ const renderBoundary = (
   return { ...utils, ref };
 };
 
-const triggerErrorState = (ref: React.RefObject<ErrorBoundary>) => {
+const triggerErrorState = (ref: React.RefObject<ErrorBoundary | null>) => {
   act(() => {
     ref.current?.setState({ hasError: true });
   });

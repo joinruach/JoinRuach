@@ -32,36 +32,36 @@ export async function POST(req: NextRequest) {
 
   if (model && slug) {
     if (model.includes("media")) {
-      revalidateTag(`media:${slug}`);
+      revalidateTag(`media:${slug}`, {});
       tagsRevalidated.push(`media:${slug}`);
     }
     if (model.includes("course")) {
-      revalidateTag(`course:${slug}`);
+      revalidateTag(`course:${slug}`, {});
       tagsRevalidated.push(`course:${slug}`);
     }
   }
 
   if (model.includes("course") && Array.isArray(entry?.lessons)) {
-    revalidateTag("courses");
+    revalidateTag("courses", {});
     tagsRevalidated.push("courses");
   }
 
   if (model.includes("media")) {
-    revalidateTag("media-items");
+    revalidateTag("media-items", {});
     tagsRevalidated.push("media-items");
     if (category) {
-      revalidateTag(`media-category:${category}`);
+      revalidateTag(`media-category:${category}`, {});
       tagsRevalidated.push(`media-category:${category}`);
     }
   }
 
   for (const tag of tagsFromPayload) {
-    revalidateTag(tag);
+    revalidateTag(tag, {});
     tagsRevalidated.push(tag);
   }
 
   for (const path of pathsFromPayload) {
-    revalidatePath(path);
+    revalidatePath(path, "page");
     pathsRevalidated.push(path);
   }
 
