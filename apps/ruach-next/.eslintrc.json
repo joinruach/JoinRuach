@@ -6,6 +6,15 @@
     "sourceType": "module",
     "ecmaFeatures": { "jsx": true }
   },
+  "settings": {
+    "next": {
+      "pagesDir": ["apps/ruach-next/src/app"]
+    }
+  },
+  "rules": {
+    "react/no-unescaped-entities": ["error", { "forbid": [">", "}"] }],
+    "@next/next/no-html-link-for-pages": ["error", "apps/ruach-next/src/app"]
+  },
   "overrides": [
     {
       "files": ["**/*.ts", "**/*.tsx"],
