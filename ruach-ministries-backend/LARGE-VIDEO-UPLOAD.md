@@ -45,7 +45,7 @@ Registers all R2 direct upload endpoints.
 ### Frontend Components
 
 **1. R2 Multipart Uploader (JavaScript Library)**
-`src/admin/extensions/upload/r2-multipart-uploader.js`
+`src/plugins/ruach-video-uploader/admin/src/extensions/upload/r2-multipart-uploader.js`
 
 Core upload logic:
 - Multipart upload orchestration
@@ -55,7 +55,7 @@ Core upload logic:
 - Error handling with retry
 
 **2. Video Upload Widget (React Component)**
-`src/admin/extensions/upload/VideoUploadWidget.jsx`
+`src/plugins/ruach-video-uploader/admin/src/extensions/upload/VideoUploadWidget.jsx`
 
 Strapi admin UI component:
 - File selection
@@ -65,7 +65,7 @@ Strapi admin UI component:
 - Integration with Strapi forms
 
 **3. Admin Registration**
-`src/admin/app.js`
+`src/plugins/ruach-video-uploader/admin/src/index.ts`
 
 Registers custom video upload widget as a Strapi custom field.
 
