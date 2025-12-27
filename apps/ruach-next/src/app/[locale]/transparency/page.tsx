@@ -22,7 +22,7 @@ export default async function Transparency({
   // TODO: Update this date when financial information changes
   const lastUpdated = "December 2024";
   // TODO: Replace with actual EIN number
-  const ein = "[Your EIN Number Here]";
+  const ein = "33-3149173";
 
   return (
     <div className="space-y-12">
@@ -71,9 +71,9 @@ export default async function Transparency({
           </div>
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
             <div className="mb-3 text-3xl font-bold text-amber-600 dark:text-amber-400">35%</div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Outreach & Events</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Formation Systems & Discipleship</h3>
             <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-              Mobilizing community outreach, hosting conferences, and training leaders. Includes groceries, event costs, travel, and local partnerships.
+              Building Scripture-rooted formation pathways that guide believers into truth, discernment, and mature obedience. Includes curriculum development, formation frameworks, platform development, and the systems required to sustain long-term spiritual growth.
             </p>
           </div>
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">

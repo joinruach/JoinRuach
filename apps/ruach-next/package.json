@@ -24,6 +24,7 @@
     "@ruach/addons": "workspace:*",
     "@ruach/ai": "workspace:*",
     "@ruach/components": "workspace:*",
+    "@ruach/formation": "workspace:*",
     "@ruach/tailwind-preset": "workspace:*",
     "@sendgrid/mail": "^8.1.6",
     "@sentry/nextjs": "^10.32.1",

@@ -1024,6 +1024,176 @@ export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiFormationEventFormationEvent
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'formation_events';
+  info: {
+    description: 'Immutable event store for formation journey tracking';
+    displayName: 'Formation Event';
+    pluralName: 'formation-events';
+    singularName: 'formation-event';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anonymousUserId: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    eventData: Schema.Attribute.JSON & Schema.Attribute.Required;
+    eventId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    eventMetadata: Schema.Attribute.JSON;
+    eventType: Schema.Attribute.Enumeration<
+      [
+        'covenant_entered',
+        'phase_started',
+        'phase_completed',
+        'section_viewed',
+        'section_completed',
+        'checkpoint_reached',
+        'checkpoint_completed',
+        'reflection_submitted',
+        'reflection_analyzed',
+        'canon_definition_viewed',
+        'canon_axiom_cited',
+        'pause_triggered',
+        'recommendation_issued',
+        'content_unlocked',
+        'content_gated',
+        'readiness_level_changed',
+        'formation_gap_detected',
+      ]
+    > &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-event.formation-event'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    timestamp: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiFormationJourneyFormationJourney
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'formation_journeys';
+  info: {
+    description: "User's current formation state pointer (one per user)";
+    displayName: 'Formation Journey';
+    pluralName: 'formation-journeys';
+    singularName: 'formation-journey';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anonymousUserId: Schema.Attribute.String & Schema.Attribute.Unique;
+    checkpointsCompleted: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<[]>;
+    checkpointsReached: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    covenantEnteredAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    covenantType: Schema.Attribute.Enumeration<
+      ['formation_journey', 'resource_explorer']
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currentPhase: Schema.Attribute.Enumeration<
+      ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
+    > &
+      Schema.Attribute.DefaultTo<'awakening'>;
+    lastActivityAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-journey.formation-journey'
+    > &
+      Schema.Attribute.Private;
+    phaseEnteredAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    reflectionsSubmitted: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<0>;
+    sectionsViewed: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    unlockedCannonReleases: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<[]>;
+    unlockedCanonAxioms: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    unlockedCourses: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiFormationReflectionFormationReflection
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'formation_reflections';
+  info: {
+    description: 'User reflections submitted at formation checkpoints';
+    displayName: 'Formation Reflection';
+    pluralName: 'formation-reflections';
+    singularName: 'formation-reflection';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anonymousUserId: Schema.Attribute.String;
+    audioUrl: Schema.Attribute.String;
+    checkpointId: Schema.Attribute.String & Schema.Attribute.Required;
+    content: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    depthScore: Schema.Attribute.Decimal;
+    indicators: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-reflection.formation-reflection'
+    > &
+      Schema.Attribute.Private;
+    phase: Schema.Attribute.Enumeration<
+      ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    reflectionId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    reflectionType: Schema.Attribute.Enumeration<['text', 'voice']> &
+      Schema.Attribute.DefaultTo<'text'>;
+    sectionId: Schema.Attribute.String & Schema.Attribute.Required;
+    submittedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    timeSinceCheckpointReached: Schema.Attribute.Integer &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    wordCount: Schema.Attribute.Integer & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiGalleryGallery extends Struct.CollectionTypeSchema {
   collectionName: 'galleries';
   info: {
@@ -2446,8 +2616,8 @@ export interface PluginUploadFile extends Struct.CollectionTypeSchema {
     };
   };
   attributes: {
-    alternativeText: Schema.Attribute.String;
-    caption: Schema.Attribute.String;
+    alternativeText: Schema.Attribute.Text;
+    caption: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2471,7 +2641,7 @@ export interface PluginUploadFile extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     mime: Schema.Attribute.String & Schema.Attribute.Required;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    previewUrl: Schema.Attribute.String;
+    previewUrl: Schema.Attribute.Text;
     provider: Schema.Attribute.String & Schema.Attribute.Required;
     provider_metadata: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
@@ -2480,7 +2650,7 @@ export interface PluginUploadFile extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    url: Schema.Attribute.String & Schema.Attribute.Required;
+    url: Schema.Attribute.Text & Schema.Attribute.Required;
     width: Schema.Attribute.Integer;
   };
 }
@@ -2749,6 +2919,9 @@ declare module '@strapi/strapi' {
       'api::course.course': ApiCourseCourse;
       'api::event.event': ApiEventEvent;
       'api::faq.faq': ApiFaqFaq;
+      'api::formation-event.formation-event': ApiFormationEventFormationEvent;
+      'api::formation-journey.formation-journey': ApiFormationJourneyFormationJourney;
+      'api::formation-reflection.formation-reflection': ApiFormationReflectionFormationReflection;
       'api::gallery.gallery': ApiGalleryGallery;
       'api::global.global': ApiGlobalGlobal;
       'api::hero-section.hero-section': ApiHeroSectionHeroSection;

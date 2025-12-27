@@ -141,6 +141,9 @@ importers:
       '@ruach/components':
         specifier: workspace:*
         version: link:../../packages/ruach-components
+      '@ruach/formation':
+        specifier: workspace:*
+        version: link:../../packages/ruach-formation
       '@ruach/tailwind-preset':
         specifier: workspace:*
         version: link:../../packages/tailwind-preset
@@ -297,6 +300,16 @@ importers:
       tsup:
         specifier: ^8.1.0
         version: 8.5.1(@swc/core@1.15.7)(jiti@2.6.1)(postcss@8.5.6)(typescript@5.3.3)(yaml@2.8.2)
+
+  packages/ruach-formation:
+    dependencies:
+      '@ruach/types':
+        specifier: workspace:*
+        version: link:../ruach-types
+    devDependencies:
+      typescript:
+        specifier: 5.3.3
+        version: 5.3.3
 
   packages/ruach-hooks:
     dependencies:
