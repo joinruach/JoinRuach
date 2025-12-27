@@ -6,12 +6,21 @@ import { useSession } from "next-auth/react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
 
-const NAV_LINKS = [
+const PRIMARY_LINKS = [
   { href: "/", label: "Home" },
   { href: "/start", label: "Start Here" },
+];
+
+const HUB_LINKS = [
   { href: "/media", label: "Media" },
   { href: "/partners", label: "Partners" },
-      { href: "/builders", label: "Builders" },
+  { href: "/builders", label: "Builders" },
+];
+
+const TABLET_MORE_LINKS = [
+  { href: "/builders", label: "Builders" },
+  { href: "/partners", label: "Partners" },
+  { href: "/about", label: "About" },
 ];
 
 const ABOUT_LINKS = [
@@ -22,10 +31,13 @@ const ABOUT_LINKS = [
   { href: "/faq", label: "FAQ" },
 ];
 
+const MOBILE_NAV_LINKS = [...PRIMARY_LINKS, ...HUB_LINKS];
+
 export default function Header() {
   const { status } = useSession();
   const [open, setOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   return (
     <header className="fixed left-0 top-0 z-50 w-full border-b border-subtle bg-white/95 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
@@ -56,36 +68,86 @@ export default function Header() {
         </LocalizedLink>
 
         {/* Navigation */}
-        <nav className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium lg:flex">
-          {NAV_LINKS.map((link) => (
-            <LocalizedLink key={link.href} href={link.href}>
-              <span className="rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
-                {link.label}
+        <div className="flex flex-1 items-center justify-center">
+          <nav className="hidden flex-1 items-center justify-center gap-7 text-sm font-medium lg:flex">
+            {PRIMARY_LINKS.map((link) => (
+              <LocalizedLink key={link.href} href={link.href}>
+                <span className="rounded-md px-4 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                  {link.label}
+                </span>
+              </LocalizedLink>
+            ))}
+            {HUB_LINKS.map((link) => (
+              <LocalizedLink key={link.href} href={link.href}>
+                <span className="rounded-md px-4 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                  {link.label}
+                </span>
+              </LocalizedLink>
+            ))}
+            {/* About Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setAboutOpen(true)}
+              onMouseLeave={() => setAboutOpen(false)}
+            >
+              <button className="flex items-center gap-1 rounded-md px-4 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                <span>About</span>
+                <span className="text-xs text-zinc-400 dark:text-white/60">▾</span>
+              </button>
+              {aboutOpen && (
+                <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border border-zinc-200 bg-white py-2 shadow-xl dark:border-white/10 dark:bg-zinc-900">
+                  {ABOUT_LINKS.map((link) => (
+                    <LocalizedLink key={link.href} href={link.href}>
+                      <span className="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                        {link.label}
+                      </span>
+                    </LocalizedLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+          <nav className="hidden items-center justify-center gap-6 text-sm font-medium md:flex lg:hidden">
+            {PRIMARY_LINKS.map((link) => (
+              <LocalizedLink key={`${link.href}-md`} href={link.href}>
+                <span className="rounded-md px-3 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-neutral-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                  {link.label}
+                </span>
+              </LocalizedLink>
+            ))}
+            <LocalizedLink href="/media">
+              <span className="rounded-md px-3 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-neutral-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
+                Media
               </span>
             </LocalizedLink>
-          ))}
-          {/* About Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setAboutOpen(true)}
-            onMouseLeave={() => setAboutOpen(false)}
-          >
-            <button className="rounded-md px-3 py-2 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
-              About ▾
-            </button>
-            {aboutOpen && (
-              <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border border-zinc-200 bg-white py-2 shadow-xl dark:border-white/10 dark:bg-zinc-900">
-                {ABOUT_LINKS.map((link) => (
-                  <LocalizedLink key={link.href} href={link.href}>
-                    <span className="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white">
-                      {link.label}
-                    </span>
-                  </LocalizedLink>
-                ))}
-              </div>
-            )}
-          </div>
-        </nav>
+            <div className="relative">
+              <button
+                type="button"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((value) => !value)}
+                className="flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium tracking-[0.01em] text-zinc-500 transition hover:bg-neutral-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+              >
+                <span>More</span>
+                <span className="text-xs text-zinc-400 dark:text-white/60">▾</span>
+              </button>
+              {moreOpen && (
+                <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-zinc-200 bg-white py-2 shadow-xl dark:border-white/10 dark:bg-zinc-900">
+                  {TABLET_MORE_LINKS.map((link) => (
+                    <LocalizedLink
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      <span className="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-neutral-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5">
+                        {link.label}
+                      </span>
+                    </LocalizedLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
 
         {/* Utilities + Actions */}
         <div className="flex items-center gap-4">
@@ -149,7 +211,7 @@ export default function Header() {
           className="border-t border-subtle bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-zinc-800 dark:bg-zinc-900/90"
         >
           <div className="space-y-2">
-            {NAV_LINKS.map((link) => (
+            {MOBILE_NAV_LINKS.map((link) => (
               <LocalizedLink
                 key={link.href}
                 href={link.href}
@@ -188,6 +250,16 @@ export default function Header() {
               >
                 <span className="block rounded-lg px-3 py-2 text-zinc-900 transition hover:bg-neutral-100 hover:text-ruachDark dark:text-white dark:hover:bg-white/5">
                   Logout
+                </span>
+              </LocalizedLink>
+            ) : null}
+            {status !== "authenticated" ? (
+              <LocalizedLink
+                href="/signup"
+                onClick={() => setOpen(false)}
+              >
+                <span className="block rounded-full border border-neutral-300 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
+                  Login / Signup
                 </span>
               </LocalizedLink>
             ) : null}
