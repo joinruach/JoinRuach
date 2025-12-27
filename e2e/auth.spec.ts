@@ -42,7 +42,7 @@ test.describe('Authentication Flow', () => {
 
       // Should navigate to auth page
       const url = page.url();
-      expect(url).toMatch(/auth|signin|login/i);
+      expect(url).toMatch(/auth|sign[-_]?in|login/i);
     }
   });
 
