@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import { filterConsoleErrors } from './utils/consoleErrors';
 
 test.describe('Courses Page', () => {
+  // Skip these tests if backend is not running
+  test.skip(
+    process.env.E2E_BACKEND !== 'true',
+    'Backend required - run with E2E_BACKEND=true'
+  );
   test('should display courses page', async ({ page }) => {
     await page.goto('/courses');
     await expect(page).toHaveURL(/courses/);
