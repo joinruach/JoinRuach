@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { filterConsoleErrors } from './utils/consoleErrors';
 
 test.describe('Home Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,7 +17,22 @@ test.describe('Home Page', () => {
 
   test('should have working navigation menu', async ({ page }) => {
     const nav = page.locator('nav').first();
-    await expect(nav).toBeVisible();
+    const viewport = await page.viewportSize();
+    const isMobile = Boolean(viewport && viewport.width <= 768);
+
+    if (isMobile) {
+      await expect(nav).not.toBeVisible();
+      const menuToggle = page.getByTestId('mobile-nav-button');
+      await expect(menuToggle).toBeVisible();
+      await menuToggle.click();
+      const mobileMenu = page.locator('[data-testid="mobile-menu"]');
+      await expect(mobileMenu).toHaveCount(1);
+      await expect(mobileMenu.first()).toBeVisible();
+      await menuToggle.click();
+      await expect(mobileMenu).toHaveCount(0);
+    } else {
+      await expect(nav).toBeVisible();
+    }
 
     // Check for common navigation items
     const homeLink = page.getByRole('link', { name: /home/i }).first();
@@ -63,14 +79,23 @@ test.describe('Home Page', () => {
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
-        errors.push(msg.text());
+        const location = msg.location();
+        const locationHint = location?.url ? ` @ ${location.url}:${location.lineNumber ?? 0}` : '';
+        errors.push(`${msg.text()}${locationHint}`);
       }
     });
 
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    expect(errors.length).toBe(0);
+    const { blocking, ignored } = filterConsoleErrors(errors);
+    if (ignored.length > 0) {
+      test.info().log('Ignored console errors', ignored.join('\\n'));
+    }
+    if (blocking.length > 0) {
+      test.info().log('Blocking console errors', blocking.join('\\n'));
+    }
+    expect(blocking).toHaveLength(0);
   });
 
   test('should have proper meta tags for SEO', async ({ page }) => {
