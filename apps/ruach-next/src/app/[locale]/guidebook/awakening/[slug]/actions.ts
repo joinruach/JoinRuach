@@ -11,6 +11,7 @@ import {
   createSectionViewedEvent,
   ReflectionType,
   AwakeningPhase,
+  initializeFormationClient,
 } from "@ruach/formation";
 
 // ============================================================================
@@ -99,33 +100,81 @@ export async function submitCheckpoint(
       dwellTimeSeconds
     );
 
-    // 5. Store Events (console for now, Strapi later)
-    const events = [
-      checkpointReachedEvent,
-      reflectionSubmittedEvent,
-      checkpointCompletedEvent,
-    ];
-
-    events.forEach((event) => {
-      console.log("[Formation Event]", {
-        eventType: event.eventType,
-        userId: event.userId,
-        timestamp: event.timestamp,
-        data: event.data,
+    // 5. Store Events + Reflection + Update Journey
+    try {
+      // Initialize Strapi persistence client
+      const client = initializeFormationClient({
+        strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL!,
+        strapiToken: process.env.STRAPI_FORMATION_TOKEN,
       });
-    });
 
-    // TODO: Replace with Strapi API call
-    // await Promise.all(events.map(event => saveFormationEvent(event)));
+      const userIdNumber = session?.user?.id ? Number(session.user.id) : undefined;
 
-    // Also log the reflection content (not part of event, stored separately)
-    console.log("[Reflection Content]", {
-      reflectionId,
-      checkpointId,
-      userId,
-      wordCount,
-      content: reflection.substring(0, 100) + "...", // Log first 100 chars only
-    });
+      // Write all three events sequentially
+      await client.writeEvent(checkpointReachedEvent, userId, userIdNumber);
+      await client.writeEvent(reflectionSubmittedEvent, userId, userIdNumber);
+      await client.writeEvent(checkpointCompletedEvent, userId, userIdNumber);
+
+      // Write reflection content
+      await client.writeReflection(
+        {
+          id: reflectionId,
+          userId,
+          checkpointId,
+          type: ReflectionType.Text,
+          content: reflection,
+          wordCount,
+          submittedAt: new Date(),
+          timeSinceCheckpointReached: dwellTimeSeconds,
+        },
+        phase,
+        sectionId,
+        userId,
+        userIdNumber
+      );
+
+      // Update journey state (add to arrays, increment counter)
+      await client.upsertJourney(
+        {
+          checkpointsReached: [checkpointId], // Client will append to existing array
+          checkpointsCompleted: [checkpointId], // Client will append to existing array
+          reflectionsSubmitted: 1, // Client will increment existing count
+          lastActivityAt: new Date().toISOString(),
+        },
+        userId,
+        userIdNumber
+      );
+
+      console.log("[Formation] Checkpoint completed and reflection stored", {
+        userId,
+        checkpointId,
+        reflectionId,
+        wordCount,
+      });
+    } catch (error) {
+      // Graceful degradation: log error but allow user to proceed
+      console.error("[Formation Persistence] Failed to persist checkpoint submission", {
+        error,
+        userId,
+        checkpointId,
+      });
+      // Fallback: log the events locally
+      [checkpointReachedEvent, reflectionSubmittedEvent, checkpointCompletedEvent].forEach((event) => {
+        console.log("[Formation Event - Fallback]", {
+          eventType: event.eventType,
+          userId: event.userId,
+          timestamp: event.timestamp,
+          data: event.data,
+        });
+      });
+      console.log("[Reflection Content - Fallback]", {
+        reflectionId,
+        checkpointId,
+        userId,
+        wordCount,
+        content: reflection.substring(0, 100) + "...",
+      });
+    }
 
     // 6. Determine next section
     const currentSection = AwakeningPhase.sections.find((s) => s.id === sectionId);

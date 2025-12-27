@@ -186,16 +186,7 @@ export default function Header() {
                   Logout
                 </span>
               </LocalizedLink>
-            ) : (
-              <LocalizedLink
-                href="/signup"
-                onClick={() => setOpen(false)}
-              >
-                <span className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
-                  Login / Signup
-                </span>
-              </LocalizedLink>
-            )}
+            ) : null}
             <LocalizedLink
               href="/give"
               onClick={() => setOpen(false)}

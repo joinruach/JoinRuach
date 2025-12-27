@@ -7,6 +7,8 @@ import {
   CovenantType,
   createCovenantEnteredEvent,
   FormationEventType,
+  FormationPhase,
+  initializeFormationClient,
 } from "@ruach/formation";
 
 // ============================================================================
@@ -79,25 +81,60 @@ export async function enterCovenant(
       acknowledgedTerms === "on"
     );
 
-    // 4. Store Event
-    // TODO: Replace with Strapi API call once formation-event content type exists
-    // For now, log the event
-    console.log("[Formation Event]", {
-      eventType: event.eventType,
-      userId: event.userId,
-      timestamp: event.timestamp,
-      data: event.data,
-    });
+    // 4. Store Event + Initialize Journey
+    try {
+      // Initialize Strapi persistence client
+      const client = initializeFormationClient({
+        strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL!,
+        strapiToken: process.env.STRAPI_FORMATION_TOKEN,
+      });
 
-    // In production, this would be:
-    // await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/formation-events`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `Bearer ${session?.strapiJwt}`,
-    //   },
-    //   body: JSON.stringify({ data: event }),
-    // });
+      const userIdNumber = session?.user?.id ? Number(session.user.id) : undefined;
+
+      // Write covenant entered event
+      await client.writeEvent(event, userId, userIdNumber);
+
+      // Create initial journey state
+      await client.upsertJourney(
+        {
+          covenantType,
+          currentPhase: covenantType === CovenantType.FormationJourney
+            ? FormationPhase.Awakening
+            : FormationPhase.Awakening, // Resource explorers start at same phase but skip checkpoints
+          phaseEnteredAt: new Date().toISOString(),
+          covenantEnteredAt: new Date().toISOString(),
+          lastActivityAt: new Date().toISOString(),
+          sectionsViewed: [],
+          checkpointsReached: [],
+          checkpointsCompleted: [],
+          reflectionsSubmitted: 0,
+          unlockedCanonAxioms: [],
+          unlockedCourses: [],
+          unlockedCannonReleases: [],
+        },
+        userId,
+        userIdNumber
+      );
+
+      console.log("[Formation] Covenant entered and journey initialized", {
+        userId,
+        covenantType,
+      });
+    } catch (error) {
+      // Graceful degradation: log error but allow user to proceed
+      console.error("[Formation Persistence] Failed to persist covenant entry", {
+        error,
+        userId,
+        covenantType,
+      });
+      // Fallback: log the event locally
+      console.log("[Formation Event - Fallback]", {
+        eventType: event.eventType,
+        userId: event.userId,
+        timestamp: event.timestamp,
+        data: event.data,
+      });
+    }
 
     // 5. Determine redirect path based on covenant type
     const redirectPath =

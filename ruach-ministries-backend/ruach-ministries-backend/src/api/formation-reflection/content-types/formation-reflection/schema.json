@@ -1,0 +1,86 @@
+{
+  "kind": "collectionType",
+  "collectionName": "formation_reflections",
+  "info": {
+    "singularName": "formation-reflection",
+    "pluralName": "formation-reflections",
+    "displayName": "Formation Reflection",
+    "description": "User reflections at checkpoints (immutable once submitted)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "reflectionId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "checkpointId": {
+      "type": "string",
+      "required": true
+    },
+    "sectionId": {
+      "type": "string",
+      "required": true
+    },
+    "phase": {
+      "type": "enumeration",
+      "enum": [
+        "awakening",
+        "separation",
+        "discernment",
+        "commission",
+        "stewardship"
+      ],
+      "required": true
+    },
+    "reflectionType": {
+      "type": "enumeration",
+      "enum": [
+        "text",
+        "voice"
+      ],
+      "required": true,
+      "default": "text"
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "audioUrl": {
+      "type": "string"
+    },
+    "wordCount": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    },
+    "submittedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "timeSinceCheckpointReached": {
+      "type": "integer",
+      "required": true,
+      "min": 0
+    },
+    "depthScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1
+    },
+    "indicators": {
+      "type": "json"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "anonymousUserId": {
+      "type": "string"
+    }
+  }
+}

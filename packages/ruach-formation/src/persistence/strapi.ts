@@ -249,6 +249,11 @@ export class StrapiFormationClient {
   /**
    * Create or update formation journey for a user.
    * Journey state is mutable (updated as user progresses).
+   *
+   * SMART MERGING:
+   * - Arrays are appended (checkpointsReached, checkpointsCompleted, sectionsViewed, etc.)
+   * - Numbers are incremented (reflectionsSubmitted)
+   * - Scalars are replaced (currentPhase, covenantType, etc.)
    */
   async upsertJourney(
     journey: Partial<StrapiFormationJourney>,
@@ -259,6 +264,57 @@ export class StrapiFormationClient {
     const existing = await this.getJourney(userId || String(userIdNumber), userIdNumber);
 
     if (existing) {
+      // Smart merge: handle arrays and counters
+      const merged: Partial<StrapiFormationJourney> = { ...journey };
+
+      // Append to arrays (avoiding duplicates)
+      if (journey.checkpointsReached) {
+        merged.checkpointsReached = [
+          ...(existing.checkpointsReached || []),
+          ...journey.checkpointsReached,
+        ].filter((v, i, a) => a.indexOf(v) === i); // Deduplicate
+      }
+
+      if (journey.checkpointsCompleted) {
+        merged.checkpointsCompleted = [
+          ...(existing.checkpointsCompleted || []),
+          ...journey.checkpointsCompleted,
+        ].filter((v, i, a) => a.indexOf(v) === i);
+      }
+
+      if (journey.sectionsViewed) {
+        merged.sectionsViewed = [
+          ...(existing.sectionsViewed || []),
+          ...journey.sectionsViewed,
+        ].filter((v, i, a) => a.indexOf(v) === i);
+      }
+
+      if (journey.unlockedCanonAxioms) {
+        merged.unlockedCanonAxioms = [
+          ...(existing.unlockedCanonAxioms || []),
+          ...journey.unlockedCanonAxioms,
+        ].filter((v, i, a) => a.indexOf(v) === i);
+      }
+
+      if (journey.unlockedCourses) {
+        merged.unlockedCourses = [
+          ...(existing.unlockedCourses || []),
+          ...journey.unlockedCourses,
+        ].filter((v, i, a) => a.indexOf(v) === i);
+      }
+
+      if (journey.unlockedCannonReleases) {
+        merged.unlockedCannonReleases = [
+          ...(existing.unlockedCannonReleases || []),
+          ...journey.unlockedCannonReleases,
+        ].filter((v, i, a) => a.indexOf(v) === i);
+      }
+
+      // Increment counters
+      if (typeof journey.reflectionsSubmitted === 'number') {
+        merged.reflectionsSubmitted = (existing.reflectionsSubmitted || 0) + journey.reflectionsSubmitted;
+      }
+
       // Update existing journey
       const response = await fetch(
         `${this.config.strapiUrl}/api/formation-journeys/${existing.id}`,
@@ -270,7 +326,7 @@ export class StrapiFormationClient {
               Authorization: `Bearer ${this.config.strapiToken}`,
             }),
           },
-          body: JSON.stringify({ data: journey }),
+          body: JSON.stringify({ data: merged }),
         }
       );
 
