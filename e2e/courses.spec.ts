@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { filterConsoleErrors } from './utils/consoleErrors';
 
 test.describe('Courses Page', () => {
   test('should display courses page', async ({ page }) => {
@@ -47,7 +48,9 @@ test.describe('Courses Page', () => {
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
-        errors.push(msg.text());
+        const location = msg.location();
+        const locationHint = location?.url ? ` @ ${location.url}:${location.lineNumber ?? 0}` : '';
+        errors.push(`${msg.text()}${locationHint}`);
       }
     });
 
@@ -55,10 +58,13 @@ test.describe('Courses Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Filter out known third-party errors
-    const relevantErrors = errors.filter(
-      (error) => !error.includes('Extension') && !error.includes('chrome-extension')
-    );
-
-    expect(relevantErrors.length).toBe(0);
+    const { blocking, ignored } = filterConsoleErrors(errors);
+    if (ignored.length > 0) {
+      test.info().log('Ignored console errors', ignored.join('\\n'));
+    }
+    if (blocking.length > 0) {
+      test.info().log('Blocking console errors', blocking.join('\\n'));
+    }
+    expect(blocking).toHaveLength(0);
   });
 });
