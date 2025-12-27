@@ -231,7 +231,11 @@ jobs:
           npx wait-on http://localhost:3000 --timeout 60000 || {
             echo "❌ Server failed to start within 60 seconds"
             echo "Server logs:"
-            cat "$E2E_LOG_DIR/server.log" || echo "No server logs found"
+            if [ -f "$E2E_LOG_DIR/server.log" ]; then
+              cat "$E2E_LOG_DIR/server.log"
+            else
+              echo "No server logs found"
+            fi
             echo "Checking if process is still running..."
             if [ -f "$E2E_LOG_DIR/server.pid" ]; then
               kill -0 $(cat "$E2E_LOG_DIR/server.pid") 2>/dev/null && echo "✅ Process is running" || echo "❌ Process has died"
