@@ -191,6 +191,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
+        # ensure every Playwright browser gets installed so Firefox is ready
 
       - name: Run E2E tests
         run: pnpm test:e2e
