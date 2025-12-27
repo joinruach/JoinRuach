@@ -117,6 +117,7 @@ export default function Header() {
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-label="Toggle navigation menu"
+            data-testid="mobile-nav-button"
             className="md:hidden rounded-md p-2 text-ruachDark transition hover:bg-neutral-100 dark:text-white dark:hover:bg-white/10"
           >
             <svg
@@ -143,7 +144,10 @@ export default function Header() {
       </div>
 
       {open ? (
-        <div className="border-t border-subtle bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-zinc-800 dark:bg-zinc-900/90">
+        <div
+          data-testid="mobile-menu"
+          className="border-t border-subtle bg-white/95 px-6 py-4 text-sm shadow md:hidden dark:border-zinc-800 dark:bg-zinc-900/90"
+        >
           <div className="space-y-2">
             {NAV_LINKS.map((link) => (
               <LocalizedLink
