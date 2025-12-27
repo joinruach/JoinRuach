@@ -6,6 +6,9 @@ const KNOWN_CONSOLE_ERROR_PATTERNS = [
   /Failed to load resource/i,
   /The request was aborted/i,
   /NetworkError when attempting to fetch resource/i,
+  /Content-Security-Policy/i,
+  /authjs/i,
+  /plausible\.io/i,
 ];
 
 function normalizeError(error: string) {
