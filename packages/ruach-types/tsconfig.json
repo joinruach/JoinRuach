@@ -4,8 +4,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "noEmit": false,
     "composite": false,
     "incremental": false
   },

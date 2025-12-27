@@ -5,10 +5,6 @@
     "rootDir": "./src",
     "jsx": "react-jsx",
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "noEmit": false,
-    "composite": false,
-    "incremental": false,
     "baseUrl": ".",
     "paths": {
       "@/*": [
