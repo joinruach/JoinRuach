@@ -43,7 +43,20 @@ test.describe('Home Page', () => {
 
     // Check mobile menu visibility
     const nav = page.locator('nav').first();
-    await expect(nav).toBeVisible();
+    await expect(nav).not.toBeVisible();
+
+    const menuToggle = page.getByTestId('mobile-nav-button');
+    await expect(menuToggle).toBeVisible();
+
+    const mobileMenu = page.locator('[data-testid="mobile-menu"]');
+    await expect(mobileMenu).toHaveCount(0);
+
+    await menuToggle.click();
+    await expect(mobileMenu).toHaveCount(1);
+    await expect(mobileMenu.first()).toBeVisible();
+
+    await menuToggle.click();
+    await expect(mobileMenu).toHaveCount(0);
   });
 
   test('should have no console errors', async ({ page }) => {
