@@ -158,15 +158,38 @@ jobs:
           STRAPI_REVALIDATE_SECRET: dev-revalidate-secret
 
       - name: Start Next.js server
-        run: pnpm --filter ruach-next start &
+        run: |
+          # Use standalone server (recommended for output: "standalone" config)
+          # Copy static assets to standalone directory (required by Next.js)
+          cp -r apps/ruach-next/.next/static apps/ruach-next/.next/standalone/apps/ruach-next/.next/static
+          cp -r apps/ruach-next/public apps/ruach-next/.next/standalone/apps/ruach-next/public
+
+          # Start standalone server and redirect output to log file
+          cd apps/ruach-next/.next/standalone/apps/ruach-next && node server.js > ../../../../../server.log 2>&1 &
+          echo $! > ../../../../../server.pid
+          cd -
+          echo "Server started with PID $(cat server.pid)"
         env:
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-e2e-must-be-32-chars-long' }}
           NEXT_PUBLIC_STRAPI_URL: http://localhost:1337
-          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          PORT: 3000
 
       - name: Wait for server to be ready
-        run: npx wait-on http://localhost:3000 --timeout 60000
+        run: |
+          echo "Waiting for server to be ready..."
+          npx wait-on http://localhost:3000 --timeout 60000 || {
+            echo "❌ Server failed to start within 60 seconds"
+            echo "Server logs:"
+            cat server.log || echo "No server logs found"
+            echo "Checking if process is still running..."
+            if [ -f server.pid ]; then
+              kill -0 $(cat server.pid) 2>/dev/null && echo "✅ Process is running" || echo "❌ Process has died"
+            fi
+            exit 1
+          }
+          echo "✅ Server is ready"
 
       - name: Run E2E tests
         run: pnpm test:e2e
@@ -176,6 +199,23 @@ jobs:
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-e2e-must-be-32-chars-long' }}
           NEXTAUTH_URL: http://localhost:3000
           NEXT_PUBLIC_STRAPI_URL: http://localhost:1337
+
+      - name: Stop Next.js server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            echo "Stopping server with PID $(cat server.pid)..."
+            kill $(cat server.pid) 2>/dev/null || echo "Server already stopped"
+            rm server.pid
+          fi
+
+      - name: Upload server logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: nextjs-server-logs
+          path: server.log
+          retention-days: 7
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
