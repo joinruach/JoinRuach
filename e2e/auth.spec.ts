@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
+  // Skip these tests if backend is not running
+  test.skip(
+    process.env.E2E_BACKEND !== 'true',
+    'Backend required - run with E2E_BACKEND=true'
+  );
   test('should display login page', async ({ page }) => {
     await page.goto('/api/auth/signin');
 
