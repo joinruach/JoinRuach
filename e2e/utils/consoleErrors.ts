@@ -9,6 +9,8 @@ const KNOWN_CONSOLE_ERROR_PATTERNS = [
   /Content-Security-Policy/i,
   /authjs/i,
   /plausible\.io/i,
+  /downloadable font: download failed/i,
+  /\/_next\/static\/chunks\//i,
 ];
 
 function normalizeError(error: string) {
