@@ -149,6 +149,25 @@ jobs:
         run: pnpm exec playwright install --with-deps
         # install every browser so Firefox and Safari are ready
 
+      - name: Build Next.js app
+        run: pnpm --filter ruach-next build
+        env:
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-e2e-must-be-32-chars-long' }}
+          NEXT_PUBLIC_STRAPI_URL: http://localhost:1337
+          STRAPI_REVALIDATE_SECRET: dev-revalidate-secret
+
+      - name: Start Next.js server
+        run: pnpm --filter ruach-next start &
+        env:
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-e2e-must-be-32-chars-long' }}
+          NEXT_PUBLIC_STRAPI_URL: http://localhost:1337
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:3000 --timeout 60000
+
       - name: Run E2E tests
         run: pnpm test:e2e
         env:
