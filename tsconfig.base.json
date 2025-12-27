@@ -14,8 +14,6 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "incremental": true,
-    "composite": true,
     "jsx": "preserve",
     "typeRoots": [
       "./types",
