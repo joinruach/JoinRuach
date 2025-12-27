@@ -60,10 +60,10 @@ test.describe('Courses Page', () => {
     // Filter out known third-party errors
     const { blocking, ignored } = filterConsoleErrors(errors);
     if (ignored.length > 0) {
-      test.info().log('Ignored console errors', ignored.join('\\n'));
+      console.info('Ignored console errors:\n' + ignored.join('\\n'));
     }
     if (blocking.length > 0) {
-      test.info().log('Blocking console errors', blocking.join('\\n'));
+      console.warn('Blocking console errors:\n' + blocking.join('\\n'));
     }
     expect(blocking).toHaveLength(0);
   });
