@@ -13,6 +13,12 @@
       "@ruach/addons/*": [
         "../../packages/ruach-next-addons/src/*"
       ],
+      "@ruach/formation": [
+        "../../packages/ruach-formation/src/index.ts"
+      ],
+      "@ruach/formation/*": [
+        "../../packages/ruach-formation/src/*"
+      ],
       "next-intl/link": [
         "src/components/navigation/LocalizedLink.tsx"
       ]
@@ -54,7 +60,9 @@
     "../../packages/ruach-components/src/**/*.ts",
     "../../packages/ruach-components/src/**/*.tsx",
     "../../packages/ruach-next-addons/src/**/*.ts",
-    "../../packages/ruach-next-addons/src/**/*.tsx"
+    "../../packages/ruach-next-addons/src/**/*.tsx",
+    "../../packages/ruach-formation/src/**/*.ts",
+    "../../packages/ruach-formation/src/**/*.tsx"
   ],
   "exclude": [
     "node_modules",

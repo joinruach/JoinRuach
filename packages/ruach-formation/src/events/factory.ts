@@ -5,7 +5,6 @@
  * Ensures all events have required fields and proper timestamps.
  */
 
-import { randomUUID } from 'node:crypto';
 import {
   FormationEvent,
   FormationEventType,
@@ -32,12 +31,24 @@ function createBaseEvent<T extends FormationEventType>(
   metadata?: EventMetadata
 ) {
   return {
-    id: randomUUID(),
+    id: generateEventId(),
     userId,
     timestamp: new Date(),
     eventType,
     metadata,
   } as const;
+}
+
+function generateEventId() {
+  const runtimeCrypto = (globalThis as typeof globalThis & {
+    crypto?: { randomUUID?: () => string };
+  }).crypto;
+
+  if (runtimeCrypto?.randomUUID) {
+    return runtimeCrypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 // ============================================================================

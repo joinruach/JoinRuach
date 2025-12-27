@@ -101,7 +101,7 @@ export default function Header() {
                 </span>
               </LocalizedLink>
             ) : (
-              <LocalizedLink href="/signup">
+              <LocalizedLink href="/signup" className="hidden md:inline-flex">
                 <span className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900 hover:text-ruachDark dark:border-white/30 dark:text-white dark:hover:border-white dark:hover:text-white">
                   Login / Signup
                 </span>

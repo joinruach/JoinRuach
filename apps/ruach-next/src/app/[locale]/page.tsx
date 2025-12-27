@@ -172,10 +172,10 @@ export default async function Home({
               </span>
             </LocalizedLink>
             <LocalizedLink
-              href="/community-outreach"
+              href="/builders"
             >
               <span className="rounded-full border border-zinc-300 dark:border-white/20 px-6 py-2.5 text-sm font-semibold text-zinc-800 dark:text-white/90 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
-                Join the Community
+                Join the Builders
               </span>
             </LocalizedLink>
           </div>
@@ -204,9 +204,9 @@ export default async function Home({
                 Become a Partner
               </span>
             </LocalizedLink>
-            <LocalizedLink href="/community-outreach">
+            <LocalizedLink href="/builders">
               <span className="inline-flex items-center gap-1 text-amber-700 font-medium hover:text-amber-800 underline-offset-4 hover:underline">
-                Join Community Outreach →
+                Join the Builders →
               </span>
             </LocalizedLink>
           </div>

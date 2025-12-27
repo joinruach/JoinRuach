@@ -112,7 +112,7 @@ export default function Footer(){
             Ruach Ministries
           </h2>
           <p className="max-w-3xl text-sm text-white/70">
-            Ruach is a prophetic media ministry that forms, equips, and sends believers to carry freedom and establish Kingdom communities.
+            Ruach is a prophetic media ministry and builder movement that forms, equips, and sends believers to carry freedom and establish Kingdom communities.
           </p>
         </div>
 
