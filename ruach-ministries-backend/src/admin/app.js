@@ -4,8 +4,6 @@
  * Registers custom components and extensions
  */
 
-import VideoUploadWidget from './extensions/upload/VideoUploadWidget';
-
 export default {
   config: {
     locales: ['en'],
@@ -17,7 +15,7 @@ export default {
     // Register custom video upload widget
     app.customFields.register({
       name: 'video-upload-large',
-      pluginId: 'admin',
+      pluginId: 'ruach-video-uploader', // Changed from 'admin' to custom plugin ID
       type: 'text',
       intlLabel: {
         id: 'custom-field.video-upload-large.label',
@@ -28,7 +26,8 @@ export default {
         defaultMessage: 'Upload large video files (up to 10GB) with progress tracking and resumption support',
       },
       components: {
-        Input: VideoUploadWidget,
+        // FIXED: Use async import function instead of direct reference
+        Input: async () => import('./extensions/upload/VideoUploadWidget'),
       },
       options: {
         base: {},
