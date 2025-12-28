@@ -3,9 +3,12 @@
  * Handles API requests for margin reflections, insights, and living commentary
  */
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
-export default ({ strapi }: { strapi: Strapi }) => ({
+export default ({ strapi }: { strapi: Core.Strapi }) => {
+  const entityService = strapi.entityService as any;
+
+  return {
   /**
    * Submit a margin reflection on a verse
    * POST /api/iron-chamber/margin-reflection
@@ -27,7 +30,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Find verse
-      const verses = await strapi.entityService.findMany('api::scripture-verse.scripture-verse', {
+      const verses = await entityService.findMany('api::scripture-verse.scripture-verse', {
         filters: { verseId: { $eq: verseId } },
       });
 
@@ -46,7 +49,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Create margin reflection
-      const reflection = await strapi.entityService.create('api::margin-reflection.margin-reflection', {
+        const reflection = await entityService.create('api::margin-reflection.margin-reflection', {
         data: {
           verse: verses[0].id,
           content,
@@ -78,7 +81,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
     try {
       const { verseId } = ctx.params;
 
-      const reflections = await strapi.entityService.findMany('api::margin-reflection.margin-reflection', {
+      const reflections = await entityService.findMany('api::margin-reflection.margin-reflection', {
         filters: {
           verse: {
             verseId: { $eq: verseId },
@@ -116,7 +119,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         };
       }
 
-      const insights = await strapi.entityService.findMany('api::iron-insight.iron-insight', {
+      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
         filters,
         populate: ['verse', 'themes', 'user'],
         sort: { publishedAt: 'desc', voteScore: 'desc' },
@@ -141,7 +144,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
     try {
       const { insightId } = ctx.params;
 
-      const insights = await strapi.entityService.findMany('api::iron-insight.iron-insight', {
+      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
         filters: { insightId: { $eq: insightId } },
         populate: ['verse', 'themes', 'user', 'votes'],
       });
@@ -191,7 +194,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Find insight
-      const insights = await strapi.entityService.findMany('api::iron-insight.iron-insight', {
+      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
         filters: { insightId: { $eq: insightId } },
       });
 
@@ -202,7 +205,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Create vote
-      const vote = await strapi.entityService.create('api::insight-vote.insight-vote', {
+      const vote = await entityService.create('api::insight-vote.insight-vote', {
         data: {
           insight: insights[0].id,
           user: userId,
@@ -216,7 +219,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       const voteWeight = voteType === 'helpful' ? 1 : voteType === 'profound' ? 2 : -1;
       const newScore = (insights[0].voteScore || 0) + voteWeight;
 
-      await strapi.entityService.update('api::iron-insight.iron-insight', insights[0].id, {
+      await entityService.update('api::iron-insight.iron-insight', insights[0].id, {
         data: { voteScore: newScore },
       });
 
@@ -237,7 +240,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
     try {
       const { verseId } = ctx.params;
 
-      const commentaries = await strapi.entityService.findMany('api::living-commentary.living-commentary', {
+      const commentaries = await entityService.findMany('api::living-commentary.living-commentary', {
         filters: {
           verse: {
             verseId: { $eq: verseId },
@@ -272,7 +275,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Find verse
-      const verses = await strapi.entityService.findMany('api::scripture-verse.scripture-verse', {
+      const verses = await entityService.findMany('api::scripture-verse.scripture-verse', {
         filters: { verseId: { $eq: verseId } },
       });
 
@@ -283,7 +286,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       }
 
       // Create living commentary
-      const commentary = await strapi.entityService.create('api::living-commentary.living-commentary', {
+      const commentary = await entityService.create('api::living-commentary.living-commentary', {
         data: {
           verse: verses[0].id,
           title,
@@ -333,7 +336,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         ? { user: { id: userId } }
         : { anonymousUserId: { $eq: userId } };
 
-      const journey = await strapi.entityService.findMany('api::formation-journey.formation-journey', {
+      const journey = await entityService.findMany('api::formation-journey.formation-journey', {
         filters,
       });
 
@@ -351,7 +354,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
   async _checkCanValidateInsights(userId: number): Promise<boolean> {
     try {
-      const journey = await strapi.entityService.findMany('api::formation-journey.formation-journey', {
+      const journey = await entityService.findMany('api::formation-journey.formation-journey', {
         filters: { user: { id: userId } },
       });
 
@@ -376,4 +379,5 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       return false;
     }
   },
-});
+  };
+};

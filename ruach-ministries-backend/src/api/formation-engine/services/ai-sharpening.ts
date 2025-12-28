@@ -3,7 +3,7 @@
  * Uses Claude API to analyze reflections and sharpen insights for the Iron Chamber
  */
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '';
 const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
@@ -29,7 +29,10 @@ interface ReflectionAnalysis {
   };
 }
 
-export default ({ strapi }: { strapi: Strapi }) => ({
+export default ({ strapi }: { strapi: Core.Strapi }) => {
+  const entityService = strapi.entityService as any;
+
+  return {
   /**
    * Analyze a reflection and sharpen insight using Claude
    */
@@ -72,8 +75,12 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         throw new Error(`Claude API error: ${response.status} ${errorText}`);
       }
 
-      const result = await response.json();
-      const analysisText = result.content[0].text;
+      const result = (await response.json()) as { content?: Array<{ text?: string }> };
+      const analysisText = result.content?.[0]?.text;
+
+      if (!analysisText) {
+        throw new Error('Unexpected Claude response');
+      }
 
       // Parse structured response
       const analysis = this.parseAnalysisResponse(analysisText);
@@ -228,7 +235,7 @@ Respond with ONLY the JSON object, no other text.`;
   async saveAnalysis(reflectionId: string, analysis: ReflectionAnalysis): Promise<any> {
     try {
       // Get reflection data
-      const reflection = await strapi.entityService.findMany('api::formation-reflection.formation-reflection', {
+      const reflection = await entityService.findMany('api::formation-reflection.formation-reflection', {
         filters: { reflectionId: { $eq: reflectionId } },
       });
 
@@ -236,10 +243,20 @@ Respond with ONLY the JSON object, no other text.`;
         throw new Error(`Reflection not found: ${reflectionId}`);
       }
 
-      const reflectionData = reflection[0];
+      const reflectionData = reflection[0] as {
+        id: number;
+        content?: string;
+        verse?: number;
+        user?: { id?: number };
+        anonymousUserId?: string;
+      };
+
+      if (!reflectionData.content) {
+        throw new Error(`Reflection missing content: ${reflectionId}`);
+      }
 
       // Update reflection with depth score
-      await strapi.entityService.update('api::formation-reflection.formation-reflection', reflectionData.id, {
+      await entityService.update('api::formation-reflection.formation-reflection', reflectionData.id, {
         data: {
           depthScore: analysis.depthScore,
           indicators: analysis.indicators,
@@ -268,7 +285,7 @@ Respond with ONLY the JSON object, no other text.`;
           publishedAt: analysis.routing === 'publish' ? new Date() : null,
         };
 
-        const insight = await strapi.entityService.create('api::iron-insight.iron-insight', {
+        const insight = await entityService.create('api::iron-insight.iron-insight', {
           data: insightData,
         });
 
@@ -291,7 +308,7 @@ Respond with ONLY the JSON object, no other text.`;
     for (const reflectionId of reflectionIds) {
       try {
         // Get reflection
-        const reflections = await strapi.entityService.findMany('api::formation-reflection.formation-reflection', {
+        const reflections = await entityService.findMany('api::formation-reflection.formation-reflection', {
           filters: { reflectionId: { $eq: reflectionId } },
           populate: ['user'],
         });
@@ -301,7 +318,17 @@ Respond with ONLY the JSON object, no other text.`;
           continue;
         }
 
-        const reflection = reflections[0];
+        const reflection = reflections[0] as {
+          content?: string;
+          user?: { id?: number };
+          anonymousUserId?: string;
+          checkpointId?: string;
+        };
+
+        if (!reflection.content) {
+          strapi.log.warn(`Reflection missing content: ${reflectionId}`);
+          continue;
+        }
 
         // Get user's current phase
         const userId = reflection.user?.id || reflection.anonymousUserId;
@@ -309,7 +336,7 @@ Respond with ONLY the JSON object, no other text.`;
           ? { user: { id: userId } }
           : { anonymousUserId: { $eq: userId } };
 
-        const journey = await strapi.entityService.findMany('api::formation-journey.formation-journey', {
+        const journey = await entityService.findMany('api::formation-journey.formation-journey', {
           filters: journeyFilters,
         });
 
@@ -336,4 +363,5 @@ Respond with ONLY the JSON object, no other text.`;
 
     strapi.log.info('Batch analysis complete');
   },
-});
+};
+};

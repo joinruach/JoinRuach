@@ -40,6 +40,14 @@ interface Verse {
   footnotes: any;
 }
 
+interface StrapiListResponse<T = unknown> {
+  data?: T[];
+}
+
+interface StrapiSingleResponse<T = unknown> {
+  data?: T;
+}
+
 class StrapiImporter {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -140,8 +148,8 @@ class StrapiImporter {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      return data.data?.[0] || null;
+      const payload = (await response.json()) as StrapiListResponse;
+      return payload.data?.[0] || null;
     } catch (error) {
       console.error(`Error finding work ${workId}:`, error);
       return null;
@@ -174,8 +182,8 @@ class StrapiImporter {
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    const result = await response.json();
-    return result.data;
+    const responsePayload = (await response.json()) as StrapiSingleResponse;
+    return responsePayload.data;
   }
 
   private async importVerse(verse: Verse): Promise<void> {
@@ -227,8 +235,8 @@ class StrapiImporter {
         return null;
       }
 
-      const data = await response.json();
-      return data.data?.[0] || null;
+      const payload = (await response.json()) as StrapiListResponse;
+      return payload.data?.[0] || null;
     } catch {
       return null;
     }

@@ -3,7 +3,7 @@
  * Handles async job processing for formation state and AI analysis
  */
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 import { Queue, Worker, type Job } from 'bullmq';
 import { createClient } from 'redis';
 
@@ -25,7 +25,7 @@ let analysisQueue: Queue | null = null;
 let stateWorker: Worker | null = null;
 let analysisWorker: Worker | null = null;
 
-export default ({ strapi }: { strapi: Strapi }) => ({
+export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Initialize BullMQ queues and workers
    */
@@ -95,16 +95,24 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
         try {
           // Get reflection
-          const reflections = await strapi.entityService.findMany('api::formation-reflection.formation-reflection', {
+          const reflections = (await strapi.entityService.findMany('api::formation-reflection.formation-reflection', {
             filters: { reflectionId: { $eq: job.data.reflectionId } },
             populate: ['user'],
-          });
+          })) as Array<{
+            content?: string;
+            checkpointId?: string;
+            user?: { id?: number };
+            anonymousUserId?: string;
+          }>;
 
           if (!Array.isArray(reflections) || reflections.length === 0) {
             throw new Error(`Reflection not found: ${job.data.reflectionId}`);
           }
 
           const reflection = reflections[0];
+          if (!reflection?.content) {
+            throw new Error(`Reflection missing content: ${job.data.reflectionId}`);
+          }
 
           // Get user's phase
           const userId = reflection.user?.id || reflection.anonymousUserId;
@@ -125,7 +133,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
             job.data.reflectionId,
             reflection.content,
             userPhase,
-            reflection.checkpointId
+            reflection.checkpointId || ''
           );
 
           strapi.log.info(`✅ Reflection analyzed: ${job.data.reflectionId}`);

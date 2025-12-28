@@ -3,7 +3,7 @@
  * Handles event sourcing, state computation, and access gating for the formation journey
  */
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
 type FormationPhase = 'awakening' | 'separation' | 'discernment' | 'commission' | 'stewardship';
 
@@ -55,7 +55,10 @@ interface FormationState {
   canValidateInsights: boolean;
 }
 
-export default ({ strapi }: { strapi: Strapi }) => ({
+export default ({ strapi }: { strapi: Core.Strapi }) => {
+  const entityService = strapi.entityService as any;
+
+  return {
   /**
    * Emit a formation event to the append-only event store
    */
@@ -71,7 +74,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         anonymousUserId: event.anonymousUserId,
       };
 
-      const created = await strapi.entityService.create('api::formation-event.formation-event', {
+      const created = await entityService.create('api::formation-event.formation-event', {
         data: eventData,
       });
 
@@ -104,7 +107,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         filters.anonymousUserId = { $eq: userId };
       }
 
-      const events = await strapi.entityService.findMany('api::formation-event.formation-event', {
+      const events = await entityService.findMany('api::formation-event.formation-event', {
         filters,
         sort: { timestamp: 'asc' },
       });
@@ -121,7 +124,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         ? { user: { id: userId } }
         : { anonymousUserId: { $eq: userId } };
 
-      const existingJourney = await strapi.entityService.findMany('api::formation-journey.formation-journey', {
+      const existingJourney = await entityService.findMany('api::formation-journey.formation-journey', {
         filters: journeyFilters,
       });
 
@@ -143,11 +146,11 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       };
 
       if (Array.isArray(existingJourney) && existingJourney.length > 0) {
-        await strapi.entityService.update('api::formation-journey.formation-journey', existingJourney[0].id, {
+        await entityService.update('api::formation-journey.formation-journey', existingJourney[0].id, {
           data: journeyData,
         });
       } else {
-        await strapi.entityService.create('api::formation-journey.formation-journey', {
+        await entityService.create('api::formation-journey.formation-journey', {
           data: journeyData,
         });
       }
@@ -257,7 +260,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
   async canAccessNode(userId: string | number, nodeId: string): Promise<{ canAccess: boolean; reason?: string }> {
     try {
       // Get node unlock requirements
-      const node = await strapi.entityService.findMany('api::guidebook-node.guidebook-node', {
+      const node = await entityService.findMany('api::guidebook-node.guidebook-node', {
         filters: { id: nodeId },
       });
 
@@ -265,7 +268,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         return { canAccess: false, reason: 'Node not found' };
       }
 
-      const nodeData = node[0];
+      const nodeData = node[0] as any;
       const unlockRequirements = nodeData.unlockRequirements || {};
 
       // If no requirements, it's freely accessible
@@ -278,7 +281,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
         ? { user: { id: userId } }
         : { anonymousUserId: { $eq: userId } };
 
-      const journey = await strapi.entityService.findMany('api::formation-journey.formation-journey', {
+      const journey = await entityService.findMany('api::formation-journey.formation-journey', {
         filters,
       });
 
@@ -346,4 +349,5 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
     return phaseOrder[state.currentPhase] >= 3 && state.reflectionsSubmitted >= 5;
   },
-});
+};
+};
