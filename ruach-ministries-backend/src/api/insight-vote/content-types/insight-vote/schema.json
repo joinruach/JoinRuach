@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insight_votes",
+  "info": {
+    "singularName": "insight-vote",
+    "pluralName": "insight-votes",
+    "displayName": "Insight Vote",
+    "description": "Community validation votes for iron insights"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "insight": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::iron-insight.iron-insight",
+      "inversedBy": "votes"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "voteType": {
+      "type": "enumeration",
+      "enum": ["helpful", "profound", "needs_work"],
+      "required": true
+    },
+    "comment": {
+      "type": "text"
+    },
+    "votedAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

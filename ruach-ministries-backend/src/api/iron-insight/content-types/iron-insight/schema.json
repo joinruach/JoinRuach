@@ -1,0 +1,92 @@
+{
+  "kind": "collectionType",
+  "collectionName": "iron_insights",
+  "info": {
+    "singularName": "iron-insight",
+    "pluralName": "iron-insights",
+    "displayName": "Iron Insight",
+    "description": "AI-analyzed and sharpened insights from user reflections"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "insightId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "reflection": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::formation-reflection.formation-reflection"
+    },
+    "originalContent": {
+      "type": "text",
+      "required": true
+    },
+    "sharpenedInsight": {
+      "type": "richtext",
+      "required": true
+    },
+    "depthScore": {
+      "type": "float",
+      "required": true,
+      "min": 0,
+      "max": 10
+    },
+    "readinessLevel": {
+      "type": "enumeration",
+      "enum": ["emerging", "forming", "maturing", "established"],
+      "required": true
+    },
+    "aiAnalysis": {
+      "type": "json",
+      "required": true
+    },
+    "routing": {
+      "type": "enumeration",
+      "enum": ["publish", "journal", "thread", "review"],
+      "required": true
+    },
+    "routingReason": {
+      "type": "text"
+    },
+    "teachingMoment": {
+      "type": "richtext"
+    },
+    "verse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "themes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-theme.scripture-theme"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "published", "archived"],
+      "default": "pending"
+    },
+    "publishedAt": {
+      "type": "datetime"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "votes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::insight-vote.insight-vote",
+      "mappedBy": "insight"
+    },
+    "voteScore": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

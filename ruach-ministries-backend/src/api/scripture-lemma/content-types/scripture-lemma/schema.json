@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_lemmas",
+  "info": {
+    "singularName": "scripture-lemma",
+    "pluralName": "scripture-lemmas",
+    "displayName": "Scripture Lemma",
+    "description": "Lexical root form for word study"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "lemmaId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "rootForm": {
+      "type": "string",
+      "required": true
+    },
+    "transliteration": {
+      "type": "string",
+      "required": true
+    },
+    "language": {
+      "type": "enumeration",
+      "enum": ["hebrew", "aramaic", "greek"],
+      "required": true
+    },
+    "strongsNumber": {
+      "type": "string",
+      "unique": true
+    },
+    "definition": {
+      "type": "text"
+    },
+    "etymology": {
+      "type": "text"
+    },
+    "usageCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "tokens": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scripture-token.scripture-token",
+      "mappedBy": "lemma"
+    },
+    "glossaryTerm": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::glossary-term.glossary-term"
+    }
+  }
+}

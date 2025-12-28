@@ -1,0 +1,80 @@
+{
+  "kind": "collectionType",
+  "collectionName": "guidebook_nodes",
+  "info": {
+    "singularName": "guidebook-node",
+    "pluralName": "guidebook-nodes",
+    "displayName": "Guidebook Node",
+    "description": "Individual teaching sections within a formation phase"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "phase": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-phase.formation-phase",
+      "inversedBy": "nodes"
+    },
+    "order": {
+      "type": "integer",
+      "required": true
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "videoUrl": {
+      "type": "string"
+    },
+    "videoMedia": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["videos"]
+    },
+    "estimatedReadTime": {
+      "type": "integer"
+    },
+    "hasCheckpoint": {
+      "type": "boolean",
+      "default": false
+    },
+    "checkpointPrompt": {
+      "type": "richtext"
+    },
+    "checkpointGuidingQuestions": {
+      "type": "richtext"
+    },
+    "minimumWordCount": {
+      "type": "integer",
+      "default": 50
+    },
+    "minimumDwellTime": {
+      "type": "integer",
+      "default": 120
+    },
+    "unlockRequirements": {
+      "type": "json"
+    },
+    "scriptureReferences": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "relatedAxioms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::canon-axiom.canon-axiom"
+    }
+  }
+}

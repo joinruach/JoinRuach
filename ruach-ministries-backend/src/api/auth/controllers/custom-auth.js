@@ -119,6 +119,13 @@ module.exports = {
       });
 
       const sanitizedUser = await sanitizeUser(response.user);
+      const lastLoginAt = response.user.lastLoginAt
+        ? new Date(response.user.lastLoginAt).toISOString()
+        : new Date().toISOString();
+      const userWithLoginAt = {
+        ...sanitizedUser,
+        lastLoginAt,
+      };
 
       logger.logAuth('Login successful', {
         userId: response.user.id,
@@ -128,7 +135,7 @@ module.exports = {
 
       return ctx.send({
         jwt: accessToken,
-        user: sanitizedUser,
+        user: userWithLoginAt,
       });
     } catch (err) {
       logger.logAuth('Login failed', {

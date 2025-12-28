@@ -1,0 +1,75 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_works",
+  "info": {
+    "singularName": "scripture-work",
+    "pluralName": "scripture-works",
+    "displayName": "Scripture Work",
+    "description": "A work/book in the YahScriptures collection (103 total)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "workId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "canonicalName": {
+      "type": "string",
+      "required": true
+    },
+    "translatedTitle": {
+      "type": "string",
+      "required": true
+    },
+    "shortCode": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "testament": {
+      "type": "enumeration",
+      "enum": ["tanakh", "renewed_covenant", "apocrypha"],
+      "required": true
+    },
+    "canonicalOrder": {
+      "type": "integer",
+      "required": true
+    },
+    "totalChapters": {
+      "type": "integer",
+      "required": true
+    },
+    "totalVerses": {
+      "type": "integer",
+      "required": true
+    },
+    "author": {
+      "type": "string"
+    },
+    "estimatedDate": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "enumeration",
+      "enum": ["law", "history", "wisdom", "prophecy", "gospel", "epistle", "apocalyptic"]
+    },
+    "summary": {
+      "type": "text"
+    },
+    "hebrewName": {
+      "type": "string"
+    },
+    "greekName": {
+      "type": "string"
+    },
+    "verses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scripture-verse.scripture-verse",
+      "mappedBy": "work"
+    }
+  }
+}

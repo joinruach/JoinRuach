@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_tokens",
+  "info": {
+    "singularName": "scripture-token",
+    "pluralName": "scripture-tokens",
+    "displayName": "Scripture Token",
+    "description": "Word-level token for interlinear analysis"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "tokenId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "verse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-verse.scripture-verse",
+      "inversedBy": "tokens"
+    },
+    "position": {
+      "type": "integer",
+      "required": true
+    },
+    "surfaceForm": {
+      "type": "string",
+      "required": true
+    },
+    "transliteration": {
+      "type": "string"
+    },
+    "lemma": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-lemma.scripture-lemma",
+      "inversedBy": "tokens"
+    },
+    "partOfSpeech": {
+      "type": "enumeration",
+      "enum": ["noun", "verb", "adjective", "pronoun", "preposition", "conjunction", "article", "particle", "proper_noun"]
+    },
+    "morphology": {
+      "type": "json"
+    },
+    "strongsNumber": {
+      "type": "string"
+    },
+    "gloss": {
+      "type": "string"
+    }
+  }
+}

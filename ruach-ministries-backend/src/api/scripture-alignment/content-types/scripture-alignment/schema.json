@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_alignments",
+  "info": {
+    "singularName": "scripture-alignment",
+    "pluralName": "scripture-alignments",
+    "displayName": "Scripture Alignment",
+    "description": "Interlinear word alignment mapping"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "sourceToken": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-token.scripture-token"
+    },
+    "targetWord": {
+      "type": "string",
+      "required": true
+    },
+    "alignmentType": {
+      "type": "enumeration",
+      "enum": ["one_to_one", "one_to_many", "many_to_one", "implicit"],
+      "default": "one_to_one"
+    },
+    "confidence": {
+      "type": "float",
+      "min": 0,
+      "max": 1,
+      "default": 1
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

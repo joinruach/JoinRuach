@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "margin_reflections",
+  "info": {
+    "singularName": "margin-reflection",
+    "pluralName": "margin-reflections",
+    "displayName": "Margin Reflection",
+    "description": "Public margin notes on scripture passages"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "verse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "sourceInsight": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::iron-insight.iron-insight"
+    },
+    "isValidated": {
+      "type": "boolean",
+      "default": false
+    },
+    "validatedAt": {
+      "type": "datetime"
+    },
+    "validatedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "helpfulCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "viewCount": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

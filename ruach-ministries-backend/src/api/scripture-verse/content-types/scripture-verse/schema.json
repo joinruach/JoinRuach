@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_verses",
+  "info": {
+    "singularName": "scripture-verse",
+    "pluralName": "scripture-verses",
+    "displayName": "Scripture Verse",
+    "description": "Individual verse from YahScriptures translation"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "verseId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "work": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-work.scripture-work",
+      "inversedBy": "verses"
+    },
+    "chapter": {
+      "type": "integer",
+      "required": true
+    },
+    "verse": {
+      "type": "integer",
+      "required": true
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "paleoHebrewDivineNames": {
+      "type": "boolean",
+      "default": true
+    },
+    "hasFootnotes": {
+      "type": "boolean",
+      "default": false
+    },
+    "footnotes": {
+      "type": "json"
+    },
+    "tokens": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scripture-token.scripture-token",
+      "mappedBy": "verse"
+    },
+    "themes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-theme.scripture-theme",
+      "inversedBy": "verses"
+    },
+    "reflections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::formation-reflection.formation-reflection",
+      "mappedBy": "verse"
+    }
+  }
+}

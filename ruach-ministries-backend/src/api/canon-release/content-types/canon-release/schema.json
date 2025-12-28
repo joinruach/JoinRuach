@@ -1,0 +1,75 @@
+{
+  "kind": "collectionType",
+  "collectionName": "canon_releases",
+  "info": {
+    "singularName": "canon-release",
+    "pluralName": "canon-releases",
+    "displayName": "Canon Release",
+    "description": "Gated advanced content unlocked through formation maturity"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["teaching", "prophecy", "vision", "revelation", "strategy"],
+      "required": true
+    },
+    "minimumPhase": {
+      "type": "enumeration",
+      "enum": ["awakening", "separation", "discernment", "commission", "stewardship"],
+      "required": true
+    },
+    "unlockRequirements": {
+      "type": "json",
+      "required": true
+    },
+    "scriptureReferences": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "relatedAxioms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::canon-axiom.canon-axiom"
+    },
+    "videoUrl": {
+      "type": "string"
+    },
+    "videoMedia": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["videos"]
+    },
+    "downloadableResources": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["files", "images", "videos"]
+    },
+    "estimatedDuration": {
+      "type": "integer"
+    },
+    "releasedAt": {
+      "type": "datetime"
+    }
+  }
+}

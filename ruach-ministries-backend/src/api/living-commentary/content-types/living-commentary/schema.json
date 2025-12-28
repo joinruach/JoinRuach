@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "living_commentaries",
+  "info": {
+    "singularName": "living-commentary",
+    "pluralName": "living-commentaries",
+    "displayName": "Living Commentary",
+    "description": "Validated community wisdom layer on scripture"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "verse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["exegesis", "application", "cross_reference", "cultural_context", "theological_insight"],
+      "required": true
+    },
+    "sourceInsights": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::iron-insight.iron-insight"
+    },
+    "contributors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user"
+    },
+    "curatedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "themes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-theme.scripture-theme"
+    },
+    "qualityScore": {
+      "type": "float",
+      "min": 0,
+      "max": 10
+    },
+    "viewCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "helpfulCount": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
