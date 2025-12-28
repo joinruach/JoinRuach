@@ -71,26 +71,29 @@ const nextConfig = {
     if (!shouldProxyAdmin) {
       return [];
     }
-    return [
+    const adminHosts = ["joinruach.org", "www.joinruach.org"];
+    return adminHosts.flatMap((host) => [
       {
         source: "/admin/:path*",
+        has: [{ type: "host", value: host }],
         destination: `${strapiUrl}/admin/:path*`,
       },
       {
         source: "/:locale/admin/:path*",
+        has: [{ type: "host", value: host }],
         destination: `${strapiUrl}/admin/:path*`,
       },
-    ];
+    ]);
   },
 
   async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/en",
-        permanent: false,
-      },
-    ];
+    const redirectHosts = ["joinruach.org", "www.joinruach.org"];
+    return redirectHosts.map((host) => ({
+      source: "/",
+      has: [{ type: "host", value: host }],
+      destination: "/en",
+      permanent: false,
+    }));
   },
   webpack: (config, { isServer }) => {
     // Handle .node files (native Node.js addons like @resvg/resvg-js)
