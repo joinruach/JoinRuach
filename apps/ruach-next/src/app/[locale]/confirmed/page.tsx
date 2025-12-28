@@ -15,18 +15,24 @@ export default function ConfirmedPage({
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("confirmation");
+    const success = params.get("success");
+    const error = params.get("error");
 
-    if (!token) {
+    console.log("[Email Confirmation Page] Query params:", { success, error });
+
+    // The API route handles the actual confirmation
+    // We just check the result via query params
+    if (success === "true") {
+      console.log("[Email Confirmation Page] Confirmation successful");
+      setStatus("success");
+    } else if (error) {
+      console.error("[Email Confirmation Page] Confirmation failed:", error);
       setStatus("error");
-      return;
+    } else {
+      // No success or error param - unexpected state
+      console.warn("[Email Confirmation Page] No status params found, assuming error");
+      setStatus("error");
     }
-
-    fetch(
-      `https://api.joinruach.org/api/auth/email-confirmation?confirmation=${token}`
-    )
-      .then((res) => (res.ok ? setStatus("success") : setStatus("error")))
-      .catch(() => setStatus("error"));
   }, []);
 
   if (status === "loading") {
