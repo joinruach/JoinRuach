@@ -23,6 +23,11 @@ export const metadata = {
     statusBarStyle: "black-translucent",
     title: "Ruach",
   },
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/apple-touch-icon.png",
+  },
   formatDetection: {
     telephone: false,
   },
@@ -84,9 +89,9 @@ export default async function LocaleLayout({
         </Script>
 
         {/* Favicons */}
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
         {/* PWA */}

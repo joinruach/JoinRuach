@@ -222,11 +222,15 @@ export default async function StartHere({
               Take a Course
             </span>
           </LocalizedLink>
-          <LocalizedLink href="/community-outreach">
+          <a
+            href="https://joinruach.org/en/guidebook/enter"
+            target="_blank"
+            rel="noreferrer"
+          >
             <span className="inline-block rounded-full bg-amber-600 px-6 py-3 font-medium text-zinc-900 dark:text-white transition-all hover:bg-amber-700 dark:bg-white/10 dark:hover:bg-white/20">
-              Join Outreach
+              The Remnant Guidebook
             </span>
-          </LocalizedLink>
+          </a>
           <LocalizedLink href="/give">
             <span className="inline-block rounded-full bg-amber-600 px-6 py-3 font-medium text-zinc-900 dark:text-white transition-all hover:bg-amber-700 dark:bg-white/10 dark:hover:bg-white/20">
               Give
