@@ -33,6 +33,9 @@ const securityHeaders = [
 ];
 
 /** @type {import('next').NextConfig} */
+const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+const shouldProxyAdmin = process.env.NODE_ENV === "production";
+
 const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["@resvg/resvg-js"],
@@ -64,6 +67,22 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    if (!shouldProxyAdmin) {
+      return [];
+    }
+    return [
+      {
+        source: "/admin/:path*",
+        destination: `${strapiUrl}/admin/:path*`,
+      },
+      {
+        source: "/:locale/admin/:path*",
+        destination: `${strapiUrl}/admin/:path*`,
+      },
+    ];
+  },
+
   async redirects() {
     return [
       {
