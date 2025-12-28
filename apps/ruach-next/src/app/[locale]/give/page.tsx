@@ -66,6 +66,24 @@ export default function GivePage(){
     actionStatus: "PotentialActionStatus"
   };
 
+  const navigationHighlights = [
+    {
+      title: "Start Here",
+      description: "Visit the welcome hub for a guided tour, featured testimonies, and immediate next steps.",
+      href: "/start"
+    },
+    {
+      title: "Builders",
+      description: "See how the Builder Network funds bold projects, hosts labs, and equips leaders worldwide.",
+      href: "/builders"
+    },
+    {
+      title: "Partners",
+      description: "Meet the people already aligned with us and discover how to join their prayer calls and briefings.",
+      href: "/partners"
+    }
+  ] as const;
+
   return (
     <div className="space-y-12">
       <SEOHead jsonLd={donationSchema} />
@@ -87,6 +105,27 @@ export default function GivePage(){
               Sponsor outreach
             </span>
           </LocalizedLink>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Through the rest of the movement</h2>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
+          Ruach is more than a giving page—start exploring media, builder culture, and partner experiences that keep the mission moving.
+        </p>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {navigationHighlights.map((item) => (
+            <LocalizedLink key={item.title} href={item.href}>
+              <div className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 transition hover:border-amber-300 hover:bg-amber-50 dark:hover:border-amber-300/50">
+                <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Explore</span>
+                <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">{item.title}</h3>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{item.description}</p>
+                <span className="mt-4 inline-flex items-center text-sm font-semibold text-amber-500">
+                  Go there →
+                </span>
+              </div>
+            </LocalizedLink>
+          ))}
         </div>
       </section>
 
