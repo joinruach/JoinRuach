@@ -96,36 +96,54 @@ const nextAuth = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email and password are required");
+          }
+
+          const email = credentials.email as string;
+          const password = credentials.password as string;
+
+          console.log("[Auth] Attempting login for:", email);
+          console.log("[Auth] Strapi URL:", STRAPI);
+
+          const r = await fetch(`${STRAPI}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier: email, password }),
+            credentials: "include" // Include cookies for refresh token
+          });
+
+          console.log("[Auth] Strapi response status:", r.status);
+
+          if (!r.ok) {
+            const errorText = await r.text();
+            console.error("[Auth] Strapi error response:", errorText);
+            throw new Error(`Login failed: ${r.status} ${r.statusText}`);
+          }
+
+          const j = await r.json() as StrapiResponse;
+
+          if (isStrapiError(j)) {
+            const errorMsg = j.error?.message || "Login failed";
+            console.error("[Auth] Strapi error:", errorMsg);
+            throw new Error(errorMsg);
+          }
+
+          console.log("[Auth] Login successful for user:", j.user.id);
+
+          // Expect Strapi returns { jwt, user }
+          // Refresh token is set in httpOnly cookie by backend
+          return {
+            id: String(j.user.id),
+            name: j.user.username || j.user.email,
+            email: j.user.email,
+            strapiJwt: j.jwt
+          } as ExtendedUser;
+        } catch (error) {
+          console.error("[Auth] Login error:", error);
+          throw new Error(error instanceof Error ? error.message : "Internal Server Error");
         }
-
-        const email = credentials.email as string;
-        const password = credentials.password as string;
-
-        const r = await fetch(`${STRAPI}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identifier: email, password }),
-          credentials: "include" // Include cookies for refresh token
-        });
-
-        const j = await r.json() as StrapiResponse;
-
-        if (!r.ok || isStrapiError(j)) {
-          // If not confirmed, bubble up message
-          const errorMsg = isStrapiError(j) ? j.error?.message : undefined;
-          throw new Error(errorMsg || "Login failed");
-        }
-
-        // Expect Strapi returns { jwt, user }
-        // Refresh token is set in httpOnly cookie by backend
-        return {
-          id: String(j.user.id),
-          name: j.user.username || j.user.email,
-          email: j.user.email,
-          strapiJwt: j.jwt
-        } as ExtendedUser;
       }
     })
   ],
