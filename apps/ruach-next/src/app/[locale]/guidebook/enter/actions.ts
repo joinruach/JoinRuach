@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getOrCreateUserId } from "@/lib/formation/user-id";
 import {
   CovenantType,
   createCovenantEnteredEvent,
@@ -42,12 +42,8 @@ export async function enterCovenant(
   formData: FormData
 ): Promise<FormState> {
   try {
-    // 1. Get current user session
-    const session = await auth();
-
-    // For now, we'll allow unauthenticated access
-    // Generate unique ID for anonymous users to avoid collision
-    const userId = session?.user?.id || `anon-${crypto.randomUUID()}`;
+    // 1. Get persistent user ID (logged-in or cookie-based anonymous)
+    const { userId, userIdNumber } = await getOrCreateUserId();
 
     // 2. Parse and validate form data
     const rawData = {
@@ -88,8 +84,6 @@ export async function enterCovenant(
         strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL!,
         strapiToken: process.env.STRAPI_FORMATION_TOKEN,
       });
-
-      const userIdNumber = session?.user?.id ? Number(session.user.id) : undefined;
 
       // Write covenant entered event
       await client.writeEvent(event, userId, userIdNumber);

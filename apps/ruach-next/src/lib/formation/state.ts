@@ -6,7 +6,7 @@
 
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getOrCreateUserId } from "@/lib/formation/user-id";
 import {
   getFormationClient,
   initializeFormationClient,
@@ -21,10 +21,8 @@ import {
  */
 export async function getCurrentFormationState(): Promise<FormationState | null> {
   try {
-    // 1. Get user session
-    const session = await auth();
-    const userId = session?.user?.id || `anon-${crypto.randomUUID()}`;
-    const userIdNumber = session?.user?.id ? Number(session.user.id) : undefined;
+    // 1. Get persistent user ID (logged-in or cookie-based anonymous)
+    const { userId, userIdNumber } = await getOrCreateUserId();
 
     // 2. Initialize Strapi client
     const client = initializeFormationClient({
@@ -41,6 +39,8 @@ export async function getCurrentFormationState(): Promise<FormationState | null>
     }
 
     // 4. Convert Strapi events to FormationEvent format
+    // Note: We use 'as FormationEvent' because Strapi returns generic Record<string, unknown>
+    // but the actual data matches the FormationEvent discriminated union at runtime
     const events: FormationEvent[] = strapiEvents.map((e) => ({
       id: e.eventId,
       userId: e.user ? String(e.user) : (e.anonymousUserId || userId),
@@ -48,7 +48,7 @@ export async function getCurrentFormationState(): Promise<FormationState | null>
       eventType: e.eventType,
       data: e.eventData,
       metadata: e.eventMetadata,
-    }));
+    } as FormationEvent));
 
     // 5. Rebuild state from events (pure projection)
     const state = rebuildState(userId, events);
@@ -87,7 +87,7 @@ export async function getFormationStateForUser(
       eventType: e.eventType,
       data: e.eventData,
       metadata: e.eventMetadata,
-    }));
+    } as FormationEvent));
 
     return rebuildState(targetUserId, events);
   } catch (error) {
