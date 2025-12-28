@@ -28,7 +28,7 @@
         "commission",
         "stewardship"
       ],
-      "default": "awakening"
+      "required": true
     },
     "phaseEnteredAt": {
       "type": "datetime"
@@ -42,32 +42,26 @@
       "required": true
     },
     "sectionsViewed": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "checkpointsReached": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "checkpointsCompleted": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "reflectionsSubmitted": {
       "type": "integer",
       "default": 0
     },
     "unlockedCanonAxioms": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "unlockedCourses": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "unlockedCannonReleases": {
-      "type": "json",
-      "default": []
+      "type": "json"
     },
     "user": {
       "type": "relation",

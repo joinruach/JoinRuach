@@ -41,7 +41,7 @@
         "text",
         "voice"
       ],
-      "default": "text"
+      "required": true
     },
     "content": {
       "type": "text",
@@ -63,7 +63,7 @@
       "required": true
     },
     "depthScore": {
-      "type": "decimal"
+      "type": "float"
     },
     "indicators": {
       "type": "json"
