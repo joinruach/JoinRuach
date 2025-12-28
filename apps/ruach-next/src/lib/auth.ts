@@ -87,6 +87,7 @@ async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
 }
 
 const nextAuth = NextAuth({
+  trustHost: true, // Trust the host header in production (required for proxied environments)
   providers: [
     Credentials({
       name: "Email & Password",
