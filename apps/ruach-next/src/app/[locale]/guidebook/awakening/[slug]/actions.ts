@@ -47,7 +47,8 @@ export async function submitCheckpoint(
   try {
     // 1. Get current user session
     const session = await auth();
-    const userId = session?.user?.id || "anonymous";
+    // Generate unique ID for anonymous users
+    const userId = session?.user?.id || `anon-${crypto.randomUUID()}`;
 
     // 2. Parse and validate form data
     const rawData = {

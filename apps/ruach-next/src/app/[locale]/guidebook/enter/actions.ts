@@ -46,8 +46,8 @@ export async function enterCovenant(
     const session = await auth();
 
     // For now, we'll allow unauthenticated access
-    // Later, you may want to require authentication for Formation Journey
-    const userId = session?.user?.id || "anonymous";
+    // Generate unique ID for anonymous users to avoid collision
+    const userId = session?.user?.id || `anon-${crypto.randomUUID()}`;
 
     // 2. Parse and validate form data
     const rawData = {
