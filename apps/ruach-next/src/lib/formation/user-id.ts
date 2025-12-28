@@ -22,45 +22,65 @@ export async function getOrCreateUserId(): Promise<{
   userIdNumber: number | undefined;
   isAnonymous: boolean;
 }> {
-  // 1. Check if user is logged in
-  const session = await auth();
-  if (session?.user?.id) {
-    return {
-      userId: session.user.id,
-      userIdNumber: Number(session.user.id),
-      isAnonymous: false,
-    };
-  }
+  try {
+    // 1. Check if user is logged in
+    console.log("[User ID] Checking auth session...");
+    let session = null;
 
-  // 2. For anonymous users, get or create persistent ID
-  const cookieStore = await cookies();
-  const existingId = cookieStore.get(COOKIE_NAME)?.value;
+    try {
+      session = await auth();
+    } catch (authError) {
+      console.warn("[User ID] Auth check failed (missing NEXTAUTH_SECRET?), treating as anonymous:", authError);
+      // Continue as anonymous user
+    }
 
-  if (existingId) {
-    // Cookie exists, return it
+    if (session?.user?.id) {
+      console.log("[User ID] User is logged in:", session.user.id);
+      return {
+        userId: session.user.id,
+        userIdNumber: Number(session.user.id),
+        isAnonymous: false,
+      };
+    }
+
+    // 2. For anonymous users, get or create persistent ID
+    console.log("[User ID] User not logged in, checking cookie...");
+    const cookieStore = await cookies();
+    const existingId = cookieStore.get(COOKIE_NAME)?.value;
+
+    if (existingId) {
+      console.log("[User ID] Found existing anonymous ID in cookie");
+      // Cookie exists, return it
+      return {
+        userId: existingId,
+        userIdNumber: undefined,
+        isAnonymous: true,
+      };
+    }
+
+    // 3. Create new anonymous ID and persist to cookie
+    const newAnonId = `anon-${crypto.randomUUID()}`;
+    console.log("[User ID] Creating new anonymous ID:", newAnonId);
+
+    cookieStore.set(COOKIE_NAME, newAnonId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: COOKIE_MAX_AGE,
+      path: "/",
+    });
+
+    console.log("[User ID] Cookie set successfully");
+
     return {
-      userId: existingId,
+      userId: newAnonId,
       userIdNumber: undefined,
       isAnonymous: true,
     };
+  } catch (error) {
+    console.error("[User ID] Error in getOrCreateUserId:", error);
+    throw error;
   }
-
-  // 3. Create new anonymous ID and persist to cookie
-  const newAnonId = `anon-${crypto.randomUUID()}`;
-
-  cookieStore.set(COOKIE_NAME, newAnonId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: COOKIE_MAX_AGE,
-    path: "/",
-  });
-
-  return {
-    userId: newAnonId,
-    userIdNumber: undefined,
-    isAnonymous: true,
-  };
 }
 
 /**

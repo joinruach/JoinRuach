@@ -22,9 +22,15 @@ import {
 export async function getCurrentFormationState(): Promise<FormationState | null> {
   try {
     // 1. Get persistent user ID (logged-in or cookie-based anonymous)
+    console.log("[Formation State] Getting user ID...");
     const { userId, userIdNumber } = await getOrCreateUserId();
+    console.log("[Formation State] User ID obtained:", { userId, isNumeric: !!userIdNumber });
 
     // 2. Initialize Strapi client
+    console.log("[Formation State] Initializing Strapi client...", {
+      strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL,
+      hasToken: !!process.env.STRAPI_FORMATION_TOKEN,
+    });
     const client = initializeFormationClient({
       strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL!,
       strapiToken: process.env.STRAPI_FORMATION_TOKEN,

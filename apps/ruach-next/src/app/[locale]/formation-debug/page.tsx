@@ -4,10 +4,44 @@
  */
 
 import { getCurrentFormationState } from "@/lib/formation/state";
+import type { FormationState } from "@ruach/formation";
 
 export default async function FormationDebugPage() {
-  const state = await getCurrentFormationState();
+  let state: FormationState | null = null;
+  let error: string | null = null;
 
+  try {
+    state = await getCurrentFormationState();
+  } catch (err) {
+    console.error("[Formation Debug] Error loading state:", err);
+    error = err instanceof Error ? err.message : "Unknown error";
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-red-600">Formation State Error</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Error Loading State</h2>
+          <p className="text-red-700 mb-4">{error}</p>
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-medium text-red-800">
+              Troubleshooting
+            </summary>
+            <ul className="mt-2 text-sm text-red-700 space-y-1 list-disc list-inside">
+              <li>Check that NEXT_PUBLIC_STRAPI_URL is set correctly</li>
+              <li>Check that STRAPI_FORMATION_TOKEN is configured</li>
+              <li>Verify Strapi is running and accessible</li>
+              <li>Check browser console for additional errors</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    );
+  }
+
+  // Show "no journey" state
   if (!state) {
     return (
       <div className="p-8">
@@ -73,7 +107,7 @@ export default async function FormationDebugPage() {
               {state.checkpointsReached.map((checkpointId) => (
                 <div key={checkpointId} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                   <span className="font-medium">{checkpointId}</span>
-                  {state.checkpointsCompleted.includes(checkpointId) ? (
+                  {state!.checkpointsCompleted.includes(checkpointId) ? (
                     <span className="text-green-600 font-semibold">✓ Completed</span>
                   ) : (
                     <span className="text-yellow-600">Reached</span>
