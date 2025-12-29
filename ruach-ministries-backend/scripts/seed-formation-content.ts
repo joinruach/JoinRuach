@@ -6,6 +6,8 @@
  *   npx tsx scripts/seed-formation-content.ts
  */
 
+export {};
+
 const STRAPI_URL = process.env.STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 
