@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require("lodash");
 const { sanitize } = require("@strapi/utils");
 const { tokenBlacklist } = require("../../../services/token-blacklist");
 const { refreshTokenStore } = require("../../../services/refresh-token-store");
@@ -9,13 +10,9 @@ const logger = require("../../../config/logger");
 const sanitizeUser = async (user) =>
   sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
 
-const getUsersPermissionsServices = () => {
-  const plugin = strapi.plugin("users-permissions");
-  return {
-    auth: plugin.service("auth"),
-    jwt: plugin.service("jwt"),
-  };
-};
+const getUsersPermissionsPlugin = () => strapi.plugin("users-permissions");
+const getJwtService = () => getUsersPermissionsPlugin()?.service("jwt");
+const getUserService = () => getUsersPermissionsPlugin()?.service("user");
 
 // Token expiration times (in seconds)
 const ACCESS_TOKEN_EXPIRY = 60 * 60; // 1 hour
@@ -81,50 +78,84 @@ module.exports = {
     ctx.set("X-RateLimit-Remaining", String(Math.min(ipLimit.remaining, usernameLimit.remaining)));
 
     try {
-      const { auth: authService, jwt: jwtService } = getUsersPermissionsServices();
-      const response = await authService.callback("local", { identifier, password });
+      const normalizedIdentifier =
+        typeof identifier === "string" ? identifier.trim() : "";
+      const normalizedPassword =
+        typeof password === "string" ? password : "";
 
-      if (!response.jwt) {
-        return ctx.badRequest("Invalid credentials");
+      if (!normalizedIdentifier || !normalizedPassword) {
+        return ctx.badRequest("Identifier and password are required");
       }
 
-      // On successful login, reset rate limits for this user
-      await rateLimiter.reset(usernameKey);
+      const jwtService = getJwtService();
+      const userService = getUserService();
 
-      // Generate access token with explicit expiration
-      const accessToken = jwtService.issue(
-        {
-          id: response.user.id,
+      if (!jwtService || !userService) {
+        logger.logAuth('Login failed', {
+          identifier,
+          ip: clientIp,
+          error: "jwt-service-unavailable",
+        });
+        return ctx.badRequest("Authentication service unavailable");
+      }
+
+      const pluginStore = strapi.store({ type: "plugin", name: "users-permissions" });
+      const grantSettings = (await pluginStore.get({ key: "grant" })) || {};
+
+      if (!_.get(grantSettings, ["email", "enabled"], false)) {
+        logger.logAuth('Login failed', {
+          identifier,
+          ip: clientIp,
+          error: "local-provider-disabled",
+        });
+        return ctx.badRequest("Authentication provider disabled");
+      }
+
+      const user = await strapi.db.query("plugin::users-permissions.user").findOne({
+        where: {
+          provider: "local",
+          $or: [
+            { email: normalizedIdentifier.toLowerCase() },
+            { username: normalizedIdentifier },
+          ],
         },
-        {
-          expiresIn: ACCESS_TOKEN_EXPIRY
-        }
-      );
-
-      // Generate refresh token with explicit expiration
-      const refreshToken = jwtService.issue(
-        {
-          id: response.user.id,
-          type: "refresh",
-        },
-        {
-          expiresIn: REFRESH_TOKEN_EXPIRY
-        }
-      );
-
-      // Store refresh token in the token store
-      const expiresAt = Date.now() + REFRESH_TOKEN_EXPIRY * 1000;
-      await refreshTokenStore.store(refreshToken, response.user.id, expiresAt);
-
-      // Store refresh token in a secure, HttpOnly cookie
-      ctx.cookies.set("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: COOKIE_SECURE,
-        sameSite: "Strict",
-        maxAge: REFRESH_TOKEN_EXPIRY * 1000,
       });
 
-      const sanitizedUser = await sanitizeUser(response.user);
+      if (!user || !user.password) {
+        throw new Error("Invalid credentials");
+      }
+
+      const validPassword = await userService.validatePassword(
+        normalizedPassword,
+        user.password
+      );
+
+      if (!validPassword) {
+        throw new Error("Invalid credentials");
+      }
+
+      const advancedSettings = (await pluginStore.get({ key: "advanced" })) || {};
+      const requiresConfirmation = _.get(advancedSettings, "email_confirmation", false);
+
+      if (requiresConfirmation && user.confirmed !== true) {
+        throw new Error("Your account email is not confirmed");
+      }
+
+      if (user.blocked === true) {
+        throw new Error("Your account has been blocked by an administrator");
+      }
+
+      const loginTimestamp = new Date();
+      await strapi.db.query("plugin::users-permissions.user").update({
+        where: { id: user.id },
+        data: { lastLoginAt: loginTimestamp },
+      });
+
+      const sanitizedUser = await sanitizeUser({
+        ...user,
+        lastLoginAt: loginTimestamp,
+      });
+
       const lastLoginDate = (value) => {
         if (!value) {
           return new Date();
@@ -132,14 +163,37 @@ module.exports = {
         const parsed = new Date(value);
         return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
       };
+
       const userWithLoginAt = {
         ...sanitizedUser,
-        lastLoginAt: lastLoginDate(response.user.lastLoginAt).toISOString(),
+        lastLoginAt: lastLoginDate(loginTimestamp).toISOString(),
       };
 
+      const accessToken = jwtService.issue(
+        { id: user.id },
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
+      );
+
+      const refreshToken = jwtService.issue(
+        { id: user.id, type: "refresh" },
+        { expiresIn: REFRESH_TOKEN_EXPIRY }
+      );
+
+      const expiresAt = Date.now() + REFRESH_TOKEN_EXPIRY * 1000;
+      await refreshTokenStore.store(refreshToken, user.id, expiresAt);
+
+      ctx.cookies.set("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: COOKIE_SECURE,
+        sameSite: "Strict",
+        maxAge: REFRESH_TOKEN_EXPIRY * 1000,
+      });
+
+      await rateLimiter.reset(usernameKey);
+
       logger.logAuth('Login successful', {
-        userId: response.user.id,
-        username: response.user.username,
+        userId: user.id,
+        username: user.username,
         ip: clientIp,
       });
 
@@ -166,7 +220,12 @@ module.exports = {
 
     try {
       // Verify the refresh token JWT signature
-      const { jwt: jwtService } = getUsersPermissionsServices();
+      const jwtService = getJwtService();
+
+      if (!jwtService) {
+        throw new Error("JWT service unavailable");
+      }
+
       const decoded = jwtService.verify(oldRefreshToken);
 
       if (decoded.type !== "refresh") {
@@ -255,7 +314,12 @@ module.exports = {
     try {
       if (refreshToken) {
         // Verify token to get user ID
-        const { jwt: jwtService } = getUsersPermissionsServices();
+        const jwtService = getJwtService();
+
+        if (!jwtService) {
+          throw new Error("JWT service unavailable");
+        }
+
         const decoded = jwtService.verify(refreshToken);
 
         // Add refresh token to blacklist
