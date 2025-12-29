@@ -1553,13 +1553,20 @@ export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
       {
         tags: ["scripture-works"],
         revalidate: 3600, // Cache for 1 hour
+        authToken: process.env.STRAPI_API_TOKEN, // Add auth token for protected endpoints
       }
     );
+
+    if (!j.data || j.data.length === 0) {
+      console.warn('[getScriptureWorks] API returned empty data array');
+    }
+
     return (j.data || []).map(work => ({
       documentId: work.documentId as string,
       ...work.attributes,
     }));
   } catch (error) {
+    console.error('[getScriptureWorks] Error fetching scripture works:', error);
     if (isNotFoundOrNetwork(error)) {
       return [];
     }
@@ -1593,11 +1600,13 @@ export async function getScriptureWorkBySlug(slug: string) {
       {
         tags: [`scripture-work:${slug.toLowerCase()}`],
         revalidate: 3600,
+        authToken: process.env.STRAPI_API_TOKEN,
       }
     );
     const work = j.data?.[0];
     return work ? { documentId: work.documentId as string, ...work.attributes } : null;
   } catch (error) {
+    console.error('[getScriptureWorkBySlug] Error fetching work:', slug, error);
     if (isNotFoundOrNetwork(error)) {
       return null;
     }
@@ -1629,6 +1638,7 @@ export async function getScriptureVerses(workId: string, chapter: number) {
       {
         tags: [`verses:${workId}:${chapter}`],
         revalidate: 3600,
+        authToken: process.env.STRAPI_API_TOKEN,
       }
     );
     return (j.data || []).map(verse => ({
@@ -1636,6 +1646,7 @@ export async function getScriptureVerses(workId: string, chapter: number) {
       ...verse.attributes,
     }));
   } catch (error) {
+    console.error('[getScriptureVerses] Error fetching verses:', workId, chapter, error);
     if (isNotFoundOrNetwork(error)) {
       return [];
     }

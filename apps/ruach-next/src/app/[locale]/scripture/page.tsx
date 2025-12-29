@@ -14,6 +14,11 @@ export default async function ScripturePage() {
   const oldTestament = works.filter((work) => work.testament === 'tanakh');
   const newTestament = works.filter((work) => work.testament === 'renewed_covenant');
 
+  // Debug logging (will show in server logs during development)
+  if (works.length === 0) {
+    console.warn('[Scripture Page] No scripture works found. Check if data exists in Strapi.');
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -27,29 +32,52 @@ export default async function ScripturePage() {
           </p>
         </div>
 
-        {/* Old Testament */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
-            Old Testament
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {oldTestament.map((work) => (
-              <BookCard key={work.documentId} work={work} />
-            ))}
+        {works.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📖</div>
+            <h2 className="text-2xl font-bold mb-2">No Scripture Books Found</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Scripture content is not yet available. Please check back later.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              If you're an administrator, ensure scripture data has been imported into Strapi.
+            </p>
           </div>
-        </section>
+        ) : (
+          <>
+            {/* Old Testament */}
+            <section className="mb-16">
+              <h2 className="text-3xl font-bold mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
+                Old Testament
+              </h2>
+              {oldTestament.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 italic">No Old Testament books found.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {oldTestament.map((work) => (
+                    <BookCard key={work.documentId} work={work} />
+                  ))}
+                </div>
+              )}
+            </section>
 
-        {/* New Testament */}
-        <section>
-          <h2 className="text-3xl font-bold mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
-            New Testament
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {newTestament.map((work) => (
-              <BookCard key={work.documentId} work={work} />
-            ))}
-          </div>
-        </section>
+            {/* New Testament */}
+            <section>
+              <h2 className="text-3xl font-bold mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
+                New Testament
+              </h2>
+              {newTestament.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 italic">No New Testament books found.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {newTestament.map((work) => (
+                    <BookCard key={work.documentId} work={work} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
