@@ -1,7 +1,7 @@
 import { getScriptureWorks } from '@/lib/strapi';
 
 export default async function ScriptureDebugPage() {
-  let works = [];
+  let works: Awaited<ReturnType<typeof getScriptureWorks>> = [];
   let error = null;
 
   try {
