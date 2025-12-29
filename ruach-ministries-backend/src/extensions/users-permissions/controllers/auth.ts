@@ -55,16 +55,19 @@ const hashToken = (token: string): string => {
   return crypto.createHash('sha256').update(token).digest('hex').slice(0, 8);
 };
 
-export default ({ strapi }) => ({
-  /**
-   * Email confirmation handler
-   *
-   * Verifies the confirmation token and redirects to frontend with status
-   *
-   * @route GET /api/auth/email-confirmation
-   * @param {string} confirmation - The confirmation token from email link
-   */
-  async emailConfirmation(ctx) {
+export default ({ strapi }) => {
+  const jwtService = strapi.plugin('users-permissions').service('jwt');
+
+  return {
+    /**
+     * Email confirmation handler
+     *
+     * Verifies the confirmation token and redirects to frontend with status
+     *
+     * @route GET /api/auth/email-confirmation
+     * @param {string} confirmation - The confirmation token from email link
+     */
+    async emailConfirmation(ctx) {
       const { confirmation: confirmationToken } = ctx.query;
 
       try {
@@ -91,9 +94,7 @@ export default ({ strapi }) => ({
         // Verify and decode the JWT token
         let decoded;
         try {
-          decoded = await strapi.plugins['users-permissions'].services.jwt.verify(
-            confirmationToken
-          );
+          decoded = await jwtService.verify(confirmationToken);
         } catch (err) {
           strapi.log.warn('Invalid confirmation token', {
             category: 'authentication',
@@ -157,4 +158,5 @@ export default ({ strapi }) => ({
         return ctx.redirect(getRedirectUrl('error', 'server_error'));
       }
     },
-  });
+  };
+};

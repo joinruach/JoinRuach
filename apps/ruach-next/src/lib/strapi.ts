@@ -130,6 +130,45 @@ export async function postJSON<T>(path: string, body: unknown, opts: FetchOpts =
   return res.json() as Promise<T>;
 }
 
+export async function putJSON<T>(path: string, body: unknown, opts: FetchOpts = {}): Promise<T> {
+  const url = resolveUrl(path);
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(opts.headers || {}),
+    },
+    body: JSON.stringify(body),
+    next: { tags: opts.tags, revalidate: opts.revalidate, ...opts.next },
+  });
+
+  if (!res.ok) {
+    throw createStrapiError(res, url);
+  }
+
+  return res.json() as Promise<T>;
+}
+
+export async function deleteJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const url = resolveUrl(path);
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(opts.headers || {}),
+    },
+    next: { tags: opts.tags, revalidate: opts.revalidate, ...opts.next },
+  });
+
+  if (!res.ok) {
+    throw createStrapiError(res, url);
+  }
+
+  return res.json() as Promise<T>;
+}
+
 export async function incrementMediaView(id: number) {
   if (!id) return;
   try {

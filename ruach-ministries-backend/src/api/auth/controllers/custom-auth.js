@@ -9,6 +9,14 @@ const logger = require("../../../config/logger");
 const sanitizeUser = async (user) =>
   sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
 
+const getUsersPermissionsServices = () => {
+  const plugin = strapi.plugin("users-permissions");
+  return {
+    auth: plugin.service("auth"),
+    jwt: plugin.service("jwt"),
+  };
+};
+
 // Token expiration times (in seconds)
 const ACCESS_TOKEN_EXPIRY = 60 * 60; // 1 hour
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
@@ -73,10 +81,8 @@ module.exports = {
     ctx.set("X-RateLimit-Remaining", String(Math.min(ipLimit.remaining, usernameLimit.remaining)));
 
     try {
-      const response = await strapi.plugins["users-permissions"].services.auth.callback(
-        "local",
-        { identifier, password }
-      );
+      const { auth: authService, jwt: jwtService } = getUsersPermissionsServices();
+      const response = await authService.callback("local", { identifier, password });
 
       if (!response.jwt) {
         return ctx.badRequest("Invalid credentials");
@@ -86,7 +92,7 @@ module.exports = {
       await rateLimiter.reset(usernameKey);
 
       // Generate access token with explicit expiration
-      const accessToken = strapi.plugins["users-permissions"].services.jwt.issue(
+      const accessToken = jwtService.issue(
         {
           id: response.user.id,
         },
@@ -96,7 +102,7 @@ module.exports = {
       );
 
       // Generate refresh token with explicit expiration
-      const refreshToken = strapi.plugins["users-permissions"].services.jwt.issue(
+      const refreshToken = jwtService.issue(
         {
           id: response.user.id,
           type: "refresh",
@@ -160,7 +166,8 @@ module.exports = {
 
     try {
       // Verify the refresh token JWT signature
-      const decoded = strapi.plugins["users-permissions"].services.jwt.verify(oldRefreshToken);
+      const { jwt: jwtService } = getUsersPermissionsServices();
+      const decoded = jwtService.verify(oldRefreshToken);
 
       if (decoded.type !== "refresh") {
         return ctx.unauthorized("Invalid token type");
@@ -195,7 +202,7 @@ module.exports = {
       }
 
       // Generate new access token
-      const newAccessToken = strapi.plugins["users-permissions"].services.jwt.issue(
+      const newAccessToken = jwtService.issue(
         {
           id: decoded.id,
         },
@@ -205,7 +212,7 @@ module.exports = {
       );
 
       // Generate new refresh token (rotation)
-      const newRefreshToken = strapi.plugins["users-permissions"].services.jwt.issue(
+      const newRefreshToken = jwtService.issue(
         {
           id: decoded.id,
           type: "refresh",
@@ -248,7 +255,8 @@ module.exports = {
     try {
       if (refreshToken) {
         // Verify token to get user ID
-        const decoded = strapi.plugins["users-permissions"].services.jwt.verify(refreshToken);
+        const { jwt: jwtService } = getUsersPermissionsServices();
+        const decoded = jwtService.verify(refreshToken);
 
         // Add refresh token to blacklist
         const tokenId = decoded.jti || refreshToken.substring(0, 32);

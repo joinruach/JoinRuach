@@ -1,383 +1,269 @@
 /**
  * Iron Chamber Controller
  * Handles API requests for margin reflections, insights, and living commentary
+ * Delegates business logic to the iron-chamber service
  */
 
 import type { Core } from '@strapi/strapi';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => {
-  const entityService = strapi.entityService as any;
+  const service = () => strapi.service('api::iron-chamber.iron-chamber') as any;
 
   return {
-  /**
-   * Submit a margin reflection on a verse
-   * POST /api/iron-chamber/margin-reflection
-   */
-  async submitMarginReflection(ctx: any) {
-    try {
-      const { verseId, content, userId, anonymousUserId } = ctx.request.body;
+    /**
+     * Submit a margin reflection on a verse
+     * POST /api/iron-chamber/margin-reflection
+     */
+    async submitMarginReflection(ctx: any) {
+      try {
+        const { verseId, content, userId, anonymousUserId } = ctx.request.body;
 
-      if (!verseId || !content) {
-        ctx.status = 400;
-        ctx.body = { error: 'verseId and content are required' };
-        return;
-      }
+        if (!verseId || !content) {
+          ctx.status = 400;
+          ctx.body = { error: 'verseId and content are required' };
+          return;
+        }
 
-      if (!userId && !anonymousUserId) {
-        ctx.status = 400;
-        ctx.body = { error: 'userId or anonymousUserId is required' };
-        return;
-      }
+        if (!userId && !anonymousUserId) {
+          ctx.status = 400;
+          ctx.body = { error: 'userId or anonymousUserId is required' };
+          return;
+        }
 
-      // Find verse
-      const verses = await entityService.findMany('api::scripture-verse.scripture-verse', {
-        filters: { verseId: { $eq: verseId } },
-      });
-
-      if (!Array.isArray(verses) || verses.length === 0) {
-        ctx.status = 404;
-        ctx.body = { error: 'Verse not found' };
-        return;
-      }
-
-      // Check if user has permission to submit insights
-      const canSubmit = await this._checkCanSubmitInsights(userId || anonymousUserId);
-      if (!canSubmit) {
-        ctx.status = 403;
-        ctx.body = { error: 'User does not have permission to submit insights. Complete at least one checkpoint first.' };
-        return;
-      }
-
-      // Create margin reflection
-        const reflection = await entityService.create('api::margin-reflection.margin-reflection', {
-        data: {
-          verse: verses[0].id,
+        const reflection = await service().createMarginReflection({
+          verseId,
           content,
-          author: userId || null,
-          publishedAt: null, // Draft until validated
-        },
-      });
+          userId,
+          anonymousUserId,
+        });
 
-      // Trigger AI analysis
-      const reflectionId = `margin-${reflection.id}-${Date.now()}`;
-      await strapi.service('api::formation-engine.bull-queue').enqueueReflectionAnalysis({
-        reflectionId,
-      });
+        ctx.status = 201;
+        ctx.body = { data: reflection };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        strapi.log.error('[Iron Chamber] Error submitting margin reflection:', error);
 
-      ctx.status = 201;
-      ctx.body = { data: reflection };
-    } catch (error) {
-      strapi.log.error('Error submitting margin reflection:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
-
-  /**
-   * Get margin reflections for a verse
-   * GET /api/iron-chamber/margin-reflections/:verseId
-   */
-  async getMarginReflections(ctx: any) {
-    try {
-      const { verseId } = ctx.params;
-
-      const reflections = await entityService.findMany('api::margin-reflection.margin-reflection', {
-        filters: {
-          verse: {
-            verseId: { $eq: verseId },
-          },
-          publishedAt: { $notNull: true }, // Only published
-        },
-        populate: ['author', 'verse'],
-        sort: { helpfulCount: 'desc' },
-      });
-
-      ctx.status = 200;
-      ctx.body = { data: reflections };
-    } catch (error) {
-      strapi.log.error('Error getting margin reflections:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
-
-  /**
-   * Get published iron insights
-   * GET /api/iron-chamber/insights?theme=...&limit=20
-   */
-  async getInsights(ctx: any) {
-    try {
-      const { theme, limit = 20, offset = 0 } = ctx.query;
-
-      const filters: any = {
-        status: { $eq: 'published' },
-      };
-
-      if (theme) {
-        filters.themes = {
-          name: { $eq: theme },
-        };
+        if (message.includes('not found')) {
+          ctx.status = 404;
+          ctx.body = { error: message };
+        } else if (message.includes('permission')) {
+          ctx.status = 403;
+          ctx.body = { error: message };
+        } else {
+          ctx.status = 500;
+          ctx.body = { error: 'Internal server error' };
+        }
       }
+    },
 
-      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
-        filters,
-        populate: ['verse', 'themes', 'user'],
-        sort: { publishedAt: 'desc', voteScore: 'desc' },
-        limit: parseInt(limit, 10),
-        start: parseInt(offset, 10),
-      });
+    /**
+     * Get margin reflections for a verse
+     * GET /api/iron-chamber/margin-reflections/:verseId
+     */
+    async getMarginReflections(ctx: any) {
+      try {
+        const { verseId } = ctx.params;
+        const { limit, offset, sortBy } = ctx.query;
 
-      ctx.status = 200;
-      ctx.body = { data: insights };
-    } catch (error) {
-      strapi.log.error('Error getting insights:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
+        const reflections = await service().getMarginReflectionsByVerse(verseId, {
+          limit: limit ? parseInt(limit, 10) : undefined,
+          offset: offset ? parseInt(offset, 10) : undefined,
+          sortBy: sortBy || 'helpful',
+        });
 
-  /**
-   * Get a specific insight
-   * GET /api/iron-chamber/insights/:insightId
-   */
-  async getInsight(ctx: any) {
-    try {
-      const { insightId } = ctx.params;
-
-      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
-        filters: { insightId: { $eq: insightId } },
-        populate: ['verse', 'themes', 'user', 'votes'],
-      });
-
-      if (!Array.isArray(insights) || insights.length === 0) {
-        ctx.status = 404;
-        ctx.body = { error: 'Insight not found' };
-        return;
+        ctx.status = 200;
+        ctx.body = { data: reflections };
+      } catch (error) {
+        strapi.log.error('[Iron Chamber] Error getting margin reflections:', error);
+        ctx.status = 500;
+        ctx.body = { error: 'Internal server error' };
       }
+    },
 
-      ctx.status = 200;
-      ctx.body = { data: insights[0] };
-    } catch (error) {
-      strapi.log.error('Error getting insight:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
+    /**
+     * Get published iron insights
+     * GET /api/iron-chamber/insights?theme=...&limit=20
+     */
+    async getInsights(ctx: any) {
+      try {
+        const { theme, verseId, limit, offset, sortBy } = ctx.query;
 
-  /**
-   * Vote on an insight
-   * POST /api/iron-chamber/insights/:insightId/vote
-   */
-  async voteOnInsight(ctx: any) {
-    try {
-      const { insightId } = ctx.params;
-      const { voteType, userId, comment } = ctx.request.body;
+        const insights = await service().getInsights({
+          theme,
+          verseId,
+          limit: limit ? parseInt(limit, 10) : undefined,
+          offset: offset ? parseInt(offset, 10) : undefined,
+          sortBy: sortBy || 'recent',
+        });
 
-      if (!userId || !voteType) {
-        ctx.status = 400;
-        ctx.body = { error: 'userId and voteType are required' };
-        return;
+        ctx.status = 200;
+        ctx.body = { data: insights };
+      } catch (error) {
+        strapi.log.error('[Iron Chamber] Error getting insights:', error);
+        ctx.status = 500;
+        ctx.body = { error: 'Internal server error' };
       }
+    },
 
-      if (!['helpful', 'profound', 'needs_work'].includes(voteType)) {
-        ctx.status = 400;
-        ctx.body = { error: 'Invalid voteType' };
-        return;
+    /**
+     * Get a specific insight
+     * GET /api/iron-chamber/insights/:insightId
+     */
+    async getInsight(ctx: any) {
+      try {
+        const { insightId } = ctx.params;
+
+        const insight = await service().getInsightById(insightId);
+
+        ctx.status = 200;
+        ctx.body = { data: insight };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        strapi.log.error('[Iron Chamber] Error getting insight:', error);
+
+        if (message.includes('not found')) {
+          ctx.status = 404;
+          ctx.body = { error: message };
+        } else {
+          ctx.status = 500;
+          ctx.body = { error: 'Internal server error' };
+        }
       }
+    },
 
-      // Check if user can validate insights
-      const canValidate = await this._checkCanValidateInsights(userId);
-      if (!canValidate) {
-        ctx.status = 403;
-        ctx.body = { error: 'User does not have permission to validate insights' };
-        return;
-      }
+    /**
+     * Vote on an insight
+     * POST /api/iron-chamber/insights/:insightId/vote
+     */
+    async voteOnInsight(ctx: any) {
+      try {
+        const { insightId } = ctx.params;
+        const { voteType, userId, comment } = ctx.request.body;
 
-      // Find insight
-      const insights = await entityService.findMany('api::iron-insight.iron-insight', {
-        filters: { insightId: { $eq: insightId } },
-      });
+        if (!userId || !voteType) {
+          ctx.status = 400;
+          ctx.body = { error: 'userId and voteType are required' };
+          return;
+        }
 
-      if (!Array.isArray(insights) || insights.length === 0) {
-        ctx.status = 404;
-        ctx.body = { error: 'Insight not found' };
-        return;
-      }
+        if (!['helpful', 'profound', 'needs_work'].includes(voteType)) {
+          ctx.status = 400;
+          ctx.body = { error: 'Invalid voteType. Must be: helpful, profound, or needs_work' };
+          return;
+        }
 
-      // Create vote
-      const vote = await entityService.create('api::insight-vote.insight-vote', {
-        data: {
-          insight: insights[0].id,
-          user: userId,
+        const result = await service().voteOnInsight({
+          insightId,
+          userId,
           voteType,
-          comment: comment || null,
-          votedAt: new Date(),
-        },
-      });
+          comment,
+        });
 
-      // Update insight vote score
-      const voteWeight = voteType === 'helpful' ? 1 : voteType === 'profound' ? 2 : -1;
-      const newScore = (insights[0].voteScore || 0) + voteWeight;
+        ctx.status = 201;
+        ctx.body = { data: result };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        strapi.log.error('[Iron Chamber] Error voting on insight:', error);
 
-      await entityService.update('api::iron-insight.iron-insight', insights[0].id, {
-        data: { voteScore: newScore },
-      });
-
-      ctx.status = 201;
-      ctx.body = { data: vote };
-    } catch (error) {
-      strapi.log.error('Error voting on insight:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
-
-  /**
-   * Get living commentary for a verse
-   * GET /api/iron-chamber/living-commentary/:verseId
-   */
-  async getLivingCommentary(ctx: any) {
-    try {
-      const { verseId } = ctx.params;
-
-      const commentaries = await entityService.findMany('api::living-commentary.living-commentary', {
-        filters: {
-          verse: {
-            verseId: { $eq: verseId },
-          },
-          publishedAt: { $notNull: true },
-        },
-        populate: ['verse', 'themes', 'contributors', 'curatedBy'],
-        sort: { qualityScore: 'desc' },
-      });
-
-      ctx.status = 200;
-      ctx.body = { data: commentaries };
-    } catch (error) {
-      strapi.log.error('Error getting living commentary:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
-
-  /**
-   * Curate a living commentary entry from insights
-   * POST /api/iron-chamber/curate-commentary
-   */
-  async curateCommentary(ctx: any) {
-    try {
-      const { verseId, title, content, type, sourceInsightIds, curatedBy, themes } = ctx.request.body;
-
-      if (!verseId || !title || !content || !type || !curatedBy) {
-        ctx.status = 400;
-        ctx.body = { error: 'verseId, title, content, type, and curatedBy are required' };
-        return;
+        if (message.includes('not found')) {
+          ctx.status = 404;
+          ctx.body = { error: message };
+        } else if (message.includes('permission')) {
+          ctx.status = 403;
+          ctx.body = { error: message };
+        } else if (message.includes('already voted')) {
+          ctx.status = 409;
+          ctx.body = { error: message };
+        } else {
+          ctx.status = 500;
+          ctx.body = { error: 'Internal server error' };
+        }
       }
+    },
 
-      // Find verse
-      const verses = await entityService.findMany('api::scripture-verse.scripture-verse', {
-        filters: { verseId: { $eq: verseId } },
-      });
+    /**
+     * Get living commentary for a verse
+     * GET /api/iron-chamber/living-commentary/:verseId
+     */
+    async getLivingCommentary(ctx: any) {
+      try {
+        const { verseId } = ctx.params;
 
-      if (!Array.isArray(verses) || verses.length === 0) {
-        ctx.status = 404;
-        ctx.body = { error: 'Verse not found' };
-        return;
+        const commentaries = await service().getLivingCommentaryByVerse(verseId);
+
+        ctx.status = 200;
+        ctx.body = { data: commentaries };
+      } catch (error) {
+        strapi.log.error('[Iron Chamber] Error getting living commentary:', error);
+        ctx.status = 500;
+        ctx.body = { error: 'Internal server error' };
       }
+    },
 
-      // Create living commentary
-      const commentary = await entityService.create('api::living-commentary.living-commentary', {
-        data: {
-          verse: verses[0].id,
+    /**
+     * Curate a living commentary entry from insights
+     * POST /api/iron-chamber/curate-commentary
+     */
+    async curateCommentary(ctx: any) {
+      try {
+        const { verseId, title, content, type, sourceInsightIds, curatedBy, themes } = ctx.request.body;
+
+        if (!verseId || !title || !content || !type || !curatedBy) {
+          ctx.status = 400;
+          ctx.body = { error: 'verseId, title, content, type, and curatedBy are required' };
+          return;
+        }
+
+        const validTypes = ['exegetical', 'devotional', 'practical', 'theological'];
+        if (!validTypes.includes(type)) {
+          ctx.status = 400;
+          ctx.body = { error: `Invalid type. Must be one of: ${validTypes.join(', ')}` };
+          return;
+        }
+
+        const commentary = await service().curateCommentary({
+          verseId,
           title,
           content,
           type,
-          sourceInsights: sourceInsightIds || [],
+          sourceInsightIds,
           curatedBy,
-          themes: themes || [],
-          publishedAt: new Date(),
-        },
-      });
+          themes,
+        });
 
-      ctx.status = 201;
-      ctx.body = { data: commentary };
-    } catch (error) {
-      strapi.log.error('Error curating commentary:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
+        ctx.status = 201;
+        ctx.body = { data: commentary };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        strapi.log.error('[Iron Chamber] Error curating commentary:', error);
 
-  /**
-   * Manually trigger AI analysis on a reflection
-   * POST /api/iron-chamber/analyze-reflection/:reflectionId
-   */
-  async analyzeReflection(ctx: any) {
-    try {
-      const { reflectionId } = ctx.params;
-
-      await strapi.service('api::formation-engine.bull-queue').enqueueReflectionAnalysis({
-        reflectionId,
-      });
-
-      ctx.status = 202;
-      ctx.body = { message: 'Analysis enqueued' };
-    } catch (error) {
-      strapi.log.error('Error enqueuing analysis:', error);
-      ctx.status = 500;
-      ctx.body = { error: 'Internal server error' };
-    }
-  },
-
-  // Helper methods
-  async _checkCanSubmitInsights(userId: string | number): Promise<boolean> {
-    try {
-      const filters: any = typeof userId === 'number'
-        ? { user: { id: userId } }
-        : { anonymousUserId: { $eq: userId } };
-
-      const journey = await entityService.findMany('api::formation-journey.formation-journey', {
-        filters,
-      });
-
-      if (!Array.isArray(journey) || journey.length === 0) {
-        return false;
+        if (message.includes('not found')) {
+          ctx.status = 404;
+          ctx.body = { error: message };
+        } else {
+          ctx.status = 500;
+          ctx.body = { error: 'Internal server error' };
+        }
       }
+    },
 
-      const checkpointsCompleted = journey[0].checkpointsCompleted || [];
-      return checkpointsCompleted.length > 0;
-    } catch (error) {
-      strapi.log.error('Error checking submit permission:', error);
-      return false;
-    }
-  },
+    /**
+     * Manually trigger AI analysis on a reflection
+     * POST /api/iron-chamber/analyze-reflection/:reflectionId
+     */
+    async analyzeReflection(ctx: any) {
+      try {
+        const { reflectionId } = ctx.params;
 
-  async _checkCanValidateInsights(userId: number): Promise<boolean> {
-    try {
-      const journey = await entityService.findMany('api::formation-journey.formation-journey', {
-        filters: { user: { id: userId } },
-      });
+        const result = await service().analyzeReflection(reflectionId);
 
-      if (!Array.isArray(journey) || journey.length === 0) {
-        return false;
+        ctx.status = 202;
+        ctx.body = { data: result };
+      } catch (error) {
+        strapi.log.error('[Iron Chamber] Error enqueuing analysis:', error);
+        ctx.status = 500;
+        ctx.body = { error: 'Internal server error' };
       }
-
-      const phaseOrder: Record<string, number> = {
-        awakening: 1,
-        separation: 2,
-        discernment: 3,
-        commission: 4,
-        stewardship: 5,
-      };
-
-      const currentPhaseOrder = phaseOrder[journey[0].currentPhase] || 1;
-      const reflectionsCount = journey[0].reflectionsSubmitted || 0;
-
-      return currentPhaseOrder >= 3 && reflectionsCount >= 5;
-    } catch (error) {
-      strapi.log.error('Error checking validate permission:', error);
-      return false;
-    }
-  },
+    },
   };
 };

@@ -81,7 +81,8 @@ module.exports = (plugin) => {
       }
 
       // Generate confirmation code
-      const confirmationToken = strapi.plugins['users-permissions'].services.jwt.issue({
+      const jwtService = strapi.plugin('users-permissions').service('jwt');
+      const confirmationToken = jwtService.issue({
         id: user.id,
       });
 

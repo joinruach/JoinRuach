@@ -2,6 +2,8 @@
  * Iron Chamber API Routes
  */
 
+import { writeRateLimit, readRateLimit, moderateRateLimit } from '../../../middlewares/rate-limit';
+
 export default {
   routes: [
     // Margin Reflections (public scripture notes)
@@ -11,6 +13,7 @@ export default {
       handler: 'iron-chamber.submitMarginReflection',
       config: {
         auth: false,
+        middlewares: [writeRateLimit],
       },
     },
     {
@@ -19,6 +22,7 @@ export default {
       handler: 'iron-chamber.getMarginReflections',
       config: {
         auth: false,
+        middlewares: [readRateLimit],
       },
     },
 
@@ -29,6 +33,7 @@ export default {
       handler: 'iron-chamber.getInsights',
       config: {
         auth: false,
+        middlewares: [readRateLimit],
       },
     },
     {
@@ -37,6 +42,7 @@ export default {
       handler: 'iron-chamber.getInsight',
       config: {
         auth: false,
+        middlewares: [readRateLimit],
       },
     },
     {
@@ -45,6 +51,7 @@ export default {
       handler: 'iron-chamber.voteOnInsight',
       config: {
         auth: false,
+        middlewares: [writeRateLimit],
       },
     },
 
@@ -55,6 +62,7 @@ export default {
       handler: 'iron-chamber.getLivingCommentary',
       config: {
         auth: false,
+        middlewares: [readRateLimit],
       },
     },
     {
@@ -63,6 +71,7 @@ export default {
       handler: 'iron-chamber.curateCommentary',
       config: {
         auth: false, // TODO: Restrict to authorized curators
+        middlewares: [moderateRateLimit],
       },
     },
 
@@ -73,6 +82,7 @@ export default {
       handler: 'iron-chamber.analyzeReflection',
       config: {
         auth: false,
+        middlewares: [moderateRateLimit],
       },
     },
   ],
