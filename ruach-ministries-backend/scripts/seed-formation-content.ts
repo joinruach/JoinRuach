@@ -6,15 +6,7 @@
  *   npx tsx scripts/seed-formation-content.ts
  */
 
-export {};
-
-const STRAPI_URL = process.env.STRAPI_URL || 'http://localhost:1337';
-const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
-
-if (!STRAPI_API_TOKEN) {
-  console.error('❌ STRAPI_API_TOKEN environment variable is required');
-  process.exit(1);
-}
+import { STRAPI_API_TOKEN, STRAPI_URL } from './strapi-env';
 
 interface FormationPhase {
   name: string;
