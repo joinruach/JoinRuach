@@ -56,7 +56,7 @@ const hashToken = (token: string): string => {
 };
 
 export default ({ strapi }) => {
-  const jwtService = strapi.plugin('users-permissions').service('jwt');
+  const getJwtService = () => strapi.plugin('users-permissions')?.service('jwt');
 
   return {
     /**
@@ -93,6 +93,14 @@ export default ({ strapi }) => {
 
         // Verify and decode the JWT token
         let decoded;
+        const jwtService = getJwtService();
+        if (!jwtService) {
+          strapi.log.error('users-permissions plugin JWT service not available for confirmation', {
+            category: 'authentication',
+          });
+          return ctx.redirect(getRedirectUrl('error', 'server_error'));
+        }
+
         try {
           decoded = await jwtService.verify(confirmationToken);
         } catch (err) {
