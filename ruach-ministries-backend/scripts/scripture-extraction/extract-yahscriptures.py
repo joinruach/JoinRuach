@@ -158,6 +158,40 @@ class YahScripturesExtractor:
         self.works: Dict[str, Dict] = {}
         self.current_book: Optional[str] = None
         self.current_chapter: int = 0
+        self.common_font_size: Optional[float] = None
+
+    def _calculate_common_font_size(self, pdf) -> float:
+        """Sample pages to find the most common font size for numbers (verse markers)."""
+        from collections import Counter
+
+        all_sizes = []
+        # Sample every 10th page for first 200 pages to get a good distribution
+        sample_pages = range(10, min(200, len(pdf.pages)), 10)
+
+        print(f"📏 Analyzing font sizes across {len(list(sample_pages))} sample pages...")
+
+        for page_num in sample_pages:
+            page = pdf.pages[page_num]
+            chars = page.chars
+
+            for char in chars:
+                text = char.get('text', '').strip()
+                if text.isdigit():
+                    size = char.get('size', 0)
+                    if size > 0:
+                        all_sizes.append(round(size, 1))  # Round to 0.1pt precision
+
+        if not all_sizes:
+            return 10.5  # Fallback
+
+        # Find the most common size
+        size_counts = Counter(all_sizes)
+        common_size = size_counts.most_common(1)[0][0]
+
+        print(f"   Most common number font size: {common_size}pt")
+        print(f"   Chapter threshold: >{common_size}pt")
+
+        return common_size
 
     def extract(self) -> Tuple[List[Dict], Dict[str, Dict]]:
         """
@@ -170,13 +204,14 @@ class YahScripturesExtractor:
             total_pages = len(pdf.pages)
             print(f"📄 Total pages: {total_pages}")
 
+            # First, determine the common font size for verse numbers
+            self.common_font_size = self._calculate_common_font_size(pdf)
+
             for page_num, page in enumerate(pdf.pages, 1):
                 if page_num % 50 == 0:
                     print(f"   Processing page {page_num}/{total_pages}...")
 
-                text = page.extract_text()
-                if text:
-                    self._parse_page(text)
+                self._parse_page(page)
 
         print(f"\n✅ Extraction complete!")
         print(f"   Books found: {len(self.works)}")
@@ -184,16 +219,89 @@ class YahScripturesExtractor:
 
         return self.verses, self.works
 
-    def _parse_page(self, text: str):
-        """Parse a single page of text for book headers and verses.
+    def _parse_page(self, page):
+        """Parse a single page using character-level data to detect font sizes.
 
-        YahScriptures format: verse numbers appear on their own lines between text blocks.
-        Text BEFORE the verse number belongs to that verse.
+        Large numbers = Chapter markers
+        Small numbers = Verse markers
         """
+        # Extract text normally for book detection
+        text = page.extract_text()
+        if not text:
+            return
+
         lines = text.split('\n')
+
+        # Get page dimensions for header/footer exclusion
+        page_height = page.height
+
+        # Get character-level data grouped by position
+        chars = page.chars
+
+        # Group consecutive digit characters into numbers with their collective font size
+        # Key: (text_content, y0_position) -> average font size of those chars
+        number_font_map = {}
+
+        # Sort chars by position (top to bottom, left to right)
+        sorted_chars = sorted(chars, key=lambda c: (round(-c.get('y0', 0), 0), round(c.get('x0', 0), 0)))
+
+        current_number = []
+        current_number_sizes = []
+        last_y = None
+        last_x = None
+
+        for char in sorted_chars:
+            char_text = char.get('text', '').strip()
+            x = char.get('x0', 0)
+            y = char.get('y0', 0)
+            size = char.get('size', 0)
+
+            if not char_text.isdigit():
+                # Save accumulated number if any
+                if current_number and current_number_sizes:
+                    num_text = ''.join(current_number)
+                    avg_size = sum(current_number_sizes) / len(current_number_sizes)
+                    number_font_map[(num_text, round(last_y, 1))] = avg_size
+                current_number = []
+                current_number_sizes = []
+                last_y = None
+                last_x = None
+                continue
+
+            # Check if this digit is part of the current number (same line, consecutive x position)
+            is_continuation = (
+                last_y is not None and
+                abs(y - last_y) < 2 and  # Same horizontal line
+                last_x is not None and
+                x - last_x < 20  # Reasonable horizontal spacing for same number
+            )
+
+            if not is_continuation and current_number:
+                # Save previous number
+                num_text = ''.join(current_number)
+                avg_size = sum(current_number_sizes) / len(current_number_sizes)
+                number_font_map[(num_text, round(last_y, 1))] = avg_size
+                current_number = []
+                current_number_sizes = []
+
+            # Add to current number
+            current_number.append(char_text)
+            current_number_sizes.append(size)
+            last_y = y
+            last_x = x + char.get('width', 0)
+
+        # Save last number if any
+        if current_number and current_number_sizes:
+            num_text = ''.join(current_number)
+            avg_size = sum(current_number_sizes) / len(current_number_sizes)
+            number_font_map[(num_text, round(last_y, 1))] = avg_size
+
+        # Use the common font size as threshold - anything larger is a chapter marker
+        chapter_threshold = self.common_font_size if self.common_font_size else 10.5
 
         verse_buffer = []
         current_verse_num = None
+        chapter_digit_buffer = []  # Accumulate consecutive large-font digits for multi-digit chapters
 
         for line in lines:
             line = line.strip()
@@ -203,40 +311,80 @@ class YahScripturesExtractor:
             # Check for book headers
             book_match = self._detect_book_header(line)
             if book_match:
-                # Save any buffered verse before switching books
-                if current_verse_num and verse_buffer and self.current_book:
-                    self._save_verse(current_verse_num, verse_buffer)
+                # Only process if this is a NEW book (not already the current book)
+                # This prevents page headers from resetting chapter numbers
+                if book_match != self.current_book:
+                    # Save any buffered verse before switching books
+                    if current_verse_num and verse_buffer and self.current_book:
+                        self._save_verse(current_verse_num, verse_buffer)
 
-                self.current_book = book_match
-                self.current_chapter = 1  # YahScriptures starts at chapter 1
-                if book_match not in self.works:
-                    self._register_work(book_match)
+                    self.current_book = book_match
+                    self.current_chapter = 0  # Will be set to 1 when first verse 1 is found
+                    if book_match not in self.works:
+                        self._register_work(book_match)
 
-                verse_buffer = []
-                current_verse_num = None
+                    verse_buffer = []
+                    current_verse_num = None
                 continue
 
             # Skip if no current book
             if not self.current_book:
                 continue
 
-            # Check if line is a standalone number (verse or chapter marker)
-            if re.match(r'^\d{1,3}$', line):
+            # Check for explicit chapter markers (e.g., "Chapter 1", "Chapter 2", etc.)
+            chapter_match = re.match(r'^(?:Chapter|CHAPTER)\s+(\d+)$', line, re.IGNORECASE)
+            if chapter_match:
+                # Save any buffered verse before switching chapters
+                if current_verse_num and verse_buffer:
+                    self._save_verse(current_verse_num, verse_buffer)
+
+                self.current_chapter = int(chapter_match.group(1))
+                verse_buffer = []
+                current_verse_num = None
+                continue
+
+            # Check if line is a standalone number (one or more digits)
+            if re.match(r'^\d+$', line):
                 num = int(line)
 
-                # Determine if this is a verse number or chapter number
-                # If current_verse_num is None, this starts verse 1 of current chapter
-                # If num is 1 and we just finished a high verse, it's likely a new chapter
-                if num == 1 and current_verse_num and current_verse_num > 10:
-                    # Save previous verse
-                    if verse_buffer:
+                # Find this number in our font map
+                # Try to match by number text and look through all y-positions
+                font_size = 0
+                y_pos = page_height / 2  # Default to middle if not found
+
+                for (num_text, num_y), num_font in number_font_map.items():
+                    if num_text == line:
+                        font_size = num_font
+                        y_pos = num_y
+                        break
+
+                # If not found in map, skip (might be reconstructed text)
+                if font_size == 0:
+                    verse_buffer.append(line)
+                    continue
+
+                # Check if number is in header/footer region (exclude top/bottom 12% of page)
+                in_header = y_pos < page_height * 0.12
+                in_footer = y_pos > page_height * 0.88
+                in_header_footer = in_header or in_footer
+
+                is_large = font_size > chapter_threshold
+
+                if is_large and not in_header_footer:
+                    # This is a CHAPTER marker (large font number not in header/footer)
+                    # Save any buffered verse before switching chapters
+                    if current_verse_num and verse_buffer:
                         self._save_verse(current_verse_num, verse_buffer)
 
-                    # This is a new chapter
-                    self.current_chapter += 1
-                    current_verse_num = 1
+                    self.current_chapter = num
+                    current_verse_num = None
                     verse_buffer = []
                 else:
+                    # This is a VERSE marker (small font number or in header/footer)
+                    # Skip if in header/footer
+                    if in_header_footer:
+                        continue
+
                     # Save previous verse
                     if current_verse_num and verse_buffer:
                         self._save_verse(current_verse_num, verse_buffer)
@@ -244,6 +392,10 @@ class YahScripturesExtractor:
                     # Start new verse
                     current_verse_num = num
                     verse_buffer = []
+
+                    # If no chapter set yet, assume chapter 1
+                    if self.current_chapter == 0:
+                        self.current_chapter = 1
 
                 continue
 

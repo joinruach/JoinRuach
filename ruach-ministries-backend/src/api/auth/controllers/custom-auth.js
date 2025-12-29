@@ -119,12 +119,16 @@ module.exports = {
       });
 
       const sanitizedUser = await sanitizeUser(response.user);
-      const lastLoginAt = response.user.lastLoginAt
-        ? new Date(response.user.lastLoginAt).toISOString()
-        : new Date().toISOString();
+      const lastLoginDate = (value) => {
+        if (!value) {
+          return new Date();
+        }
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+      };
       const userWithLoginAt = {
         ...sanitizedUser,
-        lastLoginAt,
+        lastLoginAt: lastLoginDate(response.user.lastLoginAt).toISOString(),
       };
 
       logger.logAuth('Login successful', {

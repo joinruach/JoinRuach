@@ -383,3 +383,39 @@ export interface CommunityOutreachPageEntity extends StrapiBase {
     seo?: SeoComponent | null;
   };
 }
+
+// Scripture Types
+export interface ScriptureWorkEntity extends StrapiBase {
+  attributes: {
+    workId: string;
+    canonicalName: string;
+    translatedTitle: string;
+    shortCode: string;
+    testament: 'tanakh' | 'renewed_covenant' | 'apocrypha';
+    canonicalOrder: number;
+    totalChapters: number;
+    totalVerses: number;
+    author?: string;
+    estimatedDate?: string;
+    genre?: 'law' | 'history' | 'wisdom' | 'prophecy' | 'gospel' | 'epistle' | 'apocalyptic';
+    summary?: string;
+    hebrewName?: string;
+    greekName?: string;
+  };
+}
+
+export interface ScriptureVerseEntity extends StrapiBase {
+  attributes: {
+    verseId: string;
+    work?: { data?: ScriptureWorkEntity };
+    chapter: number;
+    verse: number;
+    text: string;
+    paleoHebrewDivineNames: boolean;
+    hasFootnotes: boolean;
+    footnotes?: Array<{
+      marker: string;
+      text: string;
+    }>;
+  };
+}

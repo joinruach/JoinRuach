@@ -9,6 +9,8 @@ import type {
   CommunityOutreachPageEntity,
   OutreachStoryEntity,
   OutreachCampaignEntity,
+  ScriptureWorkEntity,
+  ScriptureVerseEntity,
 } from "@/lib/types/strapi-types";
 
 type FetchOpts = {
@@ -1509,6 +1511,133 @@ export async function getSeriesBySlug(slug: string) {
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
       return null;
+    }
+
+    throw error;
+  }
+}
+
+// ------------------------------
+// Scripture API Functions
+// ------------------------------
+
+type ScriptureWorksOptions = {
+  testament?: 'tanakh' | 'renewed_covenant' | 'apocrypha';
+};
+
+export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
+  const params = new URLSearchParams();
+  params.set("fields[0]", "workId");
+  params.set("fields[1]", "canonicalName");
+  params.set("fields[2]", "translatedTitle");
+  params.set("fields[3]", "shortCode");
+  params.set("fields[4]", "testament");
+  params.set("fields[5]", "canonicalOrder");
+  params.set("fields[6]", "totalChapters");
+  params.set("fields[7]", "totalVerses");
+  params.set("fields[8]", "author");
+  params.set("fields[9]", "genre");
+  params.set("fields[10]", "summary");
+  params.set("fields[11]", "hebrewName");
+  params.set("fields[12]", "greekName");
+  params.set("sort[0]", "canonicalOrder:asc");
+  params.set("pagination[pageSize]", "100");
+
+  if (options.testament) {
+    params.set("filters[testament][$eq]", options.testament);
+  }
+
+  try {
+    const j = await getJSON<{ data: ScriptureWorkEntity[] }>(
+      `/api/scripture-works?${params.toString()}`,
+      {
+        tags: ["scripture-works"],
+        revalidate: 3600, // Cache for 1 hour
+      }
+    );
+    return (j.data || []).map(work => ({
+      documentId: work.documentId as string,
+      ...work.attributes,
+    }));
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function getScriptureWorkBySlug(slug: string) {
+  const params = new URLSearchParams();
+  params.set("filters[workId][$eqi]", slug); // Match by workId instead of shortCode
+  params.set("fields[0]", "workId");
+  params.set("fields[1]", "canonicalName");
+  params.set("fields[2]", "translatedTitle");
+  params.set("fields[3]", "shortCode");
+  params.set("fields[4]", "testament");
+  params.set("fields[5]", "canonicalOrder");
+  params.set("fields[6]", "totalChapters");
+  params.set("fields[7]", "totalVerses");
+  params.set("fields[8]", "author");
+  params.set("fields[9]", "estimatedDate");
+  params.set("fields[10]", "genre");
+  params.set("fields[11]", "summary");
+  params.set("fields[12]", "hebrewName");
+  params.set("fields[13]", "greekName");
+  params.set("pagination[pageSize]", "1");
+
+  try {
+    const j = await getJSON<{ data: ScriptureWorkEntity[] }>(
+      `/api/scripture-works?${params.toString()}`,
+      {
+        tags: [`scripture-work:${slug.toLowerCase()}`],
+        revalidate: 3600,
+      }
+    );
+    const work = j.data?.[0];
+    return work ? { documentId: work.documentId as string, ...work.attributes } : null;
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+export async function getScriptureVerses(workId: string, chapter: number) {
+  const params = new URLSearchParams();
+  params.set("filters[work][workId][$eq]", workId);
+  params.set("filters[chapter][$eq]", String(chapter));
+  params.set("fields[0]", "verseId");
+  params.set("fields[1]", "chapter");
+  params.set("fields[2]", "verse");
+  params.set("fields[3]", "text");
+  params.set("fields[4]", "paleoHebrewDivineNames");
+  params.set("fields[5]", "hasFootnotes");
+  params.set("populate[footnotes]", "*");
+  params.set("populate[work][fields][0]", "workId");
+  params.set("populate[work][fields][1]", "canonicalName");
+  params.set("populate[work][fields][2]", "shortCode");
+  params.set("sort[0]", "verse:asc");
+  params.set("pagination[pageSize]", "200"); // Max verses per chapter
+
+  try {
+    const j = await getJSON<{ data: ScriptureVerseEntity[] }>(
+      `/api/scripture-verses?${params.toString()}`,
+      {
+        tags: [`verses:${workId}:${chapter}`],
+        revalidate: 3600,
+      }
+    );
+    return (j.data || []).map(verse => ({
+      documentId: verse.documentId as string,
+      ...verse.attributes,
+    }));
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [];
     }
 
     throw error;
