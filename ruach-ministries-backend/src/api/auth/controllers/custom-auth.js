@@ -39,7 +39,7 @@ module.exports = {
     // Rate limiting by IP
     const clientIp = rateLimiter.getClientIp(ctx);
     const ipKey = `login:ip:${clientIp}`;
-    const ipLimit = rateLimiter.check(ipKey, LOGIN_MAX_ATTEMPTS_IP, LOGIN_WINDOW_MS);
+    const ipLimit = await rateLimiter.check(ipKey, LOGIN_MAX_ATTEMPTS_IP, LOGIN_WINDOW_MS);
 
     if (!ipLimit.allowed) {
       const retryAfter = Math.ceil((ipLimit.resetAt - Date.now()) / 1000);
@@ -54,7 +54,7 @@ module.exports = {
 
     // Rate limiting by username/email
     const usernameKey = `login:user:${identifier}`;
-    const usernameLimit = rateLimiter.check(usernameKey, LOGIN_MAX_ATTEMPTS_USERNAME, LOGIN_WINDOW_MS);
+    const usernameLimit = await rateLimiter.check(usernameKey, LOGIN_MAX_ATTEMPTS_USERNAME, LOGIN_WINDOW_MS);
 
     if (!usernameLimit.allowed) {
       const retryAfter = Math.ceil((usernameLimit.resetAt - Date.now()) / 1000);
