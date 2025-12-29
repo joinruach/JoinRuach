@@ -7,8 +7,21 @@ const { refreshTokenStore } = require("../../../services/refresh-token-store");
 const { rateLimiter } = require("../../../services/rate-limiter");
 const logger = require("../../../config/logger");
 
-const sanitizeUser = async (user) =>
-  sanitize.contentAPI.output(user, strapi.contentType("plugin::users-permissions.user"));
+const sanitizeUser = async (user, ctx) => {
+  if (!user) {
+    return null;
+  }
+
+  const apiSanitizers = sanitize.createAPISanitizers({
+    getModel: strapi.getModel.bind(strapi),
+  });
+
+  return apiSanitizers.output(
+    user,
+    strapi.contentType("plugin::users-permissions.user"),
+    { auth: ctx?.state?.auth }
+  );
+};
 
 const getUsersPermissionsPlugin = () => strapi.plugin("users-permissions");
 const getJwtService = () => getUsersPermissionsPlugin()?.service("jwt");
@@ -151,10 +164,13 @@ module.exports = {
         data: { lastLoginAt: loginTimestamp },
       });
 
-      const sanitizedUser = await sanitizeUser({
-        ...user,
-        lastLoginAt: loginTimestamp,
-      });
+      const sanitizedUser = await sanitizeUser(
+        {
+          ...user,
+          lastLoginAt: loginTimestamp,
+        },
+        ctx
+      );
 
       const lastLoginDate = (value) => {
         if (!value) {
