@@ -20,6 +20,15 @@
       "targetField": "title",
       "required": true
     },
+    "phaseId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
     "phase": {
       "type": "enumeration",
       "enum": ["awakening", "separation", "discernment", "commission", "stewardship"],
@@ -30,9 +39,20 @@
       "type": "integer",
       "required": true
     },
+    "duration": {
+      "type": "string"
+    },
     "description": {
       "type": "richtext",
       "required": true
+    },
+    "maturityFocus": {
+      "type": "json"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
     },
     "color": {
       "type": "enumeration",
@@ -45,6 +65,19 @@
     "estimatedDuration": {
       "type": "string"
     },
+    "checksum": {
+      "type": "string"
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
+    },
     "unlockRequirements": {
       "type": "json"
     },
@@ -52,6 +85,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::guidebook-node.guidebook-node",
+      "mappedBy": "phase"
+    },
+    "courses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course.course",
       "mappedBy": "phase"
     }
   }

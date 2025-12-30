@@ -15,6 +15,15 @@
       "type": "string",
       "required": true
     },
+    "courseId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
     "excerpt": {
       "type": "text"
     },
@@ -26,6 +35,14 @@
       "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
     "description": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
+    },
+    "unlockRequirements": {
       "type": "text"
     },
     "level": {
@@ -70,6 +87,17 @@
       "target": "api::lesson-comment.lesson-comment",
       "mappedBy": "course"
     },
+    "phase": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-phase.formation-phase",
+      "inversedBy": "courses"
+    },
+    "modules": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course.course"
+    },
     "ctaLabel": {
       "type": "string"
     },
@@ -88,6 +116,16 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
     }
   }
 }

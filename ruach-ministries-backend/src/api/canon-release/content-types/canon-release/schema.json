@@ -15,6 +15,15 @@
       "type": "string",
       "required": true
     },
+    "releaseId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
     "slug": {
       "type": "uid",
       "targetField": "title",
@@ -33,7 +42,12 @@
       "enum": ["teaching", "prophecy", "vision", "revelation", "strategy"],
       "required": true
     },
-    "minimumPhase": {
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
+    },
+    "phaseRequirement": {
       "type": "enumeration",
       "enum": ["awakening", "separation", "discernment", "commission", "stewardship"],
       "required": true
@@ -47,7 +61,7 @@
       "relation": "manyToMany",
       "target": "api::scripture-verse.scripture-verse"
     },
-    "relatedAxioms": {
+    "canonReferences": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::canon-axiom.canon-axiom"
@@ -70,6 +84,16 @@
     },
     "releasedAt": {
       "type": "datetime"
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
     }
   }
 }

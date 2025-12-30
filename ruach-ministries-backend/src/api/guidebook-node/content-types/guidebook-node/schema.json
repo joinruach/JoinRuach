@@ -29,6 +29,11 @@
       "targetField": "title",
       "required": true
     },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
+    },
     "orderInPhase": {
       "type": "integer",
       "required": true
@@ -77,6 +82,16 @@
     "syncedToStrapi": {
       "type": "boolean",
       "default": false
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
     },
     "phase": {
       "type": "relation",

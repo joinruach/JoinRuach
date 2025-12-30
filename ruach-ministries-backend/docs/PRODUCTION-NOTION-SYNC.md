@@ -148,6 +148,8 @@ STRAPI_API_TOKEN=your_production_token \
 npx tsx scripts/import-from-notion.ts --dry-run
 ```
 
+> **Token scope reminder:** The script uses `POST`/`PUT` on `formation-phases` and `guidebook-nodes`, so the API token must include create/update/delete for those content types (or be Full Access). Strapi will return `Method Not Allowed` if the token is read-only, so create a new token under **Settings → API Tokens** if you see that error.
+
 **Expected output:**
 ```
 🔄 Notion → Strapi Import

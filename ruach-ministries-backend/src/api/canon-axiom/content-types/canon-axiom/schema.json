@@ -65,6 +65,11 @@
       "enum": ["Low", "Medium", "High", "Critical"],
       "default": "Medium"
     },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
+    },
     "unlockPhase": {
       "type": "enumeration",
       "enum": ["awakening", "separation", "discernment", "commission", "stewardship"]
@@ -85,6 +90,12 @@
       "target": "api::guidebook-node.guidebook-node",
       "mappedBy": "canonAxioms"
     },
+    "canonReferences": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::canon-release.canon-release",
+      "mappedBy": "canonReferences"
+    },
     "practicalApplication": {
       "type": "richtext"
     },
@@ -93,6 +104,16 @@
     },
     "checksum": {
       "type": "string"
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
     }
   }
 }
