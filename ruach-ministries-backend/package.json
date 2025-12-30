@@ -10,7 +10,7 @@
     "start": "node scripts/run-strapi.js start",
     "strapi": "node scripts/run-strapi.js",
     "postinstall": "node scripts/link-dependencies.js || true && node scripts/patch-review-workflows.js",
-    "test": "jest",
+    "test": "jest --forceExit",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
