@@ -10,12 +10,39 @@
 
 'use strict';
 
+let firstRequestLogged = false;
+
 module.exports = (config, { strapi }) => {
   return async (ctx, next) => {
     // Only enforce HTTPS in production
     if (process.env.NODE_ENV === 'production') {
       const proto = ctx.request.get('x-forwarded-proto');
+      const forwardedHost = ctx.request.get('x-forwarded-host');
+      const forwardedFor = ctx.request.get('x-forwarded-for');
       const host = ctx.request.get('host');
+
+      // Log first request for diagnostics
+      if (!firstRequestLogged) {
+        firstRequestLogged = true;
+        strapi.log.info('🔍 First production request - Proxy headers diagnostic', {
+          category: 'security',
+          proxyConfig: {
+            koa_proxy_enabled: strapi.config.get('server.proxy'),
+            cookie_secure: process.env.COOKIE_SECURE,
+          },
+          headers: {
+            'x-forwarded-proto': proto || 'MISSING',
+            'x-forwarded-host': forwardedHost || 'MISSING',
+            'x-forwarded-for': forwardedFor || 'MISSING',
+            'host': host,
+          },
+          request: {
+            protocol: ctx.request.protocol,
+            secure: ctx.request.secure,
+            url: ctx.request.url,
+          },
+        });
+      }
 
       // Check if request came over HTTP
       if (proto === 'http' && host) {
@@ -36,11 +63,29 @@ module.exports = (config, { strapi }) => {
 
       // Warn if x-forwarded-proto header is missing (misconfigured reverse proxy)
       if (!proto) {
-        strapi.log.warn('Missing x-forwarded-proto header in production', {
+        strapi.log.error('❌ Missing x-forwarded-proto header in production', {
           category: 'security',
           url: ctx.request.url,
           ip: ctx.request.ip,
-          headers: ctx.request.headers,
+          message: 'Reverse proxy not sending X-Forwarded-Proto header. Secure cookies will fail!',
+          headers: {
+            'x-forwarded-proto': 'MISSING',
+            'x-forwarded-host': forwardedHost || 'MISSING',
+            'x-forwarded-for': forwardedFor || 'MISSING',
+          },
+        });
+      }
+
+      // Validate that Koa is recognizing the secure connection
+      if (proto === 'https' && !ctx.request.secure) {
+        strapi.log.error('❌ Protocol mismatch: X-Forwarded-Proto is https but ctx.request.secure is false', {
+          category: 'security',
+          message: 'Koa proxy setting may be misconfigured. Check server.js proxy: true',
+          request: {
+            protocol: ctx.request.protocol,
+            secure: ctx.request.secure,
+            'x-forwarded-proto': proto,
+          },
         });
       }
     }
