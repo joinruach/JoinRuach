@@ -35,17 +35,6 @@ module.exports = async ({ strapi } = {}) => {
     return;
   }
 
-  // ============================================================================
-  // Configure Koa Proxy Trust (CRITICAL for secure cookies in production)
-  // ============================================================================
-  if (process.env.NODE_ENV === 'production' && strapi.server && strapi.server.app) {
-    strapi.server.app.proxy = true;
-    strapi.log.info('✅ Koa proxy trust enabled - X-Forwarded-* headers will be trusted');
-    strapi.log.info(`   → This allows secure cookies to work behind reverse proxies`);
-  } else if (process.env.NODE_ENV === 'production') {
-    strapi.log.warn('⚠️ WARNING: Koa proxy setting could not be configured - server may not be initialized yet');
-  }
-
   const pluginStore = strapi.store({ type: "plugin", name: "users-permissions" });
 
   const emailTemplates = (await pluginStore.get({ key: "email" })) ?? {};

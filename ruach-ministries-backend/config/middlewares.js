@@ -69,6 +69,12 @@ if (!isProduction) {
 }
 
 module.exports = [
+  // CRITICAL: Enable proxy trust FIRST (before any middleware that checks ctx.request.secure)
+  {
+    name: 'global::proxy-trust',
+    config: {},
+  },
+
   'strapi::logger',
   'strapi::errors',
 
