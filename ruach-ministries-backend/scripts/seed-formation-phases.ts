@@ -27,7 +27,7 @@ async function fetchExistingPhases(): Promise<PhaseRecord[]> {
     throw new Error(`Failed to fetch formation phases (${response.status}): ${await response.text()}`);
   }
 
-  const payload = await response.json();
+  const payload: { data?: PhaseRecord[] } = await response.json();
   return payload.data || [];
 }
 
