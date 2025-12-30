@@ -6,6 +6,8 @@
 export default ({ env }) => {
   const clientUrl = env('CLIENT_URL', 'http://localhost:3000');
   const previewSecret = env('PREVIEW_SECRET');
+  const adminRefreshTokenLifespan = env('ADMIN_REFRESH_TOKEN_LIFESPAN', '30d');
+  const adminSessionLifespan = env('ADMIN_SESSION_LIFESPAN', '7d');
 
   /**
    * Generate preview pathname based on content type and document
@@ -104,6 +106,10 @@ export default ({ env }) => {
   return {
     auth: {
       secret: env('ADMIN_JWT_SECRET'),
+      sessions: {
+        maxRefreshTokenLifespan: adminRefreshTokenLifespan,
+        maxSessionLifespan: adminSessionLifespan,
+      },
     },
     apiToken: {
       salt: env('API_TOKEN_SALT'),

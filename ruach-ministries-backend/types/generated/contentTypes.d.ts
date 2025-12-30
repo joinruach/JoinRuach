@@ -621,6 +621,146 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCanonAxiomCanonAxiom extends Struct.CollectionTypeSchema {
+  collectionName: 'canon_axioms';
+  info: {
+    description: 'Core doctrinal statements and definitions unlocked through formation';
+    displayName: 'Canon Axiom';
+    pluralName: 'canon-axioms';
+    singularName: 'canon-axiom';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    axiomId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    axiomNumber: Schema.Attribute.Integer;
+    canonLevel: Schema.Attribute.Enumeration<
+      ['Foundation', 'Core', 'Support', 'Corrective']
+    >;
+    category: Schema.Attribute.Enumeration<
+      [
+        'covenant',
+        'kingdom',
+        'holiness',
+        'redemption',
+        'ecclesiology',
+        'eschatology',
+        'pneumatology',
+      ]
+    > &
+      Schema.Attribute.Required;
+    checksum: Schema.Attribute.String;
+    commonMisconceptions: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    definition: Schema.Attribute.RichText & Schema.Attribute.Required;
+    formationPhases: Schema.Attribute.JSON;
+    function: Schema.Attribute.JSON;
+    hierarchyTier: Schema.Attribute.Enumeration<
+      ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4']
+    > &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::canon-axiom.canon-axiom'
+    > &
+      Schema.Attribute.Private;
+    nodes: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::guidebook-node.guidebook-node'
+    >;
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
+    practicalApplication: Schema.Attribute.RichText;
+    publishedAt: Schema.Attribute.DateTime;
+    relatedAxioms: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::canon-axiom.canon-axiom'
+    >;
+    scriptureFoundation: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-verse.scripture-verse'
+    >;
+    sensitivity: Schema.Attribute.Enumeration<
+      ['Low', 'Medium', 'High', 'Critical']
+    > &
+      Schema.Attribute.DefaultTo<'Medium'>;
+    shortDefinition: Schema.Attribute.Text;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    unlockPhase: Schema.Attribute.Enumeration<
+      ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiCanonReleaseCanonRelease
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'canon_releases';
+  info: {
+    description: 'Gated advanced content unlocked through formation maturity';
+    displayName: 'Canon Release';
+    pluralName: 'canon-releases';
+    singularName: 'canon-release';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    content: Schema.Attribute.RichText & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    downloadableResources: Schema.Attribute.Media<
+      'files' | 'images' | 'videos',
+      true
+    >;
+    estimatedDuration: Schema.Attribute.Integer;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::canon-release.canon-release'
+    > &
+      Schema.Attribute.Private;
+    minimumPhase: Schema.Attribute.Enumeration<
+      ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    relatedAxioms: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::canon-axiom.canon-axiom'
+    >;
+    releasedAt: Schema.Attribute.DateTime;
+    scriptureReferences: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-verse.scripture-verse'
+    >;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['teaching', 'prophecy', 'vision', 'revelation', 'strategy']
+    > &
+      Schema.Attribute.Required;
+    unlockRequirements: Schema.Attribute.JSON & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    videoMedia: Schema.Attribute.Media<'videos'>;
+    videoUrl: Schema.Attribute.String;
+  };
+}
+
 export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   collectionName: 'categories';
   info: {
@@ -1100,9 +1240,8 @@ export interface ApiFormationJourneyFormationJourney
   };
   attributes: {
     anonymousUserId: Schema.Attribute.String & Schema.Attribute.Unique;
-    checkpointsCompleted: Schema.Attribute.JSON &
-      Schema.Attribute.DefaultTo<[]>;
-    checkpointsReached: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    checkpointsCompleted: Schema.Attribute.JSON;
+    checkpointsReached: Schema.Attribute.JSON;
     covenantEnteredAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     covenantType: Schema.Attribute.Enumeration<
       ['formation_journey', 'resource_explorer']
@@ -1114,7 +1253,7 @@ export interface ApiFormationJourneyFormationJourney
     currentPhase: Schema.Attribute.Enumeration<
       ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
     > &
-      Schema.Attribute.DefaultTo<'awakening'>;
+      Schema.Attribute.Required;
     lastActivityAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1126,11 +1265,10 @@ export interface ApiFormationJourneyFormationJourney
     publishedAt: Schema.Attribute.DateTime;
     reflectionsSubmitted: Schema.Attribute.Integer &
       Schema.Attribute.DefaultTo<0>;
-    sectionsViewed: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    unlockedCannonReleases: Schema.Attribute.JSON &
-      Schema.Attribute.DefaultTo<[]>;
-    unlockedCanonAxioms: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    unlockedCourses: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    sectionsViewed: Schema.Attribute.JSON;
+    unlockedCannonReleases: Schema.Attribute.JSON;
+    unlockedCanonAxioms: Schema.Attribute.JSON;
+    unlockedCourses: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1138,6 +1276,55 @@ export interface ApiFormationJourneyFormationJourney
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiFormationPhaseFormationPhase
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'formation_phases';
+  info: {
+    description: 'Major phases in the formation journey (Awakening, Separation, etc.)';
+    displayName: 'Formation Phase';
+    pluralName: 'formation-phases';
+    singularName: 'formation-phase';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    color: Schema.Attribute.Enumeration<
+      ['blue', 'purple', 'indigo', 'green', 'amber']
+    > &
+      Schema.Attribute.DefaultTo<'blue'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText & Schema.Attribute.Required;
+    estimatedDuration: Schema.Attribute.String;
+    icon: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-phase.formation-phase'
+    > &
+      Schema.Attribute.Private;
+    nodes: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::guidebook-node.guidebook-node'
+    >;
+    order: Schema.Attribute.Integer & Schema.Attribute.Required;
+    phase: Schema.Attribute.Enumeration<
+      ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    unlockRequirements: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1161,7 +1348,7 @@ export interface ApiFormationReflectionFormationReflection
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    depthScore: Schema.Attribute.Decimal;
+    depthScore: Schema.Attribute.Float;
     indicators: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1178,7 +1365,7 @@ export interface ApiFormationReflectionFormationReflection
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     reflectionType: Schema.Attribute.Enumeration<['text', 'voice']> &
-      Schema.Attribute.DefaultTo<'text'>;
+      Schema.Attribute.Required;
     sectionId: Schema.Attribute.String & Schema.Attribute.Required;
     submittedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     timeSinceCheckpointReached: Schema.Attribute.Integer &
@@ -1189,6 +1376,10 @@ export interface ApiFormationReflectionFormationReflection
     user: Schema.Attribute.Relation<
       'manyToOne',
       'plugin::users-permissions.user'
+    >;
+    verse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-verse.scripture-verse'
     >;
     wordCount: Schema.Attribute.Integer & Schema.Attribute.Required;
   };
@@ -1264,6 +1455,126 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiGlossaryTermGlossaryTerm
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'glossary_terms';
+  info: {
+    description: 'Theological and linguistic definitions';
+    displayName: 'Glossary Term';
+    pluralName: 'glossary-terms';
+    singularName: 'glossary-term';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['theological', 'linguistic', 'cultural', 'historical', 'liturgical']
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    definition: Schema.Attribute.RichText & Schema.Attribute.Required;
+    greekTerm: Schema.Attribute.String;
+    hebrewTerm: Schema.Attribute.String;
+    lemma: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::scripture-lemma.scripture-lemma'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::glossary-term.glossary-term'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    references: Schema.Attribute.JSON;
+    relatedTerms: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::glossary-term.glossary-term'
+    >;
+    shortDefinition: Schema.Attribute.Text;
+    slug: Schema.Attribute.UID<'term'>;
+    term: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiGuidebookNodeGuidebookNode
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'guidebook_nodes';
+  info: {
+    description: 'Individual teaching sections within a formation phase';
+    displayName: 'Guidebook Node';
+    pluralName: 'guidebook-nodes';
+    singularName: 'guidebook-node';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    canonAxioms: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::canon-axiom.canon-axiom'
+    >;
+    checkpointGuidingQuestions: Schema.Attribute.RichText;
+    checkpointPrompt: Schema.Attribute.RichText;
+    checkpointType: Schema.Attribute.Enumeration<
+      ['None', 'Text Response', 'Voice Response', 'Text & Voice']
+    > &
+      Schema.Attribute.DefaultTo<'None'>;
+    checksum: Schema.Attribute.String & Schema.Attribute.Required;
+    content: Schema.Attribute.RichText & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estimatedReadTime: Schema.Attribute.Integer;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::guidebook-node.guidebook-node'
+    > &
+      Schema.Attribute.Private;
+    minimumDwellTime: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<120>;
+    minimumWordCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<50>;
+    nodeId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    nodeType: Schema.Attribute.Enumeration<
+      ['Teaching', 'Confrontation', 'Exercise', 'Reflection', 'Assessment']
+    >;
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
+    orderInPhase: Schema.Attribute.Integer & Schema.Attribute.Required;
+    phase: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::formation-phase.formation-phase'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    publishedVersion: Schema.Attribute.String;
+    scriptureReferences: Schema.Attribute.Text;
+    sensitivity: Schema.Attribute.Enumeration<
+      ['Low', 'Medium', 'High', 'Critical']
+    > &
+      Schema.Attribute.DefaultTo<'Medium'>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    syncedToStrapi: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    syncLock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    unlockRequirements: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    videoMedia: Schema.Attribute.Media<'videos'>;
+    videoUrl: Schema.Attribute.String;
+  };
+}
+
 export interface ApiHeroSectionHeroSection extends Struct.SingleTypeSchema {
   collectionName: 'hero_sections';
   info: {
@@ -1332,6 +1643,124 @@ export interface ApiImageImage extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiInsightVoteInsightVote extends Struct.CollectionTypeSchema {
+  collectionName: 'insight_votes';
+  info: {
+    description: 'Community validation votes for iron insights';
+    displayName: 'Insight Vote';
+    pluralName: 'insight-votes';
+    singularName: 'insight-vote';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    comment: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    insight: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::iron-insight.iron-insight'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::insight-vote.insight-vote'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    votedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    voteType: Schema.Attribute.Enumeration<
+      ['helpful', 'profound', 'needs_work']
+    > &
+      Schema.Attribute.Required;
+  };
+}
+
+export interface ApiIronInsightIronInsight extends Struct.CollectionTypeSchema {
+  collectionName: 'iron_insights';
+  info: {
+    description: 'AI-analyzed and sharpened insights from user reflections';
+    displayName: 'Iron Insight';
+    pluralName: 'iron-insights';
+    singularName: 'iron-insight';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    aiAnalysis: Schema.Attribute.JSON & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    depthScore: Schema.Attribute.Float &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 10;
+          min: 0;
+        },
+        number
+      >;
+    insightId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::iron-insight.iron-insight'
+    > &
+      Schema.Attribute.Private;
+    originalContent: Schema.Attribute.Text & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    readinessLevel: Schema.Attribute.Enumeration<
+      ['emerging', 'forming', 'maturing', 'established']
+    > &
+      Schema.Attribute.Required;
+    reflection: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::formation-reflection.formation-reflection'
+    >;
+    routing: Schema.Attribute.Enumeration<
+      ['publish', 'journal', 'thread', 'review']
+    > &
+      Schema.Attribute.Required;
+    routingReason: Schema.Attribute.Text;
+    sharpenedInsight: Schema.Attribute.RichText & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['pending', 'published', 'archived']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    teachingMoment: Schema.Attribute.RichText;
+    themes: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-theme.scripture-theme'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    verse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-verse.scripture-verse'
+    >;
+    votes: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::insight-vote.insight-vote'
+    >;
+    voteScore: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
   };
 }
 
@@ -1474,6 +1903,127 @@ export interface ApiLessonLesson extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     videoUrl: Schema.Attribute.String;
+  };
+}
+
+export interface ApiLivingCommentaryLivingCommentary
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'living_commentaries';
+  info: {
+    description: 'Validated community wisdom layer on scripture';
+    displayName: 'Living Commentary';
+    pluralName: 'living-commentaries';
+    singularName: 'living-commentary';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    content: Schema.Attribute.RichText & Schema.Attribute.Required;
+    contributors: Schema.Attribute.Relation<
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    curatedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    helpfulCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::living-commentary.living-commentary'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    qualityScore: Schema.Attribute.Float &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 10;
+          min: 0;
+        },
+        number
+      >;
+    sourceInsights: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::iron-insight.iron-insight'
+    >;
+    themes: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-theme.scripture-theme'
+    >;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      [
+        'exegesis',
+        'application',
+        'cross_reference',
+        'cultural_context',
+        'theological_insight',
+      ]
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-verse.scripture-verse'
+    >;
+    viewCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiMarginReflectionMarginReflection
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'margin_reflections';
+  info: {
+    description: 'Public margin notes on scripture passages';
+    displayName: 'Margin Reflection';
+    pluralName: 'margin-reflections';
+    singularName: 'margin-reflection';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    content: Schema.Attribute.RichText & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    helpfulCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    isValidated: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::margin-reflection.margin-reflection'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sourceInsight: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::iron-insight.iron-insight'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    validatedAt: Schema.Attribute.DateTime;
+    validatedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    verse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-verse.scripture-verse'
+    >;
+    viewCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
   };
 }
 
@@ -1860,6 +2410,386 @@ export interface ApiResourceDirectoryResourceDirectory
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiScriptureAlignmentScriptureAlignment
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_alignments';
+  info: {
+    description: 'Interlinear word alignment mapping';
+    displayName: 'Scripture Alignment';
+    pluralName: 'scripture-alignments';
+    singularName: 'scripture-alignment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    alignmentType: Schema.Attribute.Enumeration<
+      ['one_to_one', 'one_to_many', 'many_to_one', 'implicit']
+    > &
+      Schema.Attribute.DefaultTo<'one_to_one'>;
+    confidence: Schema.Attribute.Float &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-alignment.scripture-alignment'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    sourceToken: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-token.scripture-token'
+    >;
+    targetWord: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiScriptureBookScriptureBook
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_books';
+  info: {
+    description: 'Canonical grouping of scripture works (Law, Prophets, Writings, etc.)';
+    displayName: 'Scripture Book';
+    pluralName: 'scripture-books';
+    singularName: 'scripture-book';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    canonicalOrder: Schema.Attribute.Integer & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    greekName: Schema.Attribute.String;
+    hebrewName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-book.scripture-book'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'>;
+    testament: Schema.Attribute.Enumeration<
+      ['tanakh', 'renewed_covenant', 'apocrypha']
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    works: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-work.scripture-work'
+    >;
+  };
+}
+
+export interface ApiScriptureLemmaScriptureLemma
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_lemmas';
+  info: {
+    description: 'Lexical root form for word study';
+    displayName: 'Scripture Lemma';
+    pluralName: 'scripture-lemmas';
+    singularName: 'scripture-lemma';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    definition: Schema.Attribute.Text;
+    etymology: Schema.Attribute.Text;
+    glossaryTerm: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::glossary-term.glossary-term'
+    >;
+    language: Schema.Attribute.Enumeration<['hebrew', 'aramaic', 'greek']> &
+      Schema.Attribute.Required;
+    lemmaId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-lemma.scripture-lemma'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    rootForm: Schema.Attribute.String & Schema.Attribute.Required;
+    strongsNumber: Schema.Attribute.String & Schema.Attribute.Unique;
+    tokens: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-token.scripture-token'
+    >;
+    transliteration: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiScriptureThemeScriptureTheme
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_themes';
+  info: {
+    description: 'Thematic tagging for scripture passages';
+    displayName: 'Scripture Theme';
+    pluralName: 'scripture-themes';
+    singularName: 'scripture-theme';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      [
+        'covenant',
+        'kingdom',
+        'holiness',
+        'redemption',
+        'worship',
+        'prophecy',
+        'wisdom',
+        'law',
+        'grace',
+        'spirit',
+      ]
+    >;
+    childThemes: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-theme.scripture-theme'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-theme.scripture-theme'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    parentTheme: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-theme.scripture-theme'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verseCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    verses: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-verse.scripture-verse'
+    >;
+  };
+}
+
+export interface ApiScriptureTokenScriptureToken
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_tokens';
+  info: {
+    description: 'Word-level token for interlinear analysis';
+    displayName: 'Scripture Token';
+    pluralName: 'scripture-tokens';
+    singularName: 'scripture-token';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    gloss: Schema.Attribute.String;
+    lemma: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-lemma.scripture-lemma'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-token.scripture-token'
+    > &
+      Schema.Attribute.Private;
+    morphology: Schema.Attribute.JSON;
+    partOfSpeech: Schema.Attribute.Enumeration<
+      [
+        'noun',
+        'verb',
+        'adjective',
+        'pronoun',
+        'preposition',
+        'conjunction',
+        'article',
+        'particle',
+        'proper_noun',
+      ]
+    >;
+    position: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    strongsNumber: Schema.Attribute.String;
+    surfaceForm: Schema.Attribute.String & Schema.Attribute.Required;
+    tokenId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    transliteration: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-verse.scripture-verse'
+    >;
+  };
+}
+
+export interface ApiScriptureVerseScriptureVerse
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_verses';
+  info: {
+    description: 'Individual verse from YahScriptures translation';
+    displayName: 'Scripture Verse';
+    pluralName: 'scripture-verses';
+    singularName: 'scripture-verse';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    chapter: Schema.Attribute.Integer & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    footnotes: Schema.Attribute.JSON;
+    hasFootnotes: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-verse.scripture-verse'
+    > &
+      Schema.Attribute.Private;
+    paleoHebrewDivineNames: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    publishedAt: Schema.Attribute.DateTime;
+    reflections: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-reflection.formation-reflection'
+    >;
+    text: Schema.Attribute.Text & Schema.Attribute.Required;
+    themes: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::scripture-theme.scripture-theme'
+    >;
+    tokens: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-token.scripture-token'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verse: Schema.Attribute.Integer & Schema.Attribute.Required;
+    verseId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    work: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::scripture-work.scripture-work'
+    >;
+  };
+}
+
+export interface ApiScriptureWorkScriptureWork
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'scripture_works';
+  info: {
+    description: 'A work/book in the YahScriptures collection (103 total)';
+    displayName: 'Scripture Work';
+    pluralName: 'scripture-works';
+    singularName: 'scripture-work';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    author: Schema.Attribute.String;
+    canonicalName: Schema.Attribute.String & Schema.Attribute.Required;
+    canonicalOrder: Schema.Attribute.Integer & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estimatedDate: Schema.Attribute.String;
+    genre: Schema.Attribute.Enumeration<
+      [
+        'law',
+        'history',
+        'wisdom',
+        'prophecy',
+        'gospel',
+        'epistle',
+        'apocalyptic',
+      ]
+    >;
+    greekName: Schema.Attribute.String;
+    hebrewName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-work.scripture-work'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    shortCode: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    summary: Schema.Attribute.Text;
+    testament: Schema.Attribute.Enumeration<
+      ['tanakh', 'renewed_covenant', 'apocrypha']
+    > &
+      Schema.Attribute.Required;
+    totalChapters: Schema.Attribute.Integer & Schema.Attribute.Required;
+    totalVerses: Schema.Attribute.Integer & Schema.Attribute.Required;
+    translatedTitle: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verses: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::scripture-verse.scripture-verse'
+    >;
+    workId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
   };
 }
 
@@ -2909,6 +3839,8 @@ declare module '@strapi/strapi' {
       'api::audio-file.audio-file': ApiAudioFileAudioFile;
       'api::author.author': ApiAuthorAuthor;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
+      'api::canon-axiom.canon-axiom': ApiCanonAxiomCanonAxiom;
+      'api::canon-release.canon-release': ApiCanonReleaseCanonRelease;
       'api::category.category': ApiCategoryCategory;
       'api::channel.channel': ApiChannelChannel;
       'api::comment-report.comment-report': ApiCommentReportCommentReport;
@@ -2921,14 +3853,21 @@ declare module '@strapi/strapi' {
       'api::faq.faq': ApiFaqFaq;
       'api::formation-event.formation-event': ApiFormationEventFormationEvent;
       'api::formation-journey.formation-journey': ApiFormationJourneyFormationJourney;
+      'api::formation-phase.formation-phase': ApiFormationPhaseFormationPhase;
       'api::formation-reflection.formation-reflection': ApiFormationReflectionFormationReflection;
       'api::gallery.gallery': ApiGalleryGallery;
       'api::global.global': ApiGlobalGlobal;
+      'api::glossary-term.glossary-term': ApiGlossaryTermGlossaryTerm;
+      'api::guidebook-node.guidebook-node': ApiGuidebookNodeGuidebookNode;
       'api::hero-section.hero-section': ApiHeroSectionHeroSection;
       'api::image.image': ApiImageImage;
+      'api::insight-vote.insight-vote': ApiInsightVoteInsightVote;
+      'api::iron-insight.iron-insight': ApiIronInsightIronInsight;
       'api::lesson-comment.lesson-comment': ApiLessonCommentLessonComment;
       'api::lesson-progress.lesson-progress': ApiLessonProgressLessonProgress;
       'api::lesson.lesson': ApiLessonLesson;
+      'api::living-commentary.living-commentary': ApiLivingCommentaryLivingCommentary;
+      'api::margin-reflection.margin-reflection': ApiMarginReflectionMarginReflection;
       'api::media-item.media-item': ApiMediaItemMediaItem;
       'api::outreach-campaign.outreach-campaign': ApiOutreachCampaignOutreachCampaign;
       'api::outreach-story.outreach-story': ApiOutreachStoryOutreachStory;
@@ -2937,6 +3876,13 @@ declare module '@strapi/strapi' {
       'api::project.project': ApiProjectProject;
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
+      'api::scripture-alignment.scripture-alignment': ApiScriptureAlignmentScriptureAlignment;
+      'api::scripture-book.scripture-book': ApiScriptureBookScriptureBook;
+      'api::scripture-lemma.scripture-lemma': ApiScriptureLemmaScriptureLemma;
+      'api::scripture-theme.scripture-theme': ApiScriptureThemeScriptureTheme;
+      'api::scripture-token.scripture-token': ApiScriptureTokenScriptureToken;
+      'api::scripture-verse.scripture-verse': ApiScriptureVerseScriptureVerse;
+      'api::scripture-work.scripture-work': ApiScriptureWorkScriptureWork;
       'api::series.series': ApiSeriesSeries;
       'api::setting.setting': ApiSettingSetting;
       'api::speaker.speaker': ApiSpeakerSpeaker;

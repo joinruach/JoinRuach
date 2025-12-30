@@ -48,10 +48,10 @@ describe('Axiom Hierarchy Validator', () => {
   describe('validateAxiomHierarchy - Edge Cases', () => {
     it('should pass validation for nodes with no axioms (drafts)', async () => {
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [],
+        nodeType: 'Awakening',
+        canonAxioms: [],
         title: 'Draft Node',
-        node_id: 'draft-1'
+        nodeId: 'draft-1'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -62,9 +62,9 @@ describe('Axiom Hierarchy Validator', () => {
 
     it('should pass validation for nodes with no node_type (drafts)', async () => {
       const data = {
-        canon_axioms: [1, 2, 3],
+        canonAxioms: [1, 2, 3],
         title: 'Draft Node',
-        node_id: 'draft-2'
+        nodeId: 'draft-2'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -81,10 +81,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Warfare',
-        canon_axioms: [1],
+        nodeType: 'Warfare',
+        canonAxioms: [1],
         title: 'Spiritual Authority',
-        node_id: 'warfare-1'
+        nodeId: 'warfare-1'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -98,10 +98,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [2],
+        nodeType: 'Awakening',
+        canonAxioms: [2],
         title: 'Who You Are',
-        node_id: 'awakening-1'
+        nodeId: 'awakening-1'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -117,10 +117,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Formation',
-        canon_axioms: [1, 3, 4],
+        nodeType: 'Formation',
+        canonAxioms: [1, 3, 4],
         title: 'The Narrow Road',
-        node_id: 'formation-1'
+        nodeId: 'formation-1'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -135,10 +135,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [2, 5],
+        nodeType: 'Awakening',
+        canonAxioms: [2, 5],
         title: 'Testing the Spirits',
-        node_id: 'awakening-2'
+        nodeId: 'awakening-2'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -155,10 +155,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [3, 4],
+        nodeType: 'Awakening',
+        canonAxioms: [3, 4],
         title: 'Bad Node',
-        node_id: 'bad-1'
+        nodeId: 'bad-1'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -175,10 +175,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Warfare',
-        canon_axioms: [5],
+        nodeType: 'Warfare',
+        canonAxioms: [5],
         title: 'Bad Warfare Node',
-        node_id: 'bad-2'
+        nodeId: 'bad-2'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -203,10 +203,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Warfare',
-        canon_axioms: [2, 5],
+        nodeType: 'Warfare',
+        canonAxioms: [2, 5],
         title: 'Warfare Without Authority',
-        node_id: 'bad-3'
+        nodeId: 'bad-3'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -230,10 +230,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [1, 2, 3, 4, 5],
+        nodeType: 'Awakening',
+        canonAxioms: [1, 2, 3, 4, 5],
         title: 'Too Many Axioms',
-        node_id: 'bad-4'
+        nodeId: 'bad-4'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -295,10 +295,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Warfare',
-        canon_axioms: [4, 5, 6, 7, 8],
+        nodeType: 'Warfare',
+        canonAxioms: [4, 5, 6, 7, 8],
         title: 'Maximum Violation Node',
-        node_id: 'max-violation'
+        nodeId: 'max-violation'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -318,10 +318,10 @@ describe('Axiom Hierarchy Validator', () => {
       ]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [1],
+        nodeType: 'Awakening',
+        canonAxioms: [1],
         title: 'Node with Missing Tier',
-        node_id: 'missing-tier'
+        nodeId: 'missing-tier'
       };
 
       const result = await validateAxiomHierarchy(data);
@@ -334,10 +334,10 @@ describe('Axiom Hierarchy Validator', () => {
       strapi.entityService.findMany.mockResolvedValue([]);
 
       const data = {
-        node_type: 'Awakening',
-        canon_axioms: [999],
+        nodeType: 'Awakening',
+        canonAxioms: [999],
         title: 'Node with Non-existent Axioms',
-        node_id: 'not-found'
+        nodeId: 'not-found'
       };
 
       const result = await validateAxiomHierarchy(data);

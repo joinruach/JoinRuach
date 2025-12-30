@@ -8,6 +8,12 @@ import type { NotionNode, FormationPhase } from './types';
 import * as fs from 'fs';
 import * as path from 'path';
 
+interface NotionDatabaseQueryResponse {
+  results: any[];
+  has_more: boolean;
+  next_cursor: string | null;
+}
+
 /**
  * Initialize Notion client
  */
@@ -29,9 +35,15 @@ export async function fetchNotionDatabase(
     let startCursor: string | undefined;
 
     while (hasMore) {
-      const response: any = await client.databases.query({
-        database_id: databaseId,
-        start_cursor: startCursor,
+      const body: Record<string, unknown> = {};
+      if (startCursor) {
+        body.start_cursor = startCursor;
+      }
+
+      const response = await client.request<NotionDatabaseQueryResponse>({
+        path: `databases/${databaseId}/query`,
+        method: 'post',
+        body,
       });
 
       for (const page of response.results) {
