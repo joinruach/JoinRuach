@@ -138,9 +138,9 @@ Make sure these are set in `ruach-ministries-backend/.env`:
 
 ```env
 R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
-R2_ACCESS_KEY_ID=your_access_key_id
-R2_SECRET_ACCESS_KEY=your_secret_access_key
-R2_BUCKET_NAME=your_bucket_name
+R2_ACCESS_KEY_ID=<YOUR_R2_ACCESS_KEY_ID>
+R2_SECRET_ACCESS_KEY=<YOUR_R2_SECRET_ACCESS_KEY>
+R2_BUCKET_NAME=<YOUR_R2_BUCKET_NAME>
 UPLOAD_CDN_URL=https://cdn.joinruach.org
 ```
 

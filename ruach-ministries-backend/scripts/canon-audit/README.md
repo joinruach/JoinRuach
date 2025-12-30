@@ -51,8 +51,8 @@ https://www.notion.so/{workspace}/{database_id}?v={view_id}
 Add to `ruach-ministries-backend/.env`:
 
 ```bash
-NOTION_API_KEY=secret_xxxxxxxxxx
-NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
 ```
 
 ### 5. Required Database Properties

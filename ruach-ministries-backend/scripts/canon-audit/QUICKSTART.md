@@ -15,7 +15,7 @@
 3. Name: `Canon Audit` (or your preferred name)
 4. Associated workspace: Select your workspace
 5. Click **"Submit"**
-6. Copy the **"Internal Integration Token"** (starts with `secret_`)
+6. Copy the **"Internal Integration Token"** (begins with `secret_` prefix followed by 40 characters)
 
 ## Step 2: Share Database with Integration (1 minute)
 
@@ -46,8 +46,8 @@
 2. Create/edit `.env` file:
    ```bash
    # Add these lines (replace with your actual values)
-   NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+   NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
    ```
 
 ## Step 5: Run Your First Audit (1 minute)
@@ -163,7 +163,7 @@ tsx scripts/canon-audit/index.ts --skip-export
 ### "API request failed"
 
 **Solutions:**
-- Check API key is valid (starts with `secret_`)
+- Check API key is valid (begins with `secret_` prefix)
 - Verify integration hasn't been revoked
 - Check internet connection
 

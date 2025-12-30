@@ -469,9 +469,9 @@ Each Strapi instance needs **identical** configuration:
 # CRITICAL: Must be identical across all instances
 NODE_ENV=production
 APP_KEYS=key1,key2,key3,key4
-API_TOKEN_SALT=same_salt_all_instances
-ADMIN_JWT_SECRET=same_secret_all_instances
-JWT_SECRET=same_jwt_all_instances
+API_TOKEN_SALT=<SAME_SALT_ALL_INSTANCES>
+ADMIN_JWT_SECRET=<SAME_ADMIN_JWT_SECRET_ALL_INSTANCES>
+JWT_SECRET=<SAME_JWT_SECRET_ALL_INSTANCES>
 
 # Database - shared PostgreSQL
 DATABASE_CLIENT=postgres
@@ -750,7 +750,7 @@ export const authOptions: NextAuthOptions = {
 
 ```env
 # MUST BE THE SAME ON ALL INSTANCES
-NEXTAUTH_SECRET=your_48_character_secret_from_openssl_rand_base64_48
+NEXTAUTH_SECRET=<YOUR_48_CHARACTER_SECRET_FROM_OPENSSL_RAND_BASE64_48>
 ```
 
 If secrets differ:
@@ -799,9 +799,9 @@ export default {
 ```env
 # CRITICAL: Must be identical across all instances
 NEXTAUTH_URL=https://joinruach.org
-NEXTAUTH_SECRET=same_secret_all_instances
+NEXTAUTH_SECRET=<SAME_NEXTAUTH_SECRET_ALL_INSTANCES>
 NEXT_PUBLIC_STRAPI_URL=https://api.joinruach.org
-STRAPI_API_TOKEN=same_token_all_instances
+STRAPI_API_TOKEN=<SAME_STRAPI_API_TOKEN_ALL_INSTANCES>
 
 # Redis for rate limiting
 UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
