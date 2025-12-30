@@ -21,6 +21,7 @@ COPY .npmrc .npmrc
 COPY apps/ruach-next/package.json apps/ruach-next/package.json
 COPY packages/ruach-ai/package.json packages/ruach-ai/package.json
 COPY packages/ruach-components/package.json packages/ruach-components/package.json
+COPY packages/ruach-formation/package.json packages/ruach-formation/package.json
 COPY packages/ruach-hooks/package.json packages/ruach-hooks/package.json
 COPY packages/ruach-icons/package.json packages/ruach-icons/package.json
 COPY packages/ruach-next-addons/package.json packages/ruach-next-addons/package.json
