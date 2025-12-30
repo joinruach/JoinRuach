@@ -16,6 +16,7 @@
  * @date 2025-12-30
  */
 
+import 'dotenv/config';
 import { exportNotionCanon } from './canon-audit/notion-export';
 import { auditAllNodes } from './canon-audit/audit-report';
 import { STRAPI_API_TOKEN, STRAPI_URL } from './strapi-env';

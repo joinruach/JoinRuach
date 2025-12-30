@@ -22,29 +22,68 @@ export function initNotionClient(apiKey: string): Client {
 }
 
 /**
+ * Format database ID to UUID format with dashes
+ * Notion URLs have IDs without dashes, but API expects UUID format
+ * Example: "2d73628788f380a39159cc21034ff065" → "2d736287-88f3-80a3-9159-cc21034ff065"
+ */
+function formatDatabaseId(id: string): string {
+  // Remove any existing dashes
+  const clean = id.replace(/-/g, '');
+
+  // Insert dashes in UUID format: 8-4-4-4-12
+  if (clean.length === 32) {
+    return `${clean.slice(0, 8)}-${clean.slice(8, 12)}-${clean.slice(12, 16)}-${clean.slice(16, 20)}-${clean.slice(20)}`;
+  }
+
+  // If already formatted or invalid length, return as-is
+  return id;
+}
+
+/**
  * Fetch all pages from a Notion database
  */
 export async function fetchNotionDatabase(
   client: Client,
-  databaseId: string
+  databaseId: string,
+  apiKey?: string
 ): Promise<NotionNode[]> {
   const nodes: NotionNode[] = [];
+
+  // Format database ID to UUID format
+  const formattedId = formatDatabaseId(databaseId);
+
+  // Get API key from client or parameter
+  const authToken = apiKey || (client as any).auth;
 
   try {
     let hasMore = true;
     let startCursor: string | undefined;
 
     while (hasMore) {
-      const body: Record<string, unknown> = {};
+      console.log(`Querying database ${formattedId}${startCursor ? ` (cursor: ${startCursor})` : ''}`);
+
+      // Query database using fetch API directly
+      const requestBody: any = {};
       if (startCursor) {
-        body.start_cursor = startCursor;
+        requestBody.start_cursor = startCursor;
       }
 
-      const response = await client.request<NotionDatabaseQueryResponse>({
-        path: `databases/${databaseId}/query`,
-        method: 'post',
-        body,
+      const apiResponse = await fetch(`https://api.notion.com/v1/databases/${formattedId}/query`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Notion-Version': '2022-06-28',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      if (!apiResponse.ok) {
+        const error = await apiResponse.text();
+        throw new Error(`Notion API error (${apiResponse.status}): ${error}`);
+      }
+
+      const response = await apiResponse.json() as NotionDatabaseQueryResponse;
 
       for (const page of response.results) {
         const node = await parseNotionPage(client, page);
@@ -209,9 +248,10 @@ export async function exportNotionCanon(
 ): Promise<NotionNode[]> {
   console.log('🔄 Starting Notion canon export...');
   console.log(`Database ID: ${databaseId}`);
+  console.log(`API Key: ${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 4)}`);
 
   const client = initNotionClient(apiKey);
-  const nodes = await fetchNotionDatabase(client, databaseId);
+  const nodes = await fetchNotionDatabase(client, databaseId, apiKey);
 
   exportToJSON(nodes, outputPath);
 

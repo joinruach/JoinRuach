@@ -4,6 +4,7 @@
  * Main entry point for canon validation audit
  */
 
+import 'dotenv/config';
 import { exportNotionCanon } from './notion-export';
 import { auditAllNodes, saveReport, printSummary } from './audit-report';
 import * as path from 'path';

@@ -1,5 +1,6 @@
 "use client";
 import { signIn } from "next-auth/react";
+import type { SignInResponse } from "next-auth/react";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -34,12 +35,12 @@ function LoginForm() {
     try {
       // Use NextAuth's built-in redirect to ensure session is established
       // before navigating to the account page (fixes race condition)
-      const res = await signIn("credentials", {
+      const res = (await signIn("credentials", {
         email,
         password,
         callbackUrl: `/${locale}/members/account`,
         redirect: true
-      });
+      })) as SignInResponse | undefined;
 
       // If we reach here, there was an error (redirect: true doesn't return on success)
       if (res?.error) {
