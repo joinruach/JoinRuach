@@ -22,6 +22,11 @@ import { auditAllNodes } from './canon-audit/audit-report';
 import { STRAPI_API_TOKEN, STRAPI_URL } from './strapi-env';
 import type { NotionNode } from './canon-audit/types';
 import * as crypto from 'crypto';
+import {
+  CANONICAL_FORMATION_PHASES,
+  NOTION_PHASE_SLUGS,
+  formatPhaseDescription,
+} from './formation-phase-definitions';
 
 interface ImportStats {
   phasesCreated: number;
@@ -166,58 +171,23 @@ async function importPhases(
 ): Promise<void> {
   console.log('\n📘 Importing Formation Phases...');
 
-  // Extract unique phases from nodes
-  const phases = new Set<string>();
+  const referencedPhases = new Set<string>();
   nodes.forEach(node => {
     if (node.phase) {
-      phases.add(node.phase);
+      referencedPhases.add(node.phase);
     }
   });
 
-  // Phase metadata
-  const phaseMetadata: Record<string, { name: string; description: string; order: number }> = {
-    'awakening': {
-      name: 'Awakening',
-      description: 'Introduction to covenant thinking and spiritual foundations',
-      order: 1
-    },
-    'separation': {
-      name: 'Separation',
-      description: 'Understanding separation from the world\'s systems',
-      order: 2
-    },
-    'discernment': {
-      name: 'Discernment',
-      description: 'Developing spiritual discernment and wisdom',
-      order: 3
-    },
-    'commission': {
-      name: 'Commission',
-      description: 'Receiving and walking in your calling',
-      order: 4
-    },
-    'stewardship': {
-      name: 'Stewardship',
-      description: 'Living as a faithful steward of God\'s kingdom',
-      order: 5
-    }
-  };
-
-  for (const phaseSlug of Array.from(phases).sort()) {
-    const metadata = phaseMetadata[phaseSlug];
-    if (!metadata) {
-      console.log(`  ⚠️  Unknown phase: ${phaseSlug}`);
-      continue;
-    }
-
+  for (const phaseDefinition of CANONICAL_FORMATION_PHASES) {
+    const description = formatPhaseDescription(phaseDefinition);
     const phaseData = {
-      phaseId: phaseSlug,
-      name: metadata.name,
-      slug: phaseSlug,
-      description: metadata.description,
-      order: metadata.order,
-      notionPageId: `phase-${phaseSlug}`,
-      checksum: generateChecksum(JSON.stringify(metadata))
+      phaseId: phaseDefinition.slug,
+      name: phaseDefinition.name,
+      slug: phaseDefinition.slug,
+      description,
+      order: phaseDefinition.order,
+      notionPageId: `phase-${phaseDefinition.slug}`,
+      checksum: generateChecksum(description)
     };
 
     const result = await upsertStrapiRecord(
@@ -231,6 +201,15 @@ async function importPhases(
     else if (result === 'updated') stats.phasesUpdated++;
     else if (result === 'skipped') stats.phasesSkipped++;
   }
+
+  const unknownPhases = Array.from(referencedPhases).filter(phaseName => {
+    const normalized = phaseName.trim().toLowerCase();
+    const slug = NOTION_PHASE_SLUGS[normalized] ?? normalized;
+    return !CANONICAL_FORMATION_PHASES.some(def => def.slug === slug);
+  );
+  unknownPhases.forEach(phase => {
+    console.log(`  ⚠️  Node references unknown phase: ${phase}`);
+  });
 }
 
 /**
@@ -443,7 +422,9 @@ async function importNodes(
   });
 
   for (const node of nodes) {
-    const phaseId = node.phase ? phaseMap[node.phase] : null;
+    const phaseKey = node.phase ? node.phase.trim().toLowerCase() : null;
+    const normalizedPhaseSlug = phaseKey ? (NOTION_PHASE_SLUGS[phaseKey] ?? phaseKey) : null;
+    const phaseId = normalizedPhaseSlug ? phaseMap[normalizedPhaseSlug] : null;
 
     if (node.phase && !phaseId) {
       console.log(`  ⚠️  Phase not found for node "${node.title}": ${node.phase}`);
