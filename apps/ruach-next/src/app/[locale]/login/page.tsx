@@ -38,8 +38,8 @@ function LoginForm() {
         setErr(res?.error || "Login failed");
         setLoading(false);
       } else {
-        // Keep loading state while redirecting
-        window.location.href = res?.url || `/${locale}`;
+        // Redirect to account page after successful login
+        window.location.href = res?.url || `/${locale}/members/account`;
       }
     } catch (error) {
       setErr("Something went wrong. Please try again.");
