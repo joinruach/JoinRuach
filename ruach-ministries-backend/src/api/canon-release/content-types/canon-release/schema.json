@@ -82,7 +82,7 @@
     "estimatedDuration": {
       "type": "integer"
     },
-    "releasedAt": {
+    "publishDate": {
       "type": "datetime"
     },
     "strapiEntryId": {

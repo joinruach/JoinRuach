@@ -907,7 +907,7 @@ function normalizeCourses(items: unknown[]): Course[] {
       const attributes = (item as { attributes?: Record<string, unknown> } | undefined)?.attributes;
       if (!attributes) return null;
 
-      const title = attributes.title;
+      const title = attributes.name;
       const slug = attributes.slug;
       if (typeof title !== "string" || typeof slug !== "string") return null;
 
@@ -962,7 +962,7 @@ function mapLessonDownload(lesson: LessonEntity | null | undefined): LessonDownl
     id: lesson.id,
     title: lesson.attributes.title ?? "Discipleship resource",
     summary: lesson.attributes.summary ?? null,
-    courseTitle: lesson.attributes.course?.data?.attributes?.title ?? null,
+    courseTitle: lesson.attributes.course?.data?.attributes?.name ?? null,
     categoryName: lesson.attributes.category?.data?.attributes?.name ?? null,
     resources: lessonResources,
   };

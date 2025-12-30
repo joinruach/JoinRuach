@@ -90,7 +90,7 @@
       "target": "api::guidebook-node.guidebook-node",
       "mappedBy": "canonAxioms"
     },
-    "canonReferences": {
+    "releases": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::canon-release.canon-release",

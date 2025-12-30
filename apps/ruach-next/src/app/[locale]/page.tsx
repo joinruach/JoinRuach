@@ -97,7 +97,7 @@ export default async function Home({
       const attributes = extractAttributes<CourseAttributes>(c);
       if (!attributes) return null;
 
-      const title = typeof attributes.title === "string" ? attributes.title : undefined;
+      const title = typeof attributes.name === "string" ? attributes.name : undefined;
       const slug = typeof attributes.slug === "string" ? attributes.slug : undefined;
       if (!title || !slug) return null;
 

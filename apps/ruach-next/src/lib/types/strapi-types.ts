@@ -118,7 +118,7 @@ export interface LessonEntity extends StrapiBase {
 
 export interface CourseEntity extends StrapiBase {
   attributes: {
-    title: string;
+    name: string;
     slug: string;
     excerpt?: string;
     description?: string;

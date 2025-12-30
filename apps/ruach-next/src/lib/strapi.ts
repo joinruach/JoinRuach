@@ -408,7 +408,7 @@ type BlogPostListOptions = {
 
 export async function getCourses() {
   const q = qs({
-    "fields[0]": "title",
+    "fields[0]": "name",
     "fields[1]": "slug",
     populate: "cover",
     "pagination[pageSize]": "100",
@@ -429,7 +429,7 @@ export async function getCourses() {
 export async function getCourseBySlug(slug: string) {
   const params = new URLSearchParams();
   params.set("filters[slug][$eq]", slug);
-  params.set("fields[0]", "title");
+  params.set("fields[0]", "name");
   params.set("fields[1]", "slug");
   params.set("fields[2]", "excerpt");
   params.set("fields[3]", "description");

@@ -19,7 +19,7 @@ export default async function CoursesPage({
       const attributes = c?.attributes;
       if (!attributes) return null;
 
-      const title = attributes.title;
+      const title = attributes.name;
       const slug = attributes.slug;
 
       if (typeof title !== "string" || typeof slug !== "string") return null;
@@ -71,7 +71,7 @@ export default async function CoursesPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imgUrl(featuredCourse.cover?.data?.attributes?.url)!}
-                alt={featuredCourse.title}
+                alt={featuredCourse.name}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -80,7 +80,7 @@ export default async function CoursesPage({
           </div>
           <div className="flex flex-col gap-4 p-8">
             <span className="text-xs font-semibold uppercase tracking-wide text-amber-600">Featured Series</span>
-            <h2 className="text-2xl font-semibold text-neutral-900">{featuredCourse.title}</h2>
+            <h2 className="text-2xl font-semibold text-neutral-900">{featuredCourse.name}</h2>
             {featuredCourse.description ? (
               <p className="text-neutral-600">{featuredCourse.description}</p>
             ) : null}
