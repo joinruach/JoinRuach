@@ -16,6 +16,19 @@ const { validateAxiomHierarchy, formatValidationError } = require('../../../../v
 const { validateFormationScope, formatScopeValidationError } = require('../../../../validators/formation-scope');
 const { ValidationError } = require('@strapi/utils').errors;
 
+const IMPORT_MODE_ENABLED = ['true', '1'].includes(
+  (process.env.IMPORT_MODE || '').toLowerCase()
+);
+
+function skipForImportMode(hookName) {
+  if (!IMPORT_MODE_ENABLED) {
+    return false;
+  }
+
+  console.log(`[Guidebook Node] ${hookName}: Import mode active, skipping validations`);
+  return true;
+}
+
 module.exports = {
   /**
    * Before Create Hook
@@ -29,6 +42,9 @@ module.exports = {
    */
   async beforeCreate(event) {
     const { data } = event.params;
+    if (skipForImportMode('beforeCreate')) {
+      return;
+    }
 
     try {
       // Validate axiom hierarchy
@@ -103,6 +119,9 @@ module.exports = {
 
     if (!shouldValidate) {
       console.log('[Guidebook Node] beforeUpdate: Skipping validation (no relevant fields changed)');
+      return;
+    }
+    if (skipForImportMode('beforeUpdate')) {
       return;
     }
 
