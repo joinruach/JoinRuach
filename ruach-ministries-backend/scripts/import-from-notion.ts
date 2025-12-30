@@ -79,7 +79,7 @@ async function fetchByNotionId(
 
     if (!response.ok) return null;
 
-    const data = await response.json();
+    const data = (await response.json()) as { data?: any[] };
     return data.data?.[0] || null;
   } catch (error) {
     console.error(`Error fetching ${contentType} by Notion ID:`, error);
@@ -433,7 +433,9 @@ async function importNodes(
     },
   });
 
-  const phasesData = await phasesResponse.json();
+  const phasesData = (await phasesResponse.json()) as {
+    data?: Array<{ id: number; slug?: string | null; phaseId?: string | null }>;
+  };
   const phaseMap: Record<string, number> = {};
 
   phasesData.data?.forEach((phase: any) => {

@@ -62,7 +62,7 @@ npx tsx scripts/import-from-notion.ts
    - ✅ Read comments (optional)
    - ❌ No user information needed
 6. Click **"Submit"**
-7. **Copy the "Internal Integration Token"** (starts with `secret_`)
+7. **Copy the "Internal Integration Token"** (begins with `secret_` prefix followed by 40 characters)
 
 ### Step 2: Share Database with Integration (1 minute)
 
@@ -115,20 +115,20 @@ Edit `ruach-ministries-backend/.env`:
 
 ```bash
 # Notion Configuration
-NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
 
 # Strapi Configuration
 STRAPI_URL=http://localhost:1337
-STRAPI_API_TOKEN=your-strapi-api-token-here
+STRAPI_API_TOKEN=<YOUR_STRAPI_API_TOKEN>
 ```
 
 **Production example:**
 ```bash
-NOTION_API_KEY=secret_abc123...
-NOTION_DATABASE_ID=1234567890abcdef...
+NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
 STRAPI_URL=https://api.joinruach.org
-STRAPI_API_TOKEN=a0a201f14006cc52a623af399e2f9b61...
+STRAPI_API_TOKEN=<YOUR_PRODUCTION_API_TOKEN>
 ```
 
 ---
@@ -366,7 +366,7 @@ Fix errors in Notion before importing. Run: tsx scripts/canon-audit/index.ts
 - Verify database ID is correct (32 characters, no dashes)
 - Ensure integration has access (check Share settings in Notion)
 - Confirm integration has "Read content" permission
-- Check API key is valid (starts with `secret_`)
+- Check API key is valid (begins with `secret_` prefix)
 - Verify internet connection
 
 ### Records not updating

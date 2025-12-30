@@ -98,7 +98,7 @@ async function fetchAllNodes(): Promise<any[]> {
       throw new Error(`Failed to fetch nodes: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { data?: any[] };
     return data.data || [];
   } catch (error) {
     console.error('Error fetching nodes:', error);
