@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const course = await getCourseBySlug(slug);
   const a: any = course?.attributes || {};
-  const title = a.seoTitle || a.title || "Course";
+  const title = a.seoTitle || a.name || "Course";
   const desc = a.seoDescription || a.description || "";
   const image = imgUrl(a.seoImage?.data?.attributes?.url || a.cover?.data?.attributes?.url);
   return {
@@ -88,7 +88,7 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
-    name: a.title,
+    name: a.name,
     description: a.description,
     provider: {
       "@type": "Organization",
@@ -109,14 +109,14 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imgUrl(a.cover?.data?.attributes?.url)!}
-                alt={a.title}
+              alt={a.name}
                 className="h-full w-full object-cover"
               />
             ) : null}
           </div>
           <div className="flex flex-col gap-4 p-8">
             <span className="text-xs font-semibold uppercase tracking-[0.4em] text-neutral-500">Ruach Academy</span>
-            <h1 className="text-3xl font-semibold text-neutral-900">{a.title}</h1>
+            <h1 className="text-3xl font-semibold text-neutral-900">{a.name}</h1>
             {a.description ? (
               <p className="text-neutral-600">{a.description}</p>
             ) : null}
@@ -157,7 +157,7 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
                 completed={completed}
                 total={total}
                 courseSlug={slug}
-                courseTitle={a.title}
+                courseTitle={a.name}
                 href={`/api/certificate/${slug}`}
               />
             </div>

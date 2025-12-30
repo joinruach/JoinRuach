@@ -269,7 +269,7 @@ export type LessonEntity = {
     summary?: string | null;
     previewAvailable?: boolean;
     category?: { data?: CategoryEntity | null };
-    course?: { data?: { attributes?: { title?: string | null } } | null };
+    course?: { data?: { attributes?: { title?: string | null; name?: string | null } } | null };
     resources?: ResourceLinkComponent[];
   };
 };

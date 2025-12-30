@@ -50,7 +50,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     url: `${site}/courses/${slug}/${lessonSlug}`,
     isPartOf: {
       "@type": "Course",
-      name: course.attributes?.title,
+      name: course.attributes?.name,
       url: `${site}/courses/${slug}`
     },
     provider: {
@@ -66,7 +66,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
         <LocalizedLink href="/courses"><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">Courses</span></LocalizedLink>
         <span>/</span>
-        <LocalizedLink href={`/courses/${slug}`}><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">{course.attributes?.title}</span></LocalizedLink>
+        <LocalizedLink href={`/courses/${slug}`}><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">{course.attributes?.name}</span></LocalizedLink>
         <span>/</span>
         <span className="text-zinc-900 dark:text-white">{lesson.title}</span>
       </nav>
