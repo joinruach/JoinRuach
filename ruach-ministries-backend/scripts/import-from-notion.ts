@@ -272,6 +272,7 @@ function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
     checksum: generateChecksum(content),
     orderInPhase: node.order || 1,
     nodeType: determineNodeType(node),
+    formationScope: determineFormationScope(node),
     sensitivity: 'Medium',
     checkpointType: isCheckpoint(node) ? 'Text Response' : 'None',
     phase: phaseId,
@@ -279,6 +280,112 @@ function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
     syncLock: false,
     publishedAt: null // Draft by default
   };
+}
+
+/**
+ * Formation Scope Mapping
+ * Based on authoritative scope assignment (2025-12-30)
+ *
+ * Individual: Personal conscience, repentance, discernment, obedience
+ * Household: Family alignment, shared rhythms, domestic order
+ * Ecclesia: Remnant recognition, mutual accountability, shared identity
+ * Network: Structure, authority distribution, multiplication
+ */
+const FORMATION_SCOPE_MAP: Record<string, string> = {
+  // Awakening Phase
+  'the narrow gate': 'Individual',
+  'come out of her': 'Individual', // Transitions to Household
+  'awakening checkpoint': 'Individual',
+  'count the cost': 'Individual',
+  'the cost of discipleship': 'Individual',
+  'fewness': 'Individual', // Transitions to Ecclesia
+  'remnant pattern': 'Ecclesia',
+  'the remnant pattern': 'Ecclesia',
+
+  // Discernment / Warfare Layer
+  'discernment': 'Individual',
+  'test the spirits': 'Individual',
+  'signs': 'Individual',
+  'language can deceive': 'Individual',
+  'the word as plumb line': 'Individual', // Transitions to Ecclesia
+  'conviction vs condemnation': 'Individual',
+  'false peace': 'Individual',
+  'true rest': 'Individual',
+
+  // Repentance / Obedience Layer
+  'repentance': 'Individual',
+  'realignment': 'Individual',
+  'obedience': 'Individual',
+  'first fruits': 'Individual',
+  'renouncing false coverings': 'Individual', // Transitions to Ecclesia
+  'prayer': 'Individual',
+  'breaks the fog': 'Individual',
+
+  // Identity / Gospel Layer
+  'identity': 'Individual',
+  'beloved before useful': 'Individual',
+  'the gospel': 'Individual',
+  'grace not performance': 'Individual',
+  'not all who say lord': 'Individual',
+  'fear of yhwh': 'Individual',
+  'clean not crippling': 'Individual',
+
+  // Commissioning Phase
+  'the call': 'Individual', // Transitions to Ecclesia
+  'distributed kingdom order': 'Network'
+};
+
+/**
+ * Determine formation scope from node title and phase
+ */
+function determineFormationScope(node: NotionNode): string {
+  const title = node.title.toLowerCase();
+
+  // Check explicit mapping first
+  for (const [key, scope] of Object.entries(FORMATION_SCOPE_MAP)) {
+    if (title.includes(key)) {
+      return scope;
+    }
+  }
+
+  // Default scope by phase
+  const phase = node.phase?.toLowerCase();
+
+  switch (phase) {
+    case 'awakening':
+    case 'separation':
+    case 'discernment':
+      return 'Individual'; // Most awakening/discernment content is personal
+
+    case 'warfare':
+      return 'Individual'; // Warfare is always personal first
+
+    case 'commissioning':
+      // Commissioning can be Individual or Ecclesia, default to Individual
+      if (title.includes('community') || title.includes('ecclesia') || title.includes('remnant')) {
+        return 'Ecclesia';
+      }
+      if (title.includes('network') || title.includes('distributed')) {
+        return 'Network';
+      }
+      return 'Individual';
+
+    case 'stewardship':
+      // Stewardship can span all scopes
+      if (title.includes('household') || title.includes('family')) {
+        return 'Household';
+      }
+      if (title.includes('community') || title.includes('ecclesia')) {
+        return 'Ecclesia';
+      }
+      if (title.includes('network') || title.includes('multiplication')) {
+        return 'Network';
+      }
+      return 'Individual';
+
+    default:
+      return 'Individual'; // Safe default
+  }
 }
 
 /**
@@ -418,18 +525,18 @@ async function main() {
     console.log('━'.repeat(60));
 
     const notionApiKey = process.env.NOTION_API_KEY;
-    const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+    const notionDbGuidebookNodes = process.env.NOTION_DB_GUIDEBOOK_NODES || process.env.NOTION_DATABASE_ID;
 
-    if (!notionApiKey || !notionDatabaseId) {
+    if (!notionApiKey || !notionDbGuidebookNodes) {
       throw new Error(
-        'Missing required environment variables: NOTION_API_KEY and NOTION_DATABASE_ID\n' +
+        'Missing required environment variables: NOTION_API_KEY and NOTION_DB_GUIDEBOOK_NODES\n' +
         'Add them to your .env file or export them in your shell.'
       );
     }
 
     const nodes = await exportNotionCanon(
       notionApiKey,
-      notionDatabaseId,
+      notionDbGuidebookNodes,
       './scripts/canon-audit/data/notion-export.json'
     );
 
@@ -491,10 +598,10 @@ Options:
   --help              Show this help message
 
 Environment Variables (required):
-  NOTION_API_KEY        Your Notion integration API key
-  NOTION_DATABASE_ID    The ID of your Notion database
-  STRAPI_URL            Strapi backend URL (default: http://localhost:1337)
-  STRAPI_API_TOKEN      Strapi API token with write permissions
+  NOTION_API_KEY              Your Notion integration API key
+  NOTION_DB_GUIDEBOOK_NODES   Notion database ID for Guidebook Nodes
+  STRAPI_URL                  Strapi backend URL (default: http://localhost:1337)
+  STRAPI_API_TOKEN            Strapi API token with write permissions
 
 Examples:
   # Preview what would be imported

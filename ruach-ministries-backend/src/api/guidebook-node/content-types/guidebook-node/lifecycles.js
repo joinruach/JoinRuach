@@ -13,6 +13,7 @@
 'use strict';
 
 const { validateAxiomHierarchy, formatValidationError } = require('../../../../validators/axiom-hierarchy');
+const { validateFormationScope, formatScopeValidationError } = require('../../../../validators/formation-scope');
 const { ValidationError } = require('@strapi/utils').errors;
 
 module.exports = {
@@ -30,14 +31,15 @@ module.exports = {
     const { data } = event.params;
 
     try {
+      // Validate axiom hierarchy
       console.log('[Guidebook Node] beforeCreate: Validating axiom hierarchy...');
 
-      const result = await validateAxiomHierarchy(data);
+      const axiomResult = await validateAxiomHierarchy(data);
 
-      if (!result.valid) {
-        const errorDetails = formatValidationError(result);
+      if (!axiomResult.valid) {
+        const errorDetails = formatValidationError(axiomResult);
 
-        console.error('[Guidebook Node] beforeCreate: Validation failed', errorDetails);
+        console.error('[Guidebook Node] beforeCreate: Axiom validation failed', errorDetails);
 
         throw new ValidationError(
           'Axiom hierarchy validation failed',
@@ -45,7 +47,23 @@ module.exports = {
         );
       }
 
-      console.log(`[Guidebook Node] beforeCreate: Validation passed for node "${data.title}"`);
+      // Validate formation scope
+      console.log('[Guidebook Node] beforeCreate: Validating formation scope...');
+
+      const scopeResult = await validateFormationScope(data);
+
+      if (!scopeResult.valid) {
+        const errorDetails = formatScopeValidationError(scopeResult);
+
+        console.error('[Guidebook Node] beforeCreate: Scope validation failed', errorDetails);
+
+        throw new ValidationError(
+          'Formation scope validation failed',
+          errorDetails
+        );
+      }
+
+      console.log(`[Guidebook Node] beforeCreate: All validations passed for node "${data.title}"`);
     } catch (error) {
       // Re-throw ValidationError as-is
       if (error instanceof ValidationError) {
@@ -55,7 +73,7 @@ module.exports = {
       // Wrap unexpected errors
       console.error('[Guidebook Node] beforeCreate: Unexpected error during validation', error);
       throw new ValidationError(
-        'Axiom hierarchy validation encountered an error',
+        'Node validation encountered an error',
         {
           originalError: error.message,
           stack: error.stack
@@ -77,31 +95,55 @@ module.exports = {
   async beforeUpdate(event) {
     const { data } = event.params;
 
-    // Only validate if Node Type or Canon Axioms are being modified
-    const shouldValidate = data.nodeType !== undefined || data.canonAxioms !== undefined;
+    // Only validate if relevant fields are being modified
+    const shouldValidate =
+      data.nodeType !== undefined ||
+      data.canonAxioms !== undefined ||
+      data.formationScope !== undefined;
 
     if (!shouldValidate) {
-      console.log('[Guidebook Node] beforeUpdate: Skipping validation (nodeType and canonAxioms unchanged)');
+      console.log('[Guidebook Node] beforeUpdate: Skipping validation (no relevant fields changed)');
       return;
     }
 
     try {
-      console.log('[Guidebook Node] beforeUpdate: Validating axiom hierarchy...');
+      // Validate axiom hierarchy (if nodeType or canonAxioms changed)
+      if (data.nodeType !== undefined || data.canonAxioms !== undefined) {
+        console.log('[Guidebook Node] beforeUpdate: Validating axiom hierarchy...');
 
-      const result = await validateAxiomHierarchy(data);
+        const axiomResult = await validateAxiomHierarchy(data);
 
-      if (!result.valid) {
-        const errorDetails = formatValidationError(result);
+        if (!axiomResult.valid) {
+          const errorDetails = formatValidationError(axiomResult);
 
-        console.error('[Guidebook Node] beforeUpdate: Validation failed', errorDetails);
+          console.error('[Guidebook Node] beforeUpdate: Axiom validation failed', errorDetails);
 
-        throw new ValidationError(
-          'Axiom hierarchy validation failed',
-          errorDetails
-        );
+          throw new ValidationError(
+            'Axiom hierarchy validation failed',
+            errorDetails
+          );
+        }
       }
 
-      console.log(`[Guidebook Node] beforeUpdate: Validation passed for node "${data.title}"`);
+      // Validate formation scope (if formationScope changed)
+      if (data.formationScope !== undefined) {
+        console.log('[Guidebook Node] beforeUpdate: Validating formation scope...');
+
+        const scopeResult = await validateFormationScope(data);
+
+        if (!scopeResult.valid) {
+          const errorDetails = formatScopeValidationError(scopeResult);
+
+          console.error('[Guidebook Node] beforeUpdate: Scope validation failed', errorDetails);
+
+          throw new ValidationError(
+            'Formation scope validation failed',
+            errorDetails
+          );
+        }
+      }
+
+      console.log(`[Guidebook Node] beforeUpdate: All validations passed for node "${data.title || 'unknown'}"`);
     } catch (error) {
       // Re-throw ValidationError as-is
       if (error instanceof ValidationError) {
@@ -111,7 +153,7 @@ module.exports = {
       // Wrap unexpected errors
       console.error('[Guidebook Node] beforeUpdate: Unexpected error during validation', error);
       throw new ValidationError(
-        'Axiom hierarchy validation encountered an error',
+        'Node validation encountered an error',
         {
           originalError: error.message,
           stack: error.stack

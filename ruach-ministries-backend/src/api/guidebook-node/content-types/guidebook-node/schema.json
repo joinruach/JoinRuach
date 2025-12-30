@@ -37,6 +37,12 @@
       "type": "enumeration",
       "enum": ["Teaching", "Confrontation", "Exercise", "Reflection", "Assessment"]
     },
+    "formationScope": {
+      "type": "enumeration",
+      "enum": ["Individual", "Household", "Ecclesia", "Network"],
+      "required": true,
+      "default": "Individual"
+    },
     "sensitivity": {
       "type": "enumeration",
       "enum": ["Low", "Medium", "High", "Critical"],
