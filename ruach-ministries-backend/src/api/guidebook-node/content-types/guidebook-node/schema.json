@@ -11,6 +11,15 @@
     "draftAndPublish": true
   },
   "attributes": {
+    "nodeId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
     "title": {
       "type": "string",
       "required": true
@@ -20,19 +29,60 @@
       "targetField": "title",
       "required": true
     },
+    "orderInPhase": {
+      "type": "integer",
+      "required": true
+    },
+    "nodeType": {
+      "type": "enumeration",
+      "enum": ["Teaching", "Confrontation", "Exercise", "Reflection", "Assessment"]
+    },
+    "sensitivity": {
+      "type": "enumeration",
+      "enum": ["Low", "Medium", "High", "Critical"],
+      "default": "Medium"
+    },
+    "checkpointType": {
+      "type": "enumeration",
+      "enum": ["None", "Text Response", "Voice Response", "Text & Voice"],
+      "default": "None"
+    },
+    "checkpointPrompt": {
+      "type": "richtext"
+    },
+    "scriptureReferences": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "checksum": {
+      "type": "string",
+      "required": true
+    },
+    "publishedVersion": {
+      "type": "string"
+    },
+    "syncLock": {
+      "type": "boolean",
+      "default": false
+    },
+    "syncedToStrapi": {
+      "type": "boolean",
+      "default": false
+    },
     "phase": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::formation-phase.formation-phase",
       "inversedBy": "nodes"
     },
-    "order": {
-      "type": "integer",
-      "required": true
-    },
-    "content": {
-      "type": "richtext",
-      "required": true
+    "canonAxioms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::canon-axiom.canon-axiom",
+      "mappedBy": "nodes"
     },
     "videoUrl": {
       "type": "string"
@@ -44,13 +94,6 @@
     },
     "estimatedReadTime": {
       "type": "integer"
-    },
-    "hasCheckpoint": {
-      "type": "boolean",
-      "default": false
-    },
-    "checkpointPrompt": {
-      "type": "richtext"
     },
     "checkpointGuidingQuestions": {
       "type": "richtext"
@@ -65,16 +108,6 @@
     },
     "unlockRequirements": {
       "type": "json"
-    },
-    "scriptureReferences": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::scripture-verse.scripture-verse"
-    },
-    "relatedAxioms": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::canon-axiom.canon-axiom"
     }
   }
 }

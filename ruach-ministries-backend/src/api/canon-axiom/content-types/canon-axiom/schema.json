@@ -11,6 +11,18 @@
     "draftAndPublish": true
   },
   "attributes": {
+    "axiomId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
+    "axiomNumber": {
+      "type": "integer"
+    },
     "title": {
       "type": "string",
       "required": true,
@@ -21,14 +33,37 @@
       "targetField": "title",
       "required": true
     },
+    "shortDefinition": {
+      "type": "text"
+    },
     "definition": {
       "type": "richtext",
+      "required": true
+    },
+    "canonLevel": {
+      "type": "enumeration",
+      "enum": ["Foundation", "Core", "Support", "Corrective"]
+    },
+    "formationPhases": {
+      "type": "json"
+    },
+    "function": {
+      "type": "json"
+    },
+    "hierarchyTier": {
+      "type": "enumeration",
+      "enum": ["Tier 1", "Tier 2", "Tier 3", "Tier 4"],
       "required": true
     },
     "category": {
       "type": "enumeration",
       "enum": ["covenant", "kingdom", "holiness", "redemption", "ecclesiology", "eschatology", "pneumatology"],
       "required": true
+    },
+    "sensitivity": {
+      "type": "enumeration",
+      "enum": ["Low", "Medium", "High", "Critical"],
+      "default": "Medium"
     },
     "unlockPhase": {
       "type": "enumeration",
@@ -44,17 +79,20 @@
       "relation": "manyToMany",
       "target": "api::canon-axiom.canon-axiom"
     },
-    "teachingNodes": {
+    "nodes": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::guidebook-node.guidebook-node",
-      "mappedBy": "relatedAxioms"
+      "mappedBy": "canonAxioms"
     },
     "practicalApplication": {
       "type": "richtext"
     },
     "commonMisconceptions": {
       "type": "richtext"
+    },
+    "checksum": {
+      "type": "string"
     }
   }
 }

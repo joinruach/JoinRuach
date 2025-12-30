@@ -1,0 +1,11 @@
+# Notion export cache
+data/
+
+# Audit reports
+reports/
+
+# Node modules (if any)
+node_modules/
+
+# Environment variables (if local)
+.env.local

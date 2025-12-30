@@ -32,14 +32,19 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await signIn("credentials", { email, password, redirect: false });
+      // Use NextAuth's built-in redirect to ensure session is established
+      // before navigating to the account page (fixes race condition)
+      const res = await signIn("credentials", {
+        email,
+        password,
+        callbackUrl: `/${locale}/members/account`,
+        redirect: true
+      });
 
-      if (!res || res?.error) {
-        setErr(res?.error || "Login failed");
+      // If we reach here, there was an error (redirect: true doesn't return on success)
+      if (res?.error) {
+        setErr(res.error);
         setLoading(false);
-      } else {
-        // Redirect to account page after successful login
-        window.location.href = res?.url || `/${locale}/members/account`;
       }
     } catch (error) {
       setErr("Something went wrong. Please try again.");
