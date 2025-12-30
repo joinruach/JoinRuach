@@ -664,6 +664,7 @@ export interface ApiCanonAxiomCanonAxiom extends Struct.CollectionTypeSchema {
       ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4']
     > &
       Schema.Attribute.Required;
+    lastSyncedAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -681,6 +682,10 @@ export interface ApiCanonAxiomCanonAxiom extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::canon-axiom.canon-axiom'
     >;
+    releases: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::canon-release.canon-release'
+    >;
     scriptureFoundation: Schema.Attribute.Relation<
       'manyToMany',
       'api::scripture-verse.scripture-verse'
@@ -691,6 +696,20 @@ export interface ApiCanonAxiomCanonAxiom extends Struct.CollectionTypeSchema {
       Schema.Attribute.DefaultTo<'Medium'>;
     shortDefinition: Schema.Attribute.Text;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      [
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'Draft'>;
+    strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
+    syncErrors: Schema.Attribute.Text;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -716,6 +735,10 @@ export interface ApiCanonReleaseCanonRelease
     draftAndPublish: true;
   };
   attributes: {
+    canonReferences: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::canon-axiom.canon-axiom'
+    >;
     content: Schema.Attribute.RichText & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -726,27 +749,42 @@ export interface ApiCanonReleaseCanonRelease
       true
     >;
     estimatedDuration: Schema.Attribute.Integer;
+    lastSyncedAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::canon-release.canon-release'
     > &
       Schema.Attribute.Private;
-    minimumPhase: Schema.Attribute.Enumeration<
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
+    phaseRequirement: Schema.Attribute.Enumeration<
       ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
     > &
       Schema.Attribute.Required;
+    publishDate: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
-    relatedAxioms: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::canon-axiom.canon-axiom'
-    >;
-    releasedAt: Schema.Attribute.DateTime;
+    releaseId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     scriptureReferences: Schema.Attribute.Relation<
       'manyToMany',
       'api::scripture-verse.scripture-verse'
     >;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      [
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'Draft'>;
+    strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
+    syncErrors: Schema.Attribute.Text;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     type: Schema.Attribute.Enumeration<
       ['teaching', 'prophecy', 'vision', 'revelation', 'strategy']
@@ -1057,6 +1095,9 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::lesson-comment.lesson-comment'
     >;
+    courseId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     cover: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1068,6 +1109,7 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     excerpt: Schema.Attribute.Text;
     featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     heroVideo: Schema.Attribute.Media<'videos'>;
+    lastSyncedAt: Schema.Attribute.DateTime;
     lessons: Schema.Attribute.Relation<'oneToMany', 'api::lesson.lesson'>;
     level: Schema.Attribute.Enumeration<
       ['foundation', 'intermediate', 'advanced']
@@ -1079,14 +1121,35 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       'api::course.course'
     > &
       Schema.Attribute.Private;
+    modules: Schema.Attribute.Relation<'manyToMany', 'api::course.course'>;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
+    phase: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::formation-phase.formation-phase'
+    >;
     publishedAt: Schema.Attribute.DateTime;
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
-    slug: Schema.Attribute.UID<'title'> &
+    slug: Schema.Attribute.UID<'name'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      [
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'Draft'>;
+    strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
+    syncErrors: Schema.Attribute.Text;
+    unlockRequirements: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1292,35 +1355,58 @@ export interface ApiFormationPhaseFormationPhase
     draftAndPublish: true;
   };
   attributes: {
+    checksum: Schema.Attribute.String;
     color: Schema.Attribute.Enumeration<
       ['blue', 'purple', 'indigo', 'green', 'amber']
     > &
       Schema.Attribute.DefaultTo<'blue'>;
+    courses: Schema.Attribute.Relation<'oneToMany', 'api::course.course'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.RichText & Schema.Attribute.Required;
+    duration: Schema.Attribute.String;
     estimatedDuration: Schema.Attribute.String;
     icon: Schema.Attribute.String;
+    lastSyncedAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::formation-phase.formation-phase'
     > &
       Schema.Attribute.Private;
+    maturityFocus: Schema.Attribute.JSON;
     nodes: Schema.Attribute.Relation<
       'oneToMany',
       'api::guidebook-node.guidebook-node'
     >;
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     order: Schema.Attribute.Integer & Schema.Attribute.Required;
     phase: Schema.Attribute.Enumeration<
       ['awakening', 'separation', 'discernment', 'commission', 'stewardship']
     > &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    phaseId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    phaseName: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID<'phaseName'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      [
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'Draft'>;
+    strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
+    syncErrors: Schema.Attribute.Text;
     unlockRequirements: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1533,6 +1619,12 @@ export interface ApiGuidebookNodeGuidebookNode
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     estimatedReadTime: Schema.Attribute.Integer;
+    formationScope: Schema.Attribute.Enumeration<
+      ['Individual', 'Household', 'Ecclesia', 'Network']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Individual'>;
+    lastSyncedAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1562,8 +1654,22 @@ export interface ApiGuidebookNodeGuidebookNode
     > &
       Schema.Attribute.DefaultTo<'Medium'>;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      [
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'Draft'>;
+    strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
     syncedToStrapi: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
+    syncErrors: Schema.Attribute.Text;
     syncLock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     unlockRequirements: Schema.Attribute.JSON;
