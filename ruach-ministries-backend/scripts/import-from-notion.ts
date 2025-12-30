@@ -101,8 +101,11 @@ async function upsertStrapiRecord(
   notionPageId: string,
   dryRun: boolean = false
 ): Promise<'created' | 'updated' | 'skipped' | 'error'> {
+  const recordLabel =
+    data.title || data.name || data.phaseName || data.slug || data.phaseId || 'record';
+
   if (dryRun) {
-    console.log(`  [DRY RUN] Would upsert ${contentType}:`, data.title || data.name);
+    console.log(`  [DRY RUN] Would upsert ${contentType}:`, recordLabel);
     return 'skipped';
   }
 
@@ -113,7 +116,7 @@ async function upsertStrapiRecord(
     if (existing) {
       // Check if update needed (compare checksums)
       if (existing.checksum === data.checksum) {
-        console.log(`  ⏭️  Skipped (unchanged): ${data.title || data.name}`);
+        console.log(`  ⏭️  Skipped (unchanged): ${recordLabel}`);
         return 'skipped';
       }
 
@@ -128,7 +131,7 @@ async function upsertStrapiRecord(
       });
 
       if (response.ok) {
-        console.log(`  🔄 Updated: ${data.title || data.name}`);
+        console.log(`  🔄 Updated: ${recordLabel}`);
         return 'updated';
       } else {
         const error = await response.text();
@@ -147,7 +150,7 @@ async function upsertStrapiRecord(
       });
 
       if (response.ok) {
-        console.log(`  ✅ Created: ${data.title || data.name}`);
+        console.log(`  ✅ Created: ${recordLabel}`);
         return 'created';
       } else {
         const error = await response.text();
@@ -182,8 +185,9 @@ async function importPhases(
     const description = formatPhaseDescription(phaseDefinition);
     const phaseData = {
       phaseId: phaseDefinition.slug,
-      name: phaseDefinition.name,
+      phaseName: phaseDefinition.name,
       slug: phaseDefinition.slug,
+      phase: phaseDefinition.slug,
       description,
       order: phaseDefinition.order,
       notionPageId: `phase-${phaseDefinition.slug}`,
@@ -206,7 +210,7 @@ async function importPhases(
     const normalized = phaseName.trim().toLowerCase();
     const slug = NOTION_PHASE_SLUGS[normalized] ?? normalized;
     return !CANONICAL_FORMATION_PHASES.some(def => def.slug === slug);
-  );
+  });
   unknownPhases.forEach(phase => {
     console.log(`  ⚠️  Node references unknown phase: ${phase}`);
   });
@@ -340,7 +344,7 @@ function determineFormationScope(node: NotionNode): string {
     case 'warfare':
       return 'Individual'; // Warfare is always personal first
 
-    case 'commissioning':
+    case 'commission':
       // Commissioning can be Individual or Ecclesia, default to Individual
       if (title.includes('community') || title.includes('ecclesia') || title.includes('remnant')) {
         return 'Ecclesia';
