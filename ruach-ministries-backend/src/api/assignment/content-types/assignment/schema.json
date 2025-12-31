@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "assignments",
+  "info": {
+    "singularName": "assignment",
+    "pluralName": "assignments",
+    "displayName": "Assignment",
+    "description": "Practice, activation, or response tied to lessons or courses."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "assignmentId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+
+    "name": {
+      "type": "string",
+      "required": true
+    },
+
+    "assignmentType": {
+      "type": "enumeration",
+      "enum": [
+        "audit",
+        "renunciation",
+        "build",
+        "journal",
+        "declaration",
+        "action-plan",
+        "assessment",
+        "practice-log"
+      ]
+    },
+
+    "outputFormat": {
+      "type": "enumeration",
+      "enum": ["written", "spoken", "action", "testimony"]
+    },
+
+    "instructions": {
+      "type": "richtext"
+    },
+
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course"
+    },
+
+    "lesson": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::lesson.lesson"
+    }
+  }
+}

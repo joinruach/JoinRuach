@@ -1,0 +1,31 @@
+{
+  "$schema": "./importrc.schema.json",
+  "strapi": {
+    "url": "https://api.joinruach.org",
+    "tokenEnvVar": "STRAPI_TOKEN"
+  },
+  "defaults": {
+    "phase": "awakening",
+    "importMode": true,
+    "dryRun": false
+  },
+  "phaseMapping": {
+    "awakening": 2,
+    "separation": 3,
+    "discernment": 4,
+    "commission": 5,
+    "stewardship": 6
+  },
+  "books": {
+    "ministry-of-healing": {
+      "input": "scripts/canon-parser/out/ministry-of-healing.canon.clean.json",
+      "phase": "awakening",
+      "nodeType": "Formation"
+    },
+    "steps-to-christ": {
+      "input": "scripts/canon-parser/out/steps-to-christ.canon.clean.json",
+      "phase": "awakening",
+      "nodeType": "Formation"
+    }
+  }
+}

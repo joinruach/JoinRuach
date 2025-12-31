@@ -71,7 +71,14 @@ async function fetchStrapiPrivate<T>(path: string, jwt: string): Promise<T> {
   });
 
   if (!res.ok) {
-    throw new Error(`Strapi request failed (${res.status}) for ${path}`);
+    const errorText = await res.text().catch(() => "Unable to read error response");
+    console.error(`[Account Page] Strapi request failed:`, {
+      status: res.status,
+      statusText: res.statusText,
+      path,
+      error: errorText,
+    });
+    throw new Error(`Strapi request failed (${res.status}) for ${path}: ${errorText}`);
   }
 
   return (await res.json()) as T;
@@ -99,24 +106,29 @@ async function fetchUser(jwt: string): Promise<StrapiUserMe> {
 }
 
 async function fetchLessonProgress(jwt: string): Promise<LessonProgressEntry[]> {
-  const params = new URLSearchParams({
-    "pagination[pageSize]": "500",
-    "sort[0]": "updatedAt:desc",
-  });
+  try {
+    const params = new URLSearchParams({
+      "pagination[pageSize]": "500",
+      "sort[0]": "updatedAt:desc",
+    });
 
-  const response = await fetchStrapiPrivate<{ data: any[] }>(`/api/lesson-progresses?${params.toString()}`, jwt);
+    const response = await fetchStrapiPrivate<{ data: any[] }>(`/api/lesson-progresses?${params.toString()}`, jwt);
 
-  return (response.data ?? [])
-    .map((entry) => ({
-      id: entry?.id,
-      courseSlug: entry?.attributes?.courseSlug ?? "",
-      lessonSlug: entry?.attributes?.lessonSlug ?? "",
-      completed: Boolean(entry?.attributes?.completed),
-      secondsWatched: Number(entry?.attributes?.secondsWatched ?? 0),
-      updatedAt: entry?.attributes?.updatedAt ?? entry?.attributes?.createdAt ?? null,
-      createdAt: entry?.attributes?.createdAt ?? null,
-    }))
-    .filter((entry) => entry.courseSlug && entry.lessonSlug && entry.updatedAt) as LessonProgressEntry[];
+    return (response.data ?? [])
+      .map((entry) => ({
+        id: entry?.id,
+        courseSlug: entry?.attributes?.courseSlug ?? "",
+        lessonSlug: entry?.attributes?.lessonSlug ?? "",
+        completed: Boolean(entry?.attributes?.completed),
+        secondsWatched: Number(entry?.attributes?.secondsWatched ?? 0),
+        updatedAt: entry?.attributes?.updatedAt ?? entry?.attributes?.createdAt ?? null,
+        createdAt: entry?.attributes?.createdAt ?? null,
+      }))
+      .filter((entry) => entry.courseSlug && entry.lessonSlug && entry.updatedAt) as LessonProgressEntry[];
+  } catch (error) {
+    console.error("[Account Page] Failed to fetch lesson progress:", error);
+    return [];
+  }
 }
 
 async function fetchCourseDetail(slug: string): Promise<CourseDetail | null> {
@@ -283,7 +295,24 @@ export default async function AccountPage({
     );
   }
 
-  const [user, progressEntries] = await Promise.all([fetchUser(jwt), fetchLessonProgress(jwt)]);
+  let user: StrapiUserMe;
+  let progressEntries: LessonProgressEntry[];
+
+  try {
+    [user, progressEntries] = await Promise.all([fetchUser(jwt), fetchLessonProgress(jwt)]);
+  } catch (error) {
+    console.error("[Account Page] Critical error fetching user data:", error);
+    // If we can't fetch the user, try to fetch just the user without progress
+    try {
+      user = await fetchUser(jwt);
+      progressEntries = [];
+      console.log("[Account Page] Successfully fetched user data, but lesson progress unavailable");
+    } catch (userError) {
+      console.error("[Account Page] Failed to fetch user data, redirecting to login:", userError);
+      // If even the user fetch fails, the session might be invalid
+      redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/members/account`)}&error=session_expired`);
+    }
+  }
 
   const userProfile = user.user_profile ?? undefined;
   const displayName = userProfile?.fullName || session?.user?.name || user.username || user.email;

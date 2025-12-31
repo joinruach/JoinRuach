@@ -28,6 +28,10 @@ import {
   NOTION_PHASE_SLUGS,
   formatPhaseDescription,
 } from './formation-phase-definitions';
+import { loadContract } from './contract/loadContract';
+import { Contract, validateEntity } from './contract/validateEntity';
+import { transformEntity } from './notion/transformEntity';
+import type { NotionPage } from './notion/notionTypes';
 
 interface ImportStats {
   phasesCreated: number;
@@ -39,6 +43,12 @@ interface ImportStats {
   nodesCreated: number;
   nodesUpdated: number;
   nodesSkipped: number;
+  coursesCreated: number;
+  coursesUpdated: number;
+  coursesSkipped: number;
+  courseProfilesCreated: number;
+  courseProfilesUpdated: number;
+  courseProfilesSkipped: number;
   errors: string[];
 }
 
@@ -71,6 +81,8 @@ const NOTION_DATABASES: NotionDatabaseConfig = {
   courses: requireEnvVar('NOTION_DB_COURSES'),
   canonReleases: requireEnvVar('NOTION_DB_CANON_RELEASES'),
 };
+
+const contract = loadContract();
 
 const NODE_TYPES = [
   'Awakening',
@@ -208,6 +220,14 @@ function getStrapiId(entity: unknown): number | undefined {
 
 const upsertCache = new Map<string, { id: number; checksum?: string }>();
 
+type UpsertStatus = 'created' | 'updated' | 'skipped' | 'error';
+
+interface UpsertResult {
+  status: UpsertStatus;
+  id?: number;
+  checksum?: string;
+}
+
 /**
  * Create or update a Strapi record
  */
@@ -216,14 +236,14 @@ async function upsertStrapiRecord(
   data: any,
   notionPageId: string,
   dryRun: boolean = false
-): Promise<'created' | 'updated' | 'skipped' | 'error'> {
+): Promise<UpsertResult> {
   const recordLabel =
     data.title || data.name || data.phaseName || data.slug || data.phaseId || 'record';
   const cacheKey = `${contentType}:${notionPageId}`;
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would upsert ${contentType}:`, recordLabel);
-    return 'skipped';
+    return { status: 'skipped' };
   }
 
   try {
@@ -237,7 +257,7 @@ async function upsertStrapiRecord(
       // Check if update needed (compare checksums)
       if (existingChecksum && existingChecksum === data.checksum) {
         console.log(`  ⏭️  Skipped (unchanged): ${recordLabel}`);
-        return 'skipped';
+        return { status: 'skipped', id: existingId, checksum: existingChecksum };
       }
 
       // Update existing record
@@ -257,11 +277,11 @@ async function upsertStrapiRecord(
       if (response.ok) {
         console.log(`  🔄 Updated: ${recordLabel}`);
         upsertCache.set(cacheKey, { id: existingId, checksum: data.checksum });
-        return 'updated';
+        return { status: 'updated', id: existingId, checksum: data.checksum };
       } else {
         const error = await response.text();
         console.error(`  ❌ Update failed (${response.status}): ${error}`);
-        return 'error';
+        return { status: 'error' };
       }
     } else {
       // Create new record
@@ -282,20 +302,21 @@ async function upsertStrapiRecord(
           const createdId = getStrapiId(createdPayload?.data ?? createdPayload);
           if (createdId) {
             upsertCache.set(cacheKey, { id: createdId, checksum: data.checksum });
+            return { status: 'created', id: createdId, checksum: data.checksum };
           }
         } catch {
           // ignore JSON parse issues; creation still succeeded
         }
-        return 'created';
+        return { status: 'created', checksum: data.checksum };
       } else {
         const error = await response.text();
         console.error(`  ❌ Creation failed (${response.status}): ${error}`);
-        return 'error';
+        return { status: 'error' };
       }
     }
   } catch (error) {
     console.error(`  ❌ Error upserting ${contentType}:`, error);
-    return 'error';
+    return { status: 'error' };
   }
 }
 
@@ -336,9 +357,9 @@ async function importPhases(
       dryRun
     );
 
-    if (result === 'created') stats.phasesCreated++;
-    else if (result === 'updated') stats.phasesUpdated++;
-    else if (result === 'skipped') stats.phasesSkipped++;
+    if (result.status === 'created') stats.phasesCreated++;
+    else if (result.status === 'updated') stats.phasesUpdated++;
+    else if (result.status === 'skipped') stats.phasesSkipped++;
   }
 
   const unknownPhases = Array.from(referencedPhases).filter(phaseName => {
@@ -598,25 +619,12 @@ function isCheckpoint(node: NotionNode): boolean {
 async function importNodes(
   nodes: NotionNode[],
   stats: ImportStats,
-  dryRun: boolean
+  dryRun: boolean,
+  phaseSlugMap?: Record<string, number>
 ): Promise<void> {
   console.log('\n📖 Importing Guidebook Nodes...');
 
-  // First, fetch all phases to get IDs
-  const phasesResponse = await fetch(`${STRAPI_URL}/api/formation-phases`, {
-    headers: {
-      'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
-    },
-  });
-
-  const phasesData: {
-    data?: Array<{ id: number; slug?: string | null; phaseId?: string | null }>;
-  } = await phasesResponse.json();
-  const phaseMap: Record<string, number> = {};
-
-  phasesData.data?.forEach((phase: any) => {
-    phaseMap[phase.slug || phase.phaseId] = phase.id;
-  });
+  const phaseMap = phaseSlugMap ?? (await buildPhaseSlugToIdMap());
 
   for (const node of nodes) {
     const phaseKey = node.phase ? node.phase.trim().toLowerCase() : null;
@@ -632,18 +640,159 @@ async function importNodes(
     const rawNodeData = transformNodeToStrapi(node, phaseId);
     const nodeData = sanitizeGuidebookNodePayload(rawNodeData);
 
-    const result = await upsertStrapiRecord(
-      'guidebook-nodes',
-      nodeData,
-      node.id,
-      dryRun
-    );
+      const result = await upsertStrapiRecord(
+        'guidebook-nodes',
+        nodeData,
+        node.id,
+        dryRun
+      );
 
-    if (result === 'created') stats.nodesCreated++;
-    else if (result === 'updated') stats.nodesUpdated++;
-    else if (result === 'skipped') stats.nodesSkipped++;
-    else if (result === 'error') {
+    if (result.status === 'created') stats.nodesCreated++;
+    else if (result.status === 'updated') stats.nodesUpdated++;
+    else if (result.status === 'skipped') stats.nodesSkipped++;
+    else if (result.status === 'error') {
       stats.errors.push(`Failed to import node: ${node.title}`);
+    }
+  }
+}
+
+function resolvePhaseSlug(value?: string): string | null {
+  if (!value) return null;
+  const normalized = value.trim().toLowerCase();
+  return NOTION_PHASE_SLUGS[normalized] ?? normalized;
+}
+
+async function buildPhaseSlugToIdMap(): Promise<Record<string, number>> {
+  const response = await fetch(`${STRAPI_URL}/api/formation-phases?pagination[pageSize]=100`, {
+    headers: {
+      'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch formation phases (${response.status})`);
+  }
+
+  const payload: {
+    data?: Array<{ id: number; slug?: string | null; phaseId?: string | null }>;
+  } = await response.json();
+
+  const map: Record<string, number> = {};
+  payload.data?.forEach((phase) => {
+    if (phase.slug) {
+      map[phase.slug.toLowerCase()] = phase.id;
+    }
+    if (phase.phaseId) {
+      map[phase.phaseId.toLowerCase()] = phase.id;
+    }
+  });
+
+  return map;
+}
+
+function formatDatabaseId(id: string): string {
+  const clean = id.replace(/-/g, '');
+  if (clean.length === 32) {
+    return `${clean.slice(0, 8)}-${clean.slice(8, 12)}-${clean.slice(12, 16)}-${clean.slice(16, 20)}-${clean.slice(20)}`;
+  }
+  return id;
+}
+
+async function fetchNotionCourses(apiKey: string, databaseId: string): Promise<NotionPage[]> {
+  const formattedId = formatDatabaseId(databaseId);
+  const pages: NotionPage[] = [];
+  let hasMore = true;
+  let cursor: string | undefined;
+
+  while (hasMore) {
+    const body = cursor ? { start_cursor: cursor } : {};
+    const response = await fetch(`https://api.notion.com/v1/databases/${formattedId}/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to fetch Notion courses (${response.status}): ${error}`);
+    }
+
+    const json: { results?: any[]; has_more?: boolean; next_cursor?: string | null } = await response.json();
+    (json.results ?? []).forEach((result) => {
+      if (result?.id && result?.properties) {
+        pages.push({ id: result.id, properties: result.properties });
+      }
+    });
+
+    hasMore = Boolean(json.has_more);
+    cursor = json.next_cursor ?? undefined;
+  }
+
+  return pages;
+}
+
+async function importCourses(
+  pages: NotionPage[],
+  phaseSlugMap: Record<string, number>,
+  contract: Contract,
+  stats: ImportStats,
+  dryRun: boolean
+): Promise<void> {
+  console.log('\n🎓 Importing Courses...');
+
+  for (const page of pages) {
+    try {
+      const coursePayload = transformEntity('Course', page);
+      const resolvedPhase = resolvePhaseSlug(coursePayload.phase);
+
+      if (!resolvedPhase) {
+        stats.errors.push(`Course ${page.id} missing phase information`);
+        continue;
+      }
+
+      const phaseId = phaseSlugMap[resolvedPhase];
+
+      if (!phaseId) {
+        stats.errors.push(`Phase "${coursePayload.phase}" not found for course ${page.id}`);
+        continue;
+      }
+
+      coursePayload.phase = phaseId;
+      const validatedCourse = validateEntity('Course', coursePayload, contract, { mode: 'IMPORT' });
+      const courseResult = await upsertStrapiRecord('courses', validatedCourse, page.id, dryRun);
+
+      if (courseResult.status === 'created') stats.coursesCreated++;
+      else if (courseResult.status === 'updated') stats.coursesUpdated++;
+      else if (courseResult.status === 'skipped') stats.coursesSkipped++;
+      else if (courseResult.status === 'error') {
+        stats.errors.push(`Failed to upsert course ${page.id}`);
+        continue;
+      }
+
+      if (!courseResult.id) {
+        stats.errors.push(`Course ${page.id} imported but Strapi ID missing`);
+        continue;
+      }
+
+      const profilePayload = transformEntity('CourseProfile', page);
+      profilePayload.course = courseResult.id;
+      const validatedProfile = validateEntity('CourseProfile', profilePayload, contract, { mode: 'IMPORT' });
+      const profileResult = await upsertStrapiRecord('course-profiles', validatedProfile, page.id, dryRun);
+
+      if (profileResult.status === 'created') stats.courseProfilesCreated++;
+      else if (profileResult.status === 'updated') stats.courseProfilesUpdated++;
+      else if (profileResult.status === 'skipped') stats.courseProfilesSkipped++;
+      else if (profileResult.status === 'error') {
+        stats.errors.push(`Failed to upsert profile for course ${page.id}`);
+      }
+    } catch (error) {
+      stats.errors.push(
+        `Course ${page.id} import failed: ${(error as Error)?.message ?? String(error)}`
+      );
     }
   }
 }
@@ -671,6 +820,16 @@ function printSummary(stats: ImportStats, dryRun: boolean): void {
   console.log(`  🔄 Updated: ${stats.nodesUpdated}`);
   console.log(`  ⏭️  Skipped: ${stats.nodesSkipped}`);
 
+  console.log('\n🎓 Courses:');
+  console.log(`  ✅ Created: ${stats.coursesCreated}`);
+  console.log(`  🔄 Updated: ${stats.coursesUpdated}`);
+  console.log(`  ⏭️  Skipped: ${stats.coursesSkipped}`);
+
+  console.log('\n📝 Course Profiles:');
+  console.log(`  ✅ Created: ${stats.courseProfilesCreated}`);
+  console.log(`  🔄 Updated: ${stats.courseProfilesUpdated}`);
+  console.log(`  ⏭️  Skipped: ${stats.courseProfilesSkipped}`);
+
   if (stats.errors.length > 0) {
     console.log('\n❌ Errors:');
     stats.errors.forEach(error => console.log(`  - ${error}`));
@@ -694,11 +853,17 @@ async function main() {
     axiomsCreated: 0,
     axiomsUpdated: 0,
     axiomsSkipped: 0,
-    nodesCreated: 0,
-    nodesUpdated: 0,
-    nodesSkipped: 0,
-    errors: []
-  };
+  nodesCreated: 0,
+  nodesUpdated: 0,
+  nodesSkipped: 0,
+  coursesCreated: 0,
+  coursesUpdated: 0,
+  coursesSkipped: 0,
+  courseProfilesCreated: 0,
+  courseProfilesUpdated: 0,
+  courseProfilesSkipped: 0,
+  errors: []
+};
 
   try {
     // Step 1: Export from Notion
@@ -722,6 +887,7 @@ async function main() {
       NOTION_DATABASES.guidebookNodes,
       './scripts/canon-audit/data/notion-export.json'
     );
+    const notionCourses = await fetchNotionCourses(notionApiKey, NOTION_DATABASES.courses);
 
     // Step 2: Validate (unless skipped)
     if (!args.skipValidation) {
@@ -748,8 +914,10 @@ async function main() {
     console.log('━'.repeat(60));
 
     await importPhases(nodes, stats, args.dryRun);
+    const phaseSlugMap = await buildPhaseSlugToIdMap();
+    await importCourses(notionCourses, phaseSlugMap, contract, stats, args.dryRun);
     await importAxioms(nodes, stats, args.dryRun);
-    await importNodes(nodes, stats, args.dryRun);
+    await importNodes(nodes, stats, args.dryRun, phaseSlugMap);
 
     // Step 4: Print summary
     printSummary(stats, args.dryRun);

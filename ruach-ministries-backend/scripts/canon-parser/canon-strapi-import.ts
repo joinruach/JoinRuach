@@ -281,10 +281,11 @@ async function resolvePhaseId(strapiUrl: string, token: string, phaseSlug: strin
   return id;
 }
 
-async function resolvePhaseIdByPhase(strapiUrl: string, token: string, phase: Options["phase"]): Promise<number> {
+async function resolvePhaseIdByPhase(strapiUrl: string, token: string, phase: Options["phase"]): Promise<{ id: number; documentId: string }> {
   const params = new URLSearchParams({
     "filters[phase][$eq]": phase ?? "",
     "fields[0]": "id",
+    "fields[1]": "documentId",
     "pagination[pageSize]": "2",
   });
   const result = await fetchJson(`${strapiUrl}/api/formation-phases?${params}`, {
@@ -301,11 +302,13 @@ async function resolvePhaseIdByPhase(strapiUrl: string, token: string, phase: Op
   if (result.data.length > 1) {
     throw new Error(`Multiple formation phases found for phase "${phase}".`);
   }
-  const id = result.data[0]?.id;
-  if (typeof id !== "number") {
+  const entry = result.data[0];
+  const id = entry?.id;
+  const documentId = entry?.documentId;
+  if (typeof id !== "number" || typeof documentId !== "string") {
     throw new Error(`Malformed formation phase response for phase "${phase}".`);
   }
-  return id;
+  return { id, documentId };
 }
 
 type FormationPhaseListing = { id: number; phase?: string; slug?: string; phaseName?: string };
@@ -458,12 +461,51 @@ async function main(): Promise<void> {
       .map(([key]) => key),
   );
 
-  const phaseIdFromSlug = options.phaseSlug
-    ? await resolvePhaseId(STRAPI_URL, STRAPI_TOKEN, options.phaseSlug)
-    : undefined;
-  const phaseIdFromPhase = options.phase
-    ? await resolvePhaseIdByPhase(STRAPI_URL, STRAPI_TOKEN, options.phase)
-    : undefined;
+  // Resolve phase - get both numeric ID and documentId
+  let phaseInfo: { id: number; documentId: string } | undefined;
+
+  if (options.phase) {
+    phaseInfo = await resolvePhaseIdByPhase(STRAPI_URL, STRAPI_TOKEN, options.phase);
+  } else if (options.phaseSlug) {
+    const id = await resolvePhaseId(STRAPI_URL, STRAPI_TOKEN, options.phaseSlug);
+    // Fetch documentId for this phase
+    const params = new URLSearchParams({
+      "filters[id][$eq]": String(id),
+      "fields[0]": "documentId",
+      "pagination[pageSize]": "1",
+    });
+    const result = await fetchJson(`${STRAPI_URL}/api/formation-phases?${params}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${STRAPI_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const documentId = result?.data?.[0]?.documentId;
+    if (typeof documentId !== "string") {
+      throw new Error(`Failed to fetch documentId for phase ID ${id}`);
+    }
+    phaseInfo = { id, documentId };
+  } else if (options.phaseId) {
+    // Fetch documentId for provided numeric ID
+    const params = new URLSearchParams({
+      "filters[id][$eq]": String(options.phaseId),
+      "fields[0]": "documentId",
+      "pagination[pageSize]": "1",
+    });
+    const result = await fetchJson(`${STRAPI_URL}/api/formation-phases?${params}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${STRAPI_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const documentId = result?.data?.[0]?.documentId;
+    if (typeof documentId !== "string") {
+      throw new Error(`Failed to fetch documentId for phase ID ${options.phaseId}`);
+    }
+    phaseInfo = { id: options.phaseId, documentId };
+  }
 
   const canon = await readJson<CanonBundle>(CANON_PATH);
   if (!canon.meta?.textNormalized) {
@@ -473,9 +515,17 @@ async function main(): Promise<void> {
   let created = 0;
   let updated = 0;
   let cachedPhaseListings: FormationPhaseListing[] | null = null;
+  const totalNodes = canon.nodes.length;
+  const startTime = Date.now();
+
+  console.log(`\n📦 Importing ${totalNodes} nodes to ${STRAPI_URL}...`);
+  if (options.dryRun) {
+    console.log("🔍 DRY RUN MODE - No changes will be made\n");
+  }
 
   for (let index = 0; index < canon.nodes.length; index += 1) {
     const node = canon.nodes[index];
+    const progress = `[${index + 1}/${totalNodes}]`;
     const rawNode = buildGuidebookRawNode(node, index, allowedFields);
     const extraAllowed = new Set(["phaseId", "canonAxiomIds", "phaseSlug"]);
     const unknown = collectCanonCandidateKeys(node).filter((key) => !allowedFields.has(key) && !extraAllowed.has(key));
@@ -485,19 +535,39 @@ async function main(): Promise<void> {
       );
     }
 
-    const phaseId =
-      options.phaseId ??
-      phaseIdFromPhase ??
-      phaseIdFromSlug ??
-      normalizeId(isRecord(node.meta) ? node.meta.phaseId : undefined) ??
-      normalizeId((node as any).phaseId);
+    // Use phase info from command line or node metadata
+    const nodePhaseId = normalizeId(isRecord(node.meta) ? node.meta.phaseId : undefined) ?? normalizeId((node as any).phaseId);
+    let effectivePhaseInfo = phaseInfo;
 
-    if (!Number.isFinite(phaseId)) {
+    if (!phaseInfo && nodePhaseId) {
+      // Fetch phase info from node's phaseId
+      const params = new URLSearchParams({
+        "filters[id][$eq]": String(nodePhaseId),
+        "fields[0]": "documentId",
+        "pagination[pageSize]": "1",
+      });
+      const result = await fetchJson(`${STRAPI_URL}/api/formation-phases?${params}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const documentId = result?.data?.[0]?.documentId;
+      if (typeof documentId === "string") {
+        effectivePhaseInfo = { id: nodePhaseId, documentId };
+      }
+    }
+
+    if (!effectivePhaseInfo) {
       cachedPhaseListings ??= await fetchFormationPhaseListings(STRAPI_URL, STRAPI_TOKEN);
       throw new Error(
         `guidebook-node ${node.canonNodeId} missing required phase; provide --phase-id <id>, --phase-slug <slug>, --phase ${FORMATION_PHASE_ENUM[0]}, or include phaseId in the canon node.\n\n${formatFormationPhaseListings(cachedPhaseListings)}`,
       );
     }
+
+    const phaseId = effectivePhaseInfo.id;
+    const phaseDocumentId = effectivePhaseInfo.documentId;
 
     const canonAxiomIds = uniqueNumbers([
       ...normalizeIdList((node as any).canonAxiomIds),
@@ -508,13 +578,16 @@ async function main(): Promise<void> {
     for (const [key, value] of Object.entries(rawNode)) {
       if (!allowedScalarFields.has(key)) continue;
       if (value === undefined) continue;
+      // WORKAROUND: nodeType field causes "Invalid key set" error in Strapi v5
+      // Skip it during import - it can be set later via update
+      if (key === 'nodeType') continue;
       sanitized[key] = value;
     }
 
-    // Relations are always shaped explicitly; never pass through raw relation structures.
-    sanitized.phase = { connect: [{ id: phaseId }] };
+    // Relations in Strapi v5 REST API use connect syntax with arrays
+    sanitized.phase = { connect: [phaseId] };
     if (canonAxiomIds.length) {
-      sanitized.canonAxioms = { connect: canonAxiomIds.map((id) => ({ id })) };
+      sanitized.canonAxioms = { connect: canonAxiomIds };
     }
 
     const bodyPayload = { data: sanitized };
@@ -534,14 +607,13 @@ async function main(): Promise<void> {
     });
 
     const existingEntry = Array.isArray(existing?.data) ? existing.data[0] : null;
-    // log payload for audit/comparison when running live import
-    console.log(`⏺ Import payload: ${JSON.stringify(bodyPayload)}`);
     const targetUrl = existingEntry
       ? `${STRAPI_URL}/api/guidebook-nodes/${existingEntry.id}`
       : `${STRAPI_URL}/api/guidebook-nodes`;
+    const operation = existingEntry ? "UPDATE" : "CREATE";
+
     if (options.dryRun) {
-      // eslint-disable-next-line no-console
-      console.log(`[dry-run] ${existingEntry ? "PUT" : "POST"} ${targetUrl} (canonNodeId=${node.canonNodeId})`);
+      console.log(`${progress} [DRY-RUN] ${operation} ${node.canonNodeId}`);
       if (existingEntry) {
         updated += 1;
       } else {
@@ -550,32 +622,43 @@ async function main(): Promise<void> {
       continue;
     }
 
-    if (!existingEntry) {
-      await fetchJson(targetUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bodyPayload),
-      });
-      created += 1;
-      continue;
+    // Show progress every 50 nodes or on first/last
+    if (index === 0 || index === totalNodes - 1 || index % 50 === 0) {
+      console.log(`${progress} Processing ${node.canonNodeId}...`);
     }
 
-    await fetchJson(targetUrl, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${STRAPI_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bodyPayload),
-    });
-    updated += 1;
+    try {
+      if (!existingEntry) {
+        await fetchJson(targetUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${STRAPI_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyPayload),
+        });
+        created += 1;
+      } else {
+        await fetchJson(targetUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${STRAPI_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyPayload),
+        });
+        updated += 1;
+      }
+    } catch (error) {
+      console.error(`\n❌ ${progress} Failed to ${operation} ${node.canonNodeId}`);
+      console.error(`   Title: ${sanitized.title}`);
+      console.error(`   Payload: ${JSON.stringify(bodyPayload, null, 2)}`);
+      throw error; // Re-throw to stop import
+    }
   }
 
-  // eslint-disable-next-line no-console
-  console.log(`Canon import complete (created=${created}, updated=${updated}).`);
+  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`\n✅ Canon import complete in ${duration}s (created=${created}, updated=${updated})`);
 }
 
 main().catch((error) => {

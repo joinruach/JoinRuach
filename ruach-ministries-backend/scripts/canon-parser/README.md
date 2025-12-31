@@ -107,19 +107,162 @@ Once the bundle is normalized, use these TypeScript helpers to move it into Stra
 
 ### Strapi importer
 
-`canon-strapi-import.ts` posts each node into the `canon-nodes` collection.
+`canon-strapi-import.ts` posts each node into the `guidebook-nodes` collection.
+
+#### Quick Start
 
 ```bash
+IMPORT_MODE=true \
+STRAPI_URL=https://api.joinruach.org \
+STRAPI_TOKEN=your-token-here \
 pnpm exec tsx ruach-ministries-backend/scripts/canon-parser/canon-strapi-import.ts \
-  --input ruach-ministries-backend/scripts/canon-parser/out/ministry-of-healing.canon.clean.json
+  --input ruach-ministries-backend/scripts/canon-parser/out/ministry-of-healing.canon.clean.json \
+  --phase awakening
 ```
 
-Environment:
+#### Options
+
+* `--input, -i` - Path to canon JSON file (required)
+* `--phase` - Phase name: `awakening`, `separation`, `discernment`, `commission`, `stewardship`
+* `--phase-id` - Numeric phase ID (alternative to --phase)
+* `--phase-slug` - Phase slug (alternative to --phase)
+* `--dry-run` - Preview import without making changes
+
+#### Environment Variables
 
 * `STRAPI_URL` (default `http://localhost:1337`)
 * `STRAPI_TOKEN` (required, create/update scope)
+* `IMPORT_MODE` - Set to `true` to bypass custom lifecycle validators (recommended for bulk imports)
 
-The import script queries `canonNodeId` before writing so existing entries are updated (PUT) while new ones are created (POST). Add `--dry-run` to preview every operation without mutating Strapi.
+#### How It Works
+
+1. **Schema Validation** - Validates local and remote Strapi schemas match
+2. **Phase Resolution** - Resolves phase name/slug/ID to formation phase
+3. **Node Processing** - For each canon node:
+   - Extracts content, metadata, and relations
+   - Creates or updates guidebook node (based on `canonNodeId`)
+   - Associates with formation phase
+   - Links canon axioms (if provided in node metadata)
+
+#### Strapi v5 Relation Format
+
+The script uses Strapi v5's `connect` syntax with arrays:
+
+```json
+{
+  "data": {
+    "phase": { "connect": [2] },
+    "canonAxioms": { "connect": [1, 3, 5] }
+  }
+}
+```
+
+#### Known Issues & Workarounds
+
+**nodeType Field Validation Error**
+
+* **Issue:** Including `nodeType` during creation causes "Invalid key set" error in Strapi v5
+* **Workaround:** Script auto-excludes `nodeType` during creation. Field remains `null` and can be updated later via PUT if needed
+* **Status:** This is a Strapi v5 enumeration handling issue. Investigating root cause.
+
+**IMPORT_MODE Required for Bulk Imports**
+
+* **Issue:** Custom lifecycle hooks validate axiom hierarchy, which fails for book imports without axioms
+* **Workaround:** Set `IMPORT_MODE=true` to bypass validators during import
+* **Why:** Book content may not have canon axioms attached initially; axioms can be linked later via content review
+
+#### Troubleshooting
+
+**Error: "guidebook-node missing required phase"**
+
+* **Cause:** No phase specified via CLI or in canon node metadata
+* **Fix:** Add `--phase`, `--phase-id`, or `--phase-slug` argument
+
+**Error: "Invalid key set"**
+
+* **Cause:** Trying to set `nodeType` field during creation (Strapi v5 issue)
+* **Fix:** Script now auto-excludes this field. Update to latest version.
+
+**Error: "ValidationError: Axiom hierarchy validation failed"**
+
+* **Cause:** Custom lifecycle hooks rejecting nodes without proper axiom hierarchy
+* **Fix:** Set `IMPORT_MODE=true` to bypass validators during bulk import
+
+**Error: "STRAPI_TOKEN is required"**
+
+* **Cause:** Missing or empty `STRAPI_TOKEN` environment variable
+* **Fix:** Export token: `export STRAPI_TOKEN=your-token-here`
+
+#### Examples
+
+**Dry run to preview:**
+```bash
+STRAPI_URL=https://api.joinruach.org \
+STRAPI_TOKEN=your-token \
+pnpm exec tsx scripts/canon-parser/canon-strapi-import.ts \
+  --input scripts/canon-parser/out/ministry-of-healing.canon.clean.json \
+  --phase awakening \
+  --dry-run
+```
+
+**Import with phase ID:**
+```bash
+IMPORT_MODE=true \
+STRAPI_URL=https://api.joinruach.org \
+STRAPI_TOKEN=your-token \
+pnpm exec tsx scripts/canon-parser/canon-strapi-import.ts \
+  --input scripts/canon-parser/out/steps-to-christ.canon.clean.json \
+  --phase-id 2
+```
+
+**Local development:**
+```bash
+IMPORT_MODE=true \
+pnpm exec tsx scripts/canon-parser/canon-strapi-import.ts \
+  --input scripts/canon-parser/out/book.canon.clean.json \
+  --phase awakening
+```
+
+The import script queries `canonNodeId` before writing so existing entries are updated (PUT) while new ones are created (POST).
+
+#### Post-Import: Update nodeType
+
+Since `nodeType` is excluded during import, you can update it after import:
+
+```bash
+STRAPI_TOKEN=your-token \
+pnpm exec tsx scripts/canon-parser/post-import-update-nodetype.ts \
+  --phase awakening \
+  --node-type Formation
+```
+
+This bulk updates all nodes in the phase that have `null` nodeType.
+
+#### Configuration File (Optional)
+
+Create `.importrc.json` in `scripts/canon-parser/` for repeated imports:
+
+```json
+{
+  "strapi": {
+    "url": "https://api.joinruach.org",
+    "tokenEnvVar": "STRAPI_TOKEN"
+  },
+  "defaults": {
+    "phase": "awakening",
+    "importMode": true
+  },
+  "books": {
+    "ministry-of-healing": {
+      "input": "scripts/canon-parser/out/ministry-of-healing.canon.clean.json",
+      "phase": "awakening",
+      "nodeType": "Formation"
+    }
+  }
+}
+```
+
+Copy `.importrc.example.json` to get started.
 
 ### Vector chunk exporter
 

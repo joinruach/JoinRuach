@@ -1,0 +1,93 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_profiles",
+  "info": {
+    "singularName": "course-profile",
+    "pluralName": "course-profiles",
+    "displayName": "Course Profile",
+    "description": "Semantic, formation, and positioning metadata for a course. 1:1 with Course."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "course": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course.course",
+      "inversedBy": "profile",
+      "required": true
+    },
+
+    "subtitle": {
+      "type": "string"
+    },
+    "format": {
+      "type": "string"
+    },
+
+    "visibility": {
+      "type": "enumeration",
+      "enum": ["public", "gated", "cohort-only", "private"],
+      "default": "public"
+    },
+
+    "pricingType": {
+      "type": "enumeration",
+      "enum": ["free", "paid-core", "paid-flagship", "paid-specialty"],
+      "default": "free"
+    },
+
+    "funnelRole": {
+      "type": "string"
+    },
+
+    "authorityLevel": {
+      "type": "enumeration",
+      "enum": ["introductory", "pastoral", "apostolic", "prophetic"]
+    },
+
+    "commitmentLevel": {
+      "type": "enumeration",
+      "enum": ["low", "medium", "high"]
+    },
+
+    "purpose": {
+      "type": "richtext"
+    },
+    "idealParticipant": {
+      "type": "richtext"
+    },
+    "notFor": {
+      "type": "richtext"
+    },
+    "promisedOutcome": {
+      "type": "richtext"
+    },
+    "scripturalFoundation": {
+      "type": "richtext"
+    },
+    "liesConfronted": {
+      "type": "richtext"
+    },
+    "formationOutcomes": {
+      "type": "richtext"
+    },
+    "practiceComponents": {
+      "type": "richtext"
+    },
+    "distinctiveFeature": {
+      "type": "richtext"
+    },
+
+    "completionPath": {
+      "type": "string"
+    },
+    "prerequisites": {
+      "type": "string"
+    },
+    "communityRules": {
+      "type": "richtext"
+    }
+  }
+}

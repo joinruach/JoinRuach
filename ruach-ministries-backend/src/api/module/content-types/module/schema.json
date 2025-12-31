@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "modules",
+  "info": {
+    "singularName": "module",
+    "pluralName": "modules",
+    "displayName": "Module",
+    "description": "Ordered structural unit within a course."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "moduleId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+
+    "name": {
+      "type": "string",
+      "required": true
+    },
+
+    "order": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+
+    "description": {
+      "type": "richtext"
+    },
+
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "modules",
+      "required": true
+    },
+
+    "lessons": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lesson.lesson",
+      "mappedBy": "module"
+    }
+  }
+}

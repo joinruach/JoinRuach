@@ -47,6 +47,32 @@ jobs:
         run: pnpm typecheck
         continue-on-error: false
 
+  schema-guard:
+    name: Contract ↔ Schema Guard
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Contract ↔ Schema Guard
+        run: pnpm tsx scripts/ci/schema-guard.ts
+
   # Job 2: Test
   test:
     name: Run Tests

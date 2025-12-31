@@ -24,6 +24,12 @@
       "type": "string",
       "unique": true
     },
+    "profile": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-profile.course-profile",
+      "mappedBy": "course"
+    },
     "excerpt": {
       "type": "text"
     },
@@ -95,8 +101,9 @@
     },
     "modules": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::course.course"
+      "relation": "oneToMany",
+      "target": "api::module.module",
+      "mappedBy": "course"
     },
     "ctaLabel": {
       "type": "string"
