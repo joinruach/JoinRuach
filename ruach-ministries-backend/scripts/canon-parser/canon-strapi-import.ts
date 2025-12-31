@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 async function readJson<T>(file: string): Promise<T> {
   const text = await fs.readFile(file, "utf-8");
@@ -9,6 +10,17 @@ async function readJson<T>(file: string): Promise<T> {
 
 type CanonNode = {
   canonNodeId: string;
+  content: {
+    text: string;
+    [key: string]: unknown;
+  };
+  location?: {
+    chapter?: { title?: string };
+    order?: number;
+    [key: string]: unknown;
+  };
+  checksum?: string;
+  meta?: Record<string, string | undefined>;
   [key: string]: unknown;
 };
 
@@ -17,10 +29,80 @@ type CanonBundle = {
   nodes: CanonNode[];
 };
 
+type GuidebookPayload = {
+  nodeId: string;
+  title: string;
+  slug: string;
+  content: string;
+  orderInPhase: number;
+  checksum: string;
+  nodeType: "Awakening" | "Healing" | "Warfare" | "Formation" | "Commissioning";
+  formationScope: "Individual" | "Household" | "Ecclesia" | "Network";
+  checkpointType: "None" | "Text Response" | "Voice Response" | "Text & Voice";
+  syncedToStrapi: boolean;
+  syncLock: boolean;
+  status?: "Draft" | "Review" | "Ready" | "Synced" | "Published" | "Deprecated" | "Needs Revision";
+};
+
 type Options = {
   input: string;
   dryRun: boolean;
 };
+
+const NODE_TYPE_ENUM = ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"] as const;
+const FORMATION_SCOPE_ENUM = ["Individual", "Household", "Ecclesia", "Network"] as const;
+const CHECKPOINT_TYPE_ENUM = ["None", "Text Response", "Voice Response", "Text & Voice"] as const;
+
+function normalizeNodeType(input?: string): GuidebookPayload["nodeType"] {
+  if (NODE_TYPE_ENUM.includes(input as any)) {
+    return input as GuidebookPayload["nodeType"];
+  }
+  return "Formation";
+}
+
+function normalizeFormationScope(input?: string): GuidebookPayload["formationScope"] {
+  if (FORMATION_SCOPE_ENUM.includes(input as any)) {
+    return input as GuidebookPayload["formationScope"];
+  }
+  return "Individual";
+}
+
+function normalizeCheckpointType(input?: string): GuidebookPayload["checkpointType"] {
+  if (CHECKPOINT_TYPE_ENUM.includes(input as any)) {
+    return input as GuidebookPayload["checkpointType"];
+  }
+  return "None";
+}
+
+function computeChecksum(node: CanonNode): string {
+  if (node.checksum) return node.checksum;
+  return createHash("sha256").update(node.content.text).digest("hex");
+}
+
+function slugifyNode(nodeId: string): string {
+  return nodeId.replace(/[:/]/g, "-");
+}
+
+function canonToGuidebookNode(node: CanonNode, index: number): GuidebookPayload {
+  const title =
+    node.location?.chapter?.title?.trim() ||
+    `Canon node ${index + 1}`;
+
+  return {
+    nodeId: node.canonNodeId,
+    title,
+    slug: slugifyNode(node.canonNodeId),
+    content: node.content.text,
+    orderInPhase: node.location?.order ?? index + 1,
+    checksum: computeChecksum(node),
+    nodeType: normalizeNodeType(node.meta?.nodeType),
+    formationScope: normalizeFormationScope(node.meta?.formationScope),
+    checkpointType: normalizeCheckpointType(node.meta?.checkpointType),
+    syncedToStrapi: true,
+    syncLock: false,
+    status: "Synced",
+  };
+}
 
 function parseArgs(): Options {
   const args = process.argv.slice(2);
@@ -99,7 +181,9 @@ async function main(): Promise<void> {
   let created = 0;
   let updated = 0;
 
-  for (const node of canon.nodes) {
+  for (let index = 0; index < canon.nodes.length; index += 1) {
+    const node = canon.nodes[index];
+    const payload = canonToGuidebookNode(node, index);
     const filters = new URLSearchParams({
       "filters[canonNodeId][$eq]": node.canonNodeId,
       "fields[0]": "id",
@@ -116,7 +200,7 @@ async function main(): Promise<void> {
     });
 
     const existingEntry = Array.isArray(existing?.data) ? existing.data[0] : null;
-    const payload = { data: node };
+    const bodyPayload = { data: payload };
     const targetUrl = existingEntry
       ? `${STRAPI_URL}/api/canon-nodes/${existingEntry.id}`
       : `${STRAPI_URL}/api/canon-nodes`;
@@ -139,7 +223,7 @@ async function main(): Promise<void> {
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(bodyPayload),
     });
 
     if (existingEntry) {
