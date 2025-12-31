@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "exports": "./src/index.ts",
   "scripts": {
-    "test": "node --loader ts-node/esm ./src/agentBoundary.test.ts"
+    "test": "tsx ./src/agentBoundary.test.ts"
   },
   "dependencies": {
     "@ruach/guidebook-parser": "workspace:*"

@@ -15,8 +15,14 @@ function run() {
   assert(context.includes('IMMUTABLE SECTIONS'));
   assert(context.includes('CONTEXTUAL SECTIONS'));
   assert(context.includes('Rules:'));
-  assert(context.includes('Immutable Authority'));
-  assert(context.includes('Contextual / Adaptable'));
+  assert(context.includes('- Quote verbatim.'));
+  assert(context.includes('- You may summarize or adapt.'));
+  assert(context.includes('• Scripture Anchors (authoritative)'));
+  assert(context.includes('• Operational Protocol (illustrative)'));
+  assert(
+    context.includes('REFUSAL TEMPLATE'),
+    'Context should include refusal guidance for immutable sections.'
+  );
   console.log('Guidebook agent boundary test passed');
 }
 

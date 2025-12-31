@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { renderMarkdown } from './renderMarkdown';
 
 const sampleNode = {
@@ -13,9 +14,10 @@ const sampleNode = {
   }
 };
 
-test('renders identity header plus sections', () => {
-  const output = renderMarkdown(sampleNode as any);
-  expect(output).toContain('Immutable Authority');
-  expect(output).toContain('Contextual / Adaptable');
-  expect(output).toContain('Psalm 1:1');
-});
+const output = renderMarkdown(sampleNode as any);
+
+assert.ok(output.includes('Immutable Authority'));
+assert.ok(output.includes('Contextual / Adaptable'));
+assert.ok(output.includes('Psalm 1:1'));
+
+console.log('[guidebook-renderer] renderMarkdown tests passed.');

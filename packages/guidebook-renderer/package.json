@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "exports": "./src/index.ts",
   "scripts": {
-    "test": "node --loader ts-node/esm ./src/renderMarkdown.test.ts",
+    "test": "tsx ./src/renderMarkdown.test.ts",
     "render": "tsx scripts/render-node.ts"
   },
   "dependencies": {
