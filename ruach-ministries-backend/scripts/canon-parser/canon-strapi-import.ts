@@ -45,11 +45,13 @@ type Options = {
   dryRun: boolean;
   phaseId?: number;
   phaseSlug?: string;
+  phase?: "awakening" | "separation" | "discernment" | "commission" | "stewardship";
 };
 
 const NODE_TYPE_ENUM = ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"] as const;
 const FORMATION_SCOPE_ENUM = ["Individual", "Household", "Ecclesia", "Network"] as const;
 const CHECKPOINT_TYPE_ENUM = ["None", "Text Response", "Voice Response", "Text & Voice"] as const;
+const FORMATION_PHASE_ENUM = ["awakening", "separation", "discernment", "commission", "stewardship"] as const;
 const GUIDEBOOK_SCHEMA_UID = "api::guidebook-node.guidebook-node";
 const BACKEND_ROOT = path.resolve(__dirname, "..", "..");
 const GUIDEBOOK_SCHEMA_PATH = path.resolve(
@@ -127,6 +129,12 @@ function parseArgs(): Options {
           throw new Error("--phase-slug must be a non-empty string.");
         }
         break;
+      case "--phase":
+        options.phase = (args[++i] ?? "").trim() as Options["phase"];
+        if (!FORMATION_PHASE_ENUM.includes(options.phase as any)) {
+          throw new Error(`--phase must be one of: ${FORMATION_PHASE_ENUM.join(", ")}.`);
+        }
+        break;
       case "--dry-run":
         options.dryRun = true;
         break;
@@ -151,7 +159,7 @@ function printUsage(): void {
   // eslint-disable-next-line no-console
   console.log(`
 Usage:
-  tsx ${script} --input path/to/ministry-of-healing.canon.clean.json [--phase-id 123|--phase-slug slug] [--dry-run]
+  tsx ${script} --input path/to/ministry-of-healing.canon.clean.json [--phase-id 123|--phase-slug slug|--phase awakening] [--dry-run]
 
 Env:
   STRAPI_URL (default http://localhost:1337)
@@ -273,6 +281,77 @@ async function resolvePhaseId(strapiUrl: string, token: string, phaseSlug: strin
   return id;
 }
 
+async function resolvePhaseIdByPhase(strapiUrl: string, token: string, phase: Options["phase"]): Promise<number> {
+  const params = new URLSearchParams({
+    "filters[phase][$eq]": phase ?? "",
+    "fields[0]": "id",
+    "pagination[pageSize]": "2",
+  });
+  const result = await fetchJson(`${strapiUrl}/api/formation-phases?${params}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!Array.isArray(result?.data) || result.data.length === 0) {
+    throw new Error(`No formation phase found for phase "${phase}".`);
+  }
+  if (result.data.length > 1) {
+    throw new Error(`Multiple formation phases found for phase "${phase}".`);
+  }
+  const id = result.data[0]?.id;
+  if (typeof id !== "number") {
+    throw new Error(`Malformed formation phase response for phase "${phase}".`);
+  }
+  return id;
+}
+
+type FormationPhaseListing = { id: number; phase?: string; slug?: string; phaseName?: string };
+
+async function fetchFormationPhaseListings(strapiUrl: string, token: string): Promise<FormationPhaseListing[]> {
+  const params = new URLSearchParams({
+    "pagination[pageSize]": "100",
+    "fields[0]": "phase",
+    "fields[1]": "slug",
+    "fields[2]": "phaseName",
+  });
+  const result = await fetchJson(`${strapiUrl}/api/formation-phases?${params}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!Array.isArray(result?.data)) return [];
+  return result.data
+    .map((entry: any) => ({
+      id: entry?.id,
+      phase: entry?.attributes?.phase,
+      slug: entry?.attributes?.slug,
+      phaseName: entry?.attributes?.phaseName,
+    }))
+    .filter((entry: any) => typeof entry.id === "number");
+}
+
+function formatFormationPhaseListings(list: FormationPhaseListing[]): string {
+  const lines = list
+    .slice()
+    .sort((a, b) => String(a.phase ?? "").localeCompare(String(b.phase ?? "")))
+    .map((p) => {
+      const bits = [
+        p.phase ? `phase=${p.phase}` : null,
+        p.slug ? `slug=${p.slug}` : null,
+        p.phaseName ? `name=${p.phaseName}` : null,
+        `id=${p.id}`,
+      ].filter(Boolean);
+      return `- ${bits.join(" ")}`;
+    });
+  return lines.length ? `Available formation phases:\n${lines.join("\n")}` : "No formation phases were returned by Strapi.";
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
@@ -382,6 +461,9 @@ async function main(): Promise<void> {
   const phaseIdFromSlug = options.phaseSlug
     ? await resolvePhaseId(STRAPI_URL, STRAPI_TOKEN, options.phaseSlug)
     : undefined;
+  const phaseIdFromPhase = options.phase
+    ? await resolvePhaseIdByPhase(STRAPI_URL, STRAPI_TOKEN, options.phase)
+    : undefined;
 
   const canon = await readJson<CanonBundle>(CANON_PATH);
   if (!canon.meta?.textNormalized) {
@@ -390,6 +472,7 @@ async function main(): Promise<void> {
 
   let created = 0;
   let updated = 0;
+  let cachedPhaseListings: FormationPhaseListing[] | null = null;
 
   for (let index = 0; index < canon.nodes.length; index += 1) {
     const node = canon.nodes[index];
@@ -404,13 +487,15 @@ async function main(): Promise<void> {
 
     const phaseId =
       options.phaseId ??
+      phaseIdFromPhase ??
       phaseIdFromSlug ??
       normalizeId(isRecord(node.meta) ? node.meta.phaseId : undefined) ??
       normalizeId((node as any).phaseId);
 
     if (!Number.isFinite(phaseId)) {
+      cachedPhaseListings ??= await fetchFormationPhaseListings(STRAPI_URL, STRAPI_TOKEN);
       throw new Error(
-        `guidebook-node ${node.canonNodeId} missing required phase; provide --phase-id <id>, --phase-slug <slug>, or include phaseId in the canon node.`,
+        `guidebook-node ${node.canonNodeId} missing required phase; provide --phase-id <id>, --phase-slug <slug>, --phase ${FORMATION_PHASE_ENUM[0]}, or include phaseId in the canon node.\n\n${formatFormationPhaseListings(cachedPhaseListings)}`,
       );
     }
 

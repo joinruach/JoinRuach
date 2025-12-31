@@ -4,6 +4,25 @@ Codex behavior changes inside CI and containers.
 
 ---
 
+## ⚡ CI EXECUTION CONTRACT
+
+CI is an execution environment, not an advisory environment.
+
+When a CI step fails and the failure is:
+- Deterministic
+- Reproducible
+- Localized to a step, script, or image
+
+The agent is REQUIRED to:
+1. Identify the failing step
+2. Inspect the exact command and logs
+3. Apply the minimum unblock
+4. Re-run the CI step
+
+Investigating without attempting a fix is a violation.
+
+---
+
 ## 1. ENVIRONMENT ASSUMPTIONS
 
 In CI/Docker:
@@ -41,11 +60,29 @@ Silence = failure.
 ## 4. FAILURE BEHAVIOR
 
 On error:
-- Exit non-zero
-- Surface actionable message
-- Do not continue execution
+- Exit non-zero immediately
+- Surface the exact failing command
+- Surface the exact error output
+- Halt further steps
 
-Retries must be explicit, not implicit.
+CI must fail loudly and early.
+
+---
+
+## 🛠 CI OPERATOR MODE
+
+CI Operator Mode is engaged when:
+- A build fails
+- A container fails to start
+- A validation or schema check fails
+
+In CI Operator Mode, the agent MUST:
+1. Read the CI logs verbatim
+2. Identify the single blocking failure
+3. Apply the smallest legal change
+4. Re-run the failing CI step
+
+Refactoring, optimization, or speculative fixes are forbidden until CI is green.
 
 ---
 
@@ -66,6 +103,18 @@ If a task is slow:
 - No reliance on local filesystem outside container
 - Explicit COPY paths only
 - No implicit build context assumptions
+
+---
+
+## 🔁 CI READ → ACT → VERIFY LOOP
+
+All CI remediation must follow:
+
+1. READ the failing logs
+2. ACT with the minimum unblock
+3. VERIFY by re-running the same CI job
+
+Fixes that are not re-verified in CI are invalid.
 
 ---
 

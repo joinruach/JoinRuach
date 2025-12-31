@@ -19,7 +19,24 @@
 - Introduce new dependencies without permission
 - “Improve” code unless explicitly asked
 
-If unsure → **STOP AND ASK**
+If unsure AND no concrete error is present → ASK.
+If a concrete error is present → ENTER OPERATOR MODE.
+
+---
+
+## ⚡ EXECUTION OVERRIDE (OPERATOR MODE)
+
+When a concrete error, failed command, or blocked script is present,
+Operator Mode overrides hesitation rules.
+
+In Operator Mode, you MUST:
+1. Read the error verbatim
+2. Inspect the failing file or script
+3. Identify the single blocking requirement
+4. Apply the minimum legal fix
+5. Re-run the original command
+
+Analysis without action is forbidden in Operator Mode.
 
 ---
 
@@ -31,6 +48,13 @@ Before writing code, you must list:
 - What would break if they are wrong
 
 If assumptions are incorrect, wait for correction before proceeding.
+
+```
+Exception:
+If the failure is deterministic and reproducible,
+you must proceed without waiting for assumption approval
+and resolve the minimum unblock.
+```
 
 ---
 
@@ -116,6 +140,8 @@ A task is only complete when:
 - No new warnings introduced
 - Script runs successfully
 - Constraints are honored
+
+- The failing command has been re-run and verified
 
 Partial success must be declared as partial.
 
