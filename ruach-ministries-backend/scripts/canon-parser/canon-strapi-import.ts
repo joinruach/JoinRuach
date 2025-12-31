@@ -56,7 +56,7 @@ function parseArgs(): Options {
 }
 
 function printUsage(): void {
-  const script = path.relative(process.cwd(), new URL(import.meta.url).pathname);
+  const script = path.relative(process.cwd(), process.argv[1] ?? "canon-strapi-import.ts");
   // eslint-disable-next-line no-console
   console.log(`
 Usage:
@@ -68,13 +68,14 @@ Env:
 `);
 }
 
-async function fetchJson(url: string, init: RequestInit) {
+async function fetchJson(url: string, init: RequestInit): Promise<any> {
   const res = await fetch(url, init);
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Fetch failed (${res.status}): ${url}\n${body}`);
   }
-  return res.json();
+  const json = await res.json();
+  return json;
 }
 
 async function main(): Promise<void> {

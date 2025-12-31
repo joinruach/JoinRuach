@@ -84,7 +84,7 @@ function parseArgs(): Options {
 }
 
 function printUsage(): void {
-  const script = path.relative(process.cwd(), new URL(import.meta.url).pathname);
+  const script = path.relative(process.cwd(), process.argv[1] ?? "canon-to-vectors.ts");
   // eslint-disable-next-line no-console
   console.log(`
 Usage:

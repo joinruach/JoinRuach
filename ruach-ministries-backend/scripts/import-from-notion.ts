@@ -132,6 +132,32 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return proto === Object.prototype || proto === null;
 }
 
+type StrapiEntityLike = {
+  id?: number;
+  attributes?: Record<string, any>;
+  checksum?: string;
+  [key: string]: any;
+};
+
+function unwrapStrapiEntity(entity: unknown): StrapiEntityLike | null {
+  if (!entity || typeof entity !== 'object') return null;
+  const record = entity as StrapiEntityLike;
+  const id = typeof record.id === 'number' ? record.id : undefined;
+  const attributes =
+    record.attributes && typeof record.attributes === 'object' ? record.attributes : undefined;
+
+  // Normalize v4/v5 shapes to `{ id, ...attributes }` where possible.
+  if (id !== undefined && attributes) {
+    return { id, ...attributes, attributes };
+  }
+
+  if (id !== undefined) {
+    return record;
+  }
+
+  return null;
+}
+
 function normalizeForStrapi(value: unknown): unknown {
   if (value instanceof Set) {
     return Array.from(value, (entry) => normalizeForStrapi(entry));
@@ -169,6 +195,19 @@ function buildStrapiRequestBody(data: unknown): string {
   return JSON.stringify({ data: normalized });
 }
 
+function getStrapiChecksum(entity: unknown): string | undefined {
+  const unwrapped = unwrapStrapiEntity(entity);
+  const checksum = unwrapped?.checksum ?? unwrapped?.attributes?.checksum;
+  return typeof checksum === 'string' && checksum.length > 0 ? checksum : undefined;
+}
+
+function getStrapiId(entity: unknown): number | undefined {
+  const unwrapped = unwrapStrapiEntity(entity);
+  return typeof unwrapped?.id === 'number' ? unwrapped.id : undefined;
+}
+
+const upsertCache = new Map<string, { id: number; checksum?: string }>();
+
 /**
  * Create or update a Strapi record
  */
@@ -180,6 +219,7 @@ async function upsertStrapiRecord(
 ): Promise<'created' | 'updated' | 'skipped' | 'error'> {
   const recordLabel =
     data.title || data.name || data.phaseName || data.slug || data.phaseId || 'record';
+  const cacheKey = `${contentType}:${notionPageId}`;
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would upsert ${contentType}:`, recordLabel);
@@ -188,21 +228,24 @@ async function upsertStrapiRecord(
 
   try {
     // Check if record exists
-    const existing = await fetchByNotionId(contentType, notionPageId);
+    const cached = upsertCache.get(cacheKey);
+    const existing = cached ? { id: cached.id, checksum: cached.checksum } : await fetchByNotionId(contentType, notionPageId);
+    const existingId = getStrapiId(existing);
+    const existingChecksum = getStrapiChecksum(existing);
 
-    if (existing) {
+    if (existingId) {
       // Check if update needed (compare checksums)
-      if (existing.checksum === data.checksum) {
+      if (existingChecksum && existingChecksum === data.checksum) {
         console.log(`  ⏭️  Skipped (unchanged): ${recordLabel}`);
         return 'skipped';
       }
 
       // Update existing record
       console.log(
-        `\n🔍 Payload for PUT /api/${contentType}/${existing.id}:`,
+        `\n🔍 Payload for PUT /api/${contentType}/${existingId}:`,
         buildStrapiRequestBody(data)
       );
-      const response = await fetch(`${STRAPI_URL}/api/${contentType}/${existing.id}`, {
+      const response = await fetch(`${STRAPI_URL}/api/${contentType}/${existingId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,10 +256,11 @@ async function upsertStrapiRecord(
 
       if (response.ok) {
         console.log(`  🔄 Updated: ${recordLabel}`);
+        upsertCache.set(cacheKey, { id: existingId, checksum: data.checksum });
         return 'updated';
       } else {
         const error = await response.text();
-        console.error(`  ❌ Update failed: ${error}`);
+        console.error(`  ❌ Update failed (${response.status}): ${error}`);
         return 'error';
       }
     } else {
@@ -233,10 +277,19 @@ async function upsertStrapiRecord(
 
       if (response.ok) {
         console.log(`  ✅ Created: ${recordLabel}`);
+        try {
+          const createdPayload: any = await response.json();
+          const createdId = getStrapiId(createdPayload?.data ?? createdPayload);
+          if (createdId) {
+            upsertCache.set(cacheKey, { id: createdId, checksum: data.checksum });
+          }
+        } catch {
+          // ignore JSON parse issues; creation still succeeded
+        }
         return 'created';
       } else {
         const error = await response.text();
-        console.error(`  ❌ Creation failed: ${error}`);
+        console.error(`  ❌ Creation failed (${response.status}): ${error}`);
         return 'error';
       }
     }

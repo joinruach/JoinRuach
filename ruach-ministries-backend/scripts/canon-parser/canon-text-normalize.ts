@@ -102,6 +102,7 @@ function parseArgs(): ParserOptions {
     input: "",
     apply: false,
     diff: false,
+    failOnDiff: false,
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -148,7 +149,7 @@ function parseArgs(): ParserOptions {
 }
 
 function printUsage(): void {
-  const script = path.relative(process.cwd(), new URL(import.meta.url).pathname);
+  const script = path.relative(process.cwd(), process.argv[1] ?? "canon-text-normalize.ts");
   // eslint-disable-next-line no-console
   console.log(`
 Usage:
