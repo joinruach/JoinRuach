@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "protocol_phases",
+  "info": {
+    "singularName": "protocol-phase",
+    "pluralName": "protocol-phases",
+    "displayName": "Protocol Phase",
+    "description": "An ordered phase within a formation protocol."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "order": {
+      "type": "integer",
+      "required": true
+    },
+    "lane": {
+      "type": "enumeration",
+      "enum": ["boot", "daily", "commission"]
+    },
+    "cadence": {
+      "type": "enumeration",
+      "enum": ["once", "daily", "weekly", "seasonal", "as_needed"],
+      "default": "as_needed"
+    },
+    "aimMd": {
+      "type": "richtext"
+    },
+    "summaryMd": {
+      "type": "richtext"
+    },
+    "scriptureAnchors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.scripture-anchor"
+    },
+    "practices": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.practice"
+    },
+    "signsOfAlignment": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.labeled-note"
+    },
+    "commonTraps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.labeled-note"
+    },
+    "prayerMd": {
+      "type": "richtext"
+    },
+    "declarationMd": {
+      "type": "richtext"
+    },
+    "protocol": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-protocol.formation-protocol",
+      "inversedBy": "phases"
+    }
+  }
+}
+

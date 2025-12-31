@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_protocol_usage_modes",
+  "info": {
+    "displayName": "Usage Mode",
+    "icon": "rocket",
+    "description": "How to run a protocol (personal/weekly/etc)."
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "durationMinutes": {
+      "type": "integer"
+    },
+    "steps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.usage-step"
+    },
+    "notesMd": {
+      "type": "richtext"
+    }
+  }
+}
+

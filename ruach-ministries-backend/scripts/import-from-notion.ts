@@ -106,8 +106,9 @@ async function fetchByNotionId(
   notionPageId: string
 ): Promise<any | null> {
   try {
+    const encodedNotionPageId = encodeURIComponent(notionPageId);
     const response = await fetch(
-      `${STRAPI_URL}/api/${contentType}?filters[notionPageId][$eq]=${notionPageId}`,
+      `${STRAPI_URL}/api/${contentType}?filters[notionPageId][$eq]=${encodedNotionPageId}`,
       {
         headers: {
           'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
@@ -123,6 +124,48 @@ async function fetchByNotionId(
     console.error(`Error fetching ${contentType} by Notion ID:`, error);
     return null;
   }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object') return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function normalizeForStrapi(value: unknown): unknown {
+  if (value instanceof Set) {
+    return Array.from(value, (entry) => normalizeForStrapi(entry));
+  }
+
+  if (value instanceof Map) {
+    return Object.fromEntries(
+      Array.from(value.entries(), ([key, entry]) => [String(key), normalizeForStrapi(entry)])
+    );
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => normalizeForStrapi(entry));
+  }
+
+  if (isPlainObject(value)) {
+    const output: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      // Strapi rejects unknown root keys and some nested operator objects when sent via REST.
+      // If a payload accidentally contains an operator-style object, normalize it away.
+      if (key === 'set' || key === 'connect' || key === 'disconnect') {
+        continue;
+      }
+      output[key] = normalizeForStrapi(entry);
+    }
+    return output;
+  }
+
+  return value;
+}
+
+function buildStrapiRequestBody(data: unknown): string {
+  const normalized = normalizeForStrapi(data);
+  return JSON.stringify({ data: normalized });
 }
 
 /**
@@ -161,7 +204,7 @@ async function upsertStrapiRecord(
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
         },
-        body: JSON.stringify({ data }),
+        body: buildStrapiRequestBody(data),
       });
 
       if (response.ok) {
@@ -181,7 +224,7 @@ async function upsertStrapiRecord(
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
         },
-        body: JSON.stringify({ data }),
+        body: buildStrapiRequestBody(data),
       });
 
       if (response.ok) {

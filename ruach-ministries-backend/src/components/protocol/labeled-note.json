@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_protocol_labeled_notes",
+  "info": {
+    "displayName": "Labeled Note",
+    "icon": "bulletList",
+    "description": "Label + markdown body for signs/traps/etc."
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "bodyMd": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}
+

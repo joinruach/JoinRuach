@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_protocol_scripture_anchors",
+  "info": {
+    "displayName": "Scripture Anchor",
+    "icon": "book",
+    "description": "A scripture reference used as an anchor for a protocol step."
+  },
+  "options": {},
+  "attributes": {
+    "reference": {
+      "type": "string",
+      "required": true
+    },
+    "translation": {
+      "type": "enumeration",
+      "enum": ["ESV", "Yah Scriptures", "KJV", "NKJV", "NASB", "NIV", "Other"],
+      "default": "ESV"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}
+

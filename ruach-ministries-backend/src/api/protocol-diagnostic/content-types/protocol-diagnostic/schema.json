@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "protocol_diagnostics",
+  "info": {
+    "singularName": "protocol-diagnostic",
+    "pluralName": "protocol-diagnostics",
+    "displayName": "Protocol Diagnostic",
+    "description": "A quick diagnostic that maps a condition to a recommended protocol phase."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "diagnosticKey": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "order": {
+      "type": "integer",
+      "required": true
+    },
+    "trigger": {
+      "type": "string",
+      "required": true
+    },
+    "descriptionMd": {
+      "type": "richtext"
+    },
+    "recommendedPhaseSlug": {
+      "type": "string"
+    },
+    "recommendedPhase": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::protocol-phase.protocol-phase"
+    },
+    "protocol": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-protocol.formation-protocol",
+      "inversedBy": "diagnostics"
+    }
+  }
+}

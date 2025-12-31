@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_protocol_practices",
+  "info": {
+    "displayName": "Practice",
+    "icon": "check",
+    "description": "A practice/action block for a protocol step."
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "frequency": {
+      "type": "enumeration",
+      "enum": ["once", "daily", "weekly", "seasonal", "as_needed"],
+      "default": "as_needed"
+    },
+    "durationMinutes": {
+      "type": "integer"
+    },
+    "stepsMd": {
+      "type": "richtext"
+    }
+  }
+}
+

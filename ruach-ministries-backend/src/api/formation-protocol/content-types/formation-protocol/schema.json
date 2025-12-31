@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "formation_protocols",
+  "info": {
+    "singularName": "formation-protocol",
+    "pluralName": "formation-protocols",
+    "displayName": "Formation Protocol",
+    "description": "A repeatable formation loop with ordered phases and diagnostics."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "protocolId": {
+      "type": "string",
+      "unique": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "version": {
+      "type": "string",
+      "default": "v1"
+    },
+    "summaryMd": {
+      "type": "richtext"
+    },
+    "declarationMd": {
+      "type": "richtext"
+    },
+    "usageModes": {
+      "type": "component",
+      "repeatable": true,
+      "component": "protocol.usage-mode"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "phases": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::protocol-phase.protocol-phase",
+      "mappedBy": "protocol"
+    },
+    "diagnostics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::protocol-diagnostic.protocol-diagnostic",
+      "mappedBy": "protocol"
+    }
+  }
+}
+

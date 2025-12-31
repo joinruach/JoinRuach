@@ -1,0 +1,379 @@
+{
+  "protocol": {
+    "protocolId": "ruach-remnant-8phase-v1",
+    "title": "8-Phase Remnant Protocol",
+    "version": "v1",
+    "summaryMd": "A repeatable formation loop for separating from Babylon, anchoring in truth, moving in obedience, establishing territory, guarding what’s planted, and shining with faithful witness.",
+    "declarationMd": "Father, I listen and obey. I confirm by Your Word, cut what is false, anchor deep in truth, move with purpose, establish what You assign, guard what You plant, and shine—reflecting Jesus. Amen.",
+    "usageModes": [
+      {
+        "name": "Personal Daily (10–20 minutes)",
+        "durationMinutes": 15,
+        "steps": [
+          {
+            "title": "Listen",
+            "frequency": "daily",
+            "stepsMd": "2–5 minutes silence. Ask: “What are You saying?” Write one sentence."
+          },
+          {
+            "title": "Confirm",
+            "frequency": "daily",
+            "stepsMd": "Test that sentence against Scripture and fruit."
+          },
+          {
+            "title": "Anchor",
+            "frequency": "daily",
+            "stepsMd": "Read one passage; memorize one line."
+          },
+          {
+            "title": "Move",
+            "frequency": "daily",
+            "stepsMd": "Execute one obedience step today."
+          }
+        ],
+        "notesMd": "Use as a quick loop to stay clean, focused, and obedient."
+      },
+      {
+        "name": "House-Church / Team Weekly (60–90 minutes)",
+        "durationMinutes": 75,
+        "steps": [
+          { "title": "Listen", "frequency": "weekly", "stepsMd": "2 minutes silence; share what you sensed." },
+          { "title": "Confirm", "frequency": "weekly", "stepsMd": "Read anchors; test instruction together." },
+          { "title": "Cut", "frequency": "weekly", "stepsMd": "Repent + remove one distraction/compromise." },
+          { "title": "Anchor", "frequency": "weekly", "stepsMd": "Declare truth; assign Scripture practice." },
+          { "title": "Move", "frequency": "weekly", "stepsMd": "Assign action steps + accountability." },
+          { "title": "Guard", "frequency": "weekly", "stepsMd": "Pray protection; fast schedule; boundary check." },
+          { "title": "Shine", "frequency": "weekly", "stepsMd": "Plan one outward act: testimony, service, outreach." }
+        ],
+        "notesMd": "Keep it simple: truth, repentance, obedience, and clean witness."
+      }
+    ],
+    "isActive": true
+  },
+  "phases": [
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-listen",
+      "order": 1,
+      "title": "Listen",
+      "aimMd": "Stillness. Spirit-led. Block noise. Receive instruction.",
+      "summaryMd": "Still your inner world so you can hear God without competing voices.",
+      "scriptureAnchors": [
+        { "reference": "Psalm 46:10", "translation": "ESV" },
+        { "reference": "1 Kings 19:11–13", "translation": "ESV" },
+        { "reference": "John 10:27", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Silence + journal",
+          "frequency": "as_needed",
+          "durationMinutes": 15,
+          "stepsMd": "- 2 minutes stillness\n- Ask: “What are You saying?”\n- Ask: “What am I avoiding?”\n- Write 1 sentence instruction\n- Write 1 next step"
+        },
+        {
+          "title": "Input fast (optional)",
+          "frequency": "as_needed",
+          "stepsMd": "- 24 hours: no news/social/entertainment\n- Replace with Scripture + prayer\n- Note what cravings surface"
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Signal", "bodyMd": "Peace + clarity + conviction (not confusion)." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Using “waiting” as delay; seeking vibes instead of voice." }
+      ],
+      "prayerMd": "Speak, Lord—Your servant hears.",
+      "declarationMd": "I block noise and receive instruction."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-confirm",
+      "order": 2,
+      "title": "Confirm",
+      "aimMd": "Scripture. Witness. Discern. Don’t act on impulse.",
+      "summaryMd": "Test what you heard with Scripture, fruit, and wise counsel.",
+      "scriptureAnchors": [
+        { "reference": "1 John 4:1", "translation": "ESV" },
+        { "reference": "Proverbs 11:14", "translation": "ESV" },
+        { "reference": "2 Corinthians 13:1", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Three Witness Test",
+          "frequency": "as_needed",
+          "stepsMd": "- Word: does Scripture permit/command it?\n- Spirit: is there sober conviction and peace?\n- Fruit/Counsel: what do mature believers see?"
+        },
+        {
+          "title": "One sentence clarity",
+          "frequency": "as_needed",
+          "stepsMd": "Write the instruction in one sentence. If you can’t, you’re not ready to move."
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Stability", "bodyMd": "It holds up under time, prayer, and counsel." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Impulse baptized as “faith”; confirmation bias." }
+      ],
+      "prayerMd": "Give me discernment and honest witness.",
+      "declarationMd": "I will not act on impulse."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-cut",
+      "order": 3,
+      "title": "Cut",
+      "aimMd": "Sever false ties. Cancel distractions. Exit Babylon.",
+      "summaryMd": "Remove attachments and pipelines that feed compromise and distraction.",
+      "scriptureAnchors": [
+        { "reference": "Hebrews 12:1", "translation": "ESV" },
+        { "reference": "Matthew 5:29–30", "translation": "ESV" },
+        { "reference": "Revelation 18:4", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Cut one access point",
+          "frequency": "as_needed",
+          "stepsMd": "- Delete an app/subscription\n- End a time-wasting routine\n- Establish a boundary\n- Close one open loop (apology, repentance, decision)"
+        },
+        {
+          "title": "Distraction list → deletion list",
+          "frequency": "as_needed",
+          "stepsMd": "List 10 distractions. Choose 3 to remove today."
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Lightness", "bodyMd": "Focus returns; appetite for holiness increases." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Cutting people instead of patterns; rage-driven pruning." }
+      ],
+      "prayerMd": "Give me courage to cut what competes with You.",
+      "declarationMd": "I sever false ties and walk free."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-anchor",
+      "order": 4,
+      "title": "Anchor",
+      "aimMd": "Root in truth. Covenant with God. Plant Word deep.",
+      "summaryMd": "Build depth that survives pressure: Word, covenant, and daily rhythm.",
+      "scriptureAnchors": [
+        { "reference": "Colossians 2:6–7", "translation": "ESV" },
+        { "reference": "Psalm 1:1–3", "translation": "ESV" },
+        { "reference": "John 17:17", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Choose 3 anchors",
+          "frequency": "as_needed",
+          "stepsMd": "- Pick 3 Scriptures for this season\n- Memorize 1 verse per week\n- Pray them daily"
+        },
+        {
+          "title": "Truth Protocol (mini)",
+          "frequency": "as_needed",
+          "stepsMd": "- What I believe\n- What I refuse\n- What I will obey this week"
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Stability", "bodyMd": "You remain steady under stress; repentance is quick." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Information without embodiment; study without obedience." }
+      ],
+      "prayerMd": "Plant Your Word deep in me.",
+      "declarationMd": "I am rooted in truth."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-move",
+      "order": 5,
+      "title": "Move",
+      "aimMd": "Physically, financially, relationally—shift with purpose.",
+      "summaryMd": "Obedience with feet: execute the next clear step with a plan.",
+      "scriptureAnchors": [
+        { "reference": "James 1:22", "translation": "ESV" },
+        { "reference": "Genesis 12:1–4", "translation": "ESV" },
+        { "reference": "Acts 16:6–10", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Write the move",
+          "frequency": "as_needed",
+          "stepsMd": "- Where/what is the shift?\n- What does it cost?\n- What’s the first step?\n- Who holds me accountable?"
+        },
+        {
+          "title": "Budget alignment",
+          "frequency": "as_needed",
+          "stepsMd": "- Cut leaks\n- Build runway\n- Fund obedience\n- Remove fragile dependencies"
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Momentum", "bodyMd": "Clarity increases after obedient movement." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Waiting for certainty God only gives in motion." }
+      ],
+      "prayerMd": "Strengthen me to move with obedience.",
+      "declarationMd": "I shift with purpose."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-establish",
+      "order": 6,
+      "title": "Establish",
+      "aimMd": "Build altar. Set rhythm. Claim territory. Name it.",
+      "summaryMd": "Turn obedience into a stable system: altar, rhythm, governance, and naming.",
+      "scriptureAnchors": [
+        { "reference": "Genesis 26:25", "translation": "ESV" },
+        { "reference": "Joshua 24:15", "translation": "ESV" },
+        { "reference": "Nehemiah 2:17–18", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Set a weekly liturgy",
+          "frequency": "weekly",
+          "stepsMd": "- Word\n- Prayer\n- Communion\n- Testimony\n- Mission action"
+        },
+        {
+          "title": "Name the territory",
+          "frequency": "as_needed",
+          "stepsMd": "Write: “In this house/team we…” (values + standards + boundaries)."
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Order", "bodyMd": "Consistency replaces intensity. Chaos decreases." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Building a brand instead of an altar; structure without presence." }
+      ],
+      "prayerMd": "Teach us to establish what You assign.",
+      "declarationMd": "We establish righteous rhythm and territory."
+    },
+    {
+      "lane": "boot",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-guard",
+      "order": 7,
+      "title": "Guard",
+      "aimMd": "Watch over what was planted. Block deception. Fast often.",
+      "summaryMd": "Protect the seed: boundaries, discernment, fasting, and vigilance.",
+      "scriptureAnchors": [
+        { "reference": "Proverbs 4:23", "translation": "ESV" },
+        { "reference": "1 Peter 5:8–9", "translation": "ESV" },
+        { "reference": "Ephesians 6:10–18", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Input gate",
+          "frequency": "as_needed",
+          "stepsMd": "- Audit inputs weekly\n- Remove what distorts\n- Replace with Scripture + worship"
+        },
+        {
+          "title": "Fast (simple start)",
+          "frequency": "weekly",
+          "stepsMd": "- Skip one meal\n- Pray during that time\n- Recommit to obedience"
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Protection", "bodyMd": "Fewer ambushes; faster recovery; stronger discernment." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Paranoia; obsession with darkness; isolation disguised as holiness." }
+      ],
+      "prayerMd": "Guard what You planted in us.",
+      "declarationMd": "I watch over what God entrusted."
+    },
+    {
+      "lane": "commission",
+      "cadence": "as_needed",
+      "slug": "ruach-remnant8-shine",
+      "order": 8,
+      "title": "Shine",
+      "aimMd": "Speak boldly. Create. Share light. Train others. Reflect the King.",
+      "summaryMd": "Output with integrity: testimony, teaching, creativity, and multiplication.",
+      "scriptureAnchors": [
+        { "reference": "Matthew 5:14–16", "translation": "ESV" },
+        { "reference": "2 Timothy 2:2", "translation": "ESV" },
+        { "reference": "1 Peter 3:15", "translation": "ESV" }
+      ],
+      "practices": [
+        {
+          "title": "Weekly light output",
+          "frequency": "weekly",
+          "stepsMd": "- One testimony\n- One teaching\n- One act of service\n- One invite (train someone)"
+        },
+        {
+          "title": "Simple multiplication",
+          "frequency": "as_needed",
+          "stepsMd": "I do → you watch → we do together → you do, I watch."
+        }
+      ],
+      "signsOfAlignment": [
+        { "label": "Fruit", "bodyMd": "People strengthen around you; truth spreads; fruit remains." }
+      ],
+      "commonTraps": [
+        { "label": "Trap", "bodyMd": "Performing for approval; shining without guarding (burnout)." }
+      ],
+      "prayerMd": "Let my life reflect Jesus with clarity and love.",
+      "declarationMd": "I shine to reflect the King."
+    }
+  ],
+  "diagnostics": [
+    {
+      "order": 1,
+      "trigger": "If you’re scattered",
+      "descriptionMd": "Too much noise. Return to signal.",
+      "recommendedPhaseSlug": "ruach-remnant8-listen"
+    },
+    {
+      "order": 2,
+      "trigger": "If you’re impulsive",
+      "descriptionMd": "Test it before you move.",
+      "recommendedPhaseSlug": "ruach-remnant8-confirm"
+    },
+    {
+      "order": 3,
+      "trigger": "If you’re compromised",
+      "descriptionMd": "Sever agreements and distractions.",
+      "recommendedPhaseSlug": "ruach-remnant8-cut"
+    },
+    {
+      "order": 4,
+      "trigger": "If you’re unstable",
+      "descriptionMd": "Re-root in Word and covenant rhythm.",
+      "recommendedPhaseSlug": "ruach-remnant8-anchor"
+    },
+    {
+      "order": 5,
+      "trigger": "If you’re stuck",
+      "descriptionMd": "Execute the next step with purpose.",
+      "recommendedPhaseSlug": "ruach-remnant8-move"
+    },
+    {
+      "order": 6,
+      "trigger": "If you’re drifting",
+      "descriptionMd": "Re-establish altar, rhythm, and standards.",
+      "recommendedPhaseSlug": "ruach-remnant8-establish"
+    },
+    {
+      "order": 7,
+      "trigger": "If you’re under attack",
+      "descriptionMd": "Fortify boundaries, discern inputs, and fast.",
+      "recommendedPhaseSlug": "ruach-remnant8-guard"
+    },
+    {
+      "order": 8,
+      "trigger": "If you’ve gone silent",
+      "descriptionMd": "Share light with integrity and train others.",
+      "recommendedPhaseSlug": "ruach-remnant8-shine"
+    }
+  ]
+}
+
