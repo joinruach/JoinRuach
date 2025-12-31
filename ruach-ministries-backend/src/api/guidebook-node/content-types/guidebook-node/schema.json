@@ -96,7 +96,7 @@
     "formationFocus": {
       "type": "text",
       "description": "One-sentence intent statement for this node's formation purpose"
-    }
+    },
     "phase": {
       "type": "relation",
       "relation": "manyToOne",
