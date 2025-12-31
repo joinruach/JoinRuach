@@ -48,6 +48,11 @@ type Options = {
 const NODE_TYPE_ENUM = ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"] as const;
 const FORMATION_SCOPE_ENUM = ["Individual", "Household", "Ecclesia", "Network"] as const;
 const CHECKPOINT_TYPE_ENUM = ["None", "Text Response", "Voice Response", "Text & Voice"] as const;
+const GUIDEBOOK_SCHEMA_UID = "api::guidebook-node.guidebook-node";
+const GUIDEBOOK_SCHEMA_PATH = path.resolve(
+  process.cwd(),
+  "ruach-ministries-backend/src/api/guidebook-node/content-types/guidebook-node/schema.json",
+);
 
 function normalizeNodeType(input?: string): GuidebookPayload["nodeType"] {
   if (NODE_TYPE_ENUM.includes(input as any)) {
@@ -149,6 +154,76 @@ async function fetchJson(url: string, init: RequestInit): Promise<any> {
   return json;
 }
 
+function attributeSignature(attribute: Record<string, unknown>): string {
+  const signatureKeys = ["type", "relation", "target", "enum", "required", "default", "inversedBy"];
+  const subset: Record<string, unknown> = {};
+  for (const key of signatureKeys) {
+    if (!(key in attribute)) continue;
+    const value = attribute[key as keyof Record<string, unknown>];
+    if (key === "enum" && Array.isArray(value)) {
+      subset.enum = [...value].sort();
+      continue;
+    }
+    subset[key] = value;
+  }
+  return JSON.stringify(subset);
+}
+
+function compareAttributeSets(local: Record<string, Record<string, unknown>>, remote: Record<string, Record<string, unknown>>): void {
+  const localKeys = Object.keys(local);
+  const remoteKeys = Object.keys(remote);
+  const extra = remoteKeys.filter((key) => !localKeys.includes(key));
+  const missing = localKeys.filter((key) => !remoteKeys.includes(key));
+  if (extra.length || missing.length) {
+    throw new Error(
+      `Guidebook schema mismatch: ${
+        extra.length ? `unexpected remote attributes: ${extra.join(", ")}` : ""
+      }${extra.length && missing.length ? "; " : ""}${
+        missing.length ? `missing remote attributes: ${missing.join(", ")}` : ""
+      }`,
+    );
+  }
+
+  for (const attrName of localKeys) {
+    const localSig = attributeSignature(local[attrName]);
+    const remoteSig = attributeSignature(remote[attrName]);
+    if (localSig !== remoteSig) {
+      throw new Error(
+        `Guidebook attribute "${attrName}" changed: local=${localSig}, remote=${remoteSig}`,
+      );
+    }
+  }
+}
+
+async function loadLocalGuidebookSchema(): Promise<Record<string, Record<string, unknown>>> {
+  const text = await fs.readFile(GUIDEBOOK_SCHEMA_PATH, "utf-8");
+  const parsed = JSON.parse(text);
+  if (!parsed?.attributes || typeof parsed.attributes !== "object") {
+    throw new Error("Local guidebook schema is malformed.");
+  }
+  return parsed.attributes;
+}
+
+async function fetchRemoteGuidebookSchema(strapiUrl: string, token: string): Promise<Record<string, Record<string, unknown>>> {
+  const params = new URLSearchParams({
+    "filters[uid][$eq]": GUIDEBOOK_SCHEMA_UID,
+    "fields[0]": "schema",
+  });
+  const result = await fetchJson(`${strapiUrl}/api/content-type-builder/content-types?${params}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const entry = Array.isArray(result?.data) ? result.data[0] : null;
+  if (!entry?.schema?.attributes) {
+    throw new Error("Failed to load guidebook schema from Strapi.");
+  }
+  return entry.schema.attributes;
+}
+
 async function main(): Promise<void> {
   const options = parseArgs();
   const CANON_PATH = options.input;
@@ -161,6 +236,10 @@ async function main(): Promise<void> {
   if (!STRAPI_TOKEN) {
     throw new Error("STRAPI_TOKEN is required.");
   }
+
+  const localAttributes = await loadLocalGuidebookSchema();
+  const remoteAttributes = await fetchRemoteGuidebookSchema(STRAPI_URL, STRAPI_TOKEN);
+  compareAttributeSets(localAttributes, remoteAttributes);
 
   const canon = await readJson<CanonBundle>(CANON_PATH);
   if (!canon.meta?.textNormalized) {
