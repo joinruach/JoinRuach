@@ -97,6 +97,20 @@
       "type": "text",
       "description": "One-sentence intent statement for this node's formation purpose"
     },
+    "sectionMetadata": {
+      "type": "json",
+      "required": false,
+      "default": {
+        "canonical-formation": { "mutability": "immutable", "confidence": "authoritative" },
+        "scripture-anchors": { "mutability": "immutable", "confidence": "authoritative" },
+        "kingdom-pattern": { "mutability": "immutable", "confidence": "authoritative" },
+        "structural-principles": { "mutability": "immutable", "confidence": "authoritative" },
+        "warnings": { "mutability": "immutable", "confidence": "authoritative" },
+        "node-declaration": { "mutability": "immutable", "confidence": "liturgical" },
+        "operational-protocol": { "mutability": "contextual", "confidence": "illustrative" },
+        "implementation-notes": { "mutability": "contextual", "confidence": "suggestive" }
+      }
+    },
     "phase": {
       "type": "relation",
       "relation": "manyToOne",

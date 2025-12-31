@@ -1,0 +1,10 @@
+{
+  "name": "@ruach/guidebook-agent",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@ruach/guidebook-parser": "workspace:*"
+  }
+}

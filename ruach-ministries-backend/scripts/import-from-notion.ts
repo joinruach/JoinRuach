@@ -17,6 +17,7 @@
  */
 
 import 'dotenv/config';
+import assert from 'node:assert';
 import { exportNotionCanon } from './canon-audit/notion-export';
 import { auditAllNodes } from './canon-audit/audit-report';
 import { STRAPI_API_TOKEN, STRAPI_URL } from './strapi-env';
@@ -70,6 +71,14 @@ const NOTION_DATABASES: NotionDatabaseConfig = {
   courses: requireEnvVar('NOTION_DB_COURSES'),
   canonReleases: requireEnvVar('NOTION_DB_CANON_RELEASES'),
 };
+
+const NODE_TYPES = [
+  'Awakening',
+  'Healing',
+  'Warfare',
+  'Formation',
+  'Commissioning',
+] as const;
 
 /**
  * Parse command line arguments
@@ -273,13 +282,16 @@ async function importAxioms(
 function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
   const rawContent = node.content || '';
   const content = rawContent.trim();
-  if (!content) {
-    throw new Error(`Node "${node.title}" is missing required content`);
-  }
+  assert(content, `Node "${node.title}" is missing required content`);
 
-  const nodeType = determineNodeType(node) || 'Teaching';
+  const nodeType = determineNodeType(node);
+  assert(nodeType && NODE_TYPES.includes(nodeType as (typeof NODE_TYPES)[number]), `Invalid nodeType "${nodeType}" for node "${node.title}"`);
   const formationScope = determineFormationScope(node) || 'Individual';
   const orderInPhase = node.order ?? 1;
+  assert(Number.isInteger(orderInPhase), `Node "${node.title}" is missing required orderInPhase`);
+
+  const checksum = generateChecksum(content);
+  assert(checksum, `Node "${node.title}" is missing required checksum`);
 
   return {
     nodeId: node.id.replace(/-/g, '').substring(0, 32), // Notion ID without dashes
@@ -287,7 +299,7 @@ function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
     title: node.title,
     slug: node.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
     content,
-    checksum: generateChecksum(content),
+    checksum,
     orderInPhase,
     nodeType,
     formationScope,
