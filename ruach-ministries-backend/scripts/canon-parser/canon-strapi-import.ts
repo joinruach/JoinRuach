@@ -49,9 +49,10 @@ const NODE_TYPE_ENUM = ["Awakening", "Healing", "Warfare", "Formation", "Commiss
 const FORMATION_SCOPE_ENUM = ["Individual", "Household", "Ecclesia", "Network"] as const;
 const CHECKPOINT_TYPE_ENUM = ["None", "Text Response", "Voice Response", "Text & Voice"] as const;
 const GUIDEBOOK_SCHEMA_UID = "api::guidebook-node.guidebook-node";
+const BACKEND_ROOT = path.resolve(__dirname, "..", "..");
 const GUIDEBOOK_SCHEMA_PATH = path.resolve(
-  process.cwd(),
-  "ruach-ministries-backend/src/api/guidebook-node/content-types/guidebook-node/schema.json",
+  BACKEND_ROOT,
+  "src/api/guidebook-node/content-types/guidebook-node/schema.json",
 );
 
 function normalizeNodeType(input?: string): GuidebookPayload["nodeType"] {
