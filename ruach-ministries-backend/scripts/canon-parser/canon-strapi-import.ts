@@ -32,16 +32,12 @@ type CanonBundle = {
 type GuidebookPayload = {
   nodeId: string;
   title: string;
-  slug: string;
   content: string;
   orderInPhase: number;
   checksum: string;
   nodeType: "Awakening" | "Healing" | "Warfare" | "Formation" | "Commissioning";
   formationScope: "Individual" | "Household" | "Ecclesia" | "Network";
   checkpointType: "None" | "Text Response" | "Voice Response" | "Text & Voice";
-  syncedToStrapi: boolean;
-  syncLock: boolean;
-  status?: "Draft" | "Review" | "Ready" | "Synced" | "Published" | "Deprecated" | "Needs Revision";
 };
 
 type Options = {
@@ -79,10 +75,6 @@ function computeChecksum(node: CanonNode): string {
   return createHash("sha256").update(node.content.text).digest("hex");
 }
 
-function slugifyNode(nodeId: string): string {
-  return nodeId.replace(/[:/]/g, "-");
-}
-
 function canonToGuidebookNode(node: CanonNode, index: number): GuidebookPayload {
   const title =
     node.location?.chapter?.title?.trim() ||
@@ -91,16 +83,13 @@ function canonToGuidebookNode(node: CanonNode, index: number): GuidebookPayload 
   return {
     nodeId: node.canonNodeId,
     title,
-    slug: slugifyNode(node.canonNodeId),
     content: node.content.text,
     orderInPhase: node.location?.order ?? index + 1,
     checksum: computeChecksum(node),
     nodeType: normalizeNodeType(node.meta?.nodeType),
     formationScope: normalizeFormationScope(node.meta?.formationScope),
     checkpointType: normalizeCheckpointType(node.meta?.checkpointType),
-    syncedToStrapi: true,
-    syncLock: false,
-    status: "Synced",
+    // no extra fields: schema expects only the base attributes
   };
 }
 
@@ -185,11 +174,11 @@ async function main(): Promise<void> {
     const node = canon.nodes[index];
     const payload = canonToGuidebookNode(node, index);
     const filters = new URLSearchParams({
-      "filters[canonNodeId][$eq]": node.canonNodeId,
+      "filters[nodeId][$eq]": node.canonNodeId,
       "fields[0]": "id",
       limit: "1",
     });
-    const queryUrl = `${STRAPI_URL}/api/canon-nodes?${filters.toString()}`;
+    const queryUrl = `${STRAPI_URL}/api/guidebook-nodes?${filters.toString()}`;
 
     const existing = await fetchJson(queryUrl, {
       headers: {
@@ -201,14 +190,14 @@ async function main(): Promise<void> {
 
     const existingEntry = Array.isArray(existing?.data) ? existing.data[0] : null;
     const bodyPayload = { data: payload };
+    // log payload for audit/comparison when running live import
+    console.log(`⏺ Import payload: ${JSON.stringify(bodyPayload)}`);
     const targetUrl = existingEntry
-      ? `${STRAPI_URL}/api/canon-nodes/${existingEntry.id}`
-      : `${STRAPI_URL}/api/canon-nodes`;
-    const method = existingEntry ? "PUT" : "POST";
-
+      ? `${STRAPI_URL}/api/guidebook-nodes/${existingEntry.id}`
+      : `${STRAPI_URL}/api/guidebook-nodes`;
     if (options.dryRun) {
       // eslint-disable-next-line no-console
-      console.log(`[dry-run] ${method} ${targetUrl} (canonNodeId=${node.canonNodeId})`);
+      console.log(`[dry-run] ${existingEntry ? "PUT" : "POST"} ${targetUrl} (canonNodeId=${node.canonNodeId})`);
       if (existingEntry) {
         updated += 1;
       } else {
@@ -217,20 +206,28 @@ async function main(): Promise<void> {
       continue;
     }
 
+    if (!existingEntry) {
+      await fetchJson(targetUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bodyPayload),
+      });
+      created += 1;
+      continue;
+    }
+
     await fetchJson(targetUrl, {
-      method,
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(bodyPayload),
     });
-
-    if (existingEntry) {
-      updated += 1;
-    } else {
-      created += 1;
-    }
+    updated += 1;
   }
 
   // eslint-disable-next-line no-console
