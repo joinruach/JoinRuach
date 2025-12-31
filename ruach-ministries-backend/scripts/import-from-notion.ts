@@ -410,18 +410,30 @@ function determineFormationScope(node: NotionNode): string {
 function determineNodeType(node: NotionNode): string {
   const title = node.title.toLowerCase();
   const content = (node.content || '').toLowerCase();
+  const phase = node.phase?.toLowerCase();
 
-  if (title.includes('checkpoint') || title.includes('reflection')) {
-    return 'Reflection';
-  }
-  if (content.includes('exercise') || content.includes('practice')) {
-    return 'Exercise';
-  }
-  if (content.includes('warning') || content.includes('danger')) {
-    return 'Confrontation';
+  if (phase === 'awakening' || title.includes('narrow gate') || title.includes('awakening')) {
+    return 'Awakening';
   }
 
-  return 'Teaching'; // Default
+  if (title.includes('checkpoint') || title.includes('reflection') || title.includes('healing')) {
+    return 'Healing';
+  }
+
+  if (content.includes('warning') || content.includes('danger') || title.includes('confront')) {
+    return 'Warfare';
+  }
+
+  if (
+    title.includes('call') ||
+    title.includes('distributed') ||
+    title.includes('kingdom') ||
+    title.includes('order')
+  ) {
+    return 'Commissioning';
+  }
+
+  return 'Formation'; // Default
 }
 
 /**
