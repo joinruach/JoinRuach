@@ -1,0 +1,27 @@
+name: Canon Guardrail
+
+on:
+  pull_request:
+    paths:
+      - ruach-ministries-backend/scripts/canon-parser/**
+      - ruach-ministries-backend/scripts/canon-parser/out/**
+
+jobs:
+  canon-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Canon normalization sanity check
+        run: |
+          pnpm exec tsx ruach-ministries-backend/scripts/canon-parser/canon-text-normalize.ts \
+            --input ruach-ministries-backend/scripts/canon-parser/out/ministry-of-healing.canon.json \
+            --diff \
+            --fail-on-diff
