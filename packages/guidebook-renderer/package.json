@@ -1,0 +1,13 @@
+{
+  "name": "@ruach/guidebook-renderer",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "node --loader ts-node/esm ./src/renderMarkdown.test.ts"
+  },
+  "dependencies": {
+    "@ruach/guidebook-parser": "workspace:*"
+  }
+}
