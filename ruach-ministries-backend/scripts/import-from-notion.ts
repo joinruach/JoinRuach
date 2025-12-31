@@ -47,6 +47,30 @@ interface CommandLineArgs {
   skipExport: boolean;
 }
 
+interface NotionDatabaseConfig {
+  formationPhases: string;
+  canonAxioms: string;
+  guidebookNodes: string;
+  courses: string;
+  canonReleases: string;
+}
+
+function requireEnvVar(name: string, fallback?: string | undefined): string {
+  const value = process.env[name] ?? fallback;
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+const NOTION_DATABASES: NotionDatabaseConfig = {
+  formationPhases: requireEnvVar('NOTION_DB_FORMATION_PHASES'),
+  canonAxioms: requireEnvVar('NOTION_DB_CANON_AXIOMS'),
+  guidebookNodes: requireEnvVar('NOTION_DB_GUIDEBOOK_NODES', process.env.NOTION_DATABASE_ID),
+  courses: requireEnvVar('NOTION_DB_COURSES'),
+  canonReleases: requireEnvVar('NOTION_DB_CANON_RELEASES'),
+};
+
 /**
  * Parse command line arguments
  */
@@ -521,18 +545,19 @@ async function main() {
     console.log('━'.repeat(60));
 
     const notionApiKey = process.env.NOTION_API_KEY;
-    const notionDbGuidebookNodes = process.env.NOTION_DB_GUIDEBOOK_NODES || process.env.NOTION_DATABASE_ID;
 
-    if (!notionApiKey || !notionDbGuidebookNodes) {
+    if (!notionApiKey) {
       throw new Error(
-        'Missing required environment variables: NOTION_API_KEY and NOTION_DB_GUIDEBOOK_NODES\n' +
-        'Add them to your .env file or export them in your shell.'
+        'Missing required environment variable: NOTION_API_KEY\n' +
+        'Add it to your .env file or export it in your shell.'
       );
     }
 
+    console.log('📦 Notion DBs:', NOTION_DATABASES);
+
     const nodes = await exportNotionCanon(
       notionApiKey,
-      notionDbGuidebookNodes,
+      NOTION_DATABASES.guidebookNodes,
       './scripts/canon-audit/data/notion-export.json'
     );
 
@@ -595,7 +620,11 @@ Options:
 
 Environment Variables (required):
   NOTION_API_KEY              Your Notion integration API key
+  NOTION_DB_FORMATION_PHASES  Notion database ID for Formation Phases
+  NOTION_DB_CANON_AXIOMS      Notion database ID for Canon Axioms
   NOTION_DB_GUIDEBOOK_NODES   Notion database ID for Guidebook Nodes
+  NOTION_DB_COURSES           Notion database ID for Courses
+  NOTION_DB_CANON_RELEASES    Notion database ID for Canon Releases
   STRAPI_URL                  Strapi backend URL (default: http://localhost:1337)
   STRAPI_API_TOKEN            Strapi API token with write permissions
 
