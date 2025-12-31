@@ -208,7 +208,9 @@ async function loadLocalGuidebookSchema(): Promise<Record<string, Record<string,
 async function fetchRemoteGuidebookSchema(strapiUrl: string, token: string): Promise<Record<string, Record<string, unknown>>> {
   const params = new URLSearchParams({
     "filters[uid][$eq]": GUIDEBOOK_SCHEMA_UID,
-    "fields[0]": "schema",
+    "fields[0]": "uid",
+    "fields[1]": "schema",
+    "pagination[pageSize]": "100",
   });
   const result = await fetchJson(`${strapiUrl}/api/content-type-builder/content-types?${params}`, {
     method: "GET",
@@ -218,7 +220,9 @@ async function fetchRemoteGuidebookSchema(strapiUrl: string, token: string): Pro
     },
   });
 
-  const entry = Array.isArray(result?.data) ? result.data[0] : null;
+  const entry = Array.isArray(result?.data)
+    ? result.data.find((item: any) => item?.uid === GUIDEBOOK_SCHEMA_UID)
+    : null;
   if (!entry?.schema?.attributes) {
     throw new Error("Failed to load guidebook schema from Strapi.");
   }
