@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---- Better layer caching: copy manifests first ----
 # Build context is monorepo root, so paths are relative to root
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+# Workspace integrity: root package.json depends on this workspace package.
+COPY packages/guidebook-renderer/package.json ./packages/guidebook-renderer/package.json
+COPY packages/guidebook-parser/package.json ./packages/guidebook-parser/package.json
 COPY ruach-ministries-backend/package.json ./ruach-ministries-backend/package.json
 COPY ruach-ministries-backend/.pnpmfile.cjs ./ruach-ministries-backend/.pnpmfile.cjs
 COPY ruach-ministries-backend/scripts ./ruach-ministries-backend/scripts
