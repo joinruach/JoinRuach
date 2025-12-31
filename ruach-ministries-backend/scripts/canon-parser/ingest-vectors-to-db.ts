@@ -39,8 +39,17 @@ async function createEmbedding(text: string, apiKey: string): Promise<number[]> 
     throw new Error(`OpenAI API error (${response.status}): ${error}`);
   }
 
-  const data = await response.json();
-  return data.data[0].embedding;
+  type OpenAIEmbeddingResponse = {
+    data?: Array<{ embedding?: number[] }>;
+  };
+
+  const data = (await response.json()) as OpenAIEmbeddingResponse;
+  const embedding = data?.data?.[0]?.embedding;
+  if (!embedding) {
+    throw new Error("OpenAI response missing embedding");
+  }
+
+  return embedding;
 }
 
 type VectorChunk = {
