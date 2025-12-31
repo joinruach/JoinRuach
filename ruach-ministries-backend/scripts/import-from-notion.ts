@@ -145,6 +145,7 @@ async function upsertStrapiRecord(
       }
 
       // Update existing record
+      console.log(`\n🔍 Payload for PUT /api/${contentType}/${existing.id}:`, JSON.stringify(data, null, 2));
       const response = await fetch(`${STRAPI_URL}/api/${contentType}/${existing.id}`, {
         method: 'PUT',
         headers: {
@@ -164,6 +165,7 @@ async function upsertStrapiRecord(
       }
     } else {
       // Create new record
+      console.log(`\n🔍 Payload for POST /api/${contentType}:`, JSON.stringify(data, null, 2));
       const response = await fetch(`${STRAPI_URL}/api/${contentType}`, {
         method: 'POST',
         headers: {
@@ -291,11 +293,46 @@ function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
     formationScope,
     sensitivity: 'Medium',
     checkpointType: isCheckpoint(node) ? 'Text Response' : 'None',
-    phase: phaseId,
+    phase: phaseId ?? undefined,
     syncedToStrapi: true,
     syncLock: false,
     publishedAt: null // Draft by default
   };
+}
+
+function sanitizeGuidebookNodePayload(payload: Record<string, any>): Record<string, any> {
+  const allowedFields = new Set([
+    'nodeId',
+    'notionPageId',
+    'title',
+    'slug',
+    'content',
+    'checksum',
+    'orderInPhase',
+    'nodeType',
+    'formationScope',
+    'sensitivity',
+    'checkpointType',
+    'checkpointPrompt',
+    'scriptureReferences',
+    'status',
+    'phase',
+    'canonAxioms',
+    'syncedToStrapi',
+    'syncLock',
+    'publishedAt',
+    'strapiEntryId',
+    'lastSyncedAt',
+    'syncErrors'
+  ]);
+
+  const sanitized: Record<string, any> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (!allowedFields.has(key)) continue;
+    if (value === undefined || value === null) continue;
+    sanitized[key] = value;
+  }
+  return sanitized;
 }
 
 /**
@@ -480,7 +517,8 @@ async function importNodes(
       continue;
     }
 
-    const nodeData = transformNodeToStrapi(node, phaseId);
+    const rawNodeData = transformNodeToStrapi(node, phaseId);
+    const nodeData = sanitizeGuidebookNodePayload(rawNodeData);
 
     const result = await upsertStrapiRecord(
       'guidebook-nodes',
