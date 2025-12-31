@@ -245,18 +245,26 @@ async function importAxioms(
  * Transform Notion node to Strapi guidebook-node format
  */
 function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
-  const content = node.content || '';
+  const rawContent = node.content || '';
+  const content = rawContent.trim();
+  if (!content) {
+    throw new Error(`Node "${node.title}" is missing required content`);
+  }
+
+  const nodeType = determineNodeType(node) || 'Teaching';
+  const formationScope = determineFormationScope(node) || 'Individual';
+  const orderInPhase = node.order ?? 1;
 
   return {
     nodeId: node.id.replace(/-/g, '').substring(0, 32), // Notion ID without dashes
     notionPageId: node.id,
     title: node.title,
     slug: node.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-    content: content,
+    content,
     checksum: generateChecksum(content),
-    orderInPhase: node.order || 1,
-    nodeType: determineNodeType(node),
-    formationScope: determineFormationScope(node),
+    orderInPhase,
+    nodeType,
+    formationScope,
     sensitivity: 'Medium',
     checkpointType: isCheckpoint(node) ? 'Text Response' : 'None',
     phase: phaseId,

@@ -40,7 +40,7 @@
     },
     "nodeType": {
       "type": "enumeration",
-      "enum": ["Teaching", "Confrontation", "Exercise", "Reflection", "Assessment"]
+      "enum": ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"]
     },
     "formationScope": {
       "type": "enumeration",
@@ -103,7 +103,7 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::canon-axiom.canon-axiom",
-      "mappedBy": "nodes"
+      "inversedBy": "nodes"
     },
     "videoUrl": {
       "type": "string"
