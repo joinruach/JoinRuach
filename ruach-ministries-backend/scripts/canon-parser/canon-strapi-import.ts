@@ -43,6 +43,8 @@ type GuidebookPayload = {
 type Options = {
   input: string;
   dryRun: boolean;
+  phaseId?: number;
+  phaseSlug?: string;
 };
 
 const NODE_TYPE_ENUM = ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"] as const;
@@ -113,6 +115,18 @@ function parseArgs(): Options {
       case "-i":
         options.input = args[++i] ?? "";
         break;
+      case "--phase-id":
+        options.phaseId = Number.parseInt(args[++i] ?? "", 10);
+        if (!Number.isFinite(options.phaseId)) {
+          throw new Error("--phase-id must be a number.");
+        }
+        break;
+      case "--phase-slug":
+        options.phaseSlug = (args[++i] ?? "").trim() || undefined;
+        if (!options.phaseSlug) {
+          throw new Error("--phase-slug must be a non-empty string.");
+        }
+        break;
       case "--dry-run":
         options.dryRun = true;
         break;
@@ -137,7 +151,7 @@ function printUsage(): void {
   // eslint-disable-next-line no-console
   console.log(`
 Usage:
-  tsx ${script} --input path/to/ministry-of-healing.canon.clean.json [--dry-run]
+  tsx ${script} --input path/to/ministry-of-healing.canon.clean.json [--phase-id 123|--phase-slug slug] [--dry-run]
 
 Env:
   STRAPI_URL (default http://localhost:1337)
@@ -163,6 +177,9 @@ function attributeSignature(attribute: Record<string, unknown>): string {
     const value = attribute[key as keyof Record<string, unknown>];
     if (key === "enum" && Array.isArray(value)) {
       subset.enum = [...value].sort();
+      continue;
+    }
+    if (key === "required" && value === false) {
       continue;
     }
     subset[key] = value;
@@ -229,6 +246,116 @@ async function fetchRemoteGuidebookSchema(strapiUrl: string, token: string): Pro
   return entry.schema.attributes;
 }
 
+async function resolvePhaseId(strapiUrl: string, token: string, phaseSlug: string): Promise<number> {
+  const params = new URLSearchParams({
+    "filters[slug][$eq]": phaseSlug,
+    "fields[0]": "id",
+    "pagination[pageSize]": "2",
+  });
+  const result = await fetchJson(`${strapiUrl}/api/formation-phases?${params}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!Array.isArray(result?.data) || result.data.length === 0) {
+    throw new Error(`No formation phase found for slug "${phaseSlug}".`);
+  }
+  if (result.data.length > 1) {
+    throw new Error(`Multiple formation phases found for slug "${phaseSlug}".`);
+  }
+  const id = result.data[0]?.id;
+  if (typeof id !== "number") {
+    throw new Error(`Malformed formation phase response for slug "${phaseSlug}".`);
+  }
+  return id;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeIdList(input: unknown): number[] {
+  if (!Array.isArray(input)) return [];
+  const ids: number[] = [];
+  for (const value of input) {
+    const asNumber = typeof value === "number" ? value : Number.parseInt(String(value), 10);
+    if (Number.isFinite(asNumber)) {
+      ids.push(asNumber);
+    }
+  }
+  return ids;
+}
+
+function normalizeId(input: unknown): number | undefined {
+  if (typeof input === "number") return Number.isFinite(input) ? input : undefined;
+  if (typeof input === "string" && input.trim()) {
+    const parsed = Number.parseInt(input, 10);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function uniqueNumbers(values: number[]): number[] {
+  return [...new Set(values)];
+}
+
+function buildGuidebookRawNode(node: CanonNode, index: number, allowedFields: Set<string>): Record<string, unknown> {
+  const computed = canonToGuidebookNode(node, index);
+  const raw: Record<string, unknown> = { ...computed };
+
+  // Allow canon bundles that already carry Strapi-aligned scalar fields at top-level.
+  if (isRecord(node)) {
+    for (const [key, value] of Object.entries(node)) {
+      if (!allowedFields.has(key)) continue;
+      if (key === "content") continue; // canon "content" is structured; Strapi expects richtext string
+      if (key in raw) continue;
+      raw[key] = value;
+    }
+  }
+
+  // Allow canon meta to provide Strapi scalar fields (still schema-gated later).
+  if (isRecord(node.meta)) {
+    for (const [key, value] of Object.entries(node.meta)) {
+      if (!allowedFields.has(key)) continue;
+      if (key in raw) continue;
+      raw[key] = value;
+    }
+  }
+
+  return raw;
+}
+
+function collectCanonCandidateKeys(node: CanonNode): string[] {
+  const canonInternalKeys = new Set([
+    "canonNodeId",
+    "canonType",
+    "source",
+    "location",
+    "content",
+    "anchors",
+    "authority",
+    "checksum",
+    "meta",
+  ]);
+
+  const candidates = new Set<string>();
+  for (const key of Object.keys(node)) {
+    if (canonInternalKeys.has(key)) continue;
+    candidates.add(key);
+  }
+
+  if (isRecord(node.meta)) {
+    for (const key of Object.keys(node.meta)) {
+      candidates.add(key);
+    }
+  }
+
+  return [...candidates];
+}
+
 async function main(): Promise<void> {
   const options = parseArgs();
   const CANON_PATH = options.input;
@@ -245,6 +372,16 @@ async function main(): Promise<void> {
   const localAttributes = await loadLocalGuidebookSchema();
   const remoteAttributes = await fetchRemoteGuidebookSchema(STRAPI_URL, STRAPI_TOKEN);
   compareAttributeSets(localAttributes, remoteAttributes);
+  const allowedFields = new Set(Object.keys(localAttributes));
+  const allowedScalarFields = new Set(
+    Object.entries(localAttributes)
+      .filter(([, attribute]) => isRecord(attribute) && attribute.type !== "relation" && attribute.type !== "media")
+      .map(([key]) => key),
+  );
+
+  const phaseIdFromSlug = options.phaseSlug
+    ? await resolvePhaseId(STRAPI_URL, STRAPI_TOKEN, options.phaseSlug)
+    : undefined;
 
   const canon = await readJson<CanonBundle>(CANON_PATH);
   if (!canon.meta?.textNormalized) {
@@ -256,7 +393,46 @@ async function main(): Promise<void> {
 
   for (let index = 0; index < canon.nodes.length; index += 1) {
     const node = canon.nodes[index];
-    const payload = canonToGuidebookNode(node, index);
+    const rawNode = buildGuidebookRawNode(node, index, allowedFields);
+    const extraAllowed = new Set(["phaseId", "canonAxiomIds", "phaseSlug"]);
+    const unknown = collectCanonCandidateKeys(node).filter((key) => !allowedFields.has(key) && !extraAllowed.has(key));
+    if (unknown.length) {
+      throw new Error(
+        `Importer attempted to send unknown keys: ${unknown.join(", ")}`,
+      );
+    }
+
+    const phaseId =
+      options.phaseId ??
+      phaseIdFromSlug ??
+      normalizeId(isRecord(node.meta) ? node.meta.phaseId : undefined) ??
+      normalizeId((node as any).phaseId);
+
+    if (!Number.isFinite(phaseId)) {
+      throw new Error(
+        `guidebook-node ${node.canonNodeId} missing required phase; provide --phase-id <id>, --phase-slug <slug>, or include phaseId in the canon node.`,
+      );
+    }
+
+    const canonAxiomIds = uniqueNumbers([
+      ...normalizeIdList((node as any).canonAxiomIds),
+      ...normalizeIdList(isRecord(node.meta) ? node.meta.canonAxiomIds : undefined),
+    ]);
+
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(rawNode)) {
+      if (!allowedScalarFields.has(key)) continue;
+      if (value === undefined) continue;
+      sanitized[key] = value;
+    }
+
+    // Relations are always shaped explicitly; never pass through raw relation structures.
+    sanitized.phase = { connect: [{ id: phaseId }] };
+    if (canonAxiomIds.length) {
+      sanitized.canonAxioms = { connect: canonAxiomIds.map((id) => ({ id })) };
+    }
+
+    const bodyPayload = { data: sanitized };
     const filters = new URLSearchParams({
       "filters[nodeId][$eq]": node.canonNodeId,
       "fields[0]": "id",
@@ -273,7 +449,6 @@ async function main(): Promise<void> {
     });
 
     const existingEntry = Array.isArray(existing?.data) ? existing.data[0] : null;
-    const bodyPayload = { data: payload };
     // log payload for audit/comparison when running live import
     console.log(`⏺ Import payload: ${JSON.stringify(bodyPayload)}`);
     const targetUrl = existingEntry
