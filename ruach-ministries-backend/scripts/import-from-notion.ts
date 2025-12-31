@@ -150,11 +150,6 @@ function normalizeForStrapi(value: unknown): unknown {
   if (isPlainObject(value)) {
     const output: Record<string, unknown> = {};
     for (const [key, entry] of Object.entries(value)) {
-      // Strapi rejects unknown root keys and some nested operator objects when sent via REST.
-      // If a payload accidentally contains an operator-style object, normalize it away.
-      if (key === 'set' || key === 'connect' || key === 'disconnect') {
-        continue;
-      }
       output[key] = normalizeForStrapi(entry);
     }
     return output;
@@ -165,6 +160,12 @@ function normalizeForStrapi(value: unknown): unknown {
 
 function buildStrapiRequestBody(data: unknown): string {
   const normalized = normalizeForStrapi(data);
+  // Strapi v4/v5 REST create/update contract:
+  // - collection/single type mutations MUST be wrapped in `{ data: ... }`
+  // - callers sometimes pass an already-wrapped `{ data }` object; avoid double-wrapping.
+  if (isPlainObject(normalized) && 'data' in normalized && Object.keys(normalized).length === 1) {
+    return JSON.stringify(normalized);
+  }
   return JSON.stringify({ data: normalized });
 }
 
@@ -197,7 +198,10 @@ async function upsertStrapiRecord(
       }
 
       // Update existing record
-      console.log(`\n🔍 Payload for PUT /api/${contentType}/${existing.id}:`, JSON.stringify(data, null, 2));
+      console.log(
+        `\n🔍 Payload for PUT /api/${contentType}/${existing.id}:`,
+        buildStrapiRequestBody(data)
+      );
       const response = await fetch(`${STRAPI_URL}/api/${contentType}/${existing.id}`, {
         method: 'PUT',
         headers: {
@@ -217,7 +221,7 @@ async function upsertStrapiRecord(
       }
     } else {
       // Create new record
-      console.log(`\n🔍 Payload for POST /api/${contentType}:`, JSON.stringify(data, null, 2));
+      console.log(`\n🔍 Payload for POST /api/${contentType}:`, buildStrapiRequestBody(data));
       const response = await fetch(`${STRAPI_URL}/api/${contentType}`, {
         method: 'POST',
         headers: {
