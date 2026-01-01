@@ -124,6 +124,86 @@ export interface OutreachVolunteerPoint extends Struct.ComponentSchema {
   };
 }
 
+export interface ProtocolLabeledNote extends Struct.ComponentSchema {
+  collectionName: 'components_protocol_labeled_notes';
+  info: {
+    description: 'Label + markdown body for signs/traps/etc.';
+    displayName: 'Labeled Note';
+    icon: 'bulletList';
+  };
+  attributes: {
+    bodyMd: Schema.Attribute.RichText & Schema.Attribute.Required;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ProtocolPractice extends Struct.ComponentSchema {
+  collectionName: 'components_protocol_practices';
+  info: {
+    description: 'A practice/action block for a protocol step.';
+    displayName: 'Practice';
+    icon: 'check';
+  };
+  attributes: {
+    durationMinutes: Schema.Attribute.Integer;
+    frequency: Schema.Attribute.Enumeration<
+      ['once', 'daily', 'weekly', 'seasonal', 'as_needed']
+    > &
+      Schema.Attribute.DefaultTo<'as_needed'>;
+    stepsMd: Schema.Attribute.RichText;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ProtocolScriptureAnchor extends Struct.ComponentSchema {
+  collectionName: 'components_protocol_scripture_anchors';
+  info: {
+    description: 'A scripture reference used as an anchor for a protocol step.';
+    displayName: 'Scripture Anchor';
+    icon: 'book';
+  };
+  attributes: {
+    notes: Schema.Attribute.Text;
+    reference: Schema.Attribute.String & Schema.Attribute.Required;
+    translation: Schema.Attribute.Enumeration<
+      ['ESV', 'Yah Scriptures', 'KJV', 'NKJV', 'NASB', 'NIV', 'Other']
+    > &
+      Schema.Attribute.DefaultTo<'ESV'>;
+  };
+}
+
+export interface ProtocolUsageMode extends Struct.ComponentSchema {
+  collectionName: 'components_protocol_usage_modes';
+  info: {
+    description: 'How to run a protocol (personal/weekly/etc).';
+    displayName: 'Usage Mode';
+    icon: 'rocket';
+  };
+  attributes: {
+    durationMinutes: Schema.Attribute.Integer;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    notesMd: Schema.Attribute.RichText;
+    steps: Schema.Attribute.Component<'protocol.usage-step', true>;
+  };
+}
+
+export interface ProtocolUsageStep extends Struct.ComponentSchema {
+  collectionName: 'components_protocol_usage_steps';
+  info: {
+    description: 'A short step in a usage mode.';
+    displayName: 'Usage Step';
+    icon: 'walk';
+  };
+  attributes: {
+    frequency: Schema.Attribute.Enumeration<
+      ['once', 'daily', 'weekly', 'seasonal', 'as_needed']
+    > &
+      Schema.Attribute.DefaultTo<'as_needed'>;
+    stepsMd: Schema.Attribute.RichText;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ResourceResourceCard extends Struct.ComponentSchema {
   collectionName: 'components_resource_resource_cards';
   info: {
@@ -310,6 +390,11 @@ declare module '@strapi/strapi' {
       'outreach.giving-highlight': OutreachGivingHighlight;
       'outreach.subscription-banner': OutreachSubscriptionBanner;
       'outreach.volunteer-point': OutreachVolunteerPoint;
+      'protocol.labeled-note': ProtocolLabeledNote;
+      'protocol.practice': ProtocolPractice;
+      'protocol.scripture-anchor': ProtocolScriptureAnchor;
+      'protocol.usage-mode': ProtocolUsageMode;
+      'protocol.usage-step': ProtocolUsageStep;
       'resource.resource-card': ResourceResourceCard;
       'shared.core-beliefs': SharedCoreBeliefs;
       'shared.highlight': SharedHighlight;

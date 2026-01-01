@@ -505,6 +505,56 @@ export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAssignmentAssignment extends Struct.CollectionTypeSchema {
+  collectionName: 'assignments';
+  info: {
+    description: 'Practice, activation, or response tied to lessons or courses.';
+    displayName: 'Assignment';
+    pluralName: 'assignments';
+    singularName: 'assignment';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    assignmentId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    assignmentType: Schema.Attribute.Enumeration<
+      [
+        'audit',
+        'renunciation',
+        'build',
+        'journal',
+        'declaration',
+        'action-plan',
+        'assessment',
+        'practice-log',
+      ]
+    >;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    instructions: Schema.Attribute.RichText;
+    lesson: Schema.Attribute.Relation<'manyToOne', 'api::lesson.lesson'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::assignment.assignment'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    outputFormat: Schema.Attribute.Enumeration<
+      ['written', 'spoken', 'action', 'testimony']
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiAudioFileAudioFile extends Struct.CollectionTypeSchema {
   collectionName: 'audio_files';
   info: {
@@ -1079,6 +1129,64 @@ export interface ApiContactSubmissionContactSubmission
   };
 }
 
+export interface ApiCourseProfileCourseProfile
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'course_profiles';
+  info: {
+    description: 'Semantic, formation, and positioning metadata for a course. 1:1 with Course.';
+    displayName: 'Course Profile';
+    pluralName: 'course-profiles';
+    singularName: 'course-profile';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    authorityLevel: Schema.Attribute.Enumeration<
+      ['introductory', 'pastoral', 'apostolic', 'prophetic']
+    >;
+    commitmentLevel: Schema.Attribute.Enumeration<['low', 'medium', 'high']>;
+    communityRules: Schema.Attribute.RichText;
+    completionPath: Schema.Attribute.String;
+    course: Schema.Attribute.Relation<'oneToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    distinctiveFeature: Schema.Attribute.RichText;
+    format: Schema.Attribute.String;
+    formationOutcomes: Schema.Attribute.RichText;
+    funnelRole: Schema.Attribute.String;
+    idealParticipant: Schema.Attribute.RichText;
+    liesConfronted: Schema.Attribute.RichText;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-profile.course-profile'
+    > &
+      Schema.Attribute.Private;
+    notFor: Schema.Attribute.RichText;
+    practiceComponents: Schema.Attribute.RichText;
+    prerequisites: Schema.Attribute.String;
+    pricingType: Schema.Attribute.Enumeration<
+      ['free', 'paid-core', 'paid-flagship', 'paid-specialty']
+    > &
+      Schema.Attribute.DefaultTo<'free'>;
+    promisedOutcome: Schema.Attribute.RichText;
+    publishedAt: Schema.Attribute.DateTime;
+    purpose: Schema.Attribute.RichText;
+    scripturalFoundation: Schema.Attribute.RichText;
+    subtitle: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    visibility: Schema.Attribute.Enumeration<
+      ['public', 'gated', 'cohort-only', 'private']
+    > &
+      Schema.Attribute.DefaultTo<'public'>;
+  };
+}
+
 export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
   collectionName: 'courses';
   info: {
@@ -1121,12 +1229,16 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       'api::course.course'
     > &
       Schema.Attribute.Private;
-    modules: Schema.Attribute.Relation<'manyToMany', 'api::course.course'>;
+    modules: Schema.Attribute.Relation<'oneToMany', 'api::module.module'>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     phase: Schema.Attribute.Relation<
       'manyToOne',
       'api::formation-phase.formation-phase'
+    >;
+    profile: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::course-profile.course-profile'
     >;
     publishedAt: Schema.Attribute.DateTime;
     seoDescription: Schema.Attribute.Text;
@@ -1414,6 +1526,51 @@ export interface ApiFormationPhaseFormationPhase
   };
 }
 
+export interface ApiFormationProtocolFormationProtocol
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'formation_protocols';
+  info: {
+    description: 'A repeatable formation loop with ordered phases and diagnostics.';
+    displayName: 'Formation Protocol';
+    pluralName: 'formation-protocols';
+    singularName: 'formation-protocol';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    declarationMd: Schema.Attribute.RichText;
+    diagnostics: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::protocol-diagnostic.protocol-diagnostic'
+    >;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formation-protocol.formation-protocol'
+    > &
+      Schema.Attribute.Private;
+    phases: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::protocol-phase.protocol-phase'
+    >;
+    protocolId: Schema.Attribute.String & Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    summaryMd: Schema.Attribute.RichText;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageModes: Schema.Attribute.Component<'protocol.usage-mode', true>;
+    version: Schema.Attribute.String & Schema.Attribute.DefaultTo<'v1'>;
+  };
+}
+
 export interface ApiFormationReflectionFormationReflection
   extends Struct.CollectionTypeSchema {
   collectionName: 'formation_reflections';
@@ -1619,6 +1776,7 @@ export interface ApiGuidebookNodeGuidebookNode
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     estimatedReadTime: Schema.Attribute.Integer;
+    formationFocus: Schema.Attribute.Text;
     formationScope: Schema.Attribute.Enumeration<
       ['Individual', 'Household', 'Ecclesia', 'Network']
     > &
@@ -1638,7 +1796,7 @@ export interface ApiGuidebookNodeGuidebookNode
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     nodeType: Schema.Attribute.Enumeration<
-      ['Teaching', 'Confrontation', 'Exercise', 'Reflection', 'Assessment']
+      ['Awakening', 'Healing', 'Warfare', 'Formation', 'Commissioning']
     >;
     notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     orderInPhase: Schema.Attribute.Integer & Schema.Attribute.Required;
@@ -1649,11 +1807,46 @@ export interface ApiGuidebookNodeGuidebookNode
     publishedAt: Schema.Attribute.DateTime;
     publishedVersion: Schema.Attribute.String;
     scriptureReferences: Schema.Attribute.Text;
+    sectionMetadata: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<{
+        'canonical-formation': {
+          confidence: 'authoritative';
+          mutability: 'immutable';
+        };
+        'implementation-notes': {
+          confidence: 'suggestive';
+          mutability: 'contextual';
+        };
+        'kingdom-pattern': {
+          confidence: 'authoritative';
+          mutability: 'immutable';
+        };
+        'node-declaration': {
+          confidence: 'liturgical';
+          mutability: 'immutable';
+        };
+        'operational-protocol': {
+          confidence: 'illustrative';
+          mutability: 'contextual';
+        };
+        'scripture-anchors': {
+          confidence: 'authoritative';
+          mutability: 'immutable';
+        };
+        'structural-principles': {
+          confidence: 'authoritative';
+          mutability: 'immutable';
+        };
+        warnings: {
+          confidence: 'authoritative';
+          mutability: 'immutable';
+        };
+      }>;
     sensitivity: Schema.Attribute.Enumeration<
       ['Low', 'Medium', 'High', 'Critical']
     > &
       Schema.Attribute.DefaultTo<'Medium'>;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID<'title'>;
     status: Schema.Attribute.Enumeration<
       [
         'Draft',
@@ -2242,6 +2435,50 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiModuleModule extends Struct.CollectionTypeSchema {
+  collectionName: 'modules';
+  info: {
+    description: 'Ordered structural unit within a course.';
+    displayName: 'Module';
+    pluralName: 'modules';
+    singularName: 'module';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
+    lessons: Schema.Attribute.Relation<'oneToMany', 'api::lesson.lesson'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::module.module'
+    > &
+      Schema.Attribute.Private;
+    moduleId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    order: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiOutreachCampaignOutreachCampaign
   extends Struct.CollectionTypeSchema {
   collectionName: 'outreach_campaigns';
@@ -2437,6 +2674,104 @@ export interface ApiProjectProject extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     videoURL: Schema.Attribute.String;
+  };
+}
+
+export interface ApiProtocolDiagnosticProtocolDiagnostic
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'protocol_diagnostics';
+  info: {
+    description: 'A quick diagnostic that maps a condition to a recommended protocol phase.';
+    displayName: 'Protocol Diagnostic';
+    pluralName: 'protocol-diagnostics';
+    singularName: 'protocol-diagnostic';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descriptionMd: Schema.Attribute.RichText;
+    diagnosticKey: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::protocol-diagnostic.protocol-diagnostic'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Integer & Schema.Attribute.Required;
+    protocol: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::formation-protocol.formation-protocol'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    recommendedPhase: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::protocol-phase.protocol-phase'
+    >;
+    recommendedPhaseSlug: Schema.Attribute.String;
+    trigger: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiProtocolPhaseProtocolPhase
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'protocol_phases';
+  info: {
+    description: 'An ordered phase within a formation protocol.';
+    displayName: 'Protocol Phase';
+    pluralName: 'protocol-phases';
+    singularName: 'protocol-phase';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    aimMd: Schema.Attribute.RichText;
+    cadence: Schema.Attribute.Enumeration<
+      ['once', 'daily', 'weekly', 'seasonal', 'as_needed']
+    > &
+      Schema.Attribute.DefaultTo<'as_needed'>;
+    commonTraps: Schema.Attribute.Component<'protocol.labeled-note', true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    declarationMd: Schema.Attribute.RichText;
+    lane: Schema.Attribute.Enumeration<['boot', 'daily', 'commission']>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::protocol-phase.protocol-phase'
+    > &
+      Schema.Attribute.Private;
+    order: Schema.Attribute.Integer & Schema.Attribute.Required;
+    practices: Schema.Attribute.Component<'protocol.practice', true>;
+    prayerMd: Schema.Attribute.RichText;
+    protocol: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::formation-protocol.formation-protocol'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    scriptureAnchors: Schema.Attribute.Component<
+      'protocol.scripture-anchor',
+      true
+    >;
+    signsOfAlignment: Schema.Attribute.Component<'protocol.labeled-note', true>;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    summaryMd: Schema.Attribute.RichText;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -3942,6 +4277,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
       'api::article.article': ApiArticleArticle;
+      'api::assignment.assignment': ApiAssignmentAssignment;
       'api::audio-file.audio-file': ApiAudioFileAudioFile;
       'api::author.author': ApiAuthorAuthor;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
@@ -3954,12 +4290,14 @@ declare module '@strapi/strapi' {
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::contact-message.contact-message': ApiContactMessageContactMessage;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
+      'api::course-profile.course-profile': ApiCourseProfileCourseProfile;
       'api::course.course': ApiCourseCourse;
       'api::event.event': ApiEventEvent;
       'api::faq.faq': ApiFaqFaq;
       'api::formation-event.formation-event': ApiFormationEventFormationEvent;
       'api::formation-journey.formation-journey': ApiFormationJourneyFormationJourney;
       'api::formation-phase.formation-phase': ApiFormationPhaseFormationPhase;
+      'api::formation-protocol.formation-protocol': ApiFormationProtocolFormationProtocol;
       'api::formation-reflection.formation-reflection': ApiFormationReflectionFormationReflection;
       'api::gallery.gallery': ApiGalleryGallery;
       'api::global.global': ApiGlobalGlobal;
@@ -3975,11 +4313,14 @@ declare module '@strapi/strapi' {
       'api::living-commentary.living-commentary': ApiLivingCommentaryLivingCommentary;
       'api::margin-reflection.margin-reflection': ApiMarginReflectionMarginReflection;
       'api::media-item.media-item': ApiMediaItemMediaItem;
+      'api::module.module': ApiModuleModule;
       'api::outreach-campaign.outreach-campaign': ApiOutreachCampaignOutreachCampaign;
       'api::outreach-story.outreach-story': ApiOutreachStoryOutreachStory;
       'api::prayer.prayer': ApiPrayerPrayer;
       'api::presigned-upload.presigned-upload': ApiPresignedUploadPresignedUpload;
       'api::project.project': ApiProjectProject;
+      'api::protocol-diagnostic.protocol-diagnostic': ApiProtocolDiagnosticProtocolDiagnostic;
+      'api::protocol-phase.protocol-phase': ApiProtocolPhaseProtocolPhase;
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
       'api::scripture-alignment.scripture-alignment': ApiScriptureAlignmentScriptureAlignment;
