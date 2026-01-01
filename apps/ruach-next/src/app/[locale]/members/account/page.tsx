@@ -105,26 +105,68 @@ async function fetchUser(jwt: string): Promise<StrapiUserMe> {
   return await fetchStrapiPrivate<StrapiUserMe>(`/api/users/me?${params.toString()}`, jwt);
 }
 
+const LESSON_PROGRESS_PAGE_SIZE = 50; // Matches Strapi's `rest.maxLimit` so we avoid 400 responses.
+const LESSON_PROGRESS_SORT = "updatedAt:desc";
+
+type LessonProgressResponse = {
+  data?: any[];
+  meta?: {
+    pagination?: {
+      page?: number;
+      pageCount?: number;
+    };
+  };
+};
+
+function normalizeLessonProgressRecords(rawEntries: any[]): LessonProgressEntry[] {
+  return rawEntries
+    .map((entry) => ({
+      id: entry?.id,
+      courseSlug: entry?.attributes?.courseSlug ?? "",
+      lessonSlug: entry?.attributes?.lessonSlug ?? "",
+      completed: Boolean(entry?.attributes?.completed),
+      secondsWatched: Number(entry?.attributes?.secondsWatched ?? 0),
+      updatedAt: entry?.attributes?.updatedAt ?? entry?.attributes?.createdAt ?? null,
+      createdAt: entry?.attributes?.createdAt ?? null,
+    }))
+    .filter((entry) => entry.courseSlug && entry.lessonSlug && entry.updatedAt) as LessonProgressEntry[];
+}
+
 async function fetchLessonProgress(jwt: string): Promise<LessonProgressEntry[]> {
+  const collectedEntries: any[] = [];
+  let currentPage = 1;
+
   try {
-    const params = new URLSearchParams({
-      "pagination[pageSize]": "500",
-      "sort[0]": "updatedAt:desc",
-    });
+    while (true) {
+      const params = new URLSearchParams({
+        "pagination[pageSize]": String(LESSON_PROGRESS_PAGE_SIZE),
+        "pagination[page]": String(currentPage),
+        "sort[0]": LESSON_PROGRESS_SORT,
+      });
 
-    const response = await fetchStrapiPrivate<{ data: any[] }>(`/api/lesson-progresses?${params.toString()}`, jwt);
+      const response = await fetchStrapiPrivate<LessonProgressResponse>(
+        `/api/lesson-progresses?${params.toString()}`,
+        jwt
+      );
 
-    return (response.data ?? [])
-      .map((entry) => ({
-        id: entry?.id,
-        courseSlug: entry?.attributes?.courseSlug ?? "",
-        lessonSlug: entry?.attributes?.lessonSlug ?? "",
-        completed: Boolean(entry?.attributes?.completed),
-        secondsWatched: Number(entry?.attributes?.secondsWatched ?? 0),
-        updatedAt: entry?.attributes?.updatedAt ?? entry?.attributes?.createdAt ?? null,
-        createdAt: entry?.attributes?.createdAt ?? null,
-      }))
-      .filter((entry) => entry.courseSlug && entry.lessonSlug && entry.updatedAt) as LessonProgressEntry[];
+      const pageData = response.data ?? [];
+      collectedEntries.push(...pageData);
+
+      const pagination = response.meta?.pagination;
+      if (!pagination) {
+        break;
+      }
+
+      const pageNumber = pagination.page ?? currentPage;
+      const totalPages = pagination.pageCount ?? pageNumber;
+      if (pageNumber >= totalPages) {
+        break;
+      }
+
+      currentPage = pageNumber + 1;
+    }
+
+    return normalizeLessonProgressRecords(collectedEntries);
   } catch (error) {
     console.error("[Account Page] Failed to fetch lesson progress:", error);
     return [];
