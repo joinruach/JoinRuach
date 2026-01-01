@@ -28,8 +28,8 @@ import {
   NOTION_PHASE_SLUGS,
   formatPhaseDescription,
 } from './formation-phase-definitions';
-import { loadContract } from './contract/loadContract';
-import { Contract, validateEntity } from './contract/validateEntity';
+import { loadContract, validateEntity } from './contract';
+import type { Contract } from './contract';
 import { transformEntity } from './notion/transformEntity';
 import type { NotionPage } from './notion/notionTypes';
 

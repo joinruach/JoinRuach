@@ -19,6 +19,10 @@ import fs from "node:fs/promises";
 import pkg from "pg";
 const { Pool } = pkg;
 
+type OpenAIEmbeddingResponse = {
+  data: Array<{ embedding?: number[] }>;
+};
+
 // Simple OpenAI client without external dependency
 async function createEmbedding(text: string, apiKey: string): Promise<number[]> {
   const response = await fetch("https://api.openai.com/v1/embeddings", {
@@ -38,10 +42,6 @@ async function createEmbedding(text: string, apiKey: string): Promise<number[]> 
     const error = await response.text();
     throw new Error(`OpenAI API error (${response.status}): ${error}`);
   }
-
-  type OpenAIEmbeddingResponse = {
-    data?: Array<{ embedding?: number[] }>;
-  };
 
   const data = (await response.json()) as OpenAIEmbeddingResponse;
   const embedding = data?.data?.[0]?.embedding;
