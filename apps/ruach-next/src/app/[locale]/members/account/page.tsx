@@ -327,6 +327,15 @@ export default async function AccountPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  try {
+    return await renderAccountPage(params);
+  } catch (error) {
+    console.error("[MEMBER DASHBOARD RENDER ERROR]", error);
+    return null;
+  }
+}
+
+async function renderAccountPage(params: Promise<{ locale: string }>) {
   const { locale } = await params;
   const session = (await auth()) as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
@@ -716,4 +725,5 @@ export default async function AccountPage({
       </section>
     </div>
   );
+
 }
