@@ -6,6 +6,10 @@ test.describe('Authentication Flow', () => {
     process.env.E2E_BACKEND !== 'true',
     'Backend required - run with E2E_BACKEND=true'
   );
+
+  const LIVE_LOGIN_EMAIL = process.env.E2E_TEST_EMAIL;
+  const LIVE_LOGIN_PASSWORD = process.env.E2E_TEST_PASSWORD;
+  const LIVE_LOGIN_ENABLED = Boolean(LIVE_LOGIN_EMAIL && LIVE_LOGIN_PASSWORD);
   test('should display login page', async ({ page }) => {
     await page.goto('/api/auth/signin');
 
@@ -96,33 +100,35 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should redirect to account page after successful login', async ({ page }) => {
-    // Navigate to login page
-    await page.goto('/en/login');
+    test.skip(
+      !LIVE_LOGIN_ENABLED,
+      'Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD to run the live login redirect test'
+    );
 
-    // Verify login form is visible
+    const email = LIVE_LOGIN_EMAIL!;
+    const password = LIVE_LOGIN_PASSWORD!;
+
+    await page.goto('/en/login');
     await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
 
-    // Note: This test requires valid test credentials to be set up
-    // For now, we just verify the form structure and redirect behavior
     const emailInput = page.locator('input[type="email"]');
     const passwordInput = page.locator('input[type="password"]');
     const submitButton = page.getByRole('button', { name: /login|sign in/i });
 
-    // Verify form elements exist
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
     await expect(submitButton).toBeVisible();
 
-    // TODO: Add actual login test with test credentials
-    // await emailInput.fill('test@example.com');
-    // await passwordInput.fill('testpassword123');
-    // await submitButton.click();
-    //
-    // // Wait for redirect to account page (should happen automatically)
-    // await page.waitForURL(/\/en\/members\/account/, { timeout: 5000 });
-    //
-    // // Verify account page loaded successfully
-    // await expect(page.locator('h1')).toContainText(/welcome back/i);
+    await emailInput.fill(email);
+    await passwordInput.fill(password);
+
+    await Promise.all([
+      submitButton.click(),
+      page.waitForURL(/\/en\/members\/account/, { timeout: 10000 }),
+    ]);
+
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
   });
 
   test('should handle failed login gracefully', async ({ page }) => {

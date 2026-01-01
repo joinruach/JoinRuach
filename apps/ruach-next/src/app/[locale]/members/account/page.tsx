@@ -286,8 +286,13 @@ export default async function AccountPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const session = await auth() as StrapiSession | null;
+  const session = (await auth()) as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug("[Account Page] Session", session ? "present" : "missing");
+    console.debug("[Account Page] JWT", jwt ? "present" : "missing");
+  }
 
   if (!jwt) {
     redirect(
