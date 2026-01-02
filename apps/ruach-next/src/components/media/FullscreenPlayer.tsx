@@ -62,6 +62,28 @@ export function FullscreenPlayer() {
     actions.close();
   };
 
+  const handlePictureInPicture = async () => {
+    // For iframes, switch to mini mode (custom PiP)
+    if (format === "video-iframe") {
+      actions.setMode("mini");
+      return;
+    }
+
+    // For native video, use browser PiP API
+    if (videoRef.current) {
+      try {
+        await videoRef.current.requestPictureInPicture();
+        // Auto-minimize to docked when entering PiP
+        actions.setMode("docked");
+      } catch (error) {
+        console.error("PiP failed:", error);
+      }
+    }
+  };
+
+  // Check if PiP is available (native for video files, custom for iframes)
+  const isPiPAvailable = format !== "audio";
+
   const renderMedia = () => {
     switch (format) {
       case "audio":
@@ -132,6 +154,31 @@ export function FullscreenPlayer() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Picture-in-Picture Button (all video types) */}
+            {isPiPAvailable && (
+              <button
+                onClick={handlePictureInPicture}
+                className="rounded-lg bg-white/10 p-2 text-white transition hover:bg-white/20"
+                aria-label="Picture-in-Picture"
+                title="Watch while browsing (Picture-in-Picture)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
+                  />
+                </svg>
+              </button>
+            )}
+
             {/* Minimize Button */}
             <button
               onClick={handleMinimize}

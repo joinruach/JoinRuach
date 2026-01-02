@@ -1,12 +1,12 @@
 "use client";
 
-import { createContext, useContext, useReducer, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useReducer, useCallback, useEffect, type ReactNode } from "react";
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type PlayerMode = "fullscreen" | "docked" | "collapsed" | "hidden";
+export type PlayerMode = "fullscreen" | "docked" | "collapsed" | "mini" | "hidden";
 
 export type MediaFormat = "video-file" | "video-iframe" | "audio" | "video-portrait" | "video-landscape";
 
@@ -78,6 +78,83 @@ type PlayerAction =
   | { type: "TOGGLE_MUTE" }
   | { type: "TOGGLE_DEPTH_PANEL" }
   | { type: "CLOSE" };
+
+// ============================================================================
+// Persistence
+// ============================================================================
+
+const PLAYER_STATE_KEY = "ruach_media_player_state";
+const PLAYER_STATE_VERSION = "2"; // Increment to invalidate old data
+
+interface PersistedPlayerState {
+  version: string;
+  currentMedia: MediaItem | null;
+  mode: PlayerMode;
+  volume: number;
+  isMuted: boolean;
+}
+
+function savePlayerStateToStorage(state: PlayerState): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    // Only save essential state (not playback position, that's handled separately)
+    const persistedState: PersistedPlayerState = {
+      version: PLAYER_STATE_VERSION,
+      currentMedia: state.currentMedia,
+      mode: state.mode,
+      volume: state.volume,
+      isMuted: state.isMuted,
+    };
+    localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(persistedState));
+  } catch (error) {
+    console.error("Failed to save player state:", error);
+  }
+}
+
+function loadPlayerStateFromStorage(): Partial<PlayerState> | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const saved = localStorage.getItem(PLAYER_STATE_KEY);
+    if (!saved) return null;
+
+    const parsed = JSON.parse(saved) as PersistedPlayerState;
+
+    // Check version - clear if outdated
+    if (parsed.version !== PLAYER_STATE_VERSION) {
+      console.log("Clearing outdated player state (old version)");
+      localStorage.removeItem(PLAYER_STATE_KEY);
+      return null;
+    }
+
+    // Don't restore if no media was playing
+    if (!parsed.currentMedia) return null;
+
+    // Start in docked mode instead of fullscreen on restore
+    return {
+      ...parsed,
+      mode: parsed.mode === "fullscreen" ? "docked" : parsed.mode,
+      isPlaying: false, // Don't auto-play on restore
+      currentTime: 0, // Will be loaded from media-progress separately
+    };
+  } catch (error) {
+    console.error("Failed to load player state:", error);
+    // Clear corrupted data
+    localStorage.removeItem(PLAYER_STATE_KEY);
+    return null;
+  }
+}
+
+function clearPlayerStateFromStorage(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.removeItem(PLAYER_STATE_KEY);
+  } catch (error) {
+    console.error("Failed to clear player state:", error);
+  }
+}
 
 // ============================================================================
 // Reducer
@@ -169,6 +246,7 @@ function playerReducer(state: PlayerState, action: PlayerAction): PlayerState {
       };
 
     case "CLOSE":
+      clearPlayerStateFromStorage();
       return {
         ...initialState,
       };
@@ -211,7 +289,46 @@ export interface MediaPlayerProviderProps {
 }
 
 export function MediaPlayerProvider({ children }: MediaPlayerProviderProps) {
-  const [state, dispatch] = useReducer(playerReducer, initialState);
+  const [state, dispatch] = useReducer(playerReducer, initialState, (initial) => {
+    // Lazy initialization: restore from localStorage on first render
+    const restored = loadPlayerStateFromStorage();
+    return restored ? { ...initial, ...restored } : initial;
+  });
+
+  // One-time cleanup on mount: remove any orphaned player-related keys
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Clean up any old/corrupted keys
+    try {
+      const keysToCheck = [
+        "ruach_current_media", // Old key that might exist
+        "media_player_state", // Old key that might exist
+      ];
+
+      keysToCheck.forEach((key) => {
+        if (localStorage.getItem(key)) {
+          console.log(`Removing old localStorage key: ${key}`);
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.error("Failed to clean up old localStorage keys:", error);
+    }
+  }, []);
+
+  // Save player state to localStorage whenever it changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (state.currentMedia) {
+        savePlayerStateToStorage(state);
+      } else {
+        clearPlayerStateFromStorage();
+      }
+    }, 500); // Debounce to avoid excessive writes
+
+    return () => clearTimeout(timeoutId);
+  }, [state]);
 
   // Actions
   const loadMedia = useCallback((media: MediaItem, autoPlay = true) => {

@@ -5,6 +5,9 @@ import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Button } from "@/components/ruach/ui/Button";
 import { track } from "@/lib/analytics";
 
+// Signup page must be dynamic (uses router and form state)
+export const dynamic = "force-dynamic";
+
 export default function SignupPage({
   params
 }: {

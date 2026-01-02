@@ -1,9 +1,8 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
-import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
+import MediaGrid from "@/components/media/MediaGrid";
 import SEOHead from "@/components/ruach/SEOHead";
-import MediaPlayer from "@/components/ruach/MediaPlayer";
-import ShareButton from "@/components/social/ShareButton";
-import LikeButton from "@/components/social/LikeButton";
+import { MediaDetailPlayer } from "@/components/media/MediaDetailPlayer";
+import MediaEngagementControls from "@/components/media/MediaEngagementControls";
 import { ScriptureList, ScriptureHighlight } from "@/components/scripture";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
 import {
@@ -13,8 +12,7 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
-import { getAbsoluteUrl, generateShareText, getDefaultHashtags, trackShare } from "@/lib/share";
-import { trackLike } from "@/lib/likes";
+import { getAbsoluteUrl, generateShareText, getDefaultHashtags } from "@/lib/share";
 import TranscriptSection from "@/components/media/TranscriptSection";
 import WhatsNextBlock from "@/components/media/WhatsNextBlock";
 
@@ -203,6 +201,9 @@ export default async function MediaDetail({ params }: Props){
       .map((speaker) => speaker.displayName || speaker.name)
       .filter(Boolean) as string[];
 
+      // Only include videoSource if it has a valid kind
+      const videoSource = attr.source?.kind ? attr.source : undefined;
+
       return {
         title: attr.title ?? "Untitled Media",
         href: `/media/${attr.slug}`,
@@ -215,6 +216,8 @@ export default async function MediaDetail({ params }: Props){
         views: attr.views ?? 0,
         durationSec: attr.durationSec ?? undefined,
         speakers: speakerNames,
+        mediaId: item?.id,
+        videoSource: videoSource as any, // Cast to avoid type conflict
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -271,21 +274,15 @@ export default async function MediaDetail({ params }: Props){
               <span className="text-neutral-400 dark:text-white/40">• {formatDuration(a.durationSec)}</span>
             ) : null}
           </div>
-          <div className="flex items-center gap-2">
-            <LikeButton
-              contentType="media"
-              contentId={data.id}
-              initialLikes={a.likes ?? 0}
-              onLike={(liked, count) => trackLike("media", data.id, liked)}
-            />
-            <ShareButton
-              url={pageUrl}
-              title={a.title ?? "Untitled Media"}
-              description={shareText}
-              hashtags={shareHashtags}
-              onShare={(platform) => trackShare(platform, "media", data.id)}
-            />
-          </div>
+          <MediaEngagementControls
+            contentType="media"
+            contentId={data.id}
+            initialLikes={a.likes ?? 0}
+            shareUrl={pageUrl}
+            shareTitle={a.title ?? "Untitled Media"}
+            shareDescription={shareText}
+            shareHashtags={shareHashtags}
+          />
         </div>
         <h1 className="mt-3 text-3xl font-semibold text-neutral-900 dark:text-white">{a.title}</h1>
         {a.description ? (
@@ -312,13 +309,20 @@ export default async function MediaDetail({ params }: Props){
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white dark:border-white/10 dark:bg-black">
-        <MediaPlayer
-          mediaId={data.id}
-          videoUrl={videoUrl}
-          isFileVideo={Boolean(isFileVideo)}
-          poster={thumbUrl}
-          title={a.title}
-        />
+        {a.source?.kind ? (
+          <MediaDetailPlayer
+            mediaId={data.id}
+            title={a.title ?? "Untitled Media"}
+            videoSource={a.source as any}
+            thumbnail={thumbUrl}
+            durationSec={a.durationSec ?? undefined}
+            autoPlay={true}
+          />
+        ) : (
+          <div className="aspect-video w-full bg-neutral-900 flex items-center justify-center">
+            <p className="text-white/60">No video source available</p>
+          </div>
+        )}
       </section>
 
       {/* Transcript Section */}

@@ -22,6 +22,8 @@ export interface VideoRendererHandle {
   setMuted: (muted: boolean) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  requestPictureInPicture: () => Promise<void>;
+  exitPictureInPicture: () => Promise<void>;
 }
 
 /**
@@ -65,6 +67,29 @@ export const VideoRenderer = forwardRef<VideoRendererHandle, VideoRendererProps>
       },
       getDuration: () => {
         return videoRef.current?.duration || 0;
+      },
+      requestPictureInPicture: async () => {
+        if (!videoRef.current) return;
+
+        try {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+          }
+          await videoRef.current.requestPictureInPicture();
+        } catch (error) {
+          console.error("Failed to enter Picture-in-Picture:", error);
+          throw error;
+        }
+      },
+      exitPictureInPicture: async () => {
+        try {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+          }
+        } catch (error) {
+          console.error("Failed to exit Picture-in-Picture:", error);
+          throw error;
+        }
       },
     }));
 

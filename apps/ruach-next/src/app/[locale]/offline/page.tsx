@@ -2,6 +2,9 @@
 
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 
+// Offline page must be dynamic (uses browser APIs)
+export const dynamic = "force-dynamic";
+
 export default function OfflinePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center space-y-6 px-4 text-center">
