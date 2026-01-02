@@ -210,6 +210,24 @@
         "images"
       ],
       "description": "Optional custom thumbnail optimized for social media (1200x630 recommended)"
+    },
+    "chapters": {
+      "type": "component",
+      "repeatable": true,
+      "component": "media.chapter",
+      "description": "Chapter markers for navigation within the media"
+    },
+    "resources": {
+      "type": "component",
+      "repeatable": true,
+      "component": "media.resource",
+      "description": "Downloadable resources and links associated with this media"
+    },
+    "reflectionPrompts": {
+      "type": "component",
+      "repeatable": true,
+      "component": "media.reflection-prompt",
+      "description": "Formation-focused reflection questions for spiritual growth"
     }
   }
 }

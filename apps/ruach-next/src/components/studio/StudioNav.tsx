@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 export default function StudioNav() {
   const pathname = usePathname();
@@ -56,13 +57,14 @@ export default function StudioNav() {
 
       {/* User Menu / Logout */}
       <div className="p-4 border-t border-gray-700">
-        <Link
-          href={`/${locale}/api/auth/signout`}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+          className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
         >
           <span className="text-xl">🚪</span>
           <span>Sign Out</span>
-        </Link>
+        </button>
       </div>
     </nav>
   );

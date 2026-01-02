@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_media_resources",
+  "info": {
+    "displayName": "Resource",
+    "description": "Downloadable or linkable resource associated with media content"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200,
+      "description": "Resource title or name"
+    },
+    "url": {
+      "type": "string",
+      "required": true,
+      "description": "URL to the resource (download link, external link, etc.)"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["pdf", "link", "download", "study-guide", "worksheet"],
+      "required": true,
+      "default": "link",
+      "description": "Type of resource"
+    },
+    "description": {
+      "type": "text",
+      "description": "Optional description of the resource"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_media_reflection_prompts",
+  "info": {
+    "displayName": "Reflection Prompt",
+    "description": "Formation-focused reflection question for spiritual growth"
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "text",
+      "required": true,
+      "description": "Reflection question or prompt"
+    },
+    "category": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional category or theme (e.g., 'Identity', 'Spiritual Warfare', 'Prayer')"
+    }
+  }
+}

@@ -178,6 +178,44 @@ export async function incrementMediaView(id: number) {
   }
 }
 
+/**
+ * Save media playback progress for the current user
+ */
+export async function saveMediaProgress(
+  mediaId: number,
+  data: { currentTime: number; duration?: number; completed?: boolean }
+) {
+  if (!mediaId) return;
+  try {
+    await postJSON(`/api/media-items/${mediaId}/progress`, data);
+  } catch (error) {
+    console.error("Failed to save media progress:", error);
+    // Don't throw - progress saving is best-effort
+  }
+}
+
+/**
+ * Get media playback progress for the current user
+ */
+export async function getMediaProgress(mediaId: number): Promise<{
+  currentTime: number;
+  duration: number;
+  completed: boolean;
+} | null> {
+  if (!mediaId) return null;
+  try {
+    const response = await getJSON<{
+      currentTime: number;
+      duration: number;
+      completed: boolean;
+    }>(`/api/media-items/${mediaId}/progress`, {});
+    return response;
+  } catch (error) {
+    // Return null if not found or error
+    return null;
+  }
+}
+
 const qs = (o: Record<string, string>) => new URLSearchParams(o).toString();
 
 function isBadRequest(error: unknown): error is StrapiRequestError {

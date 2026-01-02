@@ -1,7 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next-intl/link";
 import { imgUrl } from "@/lib/strapi";
 import LiveIndicator from "@/components/livestream/LiveIndicator";
+import { useMediaPlayer } from "@/hooks/useMediaPlayer";
+import type { MediaItem, VideoSource } from "@/contexts/MediaPlayerContext";
 
 export type MediaCardProps = {
   title: string;
@@ -15,6 +20,9 @@ export type MediaCardProps = {
   likes?: number;
   contentId?: string | number;
   isLive?: boolean;
+  // For global player integration
+  mediaId?: string | number;
+  videoSource?: VideoSource;
 };
 
 function formatDuration(seconds?: number) {
@@ -36,7 +44,11 @@ export default function MediaCard({
   likes,
   contentId,
   isLive,
+  mediaId,
+  videoSource,
 }: MediaCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const { actions } = useMediaPlayer();
   const src = thumbnail?.src ? imgUrl(thumbnail.src) : undefined;
   const primarySpeaker = speakers?.[0];
   const durationLabel = formatDuration(durationSec);
@@ -51,9 +63,32 @@ export default function MediaCard({
   if (viewLabel) meta.push(viewLabel);
   if (likeLabel) meta.push(likeLabel);
 
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!mediaId || !videoSource) return;
+
+    const mediaItem: MediaItem = {
+      id: mediaId,
+      title,
+      source: videoSource,
+      thumbnail: src,
+      durationSec,
+    };
+
+    actions.loadMedia(mediaItem, true);
+  };
+
+  const showPlayButton = Boolean(mediaId && videoSource && !isLive);
+
   return (
     <Link href={href}>
-      <div className="group overflow-hidden rounded-xl ring-1 ring-black/5 transition hover:ring-amber-400">
+      <div
+        className="group overflow-hidden rounded-xl ring-1 ring-black/5 transition hover:ring-amber-400"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
       <div className="relative aspect-video">
         {src ? (
           <Image
@@ -65,10 +100,35 @@ export default function MediaCard({
         ) : (
           <div className="h-full w-full bg-neutral-200" />
         )}
+
         {/* Live badge overlay */}
         {isLive && (
           <div className="absolute left-3 top-3">
             <LiveIndicator isLive={true} size="sm" />
+          </div>
+        )}
+
+        {/* Play button overlay (hover state) */}
+        {showPlayButton && isHovered && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity">
+            <button
+              onClick={handlePlayClick}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg transition hover:bg-amber-600 hover:scale-110"
+              aria-label="Play video"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="ml-1 h-8 w-8"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
           </div>
         )}
       </div>

@@ -2339,6 +2339,7 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
   attributes: {
     autoPublish: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
+    chapters: Schema.Attribute.Component<'media.chapter', true>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2389,7 +2390,12 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     publishX: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     publishYouTube: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
+    reflectionPrompts: Schema.Attribute.Component<
+      'media.reflection-prompt',
+      true
+    >;
     releasedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    resources: Schema.Attribute.Component<'media.resource', true>;
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
@@ -2432,6 +2438,64 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
         },
         number
       >;
+  };
+}
+
+export interface ApiMediaProgressMediaProgress
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'media_progresses';
+  info: {
+    description: 'Tracks user playback progress for media items';
+    displayName: 'Media Progress';
+    pluralName: 'media-progresses';
+    singularName: 'media-progress';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    completed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currentTime: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    duration: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    lastUpdated: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::media-progress.media-progress'
+    > &
+      Schema.Attribute.Private;
+    mediaItem: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::media-item.media-item'
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
   };
 }
 
@@ -4313,6 +4377,7 @@ declare module '@strapi/strapi' {
       'api::living-commentary.living-commentary': ApiLivingCommentaryLivingCommentary;
       'api::margin-reflection.margin-reflection': ApiMarginReflectionMarginReflection;
       'api::media-item.media-item': ApiMediaItemMediaItem;
+      'api::media-progress.media-progress': ApiMediaProgressMediaProgress;
       'api::module.module': ApiModuleModule;
       'api::outreach-campaign.outreach-campaign': ApiOutreachCampaignOutreachCampaign;
       'api::outreach-story.outreach-story': ApiOutreachStoryOutreachStory;

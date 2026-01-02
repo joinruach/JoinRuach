@@ -137,7 +137,7 @@ After publishing, you can view the `publishStatus` field (JSON) to see results:
   },
   "facebook": {
     "status": "success",
-    "publishedAt": "2025-01-15T10:30:05.000Z",
+    "publishedAt": "2025-01-  15T10:30:05.000Z",
     "result": {
       "type": "link",
       "id": "123456789",

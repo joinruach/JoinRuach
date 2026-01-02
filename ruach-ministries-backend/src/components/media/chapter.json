@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_media_chapters",
+  "info": {
+    "displayName": "Chapter",
+    "description": "Video/audio chapter marker with timestamp and title"
+  },
+  "options": {},
+  "attributes": {
+    "time": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "description": "Chapter start time in seconds"
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200,
+      "description": "Chapter title or name"
+    },
+    "description": {
+      "type": "text",
+      "description": "Optional chapter description or summary"
+    }
+  }
+}

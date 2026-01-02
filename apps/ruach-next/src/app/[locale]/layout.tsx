@@ -8,6 +8,7 @@ import LivePreview from "@/components/preview/LivePreview";
 import { RuachAssistant } from "@/components/ai/RuachAssistant";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import OfflineIndicator from "@/components/offline/OfflineIndicator";
+import { GlobalMediaPlayer } from "@/components/media/GlobalMediaPlayer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
@@ -123,6 +124,7 @@ export default async function LocaleLayout({
               {aiAssistantEnabled && <RuachAssistant />}
               <InstallPrompt />
               <OfflineIndicator />
+              <GlobalMediaPlayer />
             </Providers>
           </ThemeProvider>
         </NextIntlClientProvider>

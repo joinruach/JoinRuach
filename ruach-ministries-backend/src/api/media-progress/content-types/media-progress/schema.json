@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "media_progresses",
+  "info": {
+    "singularName": "media-progress",
+    "pluralName": "media-progresses",
+    "displayName": "Media Progress",
+    "description": "Tracks user playback progress for media items"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true,
+      "index": true
+    },
+    "mediaItem": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::media-item.media-item",
+      "required": true,
+      "index": true
+    },
+    "currentTime": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "default": 0,
+      "description": "Current playback position in seconds"
+    },
+    "duration": {
+      "type": "integer",
+      "min": 0,
+      "default": 0,
+      "description": "Total duration of the media in seconds"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed watching/listening to this media"
+    },
+    "lastUpdated": {
+      "type": "datetime",
+      "required": true,
+      "description": "Last time the progress was updated"
+    }
+  }
+}

@@ -58,4 +58,129 @@ export default factories.createCoreController('api::media-item.media-item', ({ s
       views: updated.views,
     };
   },
+
+  async saveProgress(ctx) {
+    const idParam = ctx.params.id;
+    const id = Number.parseInt(idParam, 10);
+
+    if (!Number.isFinite(id)) {
+      ctx.throw(400, 'Invalid media item id');
+      return;
+    }
+
+    const user = ctx.state.user;
+    if (!user) {
+      ctx.throw(401, 'Authentication required');
+      return;
+    }
+
+    const { currentTime, duration, completed } = ctx.request.body as {
+      currentTime: number;
+      duration?: number;
+      completed?: boolean;
+    };
+
+    if (typeof currentTime !== 'number' || currentTime < 0) {
+      ctx.throw(400, 'Invalid currentTime');
+      return;
+    }
+
+    // Check if media item exists
+    const mediaItem = await strapi.entityService.findOne('api::media-item.media-item', id, {
+      fields: ['id'],
+    });
+
+    if (!mediaItem) {
+      ctx.notFound('Media item not found');
+      return;
+    }
+
+    // Find existing progress record
+    const existingProgress = await strapi.entityService.findMany('api::media-progress.media-progress', {
+      filters: {
+        user: { id: user.id },
+        mediaItem: { id },
+      },
+      limit: 1,
+    });
+
+    const progressData = {
+      currentTime,
+      duration: duration || 0,
+      completed: completed || false,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    let progress;
+    if (existingProgress && existingProgress.length > 0) {
+      // Update existing progress
+      progress = await strapi.entityService.update(
+        'api::media-progress.media-progress',
+        existingProgress[0].id,
+        {
+          data: progressData as any,
+        }
+      );
+    } else {
+      // Create new progress record
+      progress = await strapi.entityService.create('api::media-progress.media-progress', {
+        data: {
+          ...progressData,
+          user: user.id,
+          mediaItem: id,
+        } as any,
+      });
+    }
+
+    ctx.body = {
+      id: progress.id,
+      currentTime: progress.currentTime,
+      duration: progress.duration,
+      completed: progress.completed,
+      lastUpdated: progress.lastUpdated,
+    };
+  },
+
+  async getProgress(ctx) {
+    const idParam = ctx.params.id;
+    const id = Number.parseInt(idParam, 10);
+
+    if (!Number.isFinite(id)) {
+      ctx.throw(400, 'Invalid media item id');
+      return;
+    }
+
+    const user = ctx.state.user;
+    if (!user) {
+      ctx.throw(401, 'Authentication required');
+      return;
+    }
+
+    // Find progress record
+    const progressRecords = await strapi.entityService.findMany('api::media-progress.media-progress', {
+      filters: {
+        user: { id: user.id },
+        mediaItem: { id },
+      },
+      limit: 1,
+    });
+
+    if (!progressRecords || progressRecords.length === 0) {
+      ctx.body = {
+        currentTime: 0,
+        duration: 0,
+        completed: false,
+      };
+      return;
+    }
+
+    const progress = progressRecords[0];
+    ctx.body = {
+      id: progress.id,
+      currentTime: progress.currentTime,
+      duration: progress.duration,
+      completed: progress.completed,
+      lastUpdated: progress.lastUpdated,
+    };
+  },
 }));

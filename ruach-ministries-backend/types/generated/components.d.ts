@@ -55,6 +55,67 @@ export interface ImpactMetric extends Struct.ComponentSchema {
   };
 }
 
+export interface MediaChapter extends Struct.ComponentSchema {
+  collectionName: 'components_media_chapters';
+  info: {
+    description: 'Video/audio chapter marker with timestamp and title';
+    displayName: 'Chapter';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    time: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+  };
+}
+
+export interface MediaReflectionPrompt extends Struct.ComponentSchema {
+  collectionName: 'components_media_reflection_prompts';
+  info: {
+    description: 'Formation-focused reflection question for spiritual growth';
+    displayName: 'Reflection Prompt';
+  };
+  attributes: {
+    category: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    question: Schema.Attribute.Text & Schema.Attribute.Required;
+  };
+}
+
+export interface MediaResource extends Struct.ComponentSchema {
+  collectionName: 'components_media_resources';
+  info: {
+    description: 'Downloadable or linkable resource associated with media content';
+    displayName: 'Resource';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    type: Schema.Attribute.Enumeration<
+      ['pdf', 'link', 'download', 'study-guide', 'worksheet']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'link'>;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface MediaVideoSource extends Struct.ComponentSchema {
   collectionName: 'components_media_video_source';
   info: {
@@ -386,6 +447,9 @@ declare module '@strapi/strapi' {
       'general.se-ometadata': GeneralSeOmetadata;
       'general.social-links': GeneralSocialLinks;
       'impact.metric': ImpactMetric;
+      'media.chapter': MediaChapter;
+      'media.reflection-prompt': MediaReflectionPrompt;
+      'media.resource': MediaResource;
       'media.video-source': MediaVideoSource;
       'outreach.giving-highlight': OutreachGivingHighlight;
       'outreach.subscription-banner': OutreachSubscriptionBanner;
