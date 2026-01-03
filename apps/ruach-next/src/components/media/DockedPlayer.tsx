@@ -17,12 +17,12 @@ export function DockedPlayer() {
   const audioRef = useRef<AudioRendererHandle>(null);
   const [position, setPosition] = useState({ bottom: 20, right: 20 });
 
-  const { currentMedia } = state;
-  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
-  const isAudio = format === "audio";
-
   // Sync playback state
   useEffect(() => {
+    const currentMedia = state.currentMedia;
+    const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
+    const isAudio = format === "audio";
+
     const ref = isAudio ? audioRef.current : videoRef.current;
     if (!ref) return;
 
@@ -31,7 +31,11 @@ export function DockedPlayer() {
     } else {
       ref.pause();
     }
-  }, [state.isPlaying, isAudio, actions]);
+  }, [state.currentMedia, state.isPlaying, actions]);
+
+  const { currentMedia } = state;
+  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
+  const isAudio = format === "audio";
 
   if (!currentMedia) return null;
 

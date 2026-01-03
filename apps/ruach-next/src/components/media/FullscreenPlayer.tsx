@@ -17,12 +17,12 @@ export function FullscreenPlayer() {
   const videoRef = useRef<VideoRendererHandle>(null);
   const audioRef = useRef<AudioRendererHandle>(null);
 
-  const { currentMedia } = state;
-  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
-  const isAudio = format === "audio";
-
   // Sync player ref actions with context state
   useEffect(() => {
+    const currentMedia = state.currentMedia;
+    const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
+    const isAudio = format === "audio";
+
     const ref = isAudio ? audioRef.current : videoRef.current;
     if (!ref) return;
 
@@ -34,7 +34,11 @@ export function FullscreenPlayer() {
     } else {
       ref.pause();
     }
-  }, [state.isPlaying, isAudio, actions]);
+  }, [state.currentMedia, state.isPlaying, actions]);
+
+  const { currentMedia } = state;
+  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
+  const isAudio = format === "audio";
 
   if (!currentMedia) return null;
 
