@@ -367,42 +367,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DigitalOcean Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.DO_REGISTRY_URL }}
-          username: ${{ secrets.DO_REGISTRY_TOKEN }}
-          password: ${{ secrets.DO_REGISTRY_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DO_REGISTRY_URL }}/ruach-frontend
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
+      - name: Build Docker image (no push)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./apps/ruach-next/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: false
+          load: true
+          tags: ruach-frontend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             NODE_ENV=production
-
-      - name: Trigger DigitalOcean App Platform deployment (frontend)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          curl -X POST "https://api.digitalocean.com/v2/apps/${{ secrets.DO_FRONTEND_APP_ID }}/deployments" \
-            -H "Authorization: Bearer ${{ secrets.DO_API_TOKEN }}" \
-            -H "Content-Type: application/json"
 
   # Job 8: Docker Build (Backend)
   docker-build-backend:
@@ -419,42 +395,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DigitalOcean Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.DO_REGISTRY_URL }}
-          username: ${{ secrets.DO_REGISTRY_TOKEN }}
-          password: ${{ secrets.DO_REGISTRY_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DO_REGISTRY_URL }}/ruach-backend
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
+      - name: Build Docker image (no push)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./ruach-ministries-backend/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: false
+          load: true
+          tags: ruach-backend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             NODE_ENV=production
-
-      - name: Trigger DigitalOcean App Platform deployment (backend)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          curl -X POST "https://api.digitalocean.com/v2/apps/${{ secrets.DO_BACKEND_APP_ID }}/deployments" \
-            -H "Authorization: Bearer ${{ secrets.DO_API_TOKEN }}" \
-            -H "Content-Type: application/json"
 
   notify-failure:
     name: Notify on Failure
