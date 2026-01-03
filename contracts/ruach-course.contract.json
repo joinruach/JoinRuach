@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract": "ruach-course",
+  "version": "1.0.0",
+  "checksumAlgorithm": "sha256",
+  "description": "Canonical contract governing Ruach course, formation, canon, and learning systems. This file is the single source of truth for Notion, Strapi, importers, and AI pipelines.",
+  "enums": {
+    "status": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+    "courseLevel": ["foundation", "intermediate", "advanced"],
+    "lessonType": ["teaching", "scripture", "activation", "practice", "healing-exercise"],
+    "assignmentType": ["audit", "renunciation", "build", "journal", "declaration", "action-plan", "assessment", "practice-log"],
+    "outputFormat": ["written", "spoken", "action", "testimony"],
+    "visibility": ["public", "gated", "cohort-only", "private"],
+    "pricingType": ["free", "paid-core", "paid-flagship", "paid-specialty"],
+    "authorityLevel": ["introductory", "pastoral", "apostolic", "prophetic"],
+    "commitmentLevel": ["low", "medium", "high"],
+    "formationPhase": ["awakening", "separation", "discernment", "commission", "stewardship"],
+    "nodeType": ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"],
+    "formationScope": ["Individual", "Household", "Ecclesia", "Network"],
+    "sensitivity": ["Low", "Medium", "High", "Critical"],
+    "checkpointType": ["none", "text-response", "voice-response", "text-and-voice"]
+  },
+
+  "entities": {
+    "Course": {
+      "identity": {
+        "courseId": { "type": "string", "required": true, "immutable": true },
+        "slug": { "type": "string", "required": true, "immutable": true },
+        "notionPageId": { "type": "string", "required": false }
+      },
+      "runtime": {
+        "name": { "type": "string", "required": true },
+        "excerpt": { "type": "string" },
+        "description": { "type": "richtext" },
+        "status": { "type": "enum", "enum": "status", "default": "Draft" },
+        "level": { "type": "enum", "enum": "courseLevel", "default": "foundation" },
+        "featured": { "type": "boolean", "default": false },
+        "estimatedDuration": { "type": "string" }
+      },
+      "relations": {
+        "phase": { "type": "manyToOne", "target": "FormationPhase", "required": true },
+        "lessons": { "type": "oneToMany", "target": "Lesson" },
+        "modules": { "type": "oneToMany", "target": "Module" }
+      },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" }
+      }
+    },
+
+    "CourseProfile": {
+      "ownership": { "course": "oneToOne" },
+      "semantic": {
+        "subtitle": { "type": "string" },
+        "format": { "type": "string" },
+        "visibility": { "type": "enum", "enum": "visibility", "default": "public" },
+        "pricingType": { "type": "enum", "enum": "pricingType", "default": "free" },
+        "funnelRole": { "type": "string" },
+        "authorityLevel": { "type": "enum", "enum": "authorityLevel" },
+        "commitmentLevel": { "type": "enum", "enum": "commitmentLevel" },
+        "purpose": { "type": "richtext" },
+        "idealParticipant": { "type": "richtext" },
+        "notFor": { "type": "richtext" },
+        "promisedOutcome": { "type": "richtext" },
+        "scripturalFoundation": { "type": "richtext" },
+        "liesConfronted": { "type": "richtext" },
+        "formationOutcomes": { "type": "richtext" },
+        "practiceComponents": { "type": "richtext" },
+        "distinctiveFeature": { "type": "richtext" },
+        "completionPath": { "type": "string" },
+        "prerequisites": { "type": "string" },
+        "communityRules": { "type": "richtext" }
+      }
+    },
+
+    "Module": {
+      "identity": {
+        "moduleId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "name": { "type": "string", "required": true },
+        "order": { "type": "integer", "required": true },
+        "description": { "type": "richtext" }
+      },
+      "relations": {
+        "course": { "type": "manyToOne", "target": "Course", "required": true },
+        "lessons": { "type": "oneToMany", "target": "Lesson" }
+      }
+    },
+
+    "Lesson": {
+      "identity": { "slug": { "type": "string", "required": true } },
+      "content": {
+        "title": { "type": "string", "required": true },
+        "summary": { "type": "text" },
+        "order": { "type": "integer", "required": true },
+        "duration": { "type": "integer" },
+        "videoUrl": { "type": "string" },
+        "transcript": { "type": "richtext" }
+      },
+      "relations": { "course": { "type": "manyToOne", "target": "Course", "required": true } }
+    },
+
+    "Assignment": {
+      "identity": {
+        "assignmentId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "name": { "type": "string", "required": true },
+        "assignmentType": { "type": "enum", "enum": "assignmentType" },
+        "outputFormat": { "type": "enum", "enum": "outputFormat" },
+        "instructions": { "type": "richtext" }
+      },
+      "relations": {
+        "course": { "type": "manyToOne", "target": "Course" },
+        "lesson": { "type": "manyToOne", "target": "Lesson" }
+      }
+    },
+
+    "FormationPhase": {
+      "identity": {
+        "phaseId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "phaseName": { "type": "string", "required": true },
+        "phase": { "type": "enum", "enum": "formationPhase", "required": true },
+        "order": { "type": "integer", "required": true },
+        "description": { "type": "richtext", "required": true }
+      }
+    },
+
+    "GuidebookNode": {
+      "identity": {
+        "nodeId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "title": { "type": "string", "required": true },
+        "nodeType": { "type": "enum", "enum": "nodeType" },
+        "formationScope": { "type": "enum", "enum": "formationScope", "required": true },
+        "sensitivity": { "type": "enum", "enum": "sensitivity" },
+        "content": { "type": "richtext", "required": true }
+      },
+      "relations": {
+        "phase": { "type": "manyToOne", "target": "FormationPhase" }
+      }
+    }
+  }
+}

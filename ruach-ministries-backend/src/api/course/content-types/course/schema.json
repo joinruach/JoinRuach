@@ -97,6 +97,7 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::formation-phase.formation-phase",
+      "required": true,
       "inversedBy": "courses"
     },
     "modules": {
