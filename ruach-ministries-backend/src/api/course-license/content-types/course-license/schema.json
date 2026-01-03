@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_licenses",
+  "info": {
+    "singularName": "course-license",
+    "pluralName": "course-licenses",
+    "displayName": "Course License"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "courseSlug": {
+      "type": "string",
+      "required": true
+    },
+    "grantedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": [
+        "purchase",
+        "comp",
+        "promo"
+      ],
+      "default": "purchase"
+    },
+    "stripeCheckoutSessionId": {
+      "type": "string",
+      "unique": true
+    },
+    "stripePaymentIntentId": {
+      "type": "string"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "course_licenses"
+    }
+  }
+}

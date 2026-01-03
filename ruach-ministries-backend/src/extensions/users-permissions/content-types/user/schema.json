@@ -119,7 +119,8 @@
       "enum": [
         "supporter",
         "partner",
-        "builder"
+        "builder",
+        "steward"
       ],
       "default": "supporter"
     },
@@ -141,9 +142,18 @@
     "membershipEndedAt": {
       "type": "datetime"
     },
-    "activeMembership": {
-      "type": "boolean",
-      "default": false
-    }
+  "activeMembership": {
+    "type": "boolean",
+    "default": false
+  },
+  "entitlements": {
+    "type": "json"
+  },
+  "course_licenses": {
+    "type": "relation",
+    "relation": "oneToMany",
+    "target": "api::course-license.course-license",
+    "mappedBy": "user"
   }
+}
 }

@@ -1,20 +1,13 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
-import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import CertificateButton from "@/components/ruach/CertificateButton";
 import SEOHead from "@/components/ruach/SEOHead";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { parseAccessLevel } from "@/lib/access-level";
 import type { AccessLevel as CourseAccessLevel } from "@ruach/components/components/ruach/CourseCard";
 import { getCourseProgress } from "@/lib/api/courseProgress";
 import { cn } from "@/lib/cn";
-
-// Extended session type with Strapi JWT
-interface ExtendedSession {
-  strapiJwt?: string;
-  [key: string]: unknown;
-}
+import { requireCourseLicense } from "@/lib/require-course-license";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
@@ -86,8 +79,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CourseDetail({ params }: { params: Promise<{ slug: string }> }){
   const { slug } = await params;
-  const session = await auth();
-  const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const { jwt, membership } = await requireCourseLicense(slug, `/courses/${slug}`);
   const course = await getCourseBySlug(slug, jwt);
   if (!course) return notFound();
 

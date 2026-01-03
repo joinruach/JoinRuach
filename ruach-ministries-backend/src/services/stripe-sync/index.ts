@@ -1,11 +1,11 @@
 import Stripe from "stripe";
+import { entitlementsForTier } from "./entitlements";
 
 declare const strapi: any;
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const STRIPE_API_VERSION =
-  (process.env.STRIPE_API_VERSION as Stripe.StripeConfig["apiVersion"] | undefined) ??
-  "2025-12-15.clover";
+const DEFAULT_STRIPE_API_VERSION: Stripe.StripeConfig["apiVersion"] = "2024-06-20";
+const STRIPE_API_VERSION: Stripe.StripeConfig["apiVersion"] = DEFAULT_STRIPE_API_VERSION;
 const ACTIVE_ROLE_NAME = process.env.STRIPE_ACTIVE_ROLE_NAME || "Partner";
 const DEFAULT_ROLE_NAME = process.env.STRIPE_FALLBACK_ROLE_NAME || "Authenticated";
 
@@ -16,7 +16,7 @@ const ACTIVE_STATUSES = new Set<Stripe.Subscription.Status>([
   "paused",
 ]);
 
-const MEMBERSHIP_TIERS = new Set(["supporter", "partner", "builder"]);
+const MEMBERSHIP_TIERS = new Set(["supporter", "partner", "builder", "steward"]);
 const ACCESS_LEVELS = new Set(["basic", "full", "leader"]);
 
 let stripeClient: Stripe | null = null;
@@ -261,8 +261,10 @@ export async function applySubscriptionToUser(
   if (currentPeriodEnd) {
     updateData.membershipCurrentPeriodEnd = currentPeriodEnd;
   }
-  updateData.membershipTier = metadata.tier ?? (user.membershipTier ?? "supporter");
+  const membershipTier = metadata.tier ?? (user.membershipTier ?? "supporter");
+  updateData.membershipTier = membershipTier;
   updateData.accessLevel = metadata.accessLevel ?? (user.accessLevel ?? "basic");
+  updateData.entitlements = entitlementsForTier(membershipTier);
   if (createdAt) {
     updateData.membershipStartedAt = createdAt;
   }
@@ -314,6 +316,16 @@ export async function markMembershipInactive(userId: number) {
       activeMembership: false,
     },
   });
+}
+
+export async function syncMembershipFromSubscription(
+  subscription: Stripe.Subscription,
+  context?: {
+    customerEmail?: string | null;
+    strapiUserId?: string | number | null;
+  }
+) {
+  await applySubscriptionToUser(subscription, context);
 }
 
 export { ensureStripeClient, ACTIVE_STATUSES };

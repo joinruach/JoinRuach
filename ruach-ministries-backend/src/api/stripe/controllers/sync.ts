@@ -1,4 +1,8 @@
-import { applySubscriptionToUser, fetchLatestSubscription, markMembershipInactive } from "../../../services/stripe-sync";
+import {
+  fetchLatestSubscription,
+  markMembershipInactive,
+  syncMembershipFromSubscription,
+} from "../../../services/stripe-sync";
 
 declare const strapi: any;
 
@@ -43,7 +47,7 @@ async function syncLatestSubscription(ctx: any) {
     return;
   }
 
-  await applySubscriptionToUser(subscription, {
+  await syncMembershipFromSubscription(subscription, {
     strapiUserId: user.id,
     customerEmail: user.email ?? null,
   });

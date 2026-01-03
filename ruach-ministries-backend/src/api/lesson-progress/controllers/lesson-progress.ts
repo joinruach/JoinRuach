@@ -11,15 +11,8 @@ type LessonProgressRequestData = {
   duration?: number;
   progressPercent?: number;
   completed?: boolean;
+  completedAt?: Date | string;
   user?: number | string;
-};
-
-type LessonProgressRequest = {
-  request: {
-    body?: {
-      data?: LessonProgressRequestData;
-    };
-  };
 };
 
 const COMPLETE_THRESHOLD = 95;
@@ -44,8 +37,12 @@ function normalizeProgress(input: {
   return 0;
 }
 
-function getRequestData(ctx: LessonProgressRequest['request']) {
-  return (ctx.request.body?.data ?? ctx.request.body ?? {}) as LessonProgressRequestData;
+function getRequestData(request: { body?: unknown }) {
+  const body = request?.body as
+    | { data?: LessonProgressRequestData }
+    | LessonProgressRequestData
+    | undefined;
+  return (body && typeof body === "object" ? ((body as any).data ?? body) : {}) as LessonProgressRequestData;
 }
 
 function buildPayload({
@@ -105,13 +102,12 @@ async function findExistingProgress(strapi: any, lessonSlug: string, userId: num
 
 export default factories.createCoreController('api::lesson-progress.lesson-progress', ({ strapi }) => ({
   async create(ctx) {
-    const request = ctx.request as LessonProgressRequest['request'];
     const user = ctx.state.user;
     if (!user) {
       return ctx.unauthorized('Authentication required');
     }
 
-    const body = getRequestData(request);
+    const body = getRequestData(ctx.request);
     const lessonSlug = body.lessonSlug;
     const courseSlug = body.courseSlug;
     if (!lessonSlug || !courseSlug) {

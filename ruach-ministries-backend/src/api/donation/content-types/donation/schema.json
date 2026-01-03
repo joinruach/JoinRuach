@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "donations",
+  "info": {
+    "singularName": "donation",
+    "pluralName": "donations",
+    "displayName": "Donation"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "stripeSessionId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "amount": {
+      "type": "integer",
+      "required": true
+    },
+    "currency": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email"
+    },
+    "source": {
+      "type": "string"
+    },
+    "donatedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "thankYouQueuedAt": {
+      "type": "datetime"
+    },
+    "thankYouSentAt": {
+      "type": "datetime"
+    },
+    "thankYouLastError": {
+      "type": "text"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";
 import TrackedLink from "@/components/ruach/TrackedLink";
 import SEOHead from "@/components/ruach/SEOHead";
+import DonateCheckoutButton from "@/components/ruach/DonateCheckoutButton";
 
 export default function GivePage({
   searchParams = {},
@@ -77,9 +78,10 @@ export default function GivePage({
           Every gift helps us produce cinematic testimonies, launch discipleship courses, and fund outreach campaigns that lead people into encounters with Jesus.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
+          <DonateCheckoutButton className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-60" />
           <LocalizedLink href="#donate">
-            <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
-              Give now
+            <span className="rounded-full border border-zinc-300 dark:border-white/20 px-5 py-2 text-sm font-semibold text-zinc-700 dark:text-white/80 transition hover:border-white hover:text-zinc-900 dark:hover:text-white">
+              Give custom amount
             </span>
           </LocalizedLink>
           <LocalizedLink href="/community-outreach#support">

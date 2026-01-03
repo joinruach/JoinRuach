@@ -1,4 +1,4 @@
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
+export const STRAPI_API_URL = process.env.NEXT_PUBLIC_STRAPI_URL!;
 
 export type StrapiMembership = {
   id: number;
@@ -55,7 +55,7 @@ export async function fetchStrapiMembership(jwt: string | undefined): Promise<St
     params.set(`fields[${index}]`, field);
   });
 
-  const res = await fetch(`${STRAPI}/api/users/me?${params.toString()}`, {
+  const res = await fetch(`${STRAPI_API_URL}/api/users/me?${params.toString()}`, {
     headers: { Authorization: `Bearer ${jwt}` },
     cache: "no-store",
   });

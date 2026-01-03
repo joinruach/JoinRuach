@@ -1,6 +1,12 @@
 # Giving & Donations Strategy (Stripe Only)
 
-This page summarizes every giving touchpoint, the new Stripe-first donation experience, and the backend model that tracks memberships and course access.
+This page summarizes every giving touchpoint, the Stripe-first donation experience, and the backend model for **three distinct domains**:
+
+- **Donations** → generosity (one-time or recurring gifts)
+- **Memberships** → partnership (recurring covenant support + community benefits)
+- **Courses** → formation products (one-time purchases + course licenses)
+
+Key principle: **Memberships do not equal Courses.** Membership can bless course participation (discounts/early access), but course access should be **license-based**, not role-based.
 
 ## 1. UI surfaces
 
@@ -23,35 +29,57 @@ The new `/api/stripe/create-donation-session` route (`apps/ruach-next/src/app/ap
 
 - **Stripe webhook sync** (`ruach-ministries-backend/src/api/stripe/controllers/webhook.ts:165`) keeps `stripeCustomerId`, `stripeSubscriptionId`, `membershipStatus`, `membershipPlanName`, `membershipCurrentPeriodEnd`, and `activeMembership` up to date and toggles the appropriate Strapi role when a subscription changes state.
 - **Strapi user schema** (`ruach-ministries-backend/src/extensions/users-permissions/content-types/user/schema.json:80`) already defines `stripeCustomerId`, `membershipStatus`, and other subscription fields that the webhook updates. Keep the schema in sync if you extend it with relations.
-- **Recommended model** (matches your brief):
+- **Recommended model** (separates partnership vs formation):
   ```
   User
   ├─ email
   ├─ stripeCustomerId
   ├─ roles
-  ├─ memberships[]
-  ├─ courseAccess[]
+  ├─ memberships[]          (subscription-backed partnership)
+  ├─ courseLicenses[]       (purchase-backed course access)
+  ├─ donations[]            (optional: normalized gifts ledger)
 
   Membership
   ├─ tier
   ├─ status
   ├─ startedAt
   ├─ expiresAt
+  ├─ stripeSubscriptionId
+  ├─ stripePriceId
 
-  CourseAccess
+  CourseLicense
   ├─ courseId
   ├─ grantedAt
-  ├─ source (purchase | membership)
+  ├─ source (purchase | comp | promo)
+  ├─ stripeCheckoutSessionId?
+  ├─ stripePaymentIntentId?
+  ├─ accessEndsAt?           (optional: cohort/term-based)
+
+  Donation
+  ├─ amount
+  ├─ currency
+  ├─ createdAt
+  ├─ recurring?              (optional)
+  ├─ stripeCheckoutSessionId?
+  ├─ campaign?
   ```
-  Build these as repeatable components or related content types in Strapi so you can grant/lock access based on webhook events and purchases recorded in Stripe.
-- **Access gating**: `apps/ruach-next/src/lib/require-membership.ts` already checks `membershipStatus`/`activeMembership`. Extend that guard to read new `memberships[]` or `courseAccess[]` records once those relations exist.
+  Implement these as related content types (or repeatable components) in Strapi so you can grant/lock access deterministically from Stripe events.
+- **Access control rules**
+  - **Membership access** → role/entitlement-based (driven by subscription state).
+  - **Course access** → license-based (driven by successful one-time purchase, or explicit comp/promo grants).
+  - Avoid tying course access directly to membership roles; prefer member **discounts** and **early access** instead.
+- **Access gating**: `apps/ruach-next/src/lib/require-membership.ts` can continue to guard member-only features. Add a separate `requireCourseLicense(courseSlug)` guard for course libraries once `courseLicenses[]` exists.
 
 ## 4. Messaging & best practices
 
 1. **Donations first** — rely on `/give` and `DonationForm` so the landing page is the canonical giving experience. Keep the membership section nearby so people can toggle between one-time gifts and subscriptions.
 2. **Remind donors to match** — mention “Ask your employer to match this donation” on the `/give` page without third-party scripts.
 3. **No Givebutter** — Stripe covers payment intents, subscriptions, and course purchases, so remove Givebutter/Double the Donation dependencies from assets and docs. Use `EmbedScript` only for authorized Stripe widgets.
-4. **Courses** — treat every course as a Stripe product price, grant access via webhook, and store the entitlement under `courseAccess`.
+4. **Memberships vs courses**
+   - Membership communicates: “I’m helping hold the rope.” (partnership + community benefits)
+   - Courses communicate: “I’m committing to go through this.” (formation product + durable value)
+   - Membership can bless courses via discounts/early access, but don’t make “all courses included” the default.
+5. **Courses** — treat each course as a Stripe **one-time product/price**, grant access via Stripe events, and store entitlements under `courseLicenses` (not membership roles).
 5. **Monitor webhooks** — Stripe is the source of truth. Reconcile failed events through the webhook logs and ensure Strapi reflects the same membership/monthly status in every environment.
 
 ## 5. Membership sync endpoints & banners
