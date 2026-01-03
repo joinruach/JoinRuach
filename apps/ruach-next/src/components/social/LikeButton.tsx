@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+import { trackLike } from "@/lib/likes";
+
 export interface LikeButtonProps {
   contentType: "media" | "course" | "series" | "event";
   contentId: string | number;
   initialLikes?: number;
-  onLike?: (liked: boolean, newCount: number) => void;
   showCount?: boolean;
   size?: "sm" | "md" | "lg";
 }
@@ -15,7 +16,6 @@ export default function LikeButton({
   contentType,
   contentId,
   initialLikes = 0,
-  onLike,
   showCount = true,
   size = "md",
 }: LikeButtonProps) {
@@ -55,10 +55,7 @@ export default function LikeButton({
     // Trigger animation
     setTimeout(() => setIsAnimating(false), 600);
 
-    // Call callback if provided
-    if (onLike) {
-      onLike(newLikedState, newCount);
-    }
+    trackLike(contentType, contentId, newLikedState);
 
     // TODO: Make API call to backend to persist like
     // try {

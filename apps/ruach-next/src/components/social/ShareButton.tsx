@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import type { ContentType } from "@/lib/likes";
+import { trackShare } from "@/lib/share";
+
 export type SharePlatform = "twitter" | "facebook" | "linkedin" | "email" | "copy";
 
 interface ShareButtonProps {
@@ -9,7 +12,8 @@ interface ShareButtonProps {
   title: string;
   description?: string;
   hashtags?: string[];
-  onShare?: (platform: SharePlatform) => void;
+  contentType?: ContentType;
+  contentId?: string | number;
   className?: string;
 }
 
@@ -68,16 +72,17 @@ export default function ShareButton({
   title,
   description,
   hashtags,
-  onShare,
+  contentType,
+  contentId,
   className = "",
 }: ShareButtonProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleShare = (platform: SharePlatform) => {
-    // Track share event
-    onShare?.(platform);
-
+    if (contentType && contentId) {
+      trackShare(platform, contentType, contentId);
+    }
     if (platform === "copy") {
       // Copy to clipboard
       navigator.clipboard.writeText(url).then(() => {
@@ -115,7 +120,9 @@ export default function ShareButton({
           text: description,
           url,
         });
-        onShare?.("copy"); // Track as generic share
+        if (contentType && contentId) {
+          trackShare("copy", contentType, contentId);
+        }
         setShowMenu(false);
       } catch (err) {
         // User cancelled or error - do nothing
