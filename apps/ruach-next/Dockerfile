@@ -32,6 +32,8 @@ COPY packages/ruach-types/package.json packages/ruach-types/package.json
 COPY packages/ruach-utils/package.json packages/ruach-utils/package.json
 COPY packages/tailwind-preset/package.json packages/tailwind-preset/package.json
 COPY ruach-ministries-backend/package.json ruach-ministries-backend/package.json
+COPY ruach-ministries-backend/scripts/link-dependencies.js ruach-ministries-backend/scripts/link-dependencies.js
+COPY ruach-ministries-backend/scripts/patch-review-workflows.js ruach-ministries-backend/scripts/patch-review-workflows.js
 
 # Install with devDependencies
 RUN pnpm install --no-frozen-lockfile
