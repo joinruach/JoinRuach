@@ -18,9 +18,7 @@ export function DockedPlayer() {
   const [position, setPosition] = useState({ bottom: 20, right: 20 });
 
   const { currentMedia } = state;
-  if (!currentMedia) return null;
-
-  const format = getMediaFormat(currentMedia);
+  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
   const isAudio = format === "audio";
 
   // Sync playback state
@@ -34,6 +32,8 @@ export function DockedPlayer() {
       ref.pause();
     }
   }, [state.isPlaying, isAudio, actions]);
+
+  if (!currentMedia) return null;
 
   const handleExpand = () => {
     actions.setMode("fullscreen");

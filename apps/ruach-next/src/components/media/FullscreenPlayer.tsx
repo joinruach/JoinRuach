@@ -18,9 +18,7 @@ export function FullscreenPlayer() {
   const audioRef = useRef<AudioRendererHandle>(null);
 
   const { currentMedia } = state;
-  if (!currentMedia) return null;
-
-  const format = getMediaFormat(currentMedia);
+  const format = currentMedia ? getMediaFormat(currentMedia) : undefined;
   const isAudio = format === "audio";
 
   // Sync player ref actions with context state
@@ -37,6 +35,8 @@ export function FullscreenPlayer() {
       ref.pause();
     }
   }, [state.isPlaying, isAudio, actions]);
+
+  if (!currentMedia) return null;
 
   const handleTimeUpdate = (time: number) => {
     actions.setCurrentTime(time);

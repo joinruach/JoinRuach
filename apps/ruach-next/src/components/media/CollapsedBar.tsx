@@ -14,7 +14,6 @@ export function CollapsedBar() {
   const audioRef = useRef<AudioRendererHandle>(null);
 
   const { currentMedia } = state;
-  if (!currentMedia) return null;
 
   // Sync playback state
   useEffect(() => {
@@ -27,6 +26,8 @@ export function CollapsedBar() {
       ref.pause();
     }
   }, [state.isPlaying, actions]);
+
+  if (!currentMedia) return null;
 
   const handleExpand = () => {
     actions.setMode("fullscreen");
