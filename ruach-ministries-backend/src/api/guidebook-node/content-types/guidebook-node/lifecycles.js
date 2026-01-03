@@ -20,12 +20,12 @@ const IMPORT_MODE_ENABLED = ['true', '1'].includes(
   (process.env.IMPORT_MODE || '').toLowerCase()
 );
 
-function skipForImportMode(hookName) {
+function shouldSkipValidationForImport(hookName) {
   if (!IMPORT_MODE_ENABLED) {
     return false;
   }
 
-  console.log(`[Guidebook Node] ${hookName}: Import mode active, skipping validations`);
+  console.log(`[Guidebook Node] ${hookName}: Import mode active, skipping validation only`);
   return true;
 }
 
@@ -42,7 +42,19 @@ module.exports = {
    */
   async beforeCreate(event) {
     const { data } = event.params;
-    if (skipForImportMode('beforeCreate')) {
+
+    // Guard against illegal UPDATE-only relation operators during CREATE
+    const illegalRelationKeys = ['set', 'disconnect'];
+    for (const key of illegalRelationKeys) {
+      if (JSON.stringify(data).includes(`"${key}"`)) {
+        throw new ValidationError(
+          'Invalid relation operation during create',
+          { message: `Relation operator "${key}" is not allowed during create.` }
+        );
+      }
+    }
+
+    if (shouldSkipValidationForImport('beforeCreate')) {
       return;
     }
 
@@ -111,6 +123,14 @@ module.exports = {
   async beforeUpdate(event) {
     const { data } = event.params;
 
+    // Guard against destructive relation ops during import updates
+    if (IMPORT_MODE_ENABLED && JSON.stringify(data).includes('"disconnect"')) {
+      throw new ValidationError(
+        'Invalid relation operation during import update',
+        { message: 'Relation operator "disconnect" is not allowed during import updates.' }
+      );
+    }
+
     // Only validate if relevant fields are being modified
     const shouldValidate =
       data.nodeType !== undefined ||
@@ -121,7 +141,7 @@ module.exports = {
       console.log('[Guidebook Node] beforeUpdate: Skipping validation (no relevant fields changed)');
       return;
     }
-    if (skipForImportMode('beforeUpdate')) {
+    if (shouldSkipValidationForImport('beforeUpdate')) {
       return;
     }
 
@@ -189,6 +209,9 @@ module.exports = {
    * @param {Object} event - Lifecycle event
    */
   async afterCreate(event) {
+    // IMPORTANT: Lifecycle hooks must remain side‑effect free.
+    // Do NOT perform entityService.create/update here.
+
     const { result } = event;
 
     if (result) {
@@ -209,6 +232,9 @@ module.exports = {
    * @param {Object} event - Lifecycle event
    */
   async afterUpdate(event) {
+    // IMPORTANT: Lifecycle hooks must remain side‑effect free.
+    // Do NOT perform entityService.create/update here.
+
     const { result } = event;
 
     if (result) {
