@@ -19,6 +19,9 @@ COPY package.json pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 COPY .npmrc .npmrc
 COPY apps/ruach-next/package.json apps/ruach-next/package.json
+COPY packages/guidebook-agent/package.json packages/guidebook-agent/package.json
+COPY packages/guidebook-parser/package.json packages/guidebook-parser/package.json
+COPY packages/guidebook-renderer/package.json packages/guidebook-renderer/package.json
 COPY packages/ruach-ai/package.json packages/ruach-ai/package.json
 COPY packages/ruach-components/package.json packages/ruach-components/package.json
 COPY packages/ruach-hooks/package.json packages/ruach-hooks/package.json
@@ -28,6 +31,7 @@ COPY packages/ruach-next-addons/package.json packages/ruach-next-addons/package.
 COPY packages/ruach-types/package.json packages/ruach-types/package.json
 COPY packages/ruach-utils/package.json packages/ruach-utils/package.json
 COPY packages/tailwind-preset/package.json packages/tailwind-preset/package.json
+COPY ruach-ministries-backend/package.json ruach-ministries-backend/package.json
 
 # Install dependencies (need devDeps for build)
 RUN pnpm install --no-frozen-lockfile
