@@ -322,7 +322,7 @@ export default function FAQ() {
         {
           question: "Is my payment information secure?",
           answer:
-            "Absolutely. We use Stripe and Givebutter—industry-standard, PCI-compliant payment processors—to handle all donations. We do not store full credit card numbers on our servers. All transactions are encrypted and secure.",
+            "Absolutely. We use Stripe—an industry-standard, PCI-compliant payment processor—to handle all donations. We do not store full credit card numbers on our servers. All transactions are encrypted and secure.",
         },
       ],
     },

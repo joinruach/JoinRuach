@@ -1,17 +1,17 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
-import DonationEmbedSwitcher from "@/components/ruach/DonationEmbedSwitcher";
+import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";
 import TrackedLink from "@/components/ruach/TrackedLink";
 import SEOHead from "@/components/ruach/SEOHead";
-import GivebutterGoalWidget from "@ruach/addons/components/ruach/GivebutterGoalWidget";
-import DoubleTheDonation from "@ruach/addons/components/ruach/DoubleTheDonation";
 
-export default function GivePage(){
+export default function GivePage({
+  searchParams = {},
+}: {
+  searchParams?: { checkout?: string };
+}) {
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ruachministries.org";
-  const givebutterUrl = process.env.NEXT_PUBLIC_GIVEBUTTER_URL || "https://givebutter.com/ruach-ministries";
-  const givebutterEmbedHtml = process.env.NEXT_PUBLIC_GIVEBUTTER_EMBED_HTML;
-  const goalId = process.env.NEXT_PUBLIC_GIVEBUTTER_GOAL_ID;
   const membershipPortalHref = "/members/account";
+  const isCheckoutCancelled = searchParams?.checkout === "cancelled";
 
   const memberResources = [
     {
@@ -66,24 +66,6 @@ export default function GivePage(){
     actionStatus: "PotentialActionStatus"
   };
 
-  const navigationHighlights = [
-    {
-      title: "Start Here",
-      description: "Visit the welcome hub for a guided tour, featured testimonies, and immediate next steps.",
-      href: "/start"
-    },
-    {
-      title: "Builders",
-      description: "See how the Builder Network funds bold projects, hosts labs, and equips leaders worldwide.",
-      href: "/builders"
-    },
-    {
-      title: "Partners",
-      description: "Meet the people already aligned with us and discover how to join their prayer calls and briefings.",
-      href: "/partners"
-    }
-  ] as const;
-
   return (
     <div className="space-y-12">
       <SEOHead jsonLd={donationSchema} />
@@ -106,62 +88,66 @@ export default function GivePage(){
             </span>
           </LocalizedLink>
         </div>
-      </section>
+        </section>
+
+      {isCheckoutCancelled ? (
+        <section className="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-amber-900 shadow-sm">
+          <h3 className="text-lg font-semibold tracking-[0.35em] text-amber-700">Donation paused</h3>
+          <p className="mt-2 text-sm text-amber-900/80">
+            No charges were made. When you’re ready, try again or reach out to <a className="underline" href="mailto:support@joinruach.org">support@joinruach.org</a> for help completing your gift.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <LocalizedLink href="#donate">
+              <span className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black transition hover:bg-amber-300">
+                Try again
+              </span>
+            </LocalizedLink>
+            <LocalizedLink href="/contact">
+              <span className="rounded-full border border-amber-700/60 px-5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100">
+                Contact support
+              </span>
+            </LocalizedLink>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
-        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Through the rest of the movement</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Give through Stripe</h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-          Ruach is more than a giving page—start exploring media, builder culture, and partner experiences that keep the mission moving.
+          Choose an amount, toggle monthly support if you feel led, and we’ll redirect you to Stripe Checkout for secure processing.
+          Receipts, matching, and donor catalogs are handled on our side so every gift is tracked and stewarded.
         </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {navigationHighlights.map((item) => (
-            <LocalizedLink key={item.title} href={item.href}>
-              <div className="flex h-full flex-col rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 transition hover:border-amber-300 hover:bg-amber-50 dark:hover:border-amber-300/50">
-                <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Explore</span>
-                <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">{item.title}</h3>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{item.description}</p>
-                <span className="mt-4 inline-flex items-center text-sm font-semibold text-amber-500">
-                  Go there →
-                </span>
-              </div>
-            </LocalizedLink>
-          ))}
-        </div>
-      </section>
-
-      <section id="donate" className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
-        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">Choose your giving experience</h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-          Give through Givebutter for one-time or recurring donations, or become a monthly partner through Stripe to receive discipleship resources and partner updates.
-        </p>
-        <div className="mt-6">
-          <DonationEmbedSwitcher givebutterUrl={givebutterUrl} givebutterEmbedHtml={givebutterEmbedHtml} />
+        <div className="mt-6 max-w-md">
+          <DonationForm campaign="ruach_general" />
         </div>
       </section>
 
       <section className="grid gap-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white lg:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Campaign Progress</h2>
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Why Stripe?</h2>
           <p className="text-sm text-zinc-600 dark:text-white/70">
-            Track the current goal for production, outreach, and course development. Share the campaign with friends who carry a heart for revival.
+            Stripe keeps every card payment, donation, or subscription PCI-compliant and issues receipts for your records.
+            We rely on outing the Stripe checkout link and keep the donation metadata in Strapi so we can divvy funds between media, outreach, and curriculum.
           </p>
-          <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/10 p-6">
-            {goalId ? (
-              <GivebutterGoalWidget dataGoalId={goalId} />
-            ) : (
-              <p className="text-sm text-zinc-500 dark:text-white/60">
-                Set `NEXT_PUBLIC_GIVEBUTTER_GOAL_ID` to display the live Givebutter goal widget.
-              </p>
-            )}
-          </div>
+          <ul className="space-y-3 text-sm text-zinc-600 dark:text-white/70">
+            <li>🔒 No card details touch our servers—we redirect directly to Stripe Checkout.</li>
+            <li>📑 Receipts and statements are available automatically through Stripe.</li>
+            <li>🤝 Ask your employer about matching and share the checkout receipt to double the impact.</li>
+          </ul>
         </div>
         <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-6 text-neutral-900 shadow-sm">
-          <h3 className="text-lg font-semibold text-neutral-900">Double the Donation</h3>
+          <h3 className="text-lg font-semibold text-neutral-900">Memberships & Recurring Support</h3>
           <p className="mt-2 text-sm text-neutral-600">
-            Search your employer and multiply the impact of your gift through company matching.
+            Want to go deeper with partner-only content? Use Stripe to start a monthly membership and unlock exclusive resources, or manage your billing anytime.
           </p>
-          <div className="mt-4">
-            <DoubleTheDonation />
+          <div className="mt-4 space-y-3">
+            <StripeSubscriptionButtons
+              className="w-full"
+              orientation="column"
+              checkoutLabel="Start monthly giving"
+              manageLabel="Manage billing"
+              manageVariant="white"
+            />
           </div>
         </div>
       </section>

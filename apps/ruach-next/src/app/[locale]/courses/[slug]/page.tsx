@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import CertificateButton from "@/components/ruach/CertificateButton";
 import SEOHead from "@/components/ruach/SEOHead";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
+import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { parseAccessLevel } from "@/lib/access-level";
+import type { AccessLevel as CourseAccessLevel } from "@ruach/components/components/ruach/CourseCard";
+import { getCourseProgress } from "@/lib/api/courseProgress";
+import { cn } from "@/lib/cn";
 
 // Extended session type with Strapi JWT
 interface ExtendedSession {
@@ -23,6 +28,18 @@ interface LessonProgressRow {
 interface LessonProgressResponse {
   data?: LessonProgressRow[];
 }
+
+const ACCESS_LEVEL_RANK: Record<CourseAccessLevel, number> = {
+  basic: 1,
+  full: 2,
+  leader: 3,
+};
+
+const ACCESS_LEVEL_LABEL: Record<CourseAccessLevel, string> = {
+  basic: "Supporter",
+  full: "Partner",
+  leader: "Builder",
+};
 
 async function getCompletedLessons(jwt: string, courseSlug: string) {
   const params = new URLSearchParams({
@@ -69,12 +86,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CourseDetail({ params }: { params: Promise<{ slug: string }> }){
   const { slug } = await params;
-  const course = await getCourseBySlug(slug);
-  if (!course) return notFound();
-
   const session = await auth();
   const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const course = await getCourseBySlug(slug, jwt);
+  if (!course) return notFound();
+
+  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
   const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
+  const progressData = jwt ? await getCourseProgress(slug, jwt) : null;
 
   const a = course.attributes;
   if (!a) {
@@ -87,17 +106,51 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
     (typeof (a as any).excerpt === "string" && (a as any).excerpt.trim()) ||
     titleFromSlug(slug);
 
-  const lessonsRaw = Array.isArray(a.lessons?.data) ? a.lessons.data : [];
-  const lessons = lessonsRaw
-    .map((d) => (d as { attributes?: unknown })?.attributes)
-    .filter((attrs): attrs is Record<string, unknown> => Boolean(attrs))
-    .sort((x, y) => ((x.order as number | undefined) || 0) - ((y.order as number | undefined) || 0));
+  type ParsedLesson = {
+    slug: string;
+    title: string;
+    summary?: string;
+    order?: number;
+    requiredAccessLevel: CourseAccessLevel;
+  };
 
-  const total = lessons.length;
-  const completed = lessons.filter((lesson) => completedLessons.has(lesson.slug as string)).length;
-  const progress = total ? Math.round((completed / total) * 100) : 0;
+  const lessonsRaw = Array.isArray(a.lessons?.data) ? a.lessons.data : [];
+  const lessons: ParsedLesson[] = lessonsRaw
+    .map((item) => (item as { attributes?: Record<string, unknown> })?.attributes)
+    .filter((attrs): attrs is Record<string, unknown> => Boolean(attrs && typeof attrs.slug === "string"))
+    .map((attrs) => {
+      const slugValue = (attrs.slug as string) ?? "";
+      const rawTitle = attrs.title as string | undefined;
+      const rawOrder = attrs.order;
+      const rawSummary = attrs.summary as string | undefined;
+      const rawAccess = parseAccessLevel((attrs.requiredAccessLevel as string | undefined) ?? undefined);
+      return {
+        slug: slugValue,
+        title: rawTitle && rawTitle.trim() ? rawTitle : titleFromSlug(slugValue),
+        summary: rawSummary && rawSummary.trim() ? rawSummary : undefined,
+        order: typeof rawOrder === "number" ? rawOrder : undefined,
+        requiredAccessLevel: rawAccess,
+      };
+    })
+    .sort((x, y) => ((x.order ?? 0) || 0) - ((y.order ?? 0) || 0));
+
+  const totalLessons = lessons.length;
+  const completedLessonsCount = progressData?.completedLessons ?? lessons.filter((lesson) => completedLessons.has(lesson.slug)).length;
+  const totalFromProgress = progressData?.totalLessons ?? totalLessons;
+  const progressPercent =
+    progressData?.percentComplete ??
+    (totalFromProgress > 0 ? Math.round((completedLessonsCount / totalFromProgress) * 100) : 0);
   const firstLesson = lessons[0];
+  const nextLesson =
+    lessons.find((lesson) => !completedLessons.has(lesson.slug)) ?? firstLesson;
+  const resumeLesson = nextLesson ?? firstLesson;
   const isAuthenticated = Boolean(jwt);
+  const continueUrl =
+    resumeLesson && resumeLesson.slug ? `/courses/${slug}/${resumeLesson.slug}` : `/courses/${slug}`;
+  const continueLabel =
+    totalFromProgress > 0 && completedLessonsCount >= totalFromProgress ? "Review course" : "Resume course";
+  const membershipAccessLevel = parseAccessLevel(membership?.accessLevel ?? undefined);
+  const membershipRank = ACCESS_LEVEL_RANK[membershipAccessLevel];
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ruachministries.org";
 
   const courseSchema = {
@@ -140,19 +193,20 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
               <div className="h-2 rounded-full bg-neutral-200">
                 <div
                   className="h-full rounded-full bg-amber-400 transition-all"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500">
-                {completed} of {total} lessons complete
+              <div className="flex items-center justify-between text-xs uppercase tracking-wide text-neutral-500">
+                <span>
+                  {completedLessonsCount} of {totalFromProgress} lessons complete
+                </span>
+                <span className="font-semibold text-neutral-900 dark:text-white">{progressPercent}%</span>
               </div>
             </div>
             <div className="mt-auto flex flex-wrap gap-3">
-              {isAuthenticated && firstLesson ? (
-                <LocalizedLink href={`/courses/${slug}/${firstLesson.slug}`}>
-                  <span className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
-                    Resume Course
-                  </span>
+              {isAuthenticated && resumeLesson ? (
+                <LocalizedLink href={continueUrl} className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700">
+                  {continueLabel}
                 </LocalizedLink>
               ) : (
                 <>
@@ -169,8 +223,8 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
                 </>
               )}
               <CertificateButton
-                completed={completed}
-                total={total}
+                completed={completedLessonsCount}
+                total={totalFromProgress}
                 courseSlug={slug}
                 courseTitle={a.name}
                 href={`/api/certificate/${slug}`}
@@ -187,31 +241,60 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
             <p className="text-sm text-zinc-600 dark:text-white/70">Work through each lesson to unlock your completion certificate.</p>
           </div>
           <div className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
-            {total} lessons
+            {totalLessons} lessons
           </div>
         </div>
         {lessons.length ? (
           <ol className="mt-6 space-y-3">
-            {lessons.map((lesson:any, index:number)=>(
-              <li key={lesson.slug} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 transition hover:border-amber-300/60">
-                <LocalizedLink href={`/courses/${slug}/${lesson.slug}`}>
-                  <span className="flex items-center gap-4 p-5">
+            {lessons.map((lesson, index) => {
+              const hasCompleted = completedLessons.has(lesson.slug);
+              const lessonRank = ACCESS_LEVEL_RANK[lesson.requiredAccessLevel];
+              const lessonLabel = ACCESS_LEVEL_LABEL[lesson.requiredAccessLevel];
+              const isLocked = lessonRank > membershipRank;
+              const statusText = isLocked ? "Locked" : hasCompleted ? "Completed" : "Start lesson";
+              const statusClasses = isLocked
+                ? "text-amber-400"
+                : hasCompleted
+                  ? "text-emerald-400"
+                  : "text-zinc-400 dark:text-white/40";
+
+              return (
+                <li
+                  key={lesson.slug}
+                  className={cn(
+                    "rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 transition",
+                    isLocked ? "cursor-not-allowed opacity-70" : "hover:border-amber-300/60"
+                  )}
+                >
+                  <LocalizedLink
+                    href={`/courses/${slug}/${lesson.slug}`}
+                    className={cn(
+                      "flex items-center gap-4 p-5",
+                      isLocked ? "cursor-not-allowed" : ""
+                    )}
+                    aria-disabled={isLocked}
+                  >
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-white/10 text-sm font-semibold text-zinc-900 dark:text-white">
-                      {lesson.order || index + 1}
+                      {lesson.order ?? index + 1}
                     </span>
-                  <div className="flex-1">
-                    <div className="text-base font-semibold text-zinc-900 dark:text-white">{lesson.title}</div>
-                    {lesson.summary ? (
-                      <p className="text-sm text-zinc-500 dark:text-white/60">{lesson.summary}</p>
-                    ) : null}
-                  </div>
-                    <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-zinc-400 dark:text-white/40"}`}>
-                      {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
-                    </span>
-                  </span>
-                </LocalizedLink>
-              </li>
-            ))}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="text-base font-semibold text-zinc-900 dark:text-white">{lesson.title}</div>
+                        {lesson.requiredAccessLevel !== "basic" ? (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-amber-600">
+                            {lessonLabel} tier
+                          </span>
+                        ) : null}
+                      </div>
+                      {lesson.summary ? (
+                        <p className="text-sm text-zinc-500 dark:text-white/60">{lesson.summary}</p>
+                      ) : null}
+                    </div>
+                    <span className={`text-xs font-semibold ${statusClasses}`}>{statusText}</span>
+                  </LocalizedLink>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-5 text-sm text-zinc-600 dark:text-white/70">

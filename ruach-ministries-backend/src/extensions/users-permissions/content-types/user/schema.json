@@ -90,10 +90,12 @@
       "mappedBy": "user"
     },
     "stripeCustomerId": {
-      "type": "string"
+      "type": "string",
+      "private": true
     },
     "stripeSubscriptionId": {
-      "type": "string"
+      "type": "string",
+      "private": true
     },
     "membershipStatus": {
       "type": "enumeration",
@@ -112,7 +114,31 @@
     "membershipPlanName": {
       "type": "string"
     },
+    "membershipTier": {
+      "type": "enumeration",
+      "enum": [
+        "supporter",
+        "partner",
+        "builder"
+      ],
+      "default": "supporter"
+    },
+    "accessLevel": {
+      "type": "enumeration",
+      "enum": [
+        "basic",
+        "full",
+        "leader"
+      ],
+      "default": "basic"
+    },
     "membershipCurrentPeriodEnd": {
+      "type": "datetime"
+    },
+    "membershipStartedAt": {
+      "type": "datetime"
+    },
+    "membershipEndedAt": {
       "type": "datetime"
     },
     "activeMembership": {

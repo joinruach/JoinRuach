@@ -20,6 +20,7 @@ const trustLinks = [
   { label: "What We Believe", href: "/beliefs" },
   { label: "Financial Transparency", href: "/transparency" },
   { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   { label: "FAQ", href: "/faq" }
 ];
 

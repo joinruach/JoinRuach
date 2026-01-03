@@ -11,6 +11,7 @@ import type {
   OutreachCampaignEntity,
   ScriptureWorkEntity,
   ScriptureVerseEntity,
+  CourseAccessLevel,
 } from "@/lib/types/strapi-types";
 
 type FetchOpts = {
@@ -402,6 +403,7 @@ type ResourceCardComponent = {
   highlightedCourses?: { data?: CourseEntity[] };
   highlightedBlogPosts?: { data?: BlogPostEntity[] };
   customResources?: ResourceLinkComponent[];
+  requiredAccessLevel?: CourseAccessLevel;
 };
 
 type ResourceDirectoryEntity = {
@@ -481,30 +483,49 @@ type BlogPostListOptions = {
   pageSize?: number;
 };
 
-export async function getCourses() {
-  const q = qs({
-    "fields[0]": "name",
-    "fields[1]": "slug",
-    "fields[2]": "excerpt",
-    "fields[3]": "description",
-    "fields[4]": "seoTitle",
-    populate: "cover",
-    "pagination[pageSize]": "100",
-  });
+const COURSE_DEFAULT_PARAMS = {
+  "fields[0]": "name",
+  "fields[1]": "slug",
+  "fields[2]": "excerpt",
+  "fields[3]": "description",
+  "fields[4]": "seoTitle",
+  populate: "cover",
+  "pagination[pageSize]": "100",
+} as const;
 
+function buildCourseQuery(includeAccessField: boolean) {
+  const params: Record<string, string> = { ...COURSE_DEFAULT_PARAMS };
+  if (includeAccessField) {
+    params["fields[5]"] = "requiredAccessLevel";
+  }
+  return qs(params);
+}
+
+async function fetchCourseList(query: string, authToken?: string) {
+  const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${query}`, {
+    tags: ["courses"],
+    ...(authToken ? { authToken } : {}),
+  });
+  return (j.data || []).map(normalizeCourseEntity);
+}
+
+export async function getCourses(authToken?: string) {
+  const withAccess = buildCourseQuery(true);
   try {
-    const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${q}`, { tags: ["courses"] });
-    return (j.data || []).map(normalizeCourseEntity);
+    return await fetchCourseList(withAccess, authToken);
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
       return [] as CourseEntity[];
     }
-
+    if (isBadRequest(error)) {
+      const withoutAccess = buildCourseQuery(false);
+      return await fetchCourseList(withoutAccess, authToken);
+    }
     throw error;
   }
 }
 
-export async function getCourseBySlug(slug: string) {
+export async function getCourseBySlug(slug: string, authToken?: string) {
   const params = new URLSearchParams();
   params.set("filters[slug][$eq]", slug);
   params.set("fields[0]", "name");
@@ -529,6 +550,7 @@ export async function getCourseBySlug(slug: string) {
   try {
     const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${params.toString()}`, {
       tags: [`course:${slug}`],
+      ...(authToken ? { authToken } : {}),
     });
     return j.data?.[0] ? normalizeCourseEntity(j.data[0]) : undefined;
   } catch (error) {
@@ -711,7 +733,7 @@ type LessonListOptions = {
   limit?: number;
 };
 
-export async function getLessons(options: LessonListOptions = {}) {
+export async function getLessons(options: LessonListOptions = {}, authToken?: string) {
   const params = new URLSearchParams();
   params.set("fields[0]", "title");
   params.set("fields[1]", "slug");
@@ -743,6 +765,7 @@ export async function getLessons(options: LessonListOptions = {}) {
         `lessons:${options.categorySlug ?? "all"}:${options.courseSlug ?? "all"}:l${pageSize}`,
       ],
       revalidate: 300,
+      ...(authToken ? { authToken } : {}),
     });
     return j.data || [];
   } catch (error) {
@@ -754,7 +777,7 @@ export async function getLessons(options: LessonListOptions = {}) {
   }
 }
 
-async function fetchMediaItems(options: MediaListOptions = {}) {
+async function fetchMediaItems(options: MediaListOptions = {}, authToken?: string) {
   const params = new URLSearchParams();
   params.set("fields[0]", "title");
   params.set("fields[1]", "slug");
@@ -810,7 +833,10 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
   const endpoint = `/api/media-items?${params.toString()}`;
 
   try {
-    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, { tags: [tag, "media-items"] });
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, {
+      tags: [tag, "media-items"],
+      ...(authToken ? { authToken } : {}),
+    });
     return {
       data: j.data || [],
       meta: j.meta,
@@ -824,7 +850,7 @@ async function fetchMediaItems(options: MediaListOptions = {}) {
   }
 }
 
-async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
+async function fetchMediaItemsLegacy(options: MediaListOptions = {}, authToken?: string) {
   const params = new URLSearchParams();
   params.set("fields[0]", "title");
   params.set("fields[1]", "slug");
@@ -873,7 +899,10 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
 
   try {
     const endpoint = `/api/media-items?${params.toString()}`;
-    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, { tags: [tag, "media-items"] });
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(endpoint, {
+      tags: [tag, "media-items"],
+      ...(authToken ? { authToken } : {}),
+    });
     return {
       data: j.data || [],
       meta: j.meta,
@@ -887,19 +916,19 @@ async function fetchMediaItemsLegacy(options: MediaListOptions = {}) {
   }
 }
 
-export async function getMediaItems(options: MediaListOptions = {}) {
+export async function getMediaItems(options: MediaListOptions = {}, authToken?: string) {
   try {
-    return await fetchMediaItems(options);
+    return await fetchMediaItems(options, authToken);
   } catch (error) {
     if (isBadRequest(error)) {
-      return fetchMediaItemsLegacy(options);
+      return fetchMediaItemsLegacy(options, authToken);
     }
 
     throw error;
   }
 }
 
-async function fetchMediaBySlug(slug: string) {
+async function fetchMediaBySlug(slug: string, authToken?: string) {
   const params = new URLSearchParams();
   params.set("filters[slug][$eq]", slug);
   params.set("fields[0]", "title");
@@ -930,6 +959,7 @@ async function fetchMediaBySlug(slug: string) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${params.toString()}`, {
       tags: [`media:${slug}`],
+      ...(authToken ? { authToken } : {}),
     });
     return j.data?.[0];
   } catch (error) {
@@ -941,7 +971,7 @@ async function fetchMediaBySlug(slug: string) {
   }
 }
 
-async function fetchMediaBySlugLegacy(slug: string) {
+async function fetchMediaBySlugLegacy(slug: string, authToken?: string) {
   const q = qs({
     "filters[slug][$eq]": slug,
     populate: "thumbnail",
@@ -951,6 +981,7 @@ async function fetchMediaBySlugLegacy(slug: string) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${q}`, {
       tags: [`media:${slug}`],
+      ...(authToken ? { authToken } : {}),
     });
     return j.data?.[0];
   } catch (error) {
@@ -962,12 +993,12 @@ async function fetchMediaBySlugLegacy(slug: string) {
   }
 }
 
-export async function getMediaBySlug(slug: string) {
+export async function getMediaBySlug(slug: string, authToken?: string) {
   try {
-    return await fetchMediaBySlug(slug);
+    return await fetchMediaBySlug(slug, authToken);
   } catch (error) {
     if (isBadRequest(error)) {
-      return fetchMediaBySlugLegacy(slug);
+      return fetchMediaBySlugLegacy(slug, authToken);
     }
 
     throw error;
@@ -1008,7 +1039,7 @@ export function imgUrl(path?: string | null) {
 // Additional endpoints (homepage)
 // ------------------------------
 
-async function fetchMediaByCategory(categorySlug: string, limit = 12) {
+async function fetchMediaByCategory(categorySlug: string, limit = 12, authToken?: string) {
   const params = new URLSearchParams();
   params.set("filters[category][slug][$eq]", categorySlug);
   params.set("fields[0]", "title");
@@ -1029,6 +1060,7 @@ async function fetchMediaByCategory(categorySlug: string, limit = 12) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${params.toString()}`, {
       tags: [`media-category:${categorySlug}`],
+      ...(authToken ? { authToken } : {}),
     });
     return j.data || [];
   } catch (error) {
@@ -1040,7 +1072,7 @@ async function fetchMediaByCategory(categorySlug: string, limit = 12) {
   }
 }
 
-async function fetchMediaByCategoryLegacy(category: string, limit = 12) {
+async function fetchMediaByCategoryLegacy(category: string, limit = 12, authToken?: string) {
   const legacyName = unslugifyCategory(category);
   const fetchSize = Math.max(limit * 3, limit);
   const q = qs({
@@ -1056,6 +1088,7 @@ async function fetchMediaByCategoryLegacy(category: string, limit = 12) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${q}`, {
       tags: [`media-category:${category}`],
+      ...(authToken ? { authToken } : {}),
     });
     const target = (legacyName || category).toLowerCase();
     const filtered = (j.data || []).filter((item) => {
@@ -1075,22 +1108,22 @@ async function fetchMediaByCategoryLegacy(category: string, limit = 12) {
   }
 }
 
-export async function getMediaByCategory(categorySlug: string, limit = 12) {
+export async function getMediaByCategory(categorySlug: string, limit = 12, authToken?: string) {
   try {
-    return await fetchMediaByCategory(categorySlug, limit);
+    return await fetchMediaByCategory(categorySlug, limit, authToken);
   } catch (error) {
     if (isBadRequest(error)) {
-      return fetchMediaByCategoryLegacy(categorySlug, limit);
+      return fetchMediaByCategoryLegacy(categorySlug, limit, authToken);
     }
 
     throw error;
   }
 }
 
-export async function getFeaturedTestimony() {
+export async function getFeaturedTestimony(authToken?: string) {
   // Heuristic: use media-items in category "testimony" as featured
   try {
-    const items = await getMediaByCategory("testimony", 1);
+    const items = await getMediaByCategory("testimony", 1, authToken);
     return items?.[0] ?? null;
   } catch {
     return null;

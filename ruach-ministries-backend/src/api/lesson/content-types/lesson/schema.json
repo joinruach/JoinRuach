@@ -90,6 +90,11 @@
       "relation": "manyToMany",
       "target": "api::resource-directory.resource-directory",
       "mappedBy": "featuredLessons"
+    },
+    "requiredAccessLevel": {
+      "type": "enumeration",
+      "enum": ["basic", "full", "leader"],
+      "default": "basic"
     }
   }
 }

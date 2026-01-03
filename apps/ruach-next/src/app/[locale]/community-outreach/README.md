@@ -159,7 +159,7 @@ All data fetching includes `.catch()` handlers:
 
 - `NEXT_PUBLIC_STRAPI_URL` - Strapi backend URL
 - `NEXT_PUBLIC_MEDIA_CDN_URL` - CDN for media assets (default: https://cdn.joinruach.org)
-- `NEXT_PUBLIC_OUTREACH_GIVE_URL` - Default donation URL (fallback: https://givebutter.com/ruach-outreach)
+- `NEXT_PUBLIC_STRIPE_CHECKOUT_SESSION_PATH` - Donation session endpoint used by the embedded `DonationForm` (defaults to `/api/stripe/create-donation-session`)
 
 ## Customization via Strapi
 

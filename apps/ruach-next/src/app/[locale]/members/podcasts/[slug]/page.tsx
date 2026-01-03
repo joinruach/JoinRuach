@@ -4,6 +4,7 @@ import AudioPlayer from "@/components/ruach/AudioPlayer";
 import MediaPlayer from "@/components/ruach/MediaPlayer";
 import SEOHead from "@/components/ruach/SEOHead";
 import { requireActiveMembership } from "@/lib/require-membership";
+import { auth } from "@/lib/auth";
 import { getMediaBySlug, getMediaByCategory, imgUrl } from "@/lib/strapi";
 import { extractAttributes, extractMediaUrl, extractSingleRelation } from "@/lib/strapi-normalize";
 import type { MediaItemEntity } from "@/lib/types/strapi-types";
@@ -13,6 +14,11 @@ export const dynamic = "force-dynamic";
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 const AUDIO_EXTENSIONS = new Set(["mp3", "m4a", "aac", "wav", "ogg", "flac"]);
 
@@ -68,7 +74,14 @@ function resolvePlayback(attributes: MediaItemEntity["attributes"]) {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const data = await getMediaBySlug(slug);
+  let data: MediaItemEntity | null | undefined = null;
+  try {
+    const session = await auth();
+    const jwt = (session as ExtendedSession | null)?.strapiJwt;
+    data = await getMediaBySlug(slug, jwt);
+  } catch {
+    data = null;
+  }
   const attributes = extractAttributes<MediaItemEntity["attributes"]>(data);
   if (!attributes) {
     return {
@@ -95,9 +108,9 @@ export async function generateMetadata({ params }: Props) {
 export default async function MemberPodcastDetail({ params }: Props) {
   const { slug, locale } = await params;
   const path = `/members/podcasts/${slug}`;
-  await requireActiveMembership(path, locale);
+  const { jwt } = await requireActiveMembership(path, locale);
 
-  const entity = await getMediaBySlug(slug);
+  const entity = await getMediaBySlug(slug, jwt);
   const attributes = extractAttributes<MediaItemEntity["attributes"]>(entity);
   if (!attributes) {
     notFound();
@@ -106,7 +119,7 @@ export default async function MemberPodcastDetail({ params }: Props) {
   const categorySlug = extractSingleRelation<{ slug?: string }>(attributes.category)?.slug;
   const related =
     categorySlug && attributes.slug
-      ? (await getMediaByCategory(categorySlug, 5))
+      ? (await getMediaByCategory(categorySlug, 5, jwt))
           .map((item) => {
             const attr = extractAttributes<MediaItemEntity["attributes"]>(item);
             if (!attr || attr.slug === attributes.slug) return null;

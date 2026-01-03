@@ -72,10 +72,6 @@ export default async function BuildersPage({
   // Await params (Next.js 15+ requirement)
   await params;
 
-  const donationFormUrl =
-    process.env.NEXT_PUBLIC_OUTREACH_GIVE_URL ||
-    "https://givebutter.com/ruach-outreach";
-
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -284,7 +280,7 @@ export default async function BuildersPage({
           </div>
         </div>
         <div className="rounded-3xl border border-border bg-card p-6 shadow-[0_20px_60px_rgba(43,37,30,0.08)]">
-          <DonationForm processorUrl={donationFormUrl} />
+          <DonationForm campaign="builders_network" />
         </div>
       </section>
 

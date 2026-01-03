@@ -88,7 +88,7 @@ If an XSS vulnerability exists, an attacker could exfiltrate data to any externa
 **Recommendation:**
 Replace wildcard with explicit allowlist:
 ```javascript
-connect-src: 'self' https://cdn.joinruach.org https://*.r2.cloudflarestorage.com https://api.stripe.com https://plausible.io [CONVERTKIT_DOMAIN] [GIVEBUTTER_DOMAIN]
+connect-src: 'self' https://cdn.joinruach.org https://*.r2.cloudflarestorage.com https://api.convertkit.com https://plausible.io https://*.upstash.io https://apparent-caribou-35103.upstash.io https://api.stripe.com
 ```
 
 **Verification Needed:**

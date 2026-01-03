@@ -3,7 +3,10 @@ import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type { Course } from "@ruach/components/components/ruach/CourseCard";
+import type {
+  AccessLevel as CourseAccessLevel,
+  Course,
+} from "@ruach/components/components/ruach/CourseCard";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import TrackedLink from "@/components/ruach/TrackedLink";
@@ -24,12 +27,17 @@ import {
   type ResourceSection,
   type ResourceSectionType,
 } from "@/lib/strapi";
-import type { MediaItemEntity } from "@/lib/types/strapi-types";
+import type { CourseEntity, MediaItemEntity } from "@/lib/types/strapi-types";
 import {
   extractAttributes,
   extractManyRelation,
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
+
+import { auth } from "@/lib/auth";
+import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { getCourseProgressMap } from "@/lib/api/courseProgress";
+import { parseAccessLevel } from "@/lib/access-level";
 
 export const metadata = {
   title: "Resource Hub — Media, Courses, and Ministry Tools | Ruach Ministries",
@@ -40,6 +48,11 @@ export const metadata = {
     description:
       "Discover media, discipleship training, and outreach resources curated by Ruach Ministries to equip believers.",
   },
+};
+
+type ExtendedSession = {
+  strapiJwt?: string;
+  [key: string]: unknown;
 };
 
 type LessonResourceLink = {
@@ -283,6 +296,11 @@ export default async function ResourcesPage({
   // Await params (Next.js 15 requirement)
   await params;
 
+  const session = await auth();
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
+  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
+
   const resourceDirectory = await getResourceDirectory().catch(() => null);
   const directory = normalizeResourceDirectory(resourceDirectory);
 
@@ -316,6 +334,41 @@ export default async function ResourcesPage({
     (section): section is SectionRenderData => Boolean(section && (section.items.length || section.type === "custom"))
   );
 
+  const courseSections = filteredSections.filter(
+    (section): section is SectionRenderData & { type: "course" } => section.type === "course"
+  );
+
+  const courseSlugs = Array.from(
+    new Set(courseSections.flatMap((section) => section.items.map((course) => course.slug)))
+  );
+
+  const courseProgressMap = await getCourseProgressMap(courseSlugs, jwt);
+
+  const sectionsWithProgress = filteredSections.map((section) => {
+    if (section.type !== "course") {
+      return section;
+    }
+
+    return {
+      ...section,
+      items: section.items.map((course) => {
+        const progress = courseProgressMap.get(course.slug);
+        return {
+          ...course,
+          progress: progress
+            ? {
+                percentComplete: progress.percentComplete,
+                completedLessons: progress.completedLessons,
+                totalLessons: progress.totalLessons,
+              }
+            : undefined,
+          viewerAccessLevel,
+          requiredAccessLevel: course.requiredAccessLevel ?? "basic",
+        };
+      }),
+    };
+  });
+
   const shareDescription =
     directory.seo?.metaDescription ||
     stripHtml(heroCopyHtml) ||
@@ -332,7 +385,7 @@ export default async function ResourcesPage({
       name: "Ruach Ministries",
       url: site,
     },
-    hasPart: filteredSections
+    hasPart: sectionsWithProgress
       .filter((section) => section.items.length > 0)
       .map((section) => ({
         "@type": "CreativeWorkSeries",
@@ -398,7 +451,7 @@ export default async function ResourcesPage({
         </section>
       ) : null}
 
-      {filteredSections.map((section) => renderSection(section))}
+      {sectionsWithProgress.map((section) => renderSection(section))}
 
       <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent p-8 text-zinc-900 dark:text-white">
         <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
@@ -904,7 +957,7 @@ function mapMediaItem(entity: MediaItemEntity | null | undefined): MediaCardProp
 function normalizeCourses(items: unknown[]): Course[] {
   return items
     .map((item) => {
-      const attributes = (item as { attributes?: Record<string, unknown> } | undefined)?.attributes;
+      const attributes = (item as { attributes?: CourseEntity["attributes"] } | undefined)?.attributes;
       if (!attributes) return null;
 
       const title = attributes.name;
@@ -914,12 +967,19 @@ function normalizeCourses(items: unknown[]): Course[] {
       const description = attributes.description;
       const coverUrl = (attributes as { cover?: { data?: { attributes?: { url?: string } } } }).cover
         ?.data?.attributes?.url;
+      const unlockRequirements =
+        typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
+          ? attributes.unlockRequirements
+          : undefined;
+      const requiredAccessLevel = parseAccessLevel(attributes.requiredAccessLevel ?? null);
 
       const course: Course = {
         title,
         slug,
         ...(typeof description === "string" ? { description } : {}),
         ...(typeof coverUrl === "string" ? { coverUrl } : {}),
+        ...(unlockRequirements ? { unlockRequirements } : {}),
+        requiredAccessLevel,
       };
 
       return course;

@@ -8,6 +8,7 @@ import LivePreview from "@/components/preview/LivePreview";
 import { RuachAssistant } from "@/components/ai/RuachAssistant";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import OfflineIndicator from "@/components/offline/OfflineIndicator";
+import LoggedInDock from "@/components/navigation/LoggedInDock";
 import { GlobalMediaPlayer } from "@/components/media/GlobalMediaPlayer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NextIntlClientProvider } from 'next-intl';
@@ -116,8 +117,14 @@ export default async function LocaleLayout({
           <ThemeProvider>
             <Providers>
               <LivePreview />
+              <div
+                id="page-atmosphere-root"
+                aria-hidden="true"
+                className="pointer-events-none fixed inset-x-0 top-0 z-0 hidden h-[75vh] lg:block"
+                style={{ pointerEvents: "none" }}
+              />
               <Header />
-              <main className="mx-auto max-w-6xl px-4 pb-16 pt-24 lg:pt-28">
+              <main className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-24 lg:pt-28">
                 {children}
               </main>
               <Footer />
@@ -125,6 +132,7 @@ export default async function LocaleLayout({
               <InstallPrompt />
               <OfflineIndicator />
               <GlobalMediaPlayer />
+              <LoggedInDock />
             </Providers>
           </ThemeProvider>
         </NextIntlClientProvider>

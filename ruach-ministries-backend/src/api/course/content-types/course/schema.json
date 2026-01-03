@@ -48,6 +48,11 @@
       "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
       "default": "Draft"
     },
+    "requiredAccessLevel": {
+      "type": "enumeration",
+      "enum": ["basic", "full", "leader"],
+      "default": "basic"
+    },
     "unlockRequirements": {
       "type": "text"
     },

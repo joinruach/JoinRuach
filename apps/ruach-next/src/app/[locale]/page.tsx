@@ -1,10 +1,14 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Suspense } from "react";
+import PageAtmosphere from "@/components/PageAtmosphere";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type { Course } from "@ruach/components/components/ruach/CourseCard";
+import type {
+  AccessLevel as CourseAccessLevel,
+  Course,
+} from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, getMediaByCategory, getFeaturedTestimony, imgUrl, getEvents } from "@/lib/strapi";
 import RecommendedForYou from "@/components/recommendations/RecommendedForYou";
 import {
@@ -13,6 +17,10 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
+import { auth } from "@/lib/auth";
+import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { getCourseProgressMap } from "@/lib/api/courseProgress";
+import { parseAccessLevel } from "@/lib/access-level";
 
 type MediaAttributes = MediaItemEntity["attributes"];
 type CourseAttributes = CourseEntity["attributes"];
@@ -30,12 +38,22 @@ async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T
 // Ensure fresh data from Strapi on every request without breaking route generation
 export const revalidate = 0;
 
+type ExtendedSession = {
+  strapiJwt?: string;
+  [key: string]: unknown;
+};
+
 export default async function Home({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  const session = await auth();
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
+  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
 
   const [courses, testimonies, featured, events] = await Promise.all([
     safeFetch('courses', () => getCourses()),
@@ -92,7 +110,7 @@ export default async function Home({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  const courseList: Course[] = (courses || [])
+  const normalizedCourseList: Course[] = (courses || [])
     .map((c): Course | null => {
       const attributes = extractAttributes<CourseAttributes>(c);
       if (!attributes) return null;
@@ -102,16 +120,43 @@ export default async function Home({
       if (!title || !slug) return null;
 
       const coverMedia = extractSingleRelation<{ url?: string }>(attributes.cover);
+      const unlockRequirements =
+        typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
+          ? attributes.unlockRequirements
+          : undefined;
+      const requiredAccessLevel = parseAccessLevel(attributes.requiredAccessLevel ?? null);
 
       return {
         title,
         slug,
         description: typeof attributes.description === "string" ? attributes.description : undefined,
         coverUrl: typeof coverMedia?.url === "string" ? coverMedia.url : undefined,
+        unlockRequirements,
+        requiredAccessLevel,
       };
     })
-    .filter((course): course is Course => course !== null)
-    .slice(0, 3);
+    .filter((course): course is Course => course !== null);
+
+  const selectedCourses = normalizedCourseList.slice(0, 3);
+  const progressMap = await getCourseProgressMap(
+    selectedCourses.map((course) => course.slug),
+    jwt
+  );
+
+  const courseList: Course[] = selectedCourses.map((course) => {
+    const progress = progressMap.get(course.slug);
+    return {
+      ...course,
+      viewerAccessLevel,
+      progress: progress
+        ? {
+            percentComplete: progress.percentComplete,
+            completedLessons: progress.completedLessons,
+            totalLessons: progress.totalLessons,
+          }
+        : undefined,
+    };
+  });
 
   const eventCards = (events || []).map((event) => {
     const attributes = extractAttributes<EventAttributes>(event);
@@ -147,7 +192,9 @@ export default async function Home({
   return (
     <div className="space-y-16">
       <SEOHead jsonLd={organizationSchema} />
+      <PageAtmosphere />
       <section className="relative overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10 bg-gradient-to-r from-amber-500/20 via-rose-500/10 to-transparent px-6 py-16 shadow-2xl sm:px-10">
+        <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_40%),radial-gradient(circle_at_80%_40%,rgba(255,120,0,0.2),transparent_45%)]" />
         <div className="relative z-10 max-w-3xl space-y-6">
           <span className="text-xs uppercase tracking-[0.4em] text-zinc-600 dark:text-white/70">Ruach Ministries</span>
           <h1 className="text-4xl font-semibold leading-tight text-zinc-900 dark:text-white sm:text-5xl">
@@ -180,7 +227,6 @@ export default async function Home({
             </LocalizedLink>
           </div>
         </div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_40%),radial-gradient(circle_at_80%_40%,rgba(255,120,0,0.2),transparent_45%)]" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr,1.1fr]">

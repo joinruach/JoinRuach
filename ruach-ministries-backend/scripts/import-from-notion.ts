@@ -400,7 +400,7 @@ async function importAxioms(
 /**
  * Transform Notion node to Strapi guidebook-node format
  */
-function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
+function transformNodeToStrapi(node: NotionNode): any {
   const rawContent = node.content || '';
   const content = rawContent.trim();
   assert(content, `Node "${node.title}" is missing required content`);
@@ -426,10 +426,8 @@ function transformNodeToStrapi(node: NotionNode, phaseId: number | null): any {
     formationScope,
     sensitivity: 'Medium',
     checkpointType: isCheckpoint(node) ? 'Text Response' : 'None',
-    phase: phaseId ?? undefined,
     syncedToStrapi: true,
     syncLock: false,
-    publishedAt: null // Draft by default
   };
 }
 
@@ -613,6 +611,43 @@ function isCheckpoint(node: NotionNode): boolean {
   return node.title.toLowerCase().includes('checkpoint');
 }
 
+async function syncNodePhase(
+  entryId: number | undefined,
+  phaseId: number | null,
+  dryRun: boolean,
+  node: NotionNode,
+  stats: ImportStats
+): Promise<void> {
+  if (!entryId || phaseId === null) return;
+
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would link node "${node.title}" (${node.id}) to phase ${phaseId}`);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/guidebook-nodes/${entryId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STRAPI_API_TOKEN}`,
+      },
+      body: buildStrapiRequestBody({ phase: phaseId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`  ❌ Failed to link phase for node "${node.title}": ${error}`);
+      stats.errors.push(`Failed to link phase for node: ${node.title}`);
+    } else {
+      console.log(`  🔗 Linked phase ${phaseId} to node "${node.title}"`);
+    }
+  } catch (error) {
+    console.error(`  ❌ Error linking phase for node "${node.title}":`, error);
+    stats.errors.push(`Failed to link phase for node: ${node.title}`);
+  }
+}
+
 /**
  * Import guidebook nodes
  */
@@ -637,7 +672,7 @@ async function importNodes(
       continue;
     }
 
-    const rawNodeData = transformNodeToStrapi(node, phaseId);
+    const rawNodeData = transformNodeToStrapi(node);
     const nodeData = sanitizeGuidebookNodePayload(rawNodeData);
 
       const result = await upsertStrapiRecord(
@@ -652,6 +687,10 @@ async function importNodes(
     else if (result.status === 'skipped') stats.nodesSkipped++;
     else if (result.status === 'error') {
       stats.errors.push(`Failed to import node: ${node.title}`);
+    }
+
+    if ((result.status === 'created' || result.status === 'updated') && phaseId !== null) {
+      await syncNodePhase(result.id, phaseId, dryRun, node, stats);
     }
   }
 }

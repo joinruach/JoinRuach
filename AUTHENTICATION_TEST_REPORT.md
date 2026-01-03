@@ -185,7 +185,7 @@ All authentication improvements (M2-M6) and high-priority security enhancements 
 
 **Tests:**
 - ✅ CSP uses explicit allowlist (no wildcards)
-- ✅ Added Givebutter domains for donations
+- ✅ Added Stripe domains for donations
 - ✅ All domains explicitly listed
 
 **Allowed Domains:**
@@ -196,8 +196,8 @@ https://*.r2.cloudflarestorage.com
 https://api.convertkit.com
 https://plausible.io
 https://*.upstash.io
-https://givebutter.com
-https://*.givebutter.com
+https://api.stripe.com
+https://checkout.stripe.com
 ```
 
 **Location:** `apps/ruach-next/next.config.mjs:11`

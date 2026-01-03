@@ -26,6 +26,11 @@
       "default": "testimony",
       "required": true
     },
+    "requiredAccessLevel": {
+      "type": "enumeration",
+      "enum": ["basic", "full", "leader"],
+      "default": "basic"
+    },
     "slug": {
       "type": "uid",
       "targetField": "title",

@@ -25,7 +25,8 @@ const Strict = z.object({
   CONVERTKIT_FORM_ID: z.string().optional(),
   NEXT_PUBLIC_CONVERTKIT_API_KEY: z.string().optional(),
   NEXT_PUBLIC_CONVERTKIT_FORM_ID: z.string().optional(),
-  NEXT_PUBLIC_GIVEBUTTER_CAMPAIGN: z.string().optional(),
+  NEXT_PUBLIC_STRIPE_BILLING_PORTAL_PATH: z.string().optional(),
+  NEXT_PUBLIC_STRIPE_CHECKOUT_SESSION_PATH: z.string().optional(),
 
   // Social (public)
   NEXT_PUBLIC_TWITTER_URL: z.string().url().optional(),

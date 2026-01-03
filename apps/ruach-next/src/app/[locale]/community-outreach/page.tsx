@@ -133,9 +133,6 @@ export default async function CommunityOutreachPage({
     stories = fallbackStories;
   }
 
-  const donationFormUrl =
-    process.env.NEXT_PUBLIC_OUTREACH_GIVE_URL || "https://givebutter.com/ruach-outreach";
-
   return (
     <div className="space-y-10">
       <section
@@ -312,7 +309,7 @@ export default async function CommunityOutreachPage({
           </LocalizedLink>
         </div>
         <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow">
-          <DonationForm processorUrl={donationFormUrl} />
+          <DonationForm campaign="community_outreach" />
         </div>
       </section>
 

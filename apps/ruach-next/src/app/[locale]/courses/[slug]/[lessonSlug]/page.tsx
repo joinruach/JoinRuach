@@ -1,4 +1,5 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
+import { auth } from "@/lib/auth";
 import LessonPlayer from "@/components/ruach/LessonPlayer";
 import LessonTranscript from "@/components/ruach/LessonTranscript";
 import LessonDiscussion, { type Comment } from "@/components/ruach/LessonDiscussion";
@@ -6,6 +7,11 @@ import SEOHead from "@/components/ruach/SEOHead";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-dynamic";
+
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 function titleFromSlug(slug: string) {
   return slug
@@ -39,7 +45,9 @@ async function getComments(courseSlug: string, lessonSlug: string): Promise<Comm
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string; lessonSlug: string }> }){
   const { slug, lessonSlug } = await params;
-  const course = await getCourseBySlug(slug);
+  const session = await auth();
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const course = await getCourseBySlug(slug, jwt);
   const lessonsRaw = (course?.attributes?.lessons?.data ?? []).map((d:any)=>d.attributes).sort((x:any,y:any)=>(x.order||0)-(y.order||0));
   const lesson = lessonsRaw.find((x:any)=>x.slug===lessonSlug);
   if (!course || !lesson) {

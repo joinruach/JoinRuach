@@ -55,6 +55,11 @@
       "relation": "manyToMany",
       "target": "api::blog-post.blog-post",
       "inversedBy": "featuredInResources"
+    },
+    "requiredAccessLevel": {
+      "type": "enumeration",
+      "enum": ["basic", "full", "leader"],
+      "default": "basic"
     }
   }
 }

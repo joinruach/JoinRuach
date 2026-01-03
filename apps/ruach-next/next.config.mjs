@@ -24,8 +24,7 @@ const securityHeaders = [
         https://plausible.io
         https://*.upstash.io
         https://apparent-caribou-35103.upstash.io
-        https://givebutter.com
-        https://*.givebutter.com;
+        https://api.stripe.com;
     `
       .replace(/\s{2,}/g, " ")
       .trim(),

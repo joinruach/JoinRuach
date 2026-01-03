@@ -464,13 +464,12 @@ import Logo from "../ruach/ui/Logo";
 ### @ruach/addons
 
 **3 components:**
-- DonationProviderEmbed (excellent multi-provider support) ⭐
-- GivebutterGoalWidget ✅
-- DoubleTheDonation ✅
+- DonationProviderEmbed (retired; Stripe-first donation form lives under `@ruach/components`) ⚠️
+- GivebutterGoalWidget (removed) ⚠️
+- DoubleTheDonation (removed) ⚠️
 
-**2 utilities:**
+**1 utility (replaced):**
 - analytics.ts (DUPLICATED in components package) 🔴
-- donations.ts ✅
 
 ### @ruach/tailwind-preset
 

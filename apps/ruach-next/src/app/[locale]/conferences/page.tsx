@@ -53,7 +53,7 @@ const defaultMerch: MerchBlock[] = [
   { title: "Testimony Film Bundle", description: "Download our latest stories and support new productions.", href: "https://buy.stripe.com/test_films", ctaLabel: "Purchase via Stripe" }
 ];
 
-const fallbackRegistrationUrl = process.env.NEXT_PUBLIC_GIVEBUTTER_REGISTRATION_URL || "https://givebutter.com/ruach-conference";
+const fallbackRegistrationUrl = "/give";
 
 function pickNonEmpty(...values: unknown[]): string | undefined {
   for (const value of values) {
@@ -266,7 +266,6 @@ export default async function ConferencesPage(){
   const registrationEmbed = pickNonEmpty(
     pageAttributes.registrationEmbed,
     pageAttributes.registration_embed,
-    process.env.NEXT_PUBLIC_GIVEBUTTER_REGISTRATION_EMBED,
   );
 
   const primaryCtaLabel = pickNonEmpty(
@@ -274,7 +273,7 @@ export default async function ConferencesPage(){
     pageAttributes.primary_cta_label,
     pageAttributes.registrationLabel,
     pageAttributes.registration_label,
-  ) || "Register on Givebutter";
+  ) || "Register through Stripe";
 
   const primaryCtaUrl = pickNonEmpty(
     pageAttributes.primaryCtaUrl,
@@ -362,13 +361,13 @@ export default async function ConferencesPage(){
           </div>
           <div className="rounded-3xl border border-zinc-200 bg-white/70 p-5 shadow-sm dark:border-white/10 dark:bg-white/10 dark:shadow-none">
             <h2 className="text-sm font-semibold text-neutral-800">Secure your seat</h2>
-            <p className="mt-2 text-sm text-neutral-600">Givebutter processes all registrations and donations.</p>
+            <p className="mt-2 text-sm text-neutral-600">Stripe Checkout keeps every registration and donation secure.</p>
             <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4">
               {registrationEmbed ? (
                 <EmbedScript html={registrationEmbed} />
               ) : (
                 <p className="text-xs text-neutral-500">
-                  Add your Givebutter embed HTML in Strapi or via `NEXT_PUBLIC_GIVEBUTTER_REGISTRATION_EMBED` to show inline checkout.
+                  Add your Stripe Checkout embed snippet in Strapi to surface inline registration, or link directly to the `/give` page.
                 </p>
               )}
             </div>

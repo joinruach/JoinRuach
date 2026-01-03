@@ -1,9 +1,20 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type { Course } from "@ruach/components/components/ruach/CourseCard";
+import type {
+  AccessLevel as CourseAccessLevel,
+  Course as CourseCardType,
+} from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, imgUrl } from "@/lib/strapi";
+import { auth } from "@/lib/auth";
+import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { getCourseProgressMap } from "@/lib/api/courseProgress";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
+
+interface ExtendedSession {
+  strapiJwt?: string;
+  [key: string]: unknown;
+}
 
 function titleFromSlug(slug: string) {
   return slug
@@ -13,18 +24,39 @@ function titleFromSlug(slug: string) {
     .join(" ");
 }
 
+function parseAccessLevel(value?: string | null): CourseAccessLevel {
+  if (!value) return "basic";
+  const normalized = value.toLowerCase();
+  if (normalized === "full") return "full";
+  if (normalized === "leader") return "leader";
+  return "basic";
+}
+
 export default async function CoursesPage({
-  params
+  params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  // Await params (Next.js 15 requirement)
   await params;
 
+  const session = await auth();
+  const jwt = (session as ExtendedSession | null)?.strapiJwt;
+  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
+  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
+
   const items = await getCourses();
-  const courses: Course[] = (items || [])
-    .map((c) => {
-      const attributes = c?.attributes;
+  const courseSlugs = Array.from(
+    new Set(
+      (items || [])
+        .map((course) => course?.attributes?.slug)
+        .filter((slug): slug is string => typeof slug === "string")
+    )
+  );
+  const progressMap = await getCourseProgressMap(courseSlugs, jwt);
+
+  const courses: CourseCardType[] = (items || [])
+    .map((course): CourseCardType | null => {
+      const attributes = course?.attributes;
       if (!attributes) return null;
 
       const slug = attributes.slug;
@@ -36,22 +68,36 @@ export default async function CoursesPage({
         (typeof (attributes as any).excerpt === "string" && (attributes as any).excerpt.trim()) ||
         titleFromSlug(slug);
 
+      const coverSource = attributes.cover as { data?: { attributes?: { url?: string } }; url?: string } | undefined;
+      const coverUrl = coverSource?.data?.attributes?.url ?? coverSource?.url;
       const description = attributes.description;
-      const coverUrl = attributes.cover?.data?.attributes?.url;
+      const progress = progressMap.get(slug);
 
-      const course: Course = {
+      const courseCard: CourseCardType = {
         title,
         slug,
         ...(typeof description === "string" ? { description } : {}),
-        ...(typeof coverUrl === "string" ? { coverUrl } : {})
+        ...(typeof coverUrl === "string" ? { coverUrl } : {}),
+        ...(typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
+          ? { unlockRequirements: attributes.unlockRequirements }
+          : {}),
+        progress: progress
+          ? {
+              percentComplete: progress.percentComplete,
+              completedLessons: progress.completedLessons,
+              totalLessons: progress.totalLessons,
+            }
+          : undefined,
+        requiredAccessLevel: parseAccessLevel(attributes.requiredAccessLevel ?? null),
+        viewerAccessLevel,
       };
 
-      return course;
+      return courseCard;
     })
-    .filter((course): course is Course => course !== null);
+    .filter((course): course is CourseCardType => course !== null);
 
   const featuredCourse = (items || [])
-    .map((c) => c?.attributes)
+    .map((course) => course?.attributes)
     .find((attrs) => Boolean(attrs));
 
   return (
@@ -130,7 +176,7 @@ export default async function CoursesPage({
           </div>
         </section>
       ) : (
-        <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-600 dark:text-white/70">
+        <section className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-600 dark:text-white/70">
           Courses will be published soon. Stay tuned!
         </section>
       )}

@@ -8,7 +8,11 @@ export type StrapiMembership = {
   stripeSubscriptionId?: string | null;
   membershipStatus?: string | null;
   membershipPlanName?: string | null;
+  membershipTier?: string | null;
+  accessLevel?: string | null;
   membershipCurrentPeriodEnd?: string | null;
+  membershipStartedAt?: string | null;
+  membershipEndedAt?: string | null;
   activeMembership?: boolean;
 };
 
@@ -35,7 +39,11 @@ const MEMBERSHIP_FIELDS = [
   "stripeSubscriptionId",
   "membershipStatus",
   "membershipPlanName",
+  "membershipTier",
+  "accessLevel",
   "membershipCurrentPeriodEnd",
+  "membershipStartedAt",
+  "membershipEndedAt",
   "activeMembership",
 ] as const;
 

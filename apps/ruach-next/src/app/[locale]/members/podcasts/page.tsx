@@ -15,12 +15,12 @@ export default async function MemberPodcastsPage({
 }) {
   const { locale } = await params;
   const path = "/members/podcasts";
-  await requireActiveMembership(path, locale);
+  const { jwt } = await requireActiveMembership(path, locale);
 
   const { data } = await getMediaItems({
     type: "podcast",
     pageSize: 18,
-  });
+  }, jwt);
 
   const items = (data || []).reduce<MediaCardProps[]>((acc, entity: MediaItemEntity | undefined | null) => {
     const attr = extractAttributes<MediaItemEntity["attributes"]>(entity);

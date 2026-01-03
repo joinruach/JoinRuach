@@ -4,15 +4,25 @@ import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 import { redirect } from "next/navigation";
 import { imgUrl } from "@/lib/strapi";
+import { getCourseProgressMap } from "@/lib/api/courseProgress";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ruach/ui/Button";
 import StripeSubscriptionButtons from "@/components/ruach/StripeSubscriptionButtons";
+import MembershipActions from "@/components/ruach/MembershipActions";
 import { isMembershipActive } from "@/lib/strapi-membership";
+import {
+  ACCESS_FEATURES,
+  TIER_LABELS,
+  TIER_SUMMARIES,
+  detectTierFromName,
+  TIER_SEQUENCE,
+  type MembershipTier,
+} from "@/lib/memberships";
+import { postStripeSync } from "@/lib/stripe-sync";
 
 export const dynamic = "force-dynamic";
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
-const GIVEBUTTER_URL = process.env.NEXT_PUBLIC_GIVEBUTTER_URL || "";
 
 type StrapiUserProfile = {
   id: number;
@@ -35,6 +45,8 @@ type StrapiUserMe = {
   activeMembership?: boolean;
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
+  membershipTier?: MembershipTier | null;
+  accessLevel?: string | null;
 };
 
 type LessonProgressEntry = {
@@ -63,6 +75,14 @@ type CourseDetail = {
 type StrapiSession = Session & {
   strapiJwt?: string | null;
 };
+
+function normalizeTier(value?: string | null): MembershipTier | null {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  return TIER_SEQUENCE.includes(normalized as MembershipTier)
+    ? (normalized as MembershipTier)
+    : null;
+}
 
 async function fetchStrapiPrivate<T>(path: string, jwt: string): Promise<T> {
   const res = await fetch(`${STRAPI}${path}`, {
@@ -322,20 +342,118 @@ function membershipStatusBadgeClasses(status?: string | null): string {
   }
 }
 
+type MembershipStatusCardProps = {
+  tierLabel: string;
+  tierSummary: string;
+  statusLabel: string;
+  nextChargeLabel: string;
+  hasActiveMembership: boolean;
+  isPastDue: boolean;
+  isCanceled: boolean;
+};
+
+function MembershipStatusCard({
+  tierLabel,
+  tierSummary,
+  statusLabel,
+  nextChargeLabel,
+  hasActiveMembership,
+  isPastDue,
+  isCanceled,
+}: MembershipStatusCardProps) {
+  return (
+    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/5">
+      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Membership overview</p>
+      <h2 className="mt-3 text-2xl font-semibold text-zinc-900 dark:text-white">{tierLabel} member</h2>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{tierSummary}</p>
+      <div className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-white/70">
+        <div className="flex items-center justify-between">
+          <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Status</span>
+          <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-white/20 dark:text-white/80">
+            {statusLabel}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Next charge</span>
+          <span className="text-sm font-semibold text-zinc-900 dark:text-white">{nextChargeLabel}</span>
+        </div>
+        {!hasActiveMembership ? (
+          <p className="rounded-2xl border border-zinc-200 bg-zinc-50 p-2 text-xs text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
+            Join a monthly partnership to unlock discipleship, media, and community resources.
+          </p>
+        ) : null}
+      </div>
+      {isPastDue ? (
+        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
+          ⚠️ Payment issue — update billing to keep access active.
+        </p>
+      ) : isCanceled ? (
+        <p className="mt-4 rounded-2xl border border-zinc-200 bg-white/70 p-3 text-xs font-semibold text-zinc-700">
+          Membership paused — start a plan again anytime.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+type AccessSummaryProps = {
+  features: { label: string; hasAccess: boolean }[];
+  hasActiveMembership: boolean;
+};
+
+function AccessSummary({ features, hasActiveMembership }: AccessSummaryProps) {
+  return (
+    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/5">
+      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Access summary</p>
+      <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">What you can access</h3>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-white/70">
+        Strapi enforces these permissions, so the dashboard reflects what you truly can view today.
+      </p>
+      <ul className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-white/70">
+        {features.map((feature) => (
+          <li key={feature.label} className="flex items-center gap-2">
+            <span
+              className={cn(
+                "flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold",
+                feature.hasAccess && hasActiveMembership
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-zinc-100 text-zinc-400 dark:bg-white/10 dark:text-zinc-500"
+              )}
+            >
+              {feature.hasAccess && hasActiveMembership ? "✓" : "—"}
+            </span>
+            <span>{feature.label}</span>
+          </li>
+        ))}
+      </ul>
+      {!hasActiveMembership ? (
+        <p className="mt-4 text-xs text-zinc-500 dark:text-white/70">
+          Sign up for a membership to unlock these resources and more.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export default async function AccountPage({
   params,
+  searchParams = {},
 }: {
   params: Promise<{ locale: string }>;
+  searchParams?: { checkout?: string; billing?: string };
 }) {
   try {
-    return await renderAccountPage(params);
+    return await renderAccountPage(params, searchParams);
   } catch (error) {
     console.error("[MEMBER DASHBOARD RENDER ERROR]", error);
     return null;
   }
 }
 
-async function renderAccountPage(params: Promise<{ locale: string }>) {
+async function renderAccountPage(
+  params: Promise<{ locale: string }>,
+  searchParams: { checkout?: string; billing?: string } = {}
+) {
   const { locale } = await params;
   const session = (await auth()) as StrapiSession | null;
   const jwt = session?.strapiJwt ?? undefined;
@@ -351,11 +469,27 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
     );
   }
 
+  const queryCheckout = searchParams?.checkout ?? null;
+  const queryBilling = searchParams?.billing ?? null;
+
+  const shouldShowCheckoutBanner = queryCheckout === "success";
+  const shouldShowBillingBanner = queryBilling === "updated";
+
   let user: StrapiUserMe;
   let progressEntries: LessonProgressEntry[];
 
   try {
-    [user, progressEntries] = await Promise.all([fetchUser(jwt), fetchLessonProgress(jwt)]);
+    if (shouldShowCheckoutBanner) {
+      await postStripeSync(jwt, "sync-latest");
+    }
+    if (shouldShowBillingBanner) {
+      await postStripeSync(jwt, "sync-customer");
+    }
+
+    [user, progressEntries] = await Promise.all([
+      fetchUser(jwt),
+      fetchLessonProgress(jwt),
+    ]);
   } catch (error) {
     console.error("[Account Page] Critical error fetching user data:", error);
     // If we can't fetch the user, try to fetch just the user without progress
@@ -389,12 +523,34 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
     ? "Use the billing portal to update cards or cancel at any time."
     : "Need help linking a legacy membership or updating billing details?";
 
+  const membershipTierKey: MembershipTier | null =
+    normalizeTier(user.membershipTier ?? null) ??
+    detectTierFromName(membershipPlanName);
+  const membershipTierLabel =
+    membershipTierKey
+      ? TIER_LABELS[membershipTierKey]
+      : membershipPlanName ?? "Partner member";
+  const tierSummary =
+    membershipTierKey
+      ? TIER_SUMMARIES[membershipTierKey]
+      : "Partner with Ruach and unlock discipleship, media, and community content.";
+  const featureItems = ACCESS_FEATURES.map((feature) => ({
+    label: feature.label,
+    hasAccess:
+      hasActiveMembership &&
+      membershipTierKey !== null &&
+      feature.tiers.includes(membershipTierKey),
+  }));
+  const isPastDue = rawMembershipStatus === "past_due";
+  const isCanceled = rawMembershipStatus === "canceled";
+
   const courseSlugs = Array.from(new Set(progressEntries.map((entry) => entry.courseSlug))).filter(Boolean);
   const courseDetailsList = await Promise.all(courseSlugs.map((slug) => fetchCourseDetail(slug)));
   const courseDetailsMap = new Map<string, CourseDetail>();
   courseDetailsList
     .filter((detail): detail is CourseDetail => Boolean(detail))
     .forEach((detail) => courseDetailsMap.set(detail.slug, detail));
+  const courseProgressMap = await getCourseProgressMap(courseSlugs, jwt);
 
   const progressByCourse = new Map<string, LessonProgressEntry[]>();
   for (const entry of progressEntries) {
@@ -406,9 +562,13 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
   const courseSummaries: CourseProgressSummary[] = Array.from(progressByCourse.entries()).map(
     ([courseSlug, entries]) => {
       const detail = courseDetailsMap.get(courseSlug) ?? null;
-      const totalLessons = detail?.lessons.length ?? entries.length;
-      const completedLessons = entries.filter((entry) => entry.completed).length;
-      const percent = totalLessons > 0 ? Math.min(100, Math.round((completedLessons / totalLessons) * 100)) : 0;
+      const progressInfo = courseProgressMap.get(courseSlug);
+      const totalLessons = progressInfo?.totalLessons ?? detail?.lessons.length ?? entries.length;
+      const completedLessons =
+        progressInfo?.completedLessons ?? entries.filter((entry) => entry.completed).length;
+      const percent =
+        progressInfo?.percentComplete ??
+        (totalLessons > 0 ? Math.min(100, Math.round((completedLessons / totalLessons) * 100)) : 0);
       const lastUpdated = entries.reduce(
         (latest, entry) => (new Date(entry.updatedAt) > new Date(latest) ? entry.updatedAt : latest),
         entries[0]?.updatedAt ?? new Date().toISOString()
@@ -451,6 +611,26 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
 
   return (
     <div className="space-y-10">
+      {shouldShowCheckoutBanner ? (
+        <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.35em] text-emerald-600">Giving update</p>
+          <h2 className="mt-3 text-2xl font-semibold text-emerald-900">Thank you for your generosity.</h2>
+          <p className="mt-2 text-sm text-emerald-900/80">
+            Your donation was successfully processed. A receipt has been emailed to you and you can manage your giving anytime from this page.
+          </p>
+          <p className="mt-3 text-sm font-semibold text-emerald-900">
+            {hasActiveMembership ? "You're now a monthly partner." : "We value your faithful support."}
+          </p>
+        </section>
+      ) : shouldShowBillingBanner ? (
+        <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+          <p className="text-sm uppercase tracking-[0.35em] text-amber-600">Billing update</p>
+          <h2 className="mt-3 text-2xl font-semibold text-amber-900">Billing information updated.</h2>
+          <p className="mt-2 text-sm text-amber-900/80">
+            We refreshed your subscription state and membership tier. Changes may take a few moments to appear everywhere.
+          </p>
+        </section>
+      ) : null}
       <header className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white shadow-lg">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
@@ -498,55 +678,59 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
         </div>
       </header>
 
-      <section className="grid gap-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white lg:grid-cols-3">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Membership</h2>
-          <p className="text-sm text-zinc-600 dark:text-white/70">
-            Access partner perks, livestreams, and billing history. See your current status and manage billing through the
-            Stripe portal.
-          </p>
-          <div className="space-y-4 rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 p-5">
-            <dl className="space-y-3 text-sm text-zinc-600 dark:text-white/70">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Status</dt>
-                <dd>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-                      membershipBadgeClass
-                    )}
-                  >
-                    {membershipStatusLabel}
-                  </span>
-                </dd>
-              </div>
-              {membershipPlanName ? (
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Plan</dt>
-                  <dd className="text-sm text-zinc-900 dark:text-white">{membershipPlanName}</dd>
-                </div>
-              ) : null}
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-xs uppercase tracking-wide text-zinc-500 dark:text-white/60">Next charge</dt>
-                <dd className="text-sm text-zinc-900 dark:text-white">{membershipNextChargeLabel}</dd>
-              </div>
-              {!hasActiveMembership ? (
-                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-xs text-zinc-500 dark:text-white/60">
-                  Start a monthly partnership to unlock the member library, live calls, and exclusive updates.
-                </div>
-              ) : null}
-            </dl>
-            <StripeSubscriptionButtons
-              className="space-y-3"
-              orientation="column"
-              showCheckout={showStartMembershipButton}
-              showManage={showManageMembershipButton}
-              checkoutLabel="Start monthly giving"
-              manageLabel="Manage or cancel membership"
-              manageVariant="white"
-              size="md"
-            />
-            <p className="text-xs text-zinc-500 dark:text-white/60">
+      <section className="space-y-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white shadow-sm">
+        {isPastDue ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-amber-800">Payment issue</h3>
+            <p className="text-sm text-amber-900/80">
+              We detected a past–due payment. Update your billing details to keep your access active and avoid interruptions.
+            </p>
+          </div>
+        ) : null}
+        {isCanceled ? (
+          <div className="rounded-2xl border border-zinc-200 bg-white/70 p-4 text-zinc-900">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-600">Membership paused</h3>
+            <p className="text-sm text-zinc-700">
+              Your membership is canceled, but you can rejoin anytime by starting a new tier below.
+            </p>
+          </div>
+        ) : null}
+        <div className="grid gap-6 lg:grid-cols-[1.3fr,0.7fr]">
+          <MembershipStatusCard
+            tierLabel={membershipTierLabel}
+            tierSummary={tierSummary}
+            statusLabel={membershipStatusLabel}
+            nextChargeLabel={membershipNextChargeLabel}
+            hasActiveMembership={hasActiveMembership}
+            isPastDue={isPastDue}
+            isCanceled={isCanceled}
+          />
+          <AccessSummary features={featureItems} hasActiveMembership={hasActiveMembership} />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <MembershipActions
+            currentTier={membershipTierKey}
+            membershipStatus={rawMembershipStatus}
+            hasActiveMembership={hasActiveMembership}
+          />
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-white/5">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Manage billing</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
+              Update cards, cancel your membership, or resume a paused subscription via Stripe's Customer Portal.
+            </p>
+            <div className="mt-4">
+              <StripeSubscriptionButtons
+                className="space-y-3"
+                orientation="column"
+                showCheckout={!hasActiveMembership}
+                showManage={hasActiveMembership}
+                checkoutLabel="Start monthly giving"
+                manageLabel="Open billing portal"
+                manageVariant="white"
+                size="md"
+              />
+            </div>
+            <p className="mt-3 text-xs text-zinc-500 dark:text-white/60">
               {membershipSupportMessage}{" "}
               <LocalizedLink href="/contact">
                 <span className="text-amber-300 hover:text-amber-200">Contact support</span>
@@ -555,51 +739,44 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
             </p>
           </div>
         </div>
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Giving</h2>
-          <p className="text-sm text-zinc-600 dark:text-white/70">
-            Manage your donations or send a one-time gift to advance Ruach testimonies and discipleship courses.
-          </p>
-          {GIVEBUTTER_URL ? (
-            <Button as="a" href={GIVEBUTTER_URL} variant="white" className="w-full justify-center">
-              Manage my donations
-            </Button>
-          ) : (
-            <p className="rounded-2xl border border-zinc-200/70 dark:border-white/15 bg-white dark:bg-white/5 px-4 py-3 text-xs text-zinc-500 dark:text-white/60">
-              Set <code>NEXT_PUBLIC_GIVEBUTTER_URL</code> to link donor management.
-            </p>
-          )}
-          <Button as="a" href="/give" variant="gold" className="w-full justify-center">
-            View giving options
-          </Button>
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Next steps</h2>
-          <ul className="space-y-2 text-sm text-zinc-600 dark:text-white/70">
-            <li>
-              <LocalizedLink href="/courses">
-                <span className="text-amber-300 hover:text-amber-200">Explore discipleship courses →</span>
-              </LocalizedLink>
-            </li>
-            <li>
-              <LocalizedLink href="/media">
-                <span className="text-amber-300 hover:text-amber-200">Watch the latest testimonies →</span>
-              </LocalizedLink>
-            </li>
-            <li>
-              <LocalizedLink href="/community-outreach">
-                <span className="text-amber-300 hover:text-amber-200">Join a local outreach →</span>
-              </LocalizedLink>
-            </li>
-          </ul>
-          <p className="text-xs text-zinc-500 dark:text-white/60">
-            Questions? Email{" "}
-            <a className="text-amber-300 hover:text-amber-200" href="mailto:hello@joinruach.org">
-              hello@joinruach.org
-            </a>
-            .
-          </p>
-        </div>
+      </section>
+
+      <section className="space-y-3 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Giving</h2>
+        <p className="text-sm text-zinc-600 dark:text-white/70">
+          Manage your donations or send a one-time gift to advance Ruach testimonies and discipleship courses.
+        </p>
+        <Button as="a" href="/give" variant="gold" className="w-full justify-center">
+          View giving options
+        </Button>
+      </section>
+
+      <section className="space-y-3 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Next steps</h2>
+        <ul className="space-y-2 text-sm text-zinc-600 dark:text-white/70">
+          <li>
+            <LocalizedLink href="/courses">
+              <span className="text-amber-300 hover:text-amber-200">Explore discipleship courses →</span>
+            </LocalizedLink>
+          </li>
+          <li>
+            <LocalizedLink href="/media">
+              <span className="text-amber-300 hover:text-amber-200">Watch the latest testimonies →</span>
+            </LocalizedLink>
+          </li>
+          <li>
+            <LocalizedLink href="/community-outreach">
+              <span className="text-amber-300 hover:text-amber-200">Join a local outreach →</span>
+            </LocalizedLink>
+          </li>
+        </ul>
+        <p className="text-xs text-zinc-500 dark:text-white/60">
+          Questions? Email{" "}
+          <a className="text-amber-300 hover:text-amber-200" href="mailto:hello@joinruach.org">
+            hello@joinruach.org
+          </a>
+          .
+        </p>
       </section>
 
       <section className="space-y-4 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
@@ -658,11 +835,15 @@ async function renderAccountPage(params: Promise<{ locale: string }>) {
                 <div className="flex flex-wrap gap-3">
                   <Button
                     as="a"
-                    href={`/courses/${course.slug}`}
+                    href={
+                      course.nextLessonSlug
+                        ? `/courses/${course.slug}/${course.nextLessonSlug}`
+                        : `/courses/${course.slug}`
+                    }
                     variant="gold"
                     className="flex-1 justify-center"
                   >
-                    Continue course
+                    {course.finished ? "Review course" : "Continue course"}
                   </Button>
                   {course.finished ? (
                     <Button

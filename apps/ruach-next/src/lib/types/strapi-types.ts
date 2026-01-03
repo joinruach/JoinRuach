@@ -1,3 +1,7 @@
+import type { AccessLevel as AccessLevelType } from "@ruach/components/components/ruach/CourseCard";
+
+export type CourseAccessLevel = AccessLevelType;
+
 export interface StrapiBase {
   id: number;
   createdAt?: string;
@@ -93,6 +97,7 @@ export interface MediaItemEntity extends StrapiBase {
     seoTitle?: string;
     seoDescription?: string;
     seoImage?: { data?: { attributes?: Media } };
+    requiredAccessLevel?: CourseAccessLevel;
   };
 }
 
@@ -113,6 +118,7 @@ export interface LessonEntity extends StrapiBase {
     transcriptFile?: { data?: { attributes?: Media } };
     previewAvailable?: boolean;
     course?: { data?: CourseEntity | null };
+    requiredAccessLevel?: CourseAccessLevel;
   };
 }
 
@@ -133,6 +139,8 @@ export interface CourseEntity extends StrapiBase {
     seoTitle?: string;
     seoDescription?: string;
     seoImage?: { data?: { attributes?: Media } };
+    unlockRequirements?: string;
+    requiredAccessLevel?: CourseAccessLevel;
   };
 }
 

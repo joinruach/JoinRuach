@@ -22,9 +22,16 @@
       "type": "integer",
       "default": 0
     },
+    "progressPercent": {
+      "type": "integer",
+      "default": 0
+    },
     "completed": {
       "type": "boolean",
       "default": false
+    },
+    "completedAt": {
+      "type": "datetime"
     },
     "user": {
       "type": "relation",
