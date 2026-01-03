@@ -9,22 +9,25 @@ import { mapStoryToMediaCard } from "./story-helpers";
 
 const fallbackStories: MediaCardProps[] = [
   {
-    title: "Deliverance on the Streets",
+    title: "Freedom in the Open",
     href: "/community-outreach/stories",
-    excerpt: "Testimonies from downtown outreach nights.",
-    category: "Outreach"
+    excerpt:
+      "Accounts from prayer, discernment, and deliverance carried into public spaces—where obedience is practiced, testimony is shared, and truth is lived outside institutional walls.",
+    category: "Public Witness"
   },
   {
-    title: "Feeding Families",
+    title: "Provision with Presence",
     href: "/community-outreach/stories",
-    excerpt: "Local teams meeting practical needs with prayer.",
-    category: "Community"
+    excerpt:
+      "Stories from local gatherings meeting practical needs through shared life—combining provision, prayer, and relational presence to strengthen households and communities.",
+    category: "Household Strengthening"
   },
   {
-    title: "Youth on Fire",
+    title: "Youth in Obedience",
     href: "/community-outreach/stories",
-    excerpt: "Young believers stepping into worship and obedience.",
-    category: "Youth"
+    excerpt:
+      "Testimonies of young believers being formed in worship, discernment, and responsibility—growing in faith through obedience rather than performance.",
+    category: "Next Generation Formation"
   }
 ];
 
@@ -222,8 +225,9 @@ export default async function CommunityOutreachPage({
       <section className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Stories from the Field</p>
-            <h2 className="text-2xl font-semibold text-foreground">Faith in motion—not theory.</h2>
+            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">From the Field</p>
+            <h2 className="text-2xl font-semibold text-foreground">Obedience in Practice — Not Theory</h2>
+            <p className="mt-2 max-w-xl text-sm text-zinc-600 dark:text-white/70">Witness how Scripture becomes lived formation.</p>
           </div>
           <LocalizedLink href="/community-outreach/stories">
             <span className="text-sm font-semibold text-foreground underline decoration-[hsl(var(--primary))] decoration-2 underline-offset-4">
@@ -235,11 +239,11 @@ export default async function CommunityOutreachPage({
           <MediaGrid items={stories} />
         </div>
         <div className="grid gap-3 text-sm text-zinc-600 dark:text-white/70">
-          <p className="font-semibold text-zinc-900 dark:text-white">Highlights</p>
+          <p className="font-semibold text-zinc-900 dark:text-white">What These Stories Reveal</p>
           <ul className="space-y-1">
-            <li>• Deliverance on the streets: prayer teams and testimony share in public spaces.</li>
-            <li>• Feeding families: local gatherings bringing groceries and presence.</li>
-            <li>• Youth on fire: young believers stepping into worship, leadership, and obedience.</li>
+            <li>• Ecclesia in motion — faith practiced publicly through prayer, testimony, and deliverance</li>
+            <li>• Formation through presence — meeting needs while strengthening spiritual identity</li>
+            <li>• Obedience cultivated early — young believers formed in worship, leadership, and courage</li>
           </ul>
         </div>
       </section>
@@ -271,20 +275,36 @@ export default async function CommunityOutreachPage({
 
       <section className="grid gap-8 rounded-3xl border border-zinc-200 bg-white p-8 text-zinc-900 md:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Fuel Kingdom Infrastructure</h2>
-          <p className="text-sm text-zinc-600">
-            Every gift strengthens what cannot be centralized—Bibles, food for families, formation guides, testimony-driven media,
-            and outreach tools. This isn’t funding a brand. It’s resourcing the remnant.
-          </p>
-          <div className="space-y-2 text-sm text-zinc-700">
-            <p>• Partner Monthly (Recommended): $75 / month — Feeds families + equips small gatherings.</p>
-            <p>• One-Time Gifts: $25 • $50 • $100 • $250 • Custom.</p>
+          <h2 className="text-2xl font-semibold">Strengthen the Infrastructure of the Ecclesia</h2>
+          <div className="space-y-3 text-sm text-zinc-600">
+            <p>
+              Every gift reinforces what cannot be centralized or controlled—Scripture in homes, provision at tables, formation in small gatherings,
+              testimony carried in truth, and tools that serve obedience rather than platforms.
+            </p>
+            <p className="font-semibold text-zinc-900">This is not funding a brand.</p>
+            <p className="font-semibold text-zinc-900">It is resourcing faithfulness.</p>
           </div>
-          <ul className="mt-4 space-y-1 text-sm text-zinc-600">
-            {givingHighlights.map((item) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
+          <div className="space-y-3 text-sm text-zinc-700">
+            <p className="font-semibold text-zinc-900">Ways to Participate</p>
+            <div className="space-y-1">
+              <p className="font-semibold text-zinc-900">Monthly Partnership (Recommended)</p>
+              <p>$75 / month — sustains household provision and equips small ecclesial gatherings with Scripture, formation resources, and practical tools.</p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-semibold text-zinc-900">One-Time Participation</p>
+              <p>$25 • $50 • $100 • $250 • Custom</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm text-zinc-600">
+            <p className="font-semibold text-zinc-900">What This Supports</p>
+            <ul className="space-y-1">
+              <li>• Scripture distributed and taught in homes and gatherings</li>
+              <li>• Provision for families through local, presence-based care</li>
+              <li>• Formation guides and teaching rooted in Scripture</li>
+              <li>• Testimony-driven media that strengthens the Body</li>
+              <li>• Outreach and discipleship tools for decentralized communities</li>
+            </ul>
+          </div>
           <LocalizedLink href="/give">
             <span className="inline-flex items-center gap-2 rounded-full border border-zinc-900 px-5 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-900 hover:text-white">
               Give Securely
