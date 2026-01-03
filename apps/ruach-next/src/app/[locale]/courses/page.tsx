@@ -5,6 +5,14 @@ import { getCourses, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-static";
 
+function titleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
 export default async function CoursesPage({
   params
 }: {
@@ -19,10 +27,14 @@ export default async function CoursesPage({
       const attributes = c?.attributes;
       if (!attributes) return null;
 
-      const title = attributes.name;
       const slug = attributes.slug;
+      if (typeof slug !== "string") return null;
 
-      if (typeof title !== "string" || typeof slug !== "string") return null;
+      const title =
+        (typeof attributes.name === "string" && attributes.name.trim()) ||
+        (typeof (attributes as any).seoTitle === "string" && (attributes as any).seoTitle.trim()) ||
+        (typeof (attributes as any).excerpt === "string" && (attributes as any).excerpt.trim()) ||
+        titleFromSlug(slug);
 
       const description = attributes.description;
       const coverUrl = attributes.cover?.data?.attributes?.url;
@@ -71,7 +83,11 @@ export default async function CoursesPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imgUrl(featuredCourse.cover?.data?.attributes?.url)!}
-                alt={featuredCourse.name}
+                alt={
+                  (typeof featuredCourse.name === "string" && featuredCourse.name.trim()) ||
+                  (typeof (featuredCourse as any).seoTitle === "string" && (featuredCourse as any).seoTitle.trim()) ||
+                  (typeof featuredCourse.slug === "string" ? titleFromSlug(featuredCourse.slug) : "Course")
+                }
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -80,9 +96,15 @@ export default async function CoursesPage({
           </div>
           <div className="flex flex-col gap-4 p-8">
             <span className="text-xs font-semibold uppercase tracking-wide text-amber-600">Featured Series</span>
-            <h2 className="text-2xl font-semibold text-neutral-900">{featuredCourse.name}</h2>
+            <h2 className="text-2xl font-semibold text-neutral-900">
+              {(typeof featuredCourse.name === "string" && featuredCourse.name.trim()) ||
+                (typeof (featuredCourse as any).seoTitle === "string" && (featuredCourse as any).seoTitle.trim()) ||
+                (typeof featuredCourse.slug === "string" ? titleFromSlug(featuredCourse.slug) : "Course")}
+            </h2>
             {featuredCourse.description ? (
               <p className="text-neutral-600">{featuredCourse.description}</p>
+            ) : (featuredCourse as any).excerpt ? (
+              <p className="text-neutral-600">{(featuredCourse as any).excerpt}</p>
             ) : null}
             <div className="mt-auto">
               <LocalizedLink href={`/courses/${featuredCourse.slug}`}>

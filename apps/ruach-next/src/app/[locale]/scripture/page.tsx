@@ -7,7 +7,14 @@ export const metadata: Metadata = {
   description: 'Explore the complete biblical canon with original Hebrew divine names preserved.',
 };
 
-export default async function ScripturePage() {
+interface ScripturePageProps {
+  params: Promise<{
+    locale: string;
+  }>;
+}
+
+export default async function ScripturePage({ params }: ScripturePageProps) {
+  const { locale } = await params;
   const works = await getScriptureWorks();
 
   // Group works by testament
@@ -55,7 +62,7 @@ export default async function ScripturePage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {oldTestament.map((work) => (
-                    <BookCard key={work.documentId} work={work} />
+                    <BookCard key={work.documentId} locale={locale} work={work} />
                   ))}
                 </div>
               )}
@@ -71,7 +78,7 @@ export default async function ScripturePage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {newTestament.map((work) => (
-                    <BookCard key={work.documentId} work={work} />
+                    <BookCard key={work.documentId} locale={locale} work={work} />
                   ))}
                 </div>
               )}
@@ -83,10 +90,16 @@ export default async function ScripturePage() {
   );
 }
 
-function BookCard({ work }: { work: Awaited<ReturnType<typeof getScriptureWorks>>[number] }) {
+function BookCard({
+  locale,
+  work,
+}: {
+  locale: string;
+  work: Awaited<ReturnType<typeof getScriptureWorks>>[number];
+}) {
   return (
     <Link
-      href={`/scripture/${work.workId}`}
+      href={`/${locale}/scripture/${work.workId}`}
       className="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg transition-all duration-200"
     >
       <div className="flex flex-col h-full">

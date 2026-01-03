@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: BookPageProps): Promise<Metad
 }
 
 export default async function BookPage({ params }: BookPageProps) {
-  const { workSlug } = await params;
+  const { locale, workSlug } = await params;
   const work = await getScriptureWorkBySlug(workSlug);
 
   if (!work) {
@@ -43,7 +43,7 @@ export default async function BookPage({ params }: BookPageProps) {
         {/* Breadcrumb */}
         <nav className="mb-8 text-sm">
           <Link
-            href="/scripture"
+            href={`/${locale}/scripture`}
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
             Scripture
@@ -85,7 +85,7 @@ export default async function BookPage({ params }: BookPageProps) {
             {chapters.map((chapter) => (
               <Link
                 key={chapter}
-                href={`/scripture/${work.workId}/${chapter}`}
+                href={`/${locale}/scripture/${work.workId}/${chapter}`}
                 className="flex items-center justify-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-semibold"
               >
                 {chapter}

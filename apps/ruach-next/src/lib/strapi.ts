@@ -34,6 +34,43 @@ function resolveUrl(path: string) {
   return path.startsWith("http") ? path : `${STRAPI}${path}`;
 }
 
+function normalizeMediaRelation(media: any) {
+  if (!media) return media;
+  if (typeof media !== "object") return media;
+  if ("data" in media) return media;
+  return { data: { attributes: media } };
+}
+
+function normalizeEntityArrayRelation(items: any) {
+  if (!items) return items;
+  if (typeof items !== "object") return items;
+  if ("data" in items) return items;
+  if (!Array.isArray(items)) return items;
+  return {
+    data: items.map((item) => {
+      if (!item || typeof item !== "object") return item;
+      if ("attributes" in item) return item;
+      return { ...item, attributes: item };
+    }),
+  };
+}
+
+function normalizeCourseEntity(entity: any): CourseEntity {
+  if (!entity || typeof entity !== "object") return entity as CourseEntity;
+  if ("attributes" in entity && entity.attributes) return entity as CourseEntity;
+
+  const attrs: Record<string, any> = { ...entity };
+  delete attrs.id;
+  delete attrs.documentId;
+
+  attrs.cover = normalizeMediaRelation(entity.cover);
+  attrs.heroVideo = normalizeMediaRelation(entity.heroVideo);
+  attrs.seoImage = normalizeMediaRelation(entity.seoImage);
+  attrs.lessons = normalizeEntityArrayRelation(entity.lessons);
+
+  return { id: entity.id ?? null, attributes: attrs } as CourseEntity;
+}
+
 function createStrapiError(res: Response, url: string): StrapiRequestError {
   const error = new Error(`Strapi request failed ${res.status}`) as StrapiRequestError;
   error.name = "StrapiRequestError";
@@ -448,13 +485,16 @@ export async function getCourses() {
   const q = qs({
     "fields[0]": "name",
     "fields[1]": "slug",
+    "fields[2]": "excerpt",
+    "fields[3]": "description",
+    "fields[4]": "seoTitle",
     populate: "cover",
     "pagination[pageSize]": "100",
   });
 
   try {
     const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${q}`, { tags: ["courses"] });
-    return j.data || [];
+    return (j.data || []).map(normalizeCourseEntity);
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
       return [] as CourseEntity[];
@@ -490,7 +530,7 @@ export async function getCourseBySlug(slug: string) {
     const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${params.toString()}`, {
       tags: [`course:${slug}`],
     });
-    return j.data?.[0];
+    return j.data?.[0] ? normalizeCourseEntity(j.data[0]) : undefined;
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
       return undefined;
@@ -1602,6 +1642,33 @@ type ScriptureWorksOptions = {
   testament?: 'tanakh' | 'renewed_covenant' | 'apocrypha';
 };
 
+function extractEntityAttributes(entity: unknown): Record<string, unknown> {
+  if (!entity || typeof entity !== "object") return {};
+
+  if ("attributes" in entity) {
+    const attrs = (entity as { attributes?: unknown }).attributes;
+    if (attrs && typeof attrs === "object") return attrs as Record<string, unknown>;
+  }
+
+  const clone: Record<string, unknown> = { ...(entity as Record<string, unknown>) };
+  delete clone.id;
+  delete clone.documentId;
+  delete clone.createdAt;
+  delete clone.updatedAt;
+  delete clone.publishedAt;
+  delete clone.__component;
+  return clone;
+}
+
+function normalizeTestament(value: unknown): 'tanakh' | 'renewed_covenant' | 'apocrypha' | undefined {
+  if (typeof value !== 'string') return undefined;
+  const v = value.toLowerCase();
+  if (v === 'tanakh' || v === 'renewed_covenant' || v === 'apocrypha') return v as typeof v;
+  if (v === 'old_testament' || v === 'old' || v === 'ot') return 'tanakh';
+  if (v === 'new_testament' || v === 'new' || v === 'nt') return 'renewed_covenant';
+  return undefined;
+}
+
 export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
   const params = new URLSearchParams();
   params.set("fields[0]", "workId");
@@ -1638,10 +1705,40 @@ export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
       console.warn('[getScriptureWorks] API returned empty data array');
     }
 
-    return (j.data || []).map(work => ({
-      documentId: work.documentId as string,
-      ...work.attributes,
-    }));
+    return (j.data || []).map((work) => {
+      const attributes = extractEntityAttributes(work);
+      const testament = normalizeTestament(attributes.testament);
+      const raw = work as unknown as Record<string, unknown>;
+      const documentId =
+        typeof raw.documentId === "string"
+          ? raw.documentId
+          : typeof raw.id === "number" || typeof raw.id === "string"
+            ? String(raw.id)
+            : typeof attributes.workId === "string"
+              ? attributes.workId
+              : "";
+
+      return {
+        documentId,
+        ...attributes,
+        ...(testament ? { testament } : {}),
+      } as Record<string, unknown> as {
+        documentId: string;
+        workId: string;
+        canonicalName: string;
+        translatedTitle: string;
+        shortCode?: string;
+        testament?: 'tanakh' | 'renewed_covenant' | 'apocrypha';
+        canonicalOrder?: number;
+        totalChapters: number;
+        totalVerses: number;
+        author?: string;
+        genre?: string;
+        summary?: string;
+        hebrewName?: string;
+        greekName?: string;
+      };
+    });
   } catch (error) {
     console.error('[getScriptureWorks] Error fetching scripture works:', error);
     if (isNotFoundOrNetwork(error)) {
@@ -1681,7 +1778,41 @@ export async function getScriptureWorkBySlug(slug: string) {
       }
     );
     const work = j.data?.[0];
-    return work ? { documentId: work.documentId as string, ...work.attributes } : null;
+    if (!work) return null;
+
+    const attributes = extractEntityAttributes(work);
+    const testament = normalizeTestament(attributes.testament);
+    const raw = work as unknown as Record<string, unknown>;
+    const documentId =
+      typeof raw.documentId === "string"
+        ? raw.documentId
+        : typeof raw.id === "number" || typeof raw.id === "string"
+          ? String(raw.id)
+          : typeof attributes.workId === "string"
+            ? attributes.workId
+            : "";
+
+    return {
+      documentId,
+      ...attributes,
+      ...(testament ? { testament } : {}),
+    } as Record<string, unknown> as {
+      documentId: string;
+      workId: string;
+      canonicalName: string;
+      translatedTitle: string;
+      shortCode?: string;
+      testament?: 'tanakh' | 'renewed_covenant' | 'apocrypha';
+      canonicalOrder?: number;
+      totalChapters: number;
+      totalVerses: number;
+      author?: string;
+      estimatedDate?: string;
+      genre?: string;
+      summary?: string;
+      hebrewName?: string;
+      greekName?: string;
+    };
   } catch (error) {
     console.error('[getScriptureWorkBySlug] Error fetching work:', slug, error);
     if (isNotFoundOrNetwork(error)) {
@@ -1718,10 +1849,31 @@ export async function getScriptureVerses(workId: string, chapter: number) {
         authToken: process.env.STRAPI_API_TOKEN,
       }
     );
-    return (j.data || []).map(verse => ({
-      documentId: verse.documentId as string,
-      ...verse.attributes,
-    }));
+    return (j.data || []).map((verse) => {
+      const attributes = extractEntityAttributes(verse);
+      const raw = verse as unknown as Record<string, unknown>;
+      const documentId =
+        typeof raw.documentId === "string"
+          ? raw.documentId
+          : typeof raw.id === "number" || typeof raw.id === "string"
+            ? String(raw.id)
+            : typeof attributes.verseId === "string"
+              ? attributes.verseId
+              : "";
+
+      return {
+        documentId,
+        ...attributes,
+      } as Record<string, unknown> as {
+        documentId: string;
+        verseId: string;
+        chapter: number;
+        verse: number;
+        text: string;
+        paleoHebrewDivineNames?: boolean;
+        hasFootnotes?: boolean;
+      };
+    });
   } catch (error) {
     console.error('[getScriptureVerses] Error fetching verses:', workId, chapter, error);
     if (isNotFoundOrNetwork(error)) {

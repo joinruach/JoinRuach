@@ -17,6 +17,7 @@ interface LessonProgressRow {
   attributes?: {
     lessonSlug?: string | null;
   };
+  lessonSlug?: string | null;
 }
 
 interface LessonProgressResponse {
@@ -37,12 +38,20 @@ async function getCompletedLessons(jwt: string, courseSlug: string) {
   const json = (await res.json()) as LessonProgressResponse;
   const data: LessonProgressRow[] = Array.isArray(json?.data) ? json.data : [];
   const slugs = data
-    .map((row) => row?.attributes?.lessonSlug)
+    .map((row) => row?.attributes?.lessonSlug ?? row?.lessonSlug)
     .filter((slug): slug is string => typeof slug === "string" && slug.length > 0);
   return new Set(slugs);
 }
 
 export const dynamic = "auto";
+
+function titleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }){
   const { slug } = await params;
@@ -72,6 +81,12 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
     return notFound();
   }
 
+  const courseTitle =
+    (typeof (a as any).name === "string" && (a as any).name.trim()) ||
+    (typeof (a as any).seoTitle === "string" && (a as any).seoTitle.trim()) ||
+    (typeof (a as any).excerpt === "string" && (a as any).excerpt.trim()) ||
+    titleFromSlug(slug);
+
   const lessonsRaw = Array.isArray(a.lessons?.data) ? a.lessons.data : [];
   const lessons = lessonsRaw
     .map((d) => (d as { attributes?: unknown })?.attributes)
@@ -88,8 +103,8 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
-    name: a.name,
-    description: a.description,
+    name: courseTitle,
+    description: a.description || (a as any).excerpt,
     provider: {
       "@type": "Organization",
       name: "Ruach Ministries",
@@ -109,16 +124,16 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imgUrl(a.cover?.data?.attributes?.url)!}
-              alt={a.name}
+              alt={courseTitle}
                 className="h-full w-full object-cover"
               />
             ) : null}
           </div>
           <div className="flex flex-col gap-4 p-8">
             <span className="text-xs font-semibold uppercase tracking-[0.4em] text-neutral-500">Ruach Academy</span>
-            <h1 className="text-3xl font-semibold text-neutral-900">{a.name}</h1>
-            {a.description ? (
-              <p className="text-neutral-600">{a.description}</p>
+            <h1 className="text-3xl font-semibold text-neutral-900">{courseTitle}</h1>
+            {a.description || (a as any).excerpt ? (
+              <p className="text-neutral-600">{a.description || (a as any).excerpt}</p>
             ) : null}
             <div className="space-y-2">
               <div className="text-sm font-semibold text-neutral-700">Progress</div>
@@ -175,28 +190,34 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
             {total} lessons
           </div>
         </div>
-        <ol className="mt-6 space-y-3">
-          {lessons.map((lesson:any, index:number)=>(
-            <li key={lesson.slug} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 transition hover:border-amber-300/60">
-              <LocalizedLink href={`/courses/${slug}/${lesson.slug}`}>
-                <span className="flex items-center gap-4 p-5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-white/10 text-sm font-semibold text-zinc-900 dark:text-white">
-                    {lesson.order || index + 1}
+        {lessons.length ? (
+          <ol className="mt-6 space-y-3">
+            {lessons.map((lesson:any, index:number)=>(
+              <li key={lesson.slug} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 transition hover:border-amber-300/60">
+                <LocalizedLink href={`/courses/${slug}/${lesson.slug}`}>
+                  <span className="flex items-center gap-4 p-5">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-white/10 text-sm font-semibold text-zinc-900 dark:text-white">
+                      {lesson.order || index + 1}
+                    </span>
+                  <div className="flex-1">
+                    <div className="text-base font-semibold text-zinc-900 dark:text-white">{lesson.title}</div>
+                    {lesson.summary ? (
+                      <p className="text-sm text-zinc-500 dark:text-white/60">{lesson.summary}</p>
+                    ) : null}
+                  </div>
+                    <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-zinc-400 dark:text-white/40"}`}>
+                      {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
+                    </span>
                   </span>
-                <div className="flex-1">
-                  <div className="text-base font-semibold text-zinc-900 dark:text-white">{lesson.title}</div>
-                  {lesson.summary ? (
-                    <p className="text-sm text-zinc-500 dark:text-white/60">{lesson.summary}</p>
-                  ) : null}
-                </div>
-                  <span className={`text-xs font-semibold ${completedLessons.has(lesson.slug) ? "text-emerald-300" : "text-zinc-400 dark:text-white/40"}`}>
-                    {completedLessons.has(lesson.slug) ? "Completed" : "Start Lesson"}
-                  </span>
-                </span>
-              </LocalizedLink>
-            </li>
-          ))}
-        </ol>
+                </LocalizedLink>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-5 text-sm text-zinc-600 dark:text-white/70">
+            Lessons will be published soon. Check back later.
+          </div>
+        )}
       </section>
     </div>
   );

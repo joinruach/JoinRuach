@@ -7,6 +7,14 @@ import { getCourseBySlug, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-dynamic";
 
+function titleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
 async function getComments(courseSlug: string, lessonSlug: string): Promise<Comment[]> {
   const r = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/lesson-comments?` + new URLSearchParams({
     "filters[courseSlug][$eq]": courseSlug,
@@ -17,12 +25,16 @@ async function getComments(courseSlug: string, lessonSlug: string): Promise<Comm
     "pagination[pageSize]": "50"
   }), { cache: "no-store" });
   const j = await r.json();
-  return (j.data ?? []).map((row:any)=>({
-    id: row.id,
-    author: row.attributes?.user?.data?.attributes?.username || row.attributes?.user?.data?.attributes?.email || "User",
-    text: row.attributes?.text,
-    createdAt: row.attributes?.createdAt
-  }));
+  return (j.data ?? []).map((row:any)=>{
+    const attrs = row?.attributes ?? row ?? {};
+    const user = attrs?.user?.data?.attributes ?? attrs?.user?.attributes ?? attrs?.user ?? {};
+    return {
+      id: row.id,
+      author: user?.username || user?.email || "User",
+      text: attrs?.text,
+      createdAt: attrs?.createdAt
+    };
+  });
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string; lessonSlug: string }> }){
@@ -33,6 +45,11 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   if (!course || !lesson) {
     return <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-600 dark:text-white/70">Lesson not found.</div>;
   }
+
+  const courseTitle =
+    (typeof (course.attributes as any)?.name === "string" && (course.attributes as any).name.trim()) ||
+    (typeof (course.attributes as any)?.seoTitle === "string" && (course.attributes as any).seoTitle.trim()) ||
+    titleFromSlug(slug);
 
   const comments = await getComments(slug, lessonSlug);
   const currentIndex = lessonsRaw.findIndex((l:any)=>l.slug===lesson.slug);
@@ -50,7 +67,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     url: `${site}/courses/${slug}/${lessonSlug}`,
     isPartOf: {
       "@type": "Course",
-      name: course.attributes?.name,
+      name: courseTitle,
       url: `${site}/courses/${slug}`
     },
     provider: {
@@ -66,7 +83,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       <nav className="flex items-center gap-2 text-xs uppercase tracking-wide text-zinc-500 dark:text-white/50">
         <LocalizedLink href="/courses"><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">Courses</span></LocalizedLink>
         <span>/</span>
-        <LocalizedLink href={`/courses/${slug}`}><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">{course.attributes?.name}</span></LocalizedLink>
+        <LocalizedLink href={`/courses/${slug}`}><span className="text-zinc-500 dark:text-white/60 transition hover:text-zinc-900 dark:hover:text-white">{courseTitle}</span></LocalizedLink>
         <span>/</span>
         <span className="text-zinc-900 dark:text-white">{lesson.title}</span>
       </nav>
