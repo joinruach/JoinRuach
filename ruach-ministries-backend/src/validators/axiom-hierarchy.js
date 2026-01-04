@@ -32,6 +32,18 @@ const MINIMUM_TIER_BY_NODE_TYPE = {
  */
 const AXIOM_CEILING_MAX = parseInt(process.env.AXIOM_CEILING_MAX || '4', 10);
 
+const isTestEnv = process.env.NODE_ENV === 'test';
+
+function warn(...args) {
+  if (isTestEnv) return;
+  console.warn(...args);
+}
+
+function log(...args) {
+  if (isTestEnv) return;
+  console.log(...args);
+}
+
 /**
  * Get minimum tier requirement for a given Node Type
  *
@@ -60,7 +72,7 @@ function parseTierNumber(tierString) {
 
   const match = tierString.match(/Tier (\d)/);
   if (!match) {
-    console.warn(`[Axiom Validator] Invalid tier format: ${tierString}`);
+    warn(`[Axiom Validator] Invalid tier format: ${tierString}`);
     return null;
   }
 
@@ -84,7 +96,7 @@ async function checkTierCompliance(nodeType, canonAxiomIds, nodeTitle, nodeId) {
   });
 
   if (!axioms || axioms.length === 0) {
-    console.warn(`[Axiom Validator] No axioms found for IDs: ${canonAxiomIds.join(', ')}`);
+    warn(`[Axiom Validator] No axioms found for IDs: ${canonAxiomIds.join(', ')}`);
     return { valid: true }; // Skip validation if axioms not found (draft state)
   }
 
@@ -96,7 +108,7 @@ async function checkTierCompliance(nodeType, canonAxiomIds, nodeTitle, nodeId) {
   const tierNumbers = tiers.map(parseTierNumber).filter(n => n !== null);
 
   if (tierNumbers.length === 0) {
-    console.warn(`[Axiom Validator] No valid tier numbers found for node: ${nodeTitle}`);
+    warn(`[Axiom Validator] No valid tier numbers found for node: ${nodeTitle}`);
     return { valid: true }; // Skip if no valid tiers
   }
 
@@ -175,17 +187,17 @@ async function validateAxiomHierarchy(data) {
 
   // Skip validation if no axioms attached (allow drafts)
   if (!canonAxiomIds || canonAxiomIds.length === 0) {
-    console.log(`[Axiom Validator] Skipping validation for node "${nodeTitle}" (no axioms attached)`);
+    log(`[Axiom Validator] Skipping validation for node "${nodeTitle}" (no axioms attached)`);
     return { valid: true };
   }
 
   // Skip validation if no node type specified
   if (!nodeType) {
-    console.log(`[Axiom Validator] Skipping validation for node "${nodeTitle}" (no node type specified)`);
+    log(`[Axiom Validator] Skipping validation for node "${nodeTitle}" (no node type specified)`);
     return { valid: true };
   }
 
-  console.log(`[Axiom Validator] Validating node "${nodeTitle}" (Type: ${nodeType}, Axioms: ${canonAxiomIds.length})`);
+  log(`[Axiom Validator] Validating node "${nodeTitle}" (Type: ${nodeType}, Axioms: ${canonAxiomIds.length})`);
 
   // Proceed to tier analysis
   return await checkTierCompliance(nodeType, canonAxiomIds, nodeTitle, nodeId);

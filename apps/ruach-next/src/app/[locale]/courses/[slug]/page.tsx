@@ -82,8 +82,6 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
   const { jwt, membership } = await requireCourseLicense(slug, `/courses/${slug}`);
   const course = await getCourseBySlug(slug, jwt);
   if (!course) return notFound();
-
-  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
   const completedLessons = jwt ? await getCompletedLessons(jwt, slug) : new Set<string>();
   const progressData = jwt ? await getCourseProgress(slug, jwt) : null;
 
