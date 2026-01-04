@@ -18,6 +18,8 @@ import React, {
   useState
 } from "react";
 
+import styles from "./Dock.module.css";
+
 export type DockItemData = {
   icon: React.ReactNode;
   label: React.ReactNode;
@@ -88,7 +90,7 @@ function DockItem({
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`dock-item ${className}`}
+      className={`${styles.dockItem} ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -130,7 +132,7 @@ function DockLabel({ children, className = "", isHovered }: DockLabelProps) {
           animate={{ opacity: 1, y: -10 }}
           exit={{ opacity: 0, y: 0 }}
           transition={{ duration: 0.2 }}
-          className={`dock-label ${className}`}
+          className={`${styles.dockLabel} ${className}`}
           role="tooltip"
           style={{ x: "-50%" }}
         >
@@ -147,7 +149,7 @@ type DockIconProps = {
 };
 
 function DockIcon({ children, className = "" }: DockIconProps) {
-  return <div className={`dock-icon ${className}`}>{children}</div>;
+  return <div className={`${styles.dockIcon} ${className}`}>{children}</div>;
 }
 
 export default function Dock({
@@ -173,18 +175,18 @@ export default function Dock({
   return (
     <motion.div
       style={{ height, scrollbarWidth: "none" }}
-      className="dock-outer"
+      className={styles.dockOuter}
     >
       <motion.div
-        onMouseMove={({ pageX }) => {
+        onPointerMove={(e) => {
           isHovered.set(1);
-          mouseX.set(pageX);
+          mouseX.set(e.clientX);
         }}
-        onMouseLeave={() => {
+        onPointerLeave={() => {
           isHovered.set(0);
           mouseX.set(Infinity);
         }}
-        className={`dock-panel ${className}`}
+        className={`${styles.dockPanel} ${className}`}
         style={{ height: panelHeight }}
         role="toolbar"
         aria-label="Application dock"

@@ -18,7 +18,8 @@
     "nodeType": ["Awakening", "Healing", "Warfare", "Formation", "Commissioning"],
     "formationScope": ["Individual", "Household", "Ecclesia", "Network"],
     "sensitivity": ["Low", "Medium", "High", "Critical"],
-    "checkpointType": ["none", "text-response", "voice-response", "text-and-voice"]
+    "checkpointType": ["none", "text-response", "voice-response", "text-and-voice"],
+    "resourceType": ["article", "video", "audio", "document", "tool", "link"]
   },
 
   "entities": {
@@ -45,7 +46,9 @@
       "sync": {
         "strapiEntryId": { "type": "string", "immutable": true },
         "lastSyncedAt": { "type": "datetime" },
-        "syncErrors": { "type": "text" }
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
       }
     },
 
@@ -99,7 +102,14 @@
         "videoUrl": { "type": "string" },
         "transcript": { "type": "richtext" }
       },
-      "relations": { "course": { "type": "manyToOne", "target": "Course", "required": true } }
+      "relations": { "course": { "type": "manyToOne", "target": "Course", "required": true } },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
+      }
     },
 
     "Assignment": {
@@ -115,6 +125,35 @@
       "relations": {
         "course": { "type": "manyToOne", "target": "Course" },
         "lesson": { "type": "manyToOne", "target": "Lesson" }
+      },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
+      }
+    },
+
+    "Resource": {
+      "identity": {
+        "resourceId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "title": { "type": "string", "required": true },
+        "resourceType": { "type": "enum", "enum": "resourceType" },
+        "url": { "type": "string" },
+        "description": { "type": "text" }
+      },
+      "relations": {
+        "course": { "type": "manyToOne", "target": "Course" }
+      },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
       }
     },
 
@@ -127,6 +166,32 @@
         "phase": { "type": "enum", "enum": "formationPhase", "required": true },
         "order": { "type": "integer", "required": true },
         "description": { "type": "richtext", "required": true }
+      },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
+      }
+    },
+
+    "Phase": {
+      "identity": {
+        "phaseId": { "type": "string", "required": true, "immutable": true }
+      },
+      "content": {
+        "phaseName": { "type": "string", "required": true },
+        "phase": { "type": "enum", "enum": "formationPhase", "required": true },
+        "order": { "type": "integer", "required": true },
+        "description": { "type": "richtext", "required": true }
+      },
+      "sync": {
+        "strapiEntryId": { "type": "string", "immutable": true },
+        "lastSyncedAt": { "type": "datetime" },
+        "syncErrors": { "type": "text" },
+        "checksum": { "type": "string" },
+        "syncedToStrapi": { "type": "boolean" }
       }
     },
 

@@ -6,7 +6,20 @@ type FieldExtractor = (props: NotionProperties) => any;
 
 type EntityFieldMap = Record<string, FieldExtractor>;
 
-export const fieldMap: Record<'Course' | 'CourseProfile' | 'Lesson', EntityFieldMap> = {
+type EntityKey = 'Course' | 'CourseProfile' | 'Lesson' | 'Phase' | 'Assignment' | 'Resource';
+
+export const fieldMap: Record<EntityKey, EntityFieldMap> = {
+  Phase: {
+    phaseId: (p) => ex.text(p['phaseId']),
+    phaseName: (p) => ex.text(p['phaseName']),
+    slug: (p) => ex.text(p['slug']),
+    phase: (p) => ex.select(p['phase']),
+    order: (p) => ex.number(p['order']),
+    description: (p) => ex.text(p['description']),
+    duration: (p) => ex.text(p['duration']),
+    status: (p) => ex.select(p['status']),
+  },
+
   Course: {
     courseId: (p) => ex.text(p['courseId']),
     slug: (p) => ex.text(p['slug']),
@@ -51,5 +64,22 @@ export const fieldMap: Record<'Course' | 'CourseProfile' | 'Lesson', EntityField
     coreLieExposed: (p) => ex.text(p['coreLieExposed']),
     keyScripture: (p) => ex.text(p['keyScripture']),
     content: (p) => ex.text(p['content']),
+  },
+
+  Assignment: {
+    assignmentId: (p) => ex.text(p['assignmentId']),
+    name: (p) => ex.text(p['name'] ?? p['assignmentName'] ?? p['title']),
+    assignmentType: (p) => ex.select(p['assignmentType']),
+    outputFormat: (p) => ex.select(p['outputFormat']),
+    instructions: (p) => ex.text(p['instructions']),
+    description: (p) => ex.text(p['description']),
+  },
+
+  Resource: {
+    resourceId: (p) => ex.text(p['resourceId']),
+    title: (p) => ex.text(p['title'] ?? p['resourceTitle']),
+    resourceType: (p) => ex.select(p['resourceType']),
+    url: (p) => ex.text(p['url']),
+    description: (p) => ex.text(p['description']),
   },
 };

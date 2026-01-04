@@ -1,0 +1,82 @@
+.dockOuter {
+  position: fixed;
+  left: 50%;
+  bottom: 0.75rem;
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.dockPanel {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  width: fit-content;
+  max-width: calc(100vw - 1rem);
+  gap: 0.9rem;
+
+  padding: 0.4rem 0.65rem 0.65rem;
+  border-radius: 1.1rem;
+
+  background: var(--ruach-surface);
+  border: 1px solid var(--ruach-border);
+  box-shadow: var(--ruach-shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.dockItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: var(--ruach-card);
+  border: 1px solid var(--ruach-border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.dockItem:hover {
+  border-color: var(--ruach-border-strong);
+}
+
+.dockItem:focus-visible {
+  border-color: var(--ruach-gold);
+  box-shadow: 0 0 0 3px var(--ruach-gold-dim), 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.isActive {
+  border-color: var(--ruach-gold);
+  box-shadow: 0 0 0 1px var(--ruach-gold-dim), 0 14px 30px rgba(0, 0, 0, 0.45);
+}
+
+.dockIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ruach-muted);
+}
+
+.dockItem:hover .dockIcon {
+  color: var(--ruach-text);
+}
+
+.dockLabel {
+  position: absolute;
+  top: -1.75rem;
+  left: 50%;
+  width: fit-content;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+  border: 1px solid var(--ruach-border);
+  background: rgba(18, 18, 18, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.18rem 0.55rem;
+  font-size: 0.75rem;
+  color: var(--ruach-text);
+  transform: translateX(-50%);
+}
