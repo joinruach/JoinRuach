@@ -5,7 +5,10 @@ export default {
       path: "/stripe/sync-latest",
       handler: "sync.syncLatest",
       config: {
-        auth: true,
+        auth: {
+          scope: [],
+        },
+        policies: ["global::is-authenticated-or-admin"],
       },
     },
     {
@@ -13,7 +16,10 @@ export default {
       path: "/stripe/sync-customer",
       handler: "sync.syncCustomer",
       config: {
-        auth: true,
+        auth: {
+          scope: [],
+        },
+        policies: ["global::is-authenticated-or-admin"],
       },
     },
   ],

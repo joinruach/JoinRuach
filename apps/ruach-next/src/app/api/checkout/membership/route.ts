@@ -5,7 +5,12 @@ import type Stripe from "stripe";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { fetchStrapiMembership } from "@/lib/strapi-membership";
-import { getMembershipPrices, type MembershipTier } from "@/lib/membership-prices";
+import {
+  getMembershipPrices,
+  resolveMembershipPriceId,
+  type BillingInterval,
+  type MembershipTier,
+} from "@/lib/membership-prices";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -14,6 +19,7 @@ const SITE_URL =
 
 type MembershipCheckoutRequest = {
   tier: MembershipTier;
+  interval?: BillingInterval;
   locale?: string;
 };
 
@@ -39,6 +45,17 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const tierConfig = membershipPrices[tier];
+    if (!tierConfig) {
+      return NextResponse.json(
+        { error: "Membership tier is not configured." },
+        { status: 500 },
+      );
+    }
+
+    const interval: BillingInterval =
+      body.interval === "annual" ? "annual" : "monthly";
 
     const locale =
       typeof body.locale === "string" && body.locale.trim().length
@@ -66,7 +83,8 @@ export async function POST(request: Request) {
     const metadata: Record<string, string> = {
       type: "membership",
       tier,
-      accessLevel: membershipPrices[tier].accessLevel,
+      interval,
+      accessLevel: tierConfig.accessLevel,
       source: "ruach-next",
     };
 
@@ -77,9 +95,11 @@ export async function POST(request: Request) {
     const successUrl = `${SITE_URL}/${locale}/members/account?checkout=success`;
     const cancelUrl = `${SITE_URL}/${locale}/join`;
 
+    const priceId = resolveMembershipPriceId(membershipPrices, tier, interval);
+
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
-      line_items: [{ price: membershipPrices[tier].priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,

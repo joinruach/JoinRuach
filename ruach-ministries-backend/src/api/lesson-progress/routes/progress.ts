@@ -7,7 +7,10 @@ export default {
       path: '/lessons/:lessonSlug/progress',
       handler: 'lesson-progress.lessonProgress',
       config: {
-        auth: true,
+        auth: {
+          scope: [],
+        },
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -15,7 +18,10 @@ export default {
       path: '/lessons/:lessonSlug/progress',
       handler: 'lesson-progress.upsertLessonProgress',
       config: {
-        auth: true,
+        auth: {
+          scope: [],
+        },
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -23,7 +29,10 @@ export default {
       path: '/courses/:courseSlug/progress',
       handler: 'lesson-progress.courseProgress',
       config: {
-        auth: true,
+        auth: {
+          scope: [],
+        },
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
   ],

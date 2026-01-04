@@ -4,6 +4,8 @@ import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { getStripeClient } from "@/lib/stripe";
 import {
   getMembershipPrices,
+  resolveMembershipPriceId,
+  type BillingInterval,
   type MembershipTier,
   type MembershipPrices,
 } from "@/lib/membership-prices";
@@ -77,8 +79,18 @@ export async function POST(req: Request) {
       );
     }
 
+    const stripeInterval = item.price?.recurring?.interval;
+    const interval: BillingInterval = stripeInterval === "year" ? "annual" : "monthly";
+
     const targetConfig = membershipPrices[targetTier];
-    const currentRank = currentTier ? membershipPrices[currentTier].rank : 0;
+    if (!targetConfig) {
+      return NextResponse.json(
+        { error: "Requested membership tier is not configured." },
+        { status: 500 },
+      );
+    }
+
+    const currentRank = currentTier ? membershipPrices[currentTier]?.rank ?? 0 : 0;
     const isUpgrade = targetConfig.rank > currentRank;
     const prorationBehavior = isUpgrade ? "create_prorations" : "none";
 
@@ -86,7 +98,7 @@ export async function POST(req: Request) {
       items: [
         {
           id: item.id,
-          price: targetConfig.priceId,
+          price: resolveMembershipPriceId(membershipPrices, targetTier, interval),
         },
       ],
       proration_behavior: prorationBehavior,

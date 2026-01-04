@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import {
+  getMembershipPrices,
+  resolveMembershipPriceId,
+  type BillingInterval,
+} from "@/lib/membership-prices";
 
 // Extended session type with Strapi JWT
 interface ExtendedSession {
@@ -14,8 +19,9 @@ const SITE_URL =
   process.env.NEXTAUTH_URL ||
   "http://localhost:3000";
 
-const PRICE_ID =
-  process.env.STRIPE_PARTNER_PRICE_ID || process.env.STRIPE_PRICE_ID || "";
+type CheckoutRequest = {
+  interval?: BillingInterval;
+};
 const SUCCESS_URL =
   process.env.STRIPE_CHECKOUT_SUCCESS_URL ||
   `${SITE_URL}/members/account?checkout=success`;
@@ -25,14 +31,21 @@ const CANCEL_URL =
 
 const ACTIVE_STATUSES = new Set(["trialing", "active", "past_due", "paused"]);
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    if (!PRICE_ID) {
+    const membershipPrices = getMembershipPrices();
+    if (!membershipPrices) {
       return NextResponse.json(
-        { error: "Stripe partner price is not configured." },
+        { error: "Membership pricing is not configured." },
         { status: 500 },
       );
     }
+
+    const body: CheckoutRequest = (await req.json().catch(() => ({}))) ?? {};
+    const interval: BillingInterval =
+      body.interval === "annual" ? "annual" : "monthly";
+
+    const priceId = resolveMembershipPriceId(membershipPrices, "partner", interval);
 
     const session = await auth();
     const jwt = (session as ExtendedSession | null)?.strapiJwt;
@@ -57,7 +70,7 @@ export async function POST() {
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: SUCCESS_URL,
       cancel_url: CANCEL_URL,
       allow_promotion_codes: true,

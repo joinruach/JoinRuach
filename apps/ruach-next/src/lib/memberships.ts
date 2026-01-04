@@ -1,10 +1,11 @@
-export const TIER_SEQUENCE = ["supporter", "partner", "builder"] as const;
+export const TIER_SEQUENCE = ["supporter", "partner", "builder", "steward"] as const;
 export type MembershipTier = (typeof TIER_SEQUENCE)[number];
 
 export const TIER_LABELS: Record<MembershipTier, string> = {
   supporter: "Supporter",
   partner: "Partner",
   builder: "Builder",
+  steward: "Steward",
 };
 
 export const TIER_SUMMARIES: Record<MembershipTier, string> = {
@@ -14,6 +15,8 @@ export const TIER_SUMMARIES: Record<MembershipTier, string> = {
     "Partners unlock the full course catalog, member livestreams, and discipleship resources.",
   builder:
     "Builders gain inner-circle access, leadership study, and curated coaching from the Ruach team.",
+  steward:
+    "Stewards receive everything in Builder plus priority access, deeper partnership, and expanded resources.",
 };
 
 export const ACCESS_FEATURES: ReadonlyArray<{ label: string; tiers: readonly MembershipTier[] }> = [
@@ -23,17 +26,22 @@ export const ACCESS_FEATURES: ReadonlyArray<{ label: string; tiers: readonly Mem
   },
   {
     label: "All courses, downloads, and member livestream teachings",
-    tiers: ["partner", "builder"] as const,
+    tiers: ["partner", "builder", "steward"] as const,
   },
   {
     label: "Builder-only strategy sessions and leadership resources",
-    tiers: ["builder"] as const,
+    tiers: ["builder", "steward"] as const,
+  },
+  {
+    label: "Steward-only priorities and expanded resources",
+    tiers: ["steward"] as const,
   },
 ];
 
 export function detectTierFromName(name?: string | null): MembershipTier | null {
   if (!name) return null;
   const normalized = name.toLowerCase();
+  if (normalized.includes("steward")) return "steward";
   if (normalized.includes("builder")) return "builder";
   if (normalized.includes("partner")) return "partner";
   if (normalized.includes("supporter")) return "supporter";

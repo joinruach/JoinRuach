@@ -68,7 +68,9 @@ function DockItem({
         x: 0,
         width: baseItemSize
       };
-    return val - rect.x - baseItemSize / 2;
+    const rawDistance = val - rect.x - baseItemSize / 2;
+    if (!Number.isFinite(rawDistance)) return distance;
+    return Math.min(distance, Math.max(-distance, rawDistance));
   });
 
   const targetSize = useTransform(

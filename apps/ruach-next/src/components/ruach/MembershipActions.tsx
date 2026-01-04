@@ -21,12 +21,19 @@ const ACTIONS_BY_TIER: Record<MembershipTier, Action[]> = {
   supporter: [
     { tier: "partner", label: "Upgrade to Partner", variant: "gold" },
     { tier: "builder", label: "Upgrade to Builder", variant: "white" },
+    { tier: "steward", label: "Upgrade to Steward", variant: "white" },
   ],
   partner: [
     { tier: "builder", label: "Upgrade to Builder", variant: "gold" },
+    { tier: "steward", label: "Upgrade to Steward", variant: "white" },
     { tier: "supporter", label: "Downgrade to Supporter", variant: "white" },
   ],
   builder: [
+    { tier: "steward", label: "Upgrade to Steward", variant: "gold" },
+    { tier: "partner", label: "Downgrade to Partner", variant: "white" },
+  ],
+  steward: [
+    { tier: "builder", label: "Downgrade to Builder", variant: "white" },
     { tier: "partner", label: "Downgrade to Partner", variant: "white" },
   ],
 };

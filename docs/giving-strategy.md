@@ -18,7 +18,11 @@ Key principle: **Memberships do not equal Courses.** Membership can bless course
 ## 2. Stripe configuration
 
 - `STRIPE_SECRET_KEY` — your live Stripe secret (used by the backend to create checkout sessions).
-- `STRIPE_PARTNER_PRICE_ID` — the recurring price for the membership tier (used in `/api/stripe/create-checkout-session`).
+- Membership prices (explicit monthly/annual):
+  - `STRIPE_PARTNER_PRICE_MONTHLY`, `STRIPE_PARTNER_PRICE_ANNUAL`
+  - `STRIPE_BUILDER_PRICE_MONTHLY`, `STRIPE_BUILDER_PRICE_ANNUAL`
+  - `STRIPE_STEWARD_PRICE_MONTHLY`, `STRIPE_STEWARD_PRICE_ANNUAL`
+  - (legacy fallback) `STRIPE_PARTNER_PRICE_ID`, `STRIPE_BUILDER_PRICE_ID`, `STRIPE_STEWARD_PRICE_ID`
 - `STRIPE_CHECKOUT_SUCCESS_URL`, `STRIPE_CHECKOUT_CANCEL_URL`, `STRIPE_BILLING_RETURN_URL` — redirect targets after checkout/cancellation/billing portal.
 - `NEXT_PUBLIC_STRIPE_CHECKOUT_SESSION_PATH` — overrides `/api/stripe/create-donation-session` when you want to host the donation endpoint elsewhere.
 - `NEXT_PUBLIC_STRIPE_BILLING_PORTAL_PATH` — redirects that power the “Manage billing” buttons on membership controls.
