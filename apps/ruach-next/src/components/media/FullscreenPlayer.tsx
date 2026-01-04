@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import Image from "next/image";
 import { useMediaPlayer } from "@/hooks/useMediaPlayer";
 import { VideoRenderer, type VideoRendererHandle } from "./VideoRenderer";
 import { AudioRenderer, type AudioRendererHandle } from "./AudioRenderer";
@@ -95,11 +96,15 @@ export function FullscreenPlayer() {
           <div className="flex h-full items-center justify-center">
             <div className="w-full max-w-2xl">
               {currentMedia.thumbnail && (
-                <img
-                  src={currentMedia.thumbnail}
-                  alt={currentMedia.title}
-                  className="mb-8 aspect-square w-full rounded-lg object-cover shadow-2xl"
-                />
+                <div className="relative mb-8 aspect-square w-full overflow-hidden rounded-lg shadow-2xl">
+                  <Image
+                    src={currentMedia.thumbnail}
+                    alt={currentMedia.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 768px"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <AudioRenderer
                 ref={audioRef}

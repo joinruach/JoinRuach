@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { imgUrl } from '@/lib/strapi';
 import StatusBadge from './StatusBadge';
 import type { MediaItemEntity } from '@/lib/types/strapi-types';
@@ -47,6 +48,7 @@ export default function ContentTable({ items, locale, onDelete }: ContentTablePr
           {items.map((item) => {
             const title = item.attributes?.title || 'Untitled';
             const thumbnail = item.attributes?.thumbnail?.data?.attributes?.url;
+            const thumbnailSrc = thumbnail ? imgUrl(thumbnail) : null;
             const isPublished = Boolean(item.attributes?.releasedAt);
             const contentType = item.attributes?.type || 'unknown';
             const releasedAt = item.attributes?.releasedAt;
@@ -55,10 +57,12 @@ export default function ContentTable({ items, locale, onDelete }: ContentTablePr
               <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
-                    {thumbnail ? (
-                      <img
-                        src={imgUrl(thumbnail) || ''}
+                    {thumbnailSrc ? (
+                      <Image
+                        src={thumbnailSrc}
                         alt={title}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded object-cover"
                       />
                     ) : (

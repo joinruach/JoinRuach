@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import DonationForm from "@ruach/components/components/ruach/DonationForm";
 import VolunteerSignupForm from "@/components/ruach/VolunteerSignupForm";

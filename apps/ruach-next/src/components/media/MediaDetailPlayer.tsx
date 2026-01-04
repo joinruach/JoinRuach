@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { useMediaPlayer } from "@/hooks/useMediaPlayer";
 import { incrementMediaView } from "@/lib/strapi";
 import type { MediaItem, VideoSource } from "@/contexts/MediaPlayerContext";
@@ -63,10 +64,12 @@ export function MediaDetailPlayer({
     <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-neutral-900">
       {/* Thumbnail placeholder */}
       {thumbnail && (
-        <img
+        <Image
           src={thumbnail}
           alt={title}
-          className="absolute inset-0 h-full w-full object-cover opacity-50"
+          fill
+          sizes="100vw"
+          className="object-cover opacity-50"
         />
       )}
 

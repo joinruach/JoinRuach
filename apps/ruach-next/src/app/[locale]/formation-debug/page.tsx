@@ -5,6 +5,7 @@
 
 import { getCurrentFormationState } from "@/lib/formation/state";
 import type { FormationState } from "@ruach/formation";
+import Link from "next/link";
 
 export default async function FormationDebugPage() {
   let state: FormationState | null = null;
@@ -47,9 +48,9 @@ export default async function FormationDebugPage() {
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-4">Formation State</h1>
         <p className="text-gray-600">No formation journey started yet.</p>
-        <a href="/guidebook/enter" className="text-blue-600 hover:underline mt-4 block">
+        <Link href="/guidebook/enter" className="text-blue-600 hover:underline mt-4 block">
           → Start your formation journey
-        </a>
+        </Link>
       </div>
     );
   }
@@ -149,12 +150,12 @@ export default async function FormationDebugPage() {
       </div>
 
       <div className="mt-8 flex gap-4">
-        <a
+        <Link
           href="/guidebook/awakening"
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           Continue Formation →
-        </a>
+        </Link>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"

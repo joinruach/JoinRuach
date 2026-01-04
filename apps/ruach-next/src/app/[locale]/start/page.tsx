@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { ReactNode } from "react";
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import type { Metadata } from "next";

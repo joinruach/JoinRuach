@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import Image from "next/image";
 import { useMediaPlayer } from "@/hooks/useMediaPlayer";
 import { AudioRenderer, type AudioRendererHandle } from "./AudioRenderer";
 import { getMediaUrl, formatTime } from "@/lib/media-utils";
@@ -87,9 +88,11 @@ export function CollapsedBar() {
         {/* Thumbnail */}
         {currentMedia.thumbnail && (
           <div className="flex-shrink-0">
-            <img
+            <Image
               src={currentMedia.thumbnail}
               alt={currentMedia.title}
+              width={48}
+              height={48}
               className="h-12 w-12 rounded object-cover"
             />
           </div>

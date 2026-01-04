@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getRecentMediaItems } from '@/lib/strapi-admin';
 import Link from 'next/link';
+import Image from 'next/image';
 import { imgUrl } from '@/lib/strapi';
 
 export const dynamic = 'force-dynamic';
@@ -142,6 +143,7 @@ export default async function StudioDashboard({
             {recentItems.map((item) => {
               const title = item.attributes?.title || 'Untitled';
               const thumbnail = item.attributes?.thumbnail?.data?.attributes?.url;
+              const thumbnailSrc = thumbnail ? imgUrl(thumbnail) : null;
               const isPublished = Boolean(item.attributes?.releasedAt);
               const contentType = item.attributes?.type || 'unknown';
               const speakers = item.attributes?.speakers?.data || [];
@@ -152,10 +154,12 @@ export default async function StudioDashboard({
                   className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   {/* Thumbnail */}
-                  {thumbnail ? (
-                    <img
-                      src={imgUrl(thumbnail) || ''}
+                  {thumbnailSrc ? (
+                    <Image
+                      src={thumbnailSrc}
                       alt={title}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded object-cover"
                     />
                   ) : (

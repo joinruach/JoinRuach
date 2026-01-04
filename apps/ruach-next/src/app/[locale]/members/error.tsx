@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function MembersError({
   error,
@@ -61,12 +62,9 @@ export default function MembersError({
           >
             Sign out and log back in
           </button>
-          <a
-            href="/contact"
-            className="text-sm text-amber-500 hover:text-amber-600 transition"
-          >
+          <Link href="/contact" className="text-sm text-amber-500 hover:text-amber-600 transition">
             Contact support if this persists →
-          </a>
+          </Link>
         </div>
       </div>
     </div>

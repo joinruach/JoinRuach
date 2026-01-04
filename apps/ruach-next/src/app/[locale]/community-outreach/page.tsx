@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";

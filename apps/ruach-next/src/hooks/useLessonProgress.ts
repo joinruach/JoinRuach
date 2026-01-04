@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getLessonProgress, saveLessonProgress } from "@/lib/api/lessonProgress";
 
 const AUTOSAVE_INTERVAL = 15_000; // 15 seconds
@@ -20,8 +20,49 @@ export function useLessonProgress({
   const [completed, setCompleted] = useState(false);
   const [secondsWatched, setSecondsWatched] = useState(0);
 
+  const loadedRef = useRef(false);
+  const secondsWatchedRef = useRef(0);
   const lastSavedRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    loadedRef.current = loaded;
+  }, [loaded]);
+
+  useEffect(() => {
+    secondsWatchedRef.current = secondsWatched;
+  }, [secondsWatched]);
+
+  const flushProgress = useCallback(
+    async (force = false) => {
+      if (!loadedRef.current) return;
+
+      const currentSecondsWatched = secondsWatchedRef.current;
+
+      if (!force && Math.abs(currentSecondsWatched - lastSavedRef.current) < 5) {
+        return;
+      }
+
+      lastSavedRef.current = currentSecondsWatched;
+
+      const progressPercent =
+        durationSeconds && durationSeconds > 0
+          ? Math.round((currentSecondsWatched / durationSeconds) * 100)
+          : undefined;
+
+      try {
+        const res = await saveLessonProgress(lessonSlug, {
+          secondsWatched: currentSecondsWatched,
+          progressPercent,
+          courseSlug,
+        });
+        setCompleted(Boolean(res.completed));
+      } catch {
+        // silent fail—next autosave retries
+      }
+    },
+    [courseSlug, durationSeconds, lessonSlug]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -57,7 +98,7 @@ export function useLessonProgress({
         clearInterval(timerRef.current);
       }
     };
-  }, [loaded, secondsWatched]);
+  }, [loaded, flushProgress]);
 
   useEffect(() => {
     const handler = () => flushProgress(true);
@@ -69,33 +110,7 @@ export function useLessonProgress({
       window.removeEventListener("visibilitychange", handler);
       window.removeEventListener("beforeunload", handler);
     };
-  }, [secondsWatched]);
-
-  async function flushProgress(force = false) {
-    if (!loaded) return;
-
-    if (!force && Math.abs(secondsWatched - lastSavedRef.current) < 5) {
-      return;
-    }
-
-    lastSavedRef.current = secondsWatched;
-
-    const progressPercent =
-      durationSeconds && durationSeconds > 0
-        ? Math.round((secondsWatched / durationSeconds) * 100)
-        : undefined;
-
-    try {
-      const res = await saveLessonProgress(lessonSlug, {
-        secondsWatched,
-        progressPercent,
-        courseSlug,
-      });
-      setCompleted(Boolean(res.completed));
-    } catch {
-      // silent fail—next autosave retries
-    }
-  }
+  }, [flushProgress]);
 
   async function markComplete() {
     await saveLessonProgress(lessonSlug, {
