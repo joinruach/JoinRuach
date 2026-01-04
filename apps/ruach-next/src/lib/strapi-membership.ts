@@ -4,8 +4,6 @@ export type StrapiMembership = {
   id: number;
   email?: string;
   username?: string;
-  stripeCustomerId?: string | null;
-  stripeSubscriptionId?: string | null;
   membershipStatus?: string | null;
   membershipPlanName?: string | null;
   membershipTier?: string | null;
@@ -35,8 +33,6 @@ export function isMembershipActive(membership: StrapiMembership | null | undefin
 const MEMBERSHIP_FIELDS = [
   "email",
   "username",
-  "stripeCustomerId",
-  "stripeSubscriptionId",
   "membershipStatus",
   "membershipPlanName",
   "membershipTier",
@@ -65,4 +61,27 @@ export async function fetchStrapiMembership(jwt: string | undefined): Promise<St
   }
 
   return (await res.json()) as StrapiMembership;
+}
+
+export type StrapiBillingIdentifiers = {
+  id: number;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+};
+
+export async function fetchStrapiBillingIdentifiers(
+  jwt: string | undefined
+): Promise<StrapiBillingIdentifiers | null> {
+  if (!jwt) return null;
+
+  const res = await fetch(`${STRAPI_API_URL}/api/stripe/me`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  return (await res.json()) as StrapiBillingIdentifiers;
 }

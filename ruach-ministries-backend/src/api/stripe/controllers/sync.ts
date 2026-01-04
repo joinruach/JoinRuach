@@ -57,6 +57,30 @@ async function syncLatestSubscription(ctx: any) {
 }
 
 export default {
+  async me(ctx: any) {
+    const userId = ctx.state.user?.id;
+    if (!userId) {
+      ctx.unauthorized("Authentication required");
+      return;
+    }
+
+    const user = await strapi.db.query("plugin::users-permissions.user").findOne({
+      where: { id: Number(userId) },
+      select: ["id", "stripeCustomerId", "stripeSubscriptionId"],
+    });
+
+    if (!user) {
+      ctx.unauthorized("User not found");
+      return;
+    }
+
+    ctx.status = 200;
+    ctx.body = {
+      id: user.id,
+      stripeCustomerId: user.stripeCustomerId ?? null,
+      stripeSubscriptionId: user.stripeSubscriptionId ?? null,
+    };
+  },
   async syncLatest(ctx: any) {
     await syncLatestSubscription(ctx);
   },

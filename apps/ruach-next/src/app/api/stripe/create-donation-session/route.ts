@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { fetchStrapiBillingIdentifiers } from "@/lib/strapi-membership";
 import Stripe from "stripe";
 
 const SITE_URL =
@@ -46,8 +46,8 @@ export async function POST(request: Request) {
     );
 
     const session = await auth();
-    const strapiMembership = await fetchStrapiMembership(session?.strapiJwt);
-    const stripeCustomerId = strapiMembership?.stripeCustomerId ?? undefined;
+    const billing = await fetchStrapiBillingIdentifiers(session?.strapiJwt);
+    const stripeCustomerId = billing?.stripeCustomerId ?? undefined;
 
     const stripe = getStripeClient();
     const isMonthly = Boolean(payload.monthly);

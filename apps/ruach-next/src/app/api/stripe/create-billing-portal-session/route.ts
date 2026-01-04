@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import { fetchStrapiBillingIdentifiers } from "@/lib/strapi-membership";
 
 // Extended session type with Strapi JWT
 interface ExtendedSession {
@@ -30,8 +30,8 @@ export async function POST() {
       );
     }
 
-    const user = await fetchStrapiMembership(jwt);
-    if (!user?.stripeCustomerId) {
+    const billing = await fetchStrapiBillingIdentifiers(jwt);
+    if (!billing?.stripeCustomerId) {
       return NextResponse.json(
         {
           error:
@@ -43,7 +43,7 @@ export async function POST() {
 
     const stripe = getStripeClient();
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
+      customer: billing.stripeCustomerId,
       return_url: RETURN_URL,
     });
 

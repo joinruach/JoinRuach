@@ -910,11 +910,11 @@ async function main() {
     console.log('Step 1: Exporting from Notion');
     console.log('━'.repeat(60));
 
-    const notionApiKey = process.env.NOTION_API_KEY;
+    const notionApiKey = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
 
     if (!notionApiKey) {
       throw new Error(
-        'Missing required environment variable: NOTION_API_KEY\n' +
+        'Missing required environment variable: NOTION_TOKEN (preferred) or NOTION_API_KEY\n' +
         'Add it to your .env file or export it in your shell.'
       );
     }
@@ -988,7 +988,8 @@ Options:
   --help              Show this help message
 
 Environment Variables (required):
-  NOTION_API_KEY              Your Notion integration API key
+  NOTION_TOKEN                Your Notion integration token (preferred)
+  NOTION_API_KEY              Your Notion integration token (legacy)
   NOTION_DB_FORMATION_PHASES  Notion database ID for Formation Phases
   NOTION_DB_CANON_AXIOMS      Notion database ID for Canon Axioms
   NOTION_DB_GUIDEBOOK_NODES   Notion database ID for Guidebook Nodes

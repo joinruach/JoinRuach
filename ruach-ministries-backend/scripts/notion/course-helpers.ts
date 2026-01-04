@@ -180,9 +180,11 @@ async function queryNotionDatabase(databaseId: string): Promise<NotionPage[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `Notion query failed for ${formattedId}: ${response.status} ${errorText}`
-      );
+      const hint =
+        response.status === 404 && errorText.includes('"object_not_found"')
+          ? `\n\nTroubleshooting:\n- Confirm ${DATABASE_ENV_MAP.courses} / ${DATABASE_ENV_MAP.lessons} / ${DATABASE_ENV_MAP.assignments} / ${DATABASE_ENV_MAP.resources} point to the correct Notion database IDs.\n- In Notion, open the database → Share → Connections, and share it with the integration for your token.\n- Ensure your token is set in NOTION_TOKEN (preferred) or NOTION_API_KEY and matches the integration connected to those databases.`
+          : '';
+      throw new Error(`Notion query failed for ${formattedId}: ${response.status} ${errorText}${hint}`);
     }
 
     const result = (await response.json()) as NotionDatabaseQueryResponse;
@@ -353,7 +355,7 @@ let cachedHeaders: Record<string, string> | null = null;
 
 function getNotionHeaders(): Record<string, string> {
   if (!cachedHeaders) {
-    const token = requireEnvVar('NOTION_API_KEY');
+    const token = requireNotionToken();
     cachedHeaders = {
       Authorization: `Bearer ${token}`,
       'Notion-Version': '2022-06-28',
@@ -361,6 +363,16 @@ function getNotionHeaders(): Record<string, string> {
     };
   }
   return cachedHeaders;
+}
+
+function requireNotionToken(): string {
+  const value = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
+  if (!value) {
+    throw new Error(
+      'Missing required Notion environment variable: set NOTION_TOKEN (preferred) or NOTION_API_KEY.'
+    );
+  }
+  return value;
 }
 
 function requireEnvVar(name: string): string {

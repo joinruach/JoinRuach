@@ -51,7 +51,9 @@ https://www.notion.so/{workspace}/{database_id}?v={view_id}
 Add to `ruach-ministries-backend/.env`:
 
 ```bash
-NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+NOTION_TOKEN=<YOUR_NOTION_TOKEN>
+# (legacy fallback)
+# NOTION_API_KEY=<YOUR_NOTION_TOKEN>
 NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
 ```
 

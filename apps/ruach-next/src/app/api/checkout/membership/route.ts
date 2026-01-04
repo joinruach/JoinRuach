@@ -4,7 +4,10 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import {
+  fetchStrapiBillingIdentifiers,
+  fetchStrapiMembership,
+} from "@/lib/strapi-membership";
 import {
   getMembershipPrices,
   resolveMembershipPriceId,
@@ -64,6 +67,7 @@ export async function POST(request: Request) {
 
     const session = await auth();
     const strapiMembership = await fetchStrapiMembership(session?.strapiJwt);
+    const billing = await fetchStrapiBillingIdentifiers(session?.strapiJwt);
 
     if (
       strapiMembership?.membershipStatus &&
@@ -103,7 +107,7 @@ export async function POST(request: Request) {
       success_url: successUrl,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
-      customer: strapiMembership?.stripeCustomerId || undefined,
+      customer: billing?.stripeCustomerId || undefined,
       customer_email:
         strapiMembership?.email || session?.user?.email || undefined,
       metadata,

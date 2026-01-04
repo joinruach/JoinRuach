@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import {
+  fetchStrapiBillingIdentifiers,
+  fetchStrapiMembership,
+} from "@/lib/strapi-membership";
 import { getStripeClient } from "@/lib/stripe";
 import {
   getMembershipPrices,
@@ -47,12 +50,17 @@ export async function POST(req: Request) {
     }
 
     const membership = await fetchStrapiMembership(jwt);
-    const subscriptionId = membership?.stripeSubscriptionId;
+    const billing = await fetchStrapiBillingIdentifiers(jwt);
+    const subscriptionId = billing?.stripeSubscriptionId;
     if (!subscriptionId) {
       return NextResponse.json(
         { error: "No active subscription found" },
         { status: 400 },
       );
+    }
+
+    if (!membership) {
+      return NextResponse.json({ error: "Unable to load membership details" }, { status: 401 });
     }
 
     const currentTier = normalizeTier(

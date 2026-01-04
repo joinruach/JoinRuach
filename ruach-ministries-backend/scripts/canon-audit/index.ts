@@ -25,12 +25,12 @@ interface AuditConfig {
  * Load config from environment
  */
 function loadConfig(): AuditConfig {
-  const notionApiKey = process.env.NOTION_API_KEY;
+  const notionApiKey = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
   const notionDatabaseId = process.env.NOTION_DB_GUIDEBOOK_NODES || process.env.NOTION_DATABASE_ID;
 
   if (!notionApiKey || !notionDatabaseId) {
     throw new Error(
-      'Missing required environment variables: NOTION_API_KEY and NOTION_DB_GUIDEBOOK_NODES\n' +
+      'Missing required environment variables: NOTION_TOKEN (or legacy NOTION_API_KEY) and NOTION_DB_GUIDEBOOK_NODES\n' +
       '(or legacy NOTION_DATABASE_ID for backwards compatibility)'
     );
   }
@@ -115,7 +115,8 @@ Options:
   --help           Show this help message
 
 Environment Variables (required):
-  NOTION_API_KEY              Your Notion integration API key
+  NOTION_TOKEN                Your Notion integration token (preferred)
+  NOTION_API_KEY              Your Notion integration token (legacy)
   NOTION_DB_GUIDEBOOK_NODES   Notion database ID for Guidebook Nodes
 
 Examples:
@@ -130,7 +131,7 @@ Setup:
   2. Share your database with the integration
   3. Copy the database ID from the URL
   4. Set environment variables in .env file:
-     NOTION_API_KEY=ntn_xxx
+     NOTION_TOKEN=ntn_xxx
      NOTION_DB_GUIDEBOOK_NODES=xxx
   `);
 }

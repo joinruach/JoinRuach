@@ -17,6 +17,21 @@ type LessonProgressRequestData = {
 
 const COMPLETE_THRESHOLD = 95;
 
+function resolveUserAttribute(strapi: any): { key: string; isRelation: boolean } {
+  const contentType = strapi.contentTypes?.["api::lesson-progress.lesson-progress"];
+  const attributes = contentType?.attributes ?? {};
+
+  const candidates = ["user", "users_permissions_user"];
+  for (const key of candidates) {
+    if (key in attributes) {
+      const attr = attributes[key];
+      return { key, isRelation: attr?.type === "relation" };
+    }
+  }
+
+  return { key: "user", isRelation: true };
+}
+
 function normalizeProgress(input: {
   secondsWatched?: number;
   progressPercent?: number;
@@ -51,12 +66,14 @@ function buildPayload({
   lessonSlug,
   courseSlug,
   userId,
+  userKey,
 }: {
   body: LessonProgressRequestData;
   existing?: any;
   lessonSlug: string;
   courseSlug?: string;
   userId: number;
+  userKey: string;
 }) {
   const secondsWatched = Math.max(
     0,
@@ -79,7 +96,7 @@ function buildPayload({
     secondsWatched,
     progressPercent: percent,
     completed,
-    user: userId,
+    [userKey]: userId,
   };
 
   if (completedNow && !existing?.completed) {
@@ -91,11 +108,16 @@ function buildPayload({
   return payload;
 }
 
-async function findExistingProgress(strapi: any, lessonSlug: string, userId: number) {
+async function findExistingProgress(
+  strapi: any,
+  lessonSlug: string,
+  userId: number,
+  userKey: string
+) {
   return await strapi.db.query('api::lesson-progress.lesson-progress').findOne({
     where: {
       lessonSlug,
-      user: userId,
+      [userKey]: userId,
     },
   });
 }
@@ -107,6 +129,7 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       return ctx.unauthorized('Authentication required');
     }
 
+    const userAttr = resolveUserAttribute(strapi);
     const body = getRequestData(ctx.request);
     const lessonSlug = body.lessonSlug;
     const courseSlug = body.courseSlug;
@@ -114,13 +137,14 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       return ctx.badRequest('lessonSlug and courseSlug are required');
     }
 
-    const existing = await findExistingProgress(strapi, lessonSlug, user.id);
+    const existing = await findExistingProgress(strapi, lessonSlug, user.id, userAttr.key);
     const payload = buildPayload({
       body,
       existing,
       lessonSlug,
       courseSlug,
       userId: user.id,
+      userKey: userAttr.key,
     });
 
     if (!payload.courseSlug) {
@@ -144,22 +168,48 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       return ctx.unauthorized('Authentication required');
     }
 
-    const incomingFilters = {
-      ...(ctx.query?.filters as Record<string, unknown> | undefined),
-    } as Record<string, unknown>;
-    ctx.query = {
-      ...ctx.query,
-      filters: {
-        ...incomingFilters,
-        user: {
-          id: {
-            $eq: user.id,
-          },
+    const userAttr = resolveUserAttribute(strapi);
+    const rawPageSize = (ctx.query?.pagination as any)?.pageSize ?? (ctx.query as any)?.["pagination[pageSize]"];
+    const rawPage = (ctx.query?.pagination as any)?.page ?? (ctx.query as any)?.["pagination[page]"];
+    const pageSize = Math.max(1, Math.min(100, Number(rawPageSize ?? 25) || 25));
+    const page = Math.max(1, Number(rawPage ?? 1) || 1);
+
+    const sortInput = Array.isArray(ctx.query?.sort) ? ctx.query?.sort[0] : (ctx.query?.sort as string | undefined);
+    const sortValue = typeof sortInput === "string" && sortInput.length ? sortInput : "updatedAt:desc";
+    const [sortField, sortOrder] = sortValue.split(":");
+    const direction = sortOrder?.toLowerCase() === "asc" ? "asc" : "desc";
+
+    const where = userAttr.isRelation
+      ? { [userAttr.key]: user.id }
+      : { [userAttr.key]: user.id };
+
+    const total = await strapi.db.query("api::lesson-progress.lesson-progress").count({
+      where,
+    });
+
+    const results = await strapi.db.query("api::lesson-progress.lesson-progress").findMany({
+      where,
+      orderBy: { [sortField || "updatedAt"]: direction },
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+    });
+
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    ctx.status = 200;
+    ctx.body = {
+      data: results.map((entry: any) => {
+        const { id, ...attributes } = entry ?? {};
+        return { id, attributes };
+      }),
+      meta: {
+        pagination: {
+          page,
+          pageSize,
+          pageCount,
+          total,
         },
       },
     };
-
-    return await super.find(ctx);
   },
 
   async lessonProgress(ctx) {
@@ -168,12 +218,13 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       return ctx.unauthorized('Authentication required');
     }
 
+    const userAttr = resolveUserAttribute(strapi);
     const lessonSlug = ctx.params.lessonSlug;
     if (!lessonSlug) {
       return ctx.badRequest('lessonSlug is required');
     }
 
-    const record = await findExistingProgress(strapi, lessonSlug, user.id);
+    const record = await findExistingProgress(strapi, lessonSlug, user.id, userAttr.key);
     if (!record) {
       return {
         lessonSlug,
@@ -197,6 +248,7 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       return ctx.unauthorized('Authentication required');
     }
 
+    const userAttr = resolveUserAttribute(strapi);
     const body = getRequestData(ctx.request);
     const lessonSlug = ctx.params.lessonSlug ?? body.lessonSlug;
     if (!lessonSlug) {
@@ -205,13 +257,13 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
 
     const courseSlug = body.courseSlug;
     if (!courseSlug) {
-      const existing = await findExistingProgress(strapi, lessonSlug, user.id);
+      const existing = await findExistingProgress(strapi, lessonSlug, user.id, userAttr.key);
       if (!existing?.courseSlug) {
         return ctx.badRequest('courseSlug is required');
       }
     }
 
-    const existing = await findExistingProgress(strapi, lessonSlug, user.id);
+    const existing = await findExistingProgress(strapi, lessonSlug, user.id, userAttr.key);
     const payload = buildPayload({
       body,
       existing,
@@ -219,6 +271,7 @@ export default factories.createCoreController('api::lesson-progress.lesson-progr
       courseSlug:
         courseSlug ?? existing?.courseSlug ?? body.courseSlug,
       userId: user.id,
+      userKey: userAttr.key,
     });
 
     if (!payload.courseSlug) {

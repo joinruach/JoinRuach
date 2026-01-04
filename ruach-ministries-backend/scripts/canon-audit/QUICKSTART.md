@@ -15,7 +15,7 @@
 3. Name: `Canon Audit` (or your preferred name)
 4. Associated workspace: Select your workspace
 5. Click **"Submit"**
-6. Copy the **"Internal Integration Token"** (begins with `secret_` prefix followed by 40 characters)
+6. Copy the **"Internal Integration Token"** (usually starts with `secret_` or `ntn_`)
 
 ## Step 2: Share Database with Integration (1 minute)
 
@@ -46,7 +46,9 @@
 2. Create/edit `.env` file:
    ```bash
    # Add these lines (replace with your actual values)
-   NOTION_API_KEY=<YOUR_NOTION_API_KEY>
+   NOTION_TOKEN=<YOUR_NOTION_TOKEN>
+   # (legacy fallback)
+   # NOTION_API_KEY=<YOUR_NOTION_TOKEN>
    NOTION_DATABASE_ID=<YOUR_NOTION_DATABASE_ID>
    ```
 

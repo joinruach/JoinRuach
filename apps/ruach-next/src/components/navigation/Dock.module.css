@@ -5,6 +5,8 @@
   transform: translateX(-50%);
   z-index: 9999;
   pointer-events: none;
+  display: flex;
+  align-items: flex-end;
 }
 
 .dockPanel {

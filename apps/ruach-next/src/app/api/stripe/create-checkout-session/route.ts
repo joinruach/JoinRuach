@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
+import {
+  fetchStrapiBillingIdentifiers,
+  fetchStrapiMembership,
+} from "@/lib/strapi-membership";
 import {
   getMembershipPrices,
   resolveMembershipPriceId,
@@ -50,6 +53,7 @@ export async function POST(req: Request) {
     const session = await auth();
     const jwt = (session as ExtendedSession | null)?.strapiJwt;
     const user = await fetchStrapiMembership(jwt);
+    const billing = await fetchStrapiBillingIdentifiers(jwt);
 
     if (user?.membershipStatus && ACTIVE_STATUSES.has(user.membershipStatus)) {
       return NextResponse.json(
@@ -77,7 +81,7 @@ export async function POST(req: Request) {
       ...(Object.keys(metadata).length
         ? { subscription_data: { metadata } }
         : {}),
-      customer: user?.stripeCustomerId || undefined,
+      customer: billing?.stripeCustomerId || undefined,
       customer_email: user?.email || session?.user?.email || undefined,
       metadata: {
         ...(Object.keys(metadata).length ? metadata : {}),

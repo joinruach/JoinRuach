@@ -119,8 +119,6 @@ async function fetchUser(jwt: string): Promise<StrapiUserMe> {
   params.set("fields[3]", "membershipPlanName");
   params.set("fields[4]", "membershipCurrentPeriodEnd");
   params.set("fields[5]", "activeMembership");
-  params.set("fields[6]", "stripeCustomerId");
-  params.set("fields[7]", "stripeSubscriptionId");
 
   return await fetchStrapiPrivate<StrapiUserMe>(`/api/users/me?${params.toString()}`, jwt);
 }
