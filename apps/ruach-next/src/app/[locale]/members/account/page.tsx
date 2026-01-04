@@ -13,7 +13,6 @@ import { isMembershipActive } from "@/lib/strapi-membership";
 import {
   ACCESS_FEATURES,
   TIER_LABELS,
-  TIER_SUMMARIES,
   detectTierFromName,
   TIER_SEQUENCE,
   type MembershipTier,
@@ -342,54 +341,72 @@ function membershipStatusBadgeClasses(status?: string | null): string {
 
 type MembershipStatusCardProps = {
   tierLabel: string;
-  tierSummary: string;
   statusLabel: string;
   nextChargeLabel: string;
-  hasActiveMembership: boolean;
   isPastDue: boolean;
   isCanceled: boolean;
+  showEmailConfirmationNote: boolean;
+  primaryCtaLabel: string;
+  inactiveNote?: string | null;
 };
 
 function MembershipStatusCard({
   tierLabel,
-  tierSummary,
   statusLabel,
   nextChargeLabel,
-  hasActiveMembership,
   isPastDue,
   isCanceled,
+  showEmailConfirmationNote,
+  primaryCtaLabel,
+  inactiveNote,
 }: MembershipStatusCardProps) {
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/5">
-      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Membership overview</p>
-      <h2 className="mt-3 text-2xl font-semibold text-zinc-900 dark:text-white">{tierLabel} member</h2>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">{tierSummary}</p>
+      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">
+        Membership Overview
+      </p>
+      <h2 className="mt-3 text-2xl font-semibold text-zinc-900 dark:text-white">{tierLabel} Member</h2>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
+        You&rsquo;re helping fund testimonies, discipleship, and real-world outreach&mdash;every month.
+      </p>
+      <p className="mt-3 text-sm text-zinc-600 dark:text-white/70">
+        Your membership unlocks the Ruach library and strengthens the work behind it&mdash;courses, livestreams, and the
+        stories God is writing through His people.
+      </p>
       <div className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-white/70">
         <div className="flex items-center justify-between">
           <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Status</span>
-          <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-white/20 dark:text-white/80">
+          <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-white/20 dark:text-white/80">
             {statusLabel}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Next charge</span>
+          <span className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Next gift</span>
           <span className="text-sm font-semibold text-zinc-900 dark:text-white">{nextChargeLabel}</span>
         </div>
-        {!hasActiveMembership ? (
+        {inactiveNote ? (
           <p className="rounded-2xl border border-zinc-200 bg-zinc-50 p-2 text-xs text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
-            Join a monthly partnership to unlock discipleship, media, and community resources.
+            {inactiveNote}
+          </p>
+        ) : null}
+        {showEmailConfirmationNote ? (
+          <p className="rounded-2xl border border-zinc-200 bg-white/70 p-2 text-xs text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
+            Confirm your email to secure your account and keep access uninterrupted.
           </p>
         ) : null}
       </div>
       {isPastDue ? (
         <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
-          ⚠️ Payment issue — update billing to keep access active.
+          Payment issue&mdash;update billing to keep access active.
         </p>
       ) : isCanceled ? (
         <p className="mt-4 rounded-2xl border border-zinc-200 bg-white/70 p-3 text-xs font-semibold text-zinc-700">
-          Membership paused — start a plan again anytime.
+          Membership paused&mdash;start a plan again anytime.
         </p>
       ) : null}
+      <Button as="a" href="#billing-subscription" variant="gold" className="mt-5 w-full justify-center">
+        {primaryCtaLabel}
+      </Button>
     </div>
   );
 }
@@ -402,10 +419,10 @@ type AccessSummaryProps = {
 function AccessSummary({ features, hasActiveMembership }: AccessSummaryProps) {
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/5">
-      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Access summary</p>
-      <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">What you can access</h3>
+      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 dark:text-white/60">Your Access</p>
+      <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">Unlocked today</h3>
       <p className="mt-1 text-sm text-zinc-600 dark:text-white/70">
-        Strapi enforces these permissions, so the dashboard reflects what you truly can view today.
+        Your dashboard shows what&rsquo;s unlocked right now based on your membership level.
       </p>
       <ul className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-white/70">
         {features.map((feature) => (
@@ -425,9 +442,14 @@ function AccessSummary({ features, hasActiveMembership }: AccessSummaryProps) {
         ))}
       </ul>
       {!hasActiveMembership ? (
-        <p className="mt-4 text-xs text-zinc-500 dark:text-white/70">
-          Sign up for a membership to unlock these resources and more.
-        </p>
+        <>
+          <p className="mt-4 text-xs text-zinc-500 dark:text-white/70">
+            Activate your membership to unlock the full library&mdash;and help keep this mission moving.
+          </p>
+          <Button as="a" href="#billing-subscription" variant="gold" className="mt-4 w-full justify-center">
+            Unlock Full Access
+          </Button>
+        </>
       ) : null}
     </div>
   );
@@ -509,38 +531,62 @@ async function renderAccountPage(
   const roleLabel = formatRelativeRole(userProfile?.role);
   const rawMembershipStatus = user.membershipStatus ?? null;
   const hasActiveMembership = isMembershipActive(user);
-  const membershipStatusLabel = formatMembershipStatus(rawMembershipStatus, hasActiveMembership);
-  const membershipBadgeClass = membershipStatusBadgeClasses(rawMembershipStatus);
-  const membershipPlanName = user.membershipPlanName ?? null;
   const membershipNextChargeIso = user.membershipCurrentPeriodEnd ?? null;
   const membershipNextCharge = membershipNextChargeIso ? formatDateTime(membershipNextChargeIso) : null;
-  const membershipNextChargeLabel = membershipNextCharge ?? (hasActiveMembership ? "Pending" : "Not scheduled");
+
+  const isIncomplete =
+    rawMembershipStatus === "incomplete" || rawMembershipStatus === "incomplete_expired";
+  const isPastDue = rawMembershipStatus === "past_due";
+  const isCanceled = rawMembershipStatus === "canceled" || rawMembershipStatus === "unpaid";
+  const isPaused = rawMembershipStatus === "paused" || isPastDue;
+
+  const membershipStatusLabel = (() => {
+    if (isIncomplete) return "Incomplete — almost there";
+    if (hasActiveMembership) return "Active — thank you for standing with Ruach";
+    if (isPaused) return "Paused — access limited";
+    if (isCanceled) {
+      return membershipNextCharge
+        ? `Canceled — access ending ${membershipNextCharge}`
+        : "Canceled — access ending soon";
+    }
+    return formatMembershipStatus(rawMembershipStatus, hasActiveMembership);
+  })();
+  const membershipBadgeClass = membershipStatusBadgeClasses(rawMembershipStatus);
+  const membershipPlanName = user.membershipPlanName ?? null;
+  const membershipNextChargeLabel = (() => {
+    if (!membershipNextCharge) {
+      return hasActiveMembership ? "Pending" : "Not scheduled";
+    }
+    return hasActiveMembership ? `Renews on ${membershipNextCharge}` : membershipNextCharge;
+  })();
   const showManageMembershipButton = Boolean(user.stripeCustomerId || hasActiveMembership);
-  const showStartMembershipButton = !hasActiveMembership;
-  const membershipSupportMessage = showManageMembershipButton
-    ? "Use the billing portal to update cards or cancel at any time."
-    : "Need help linking a legacy membership or updating billing details?";
+  const membershipSupportMessage = "Need help linking a legacy membership or updating billing details?";
 
   const membershipTierKey: MembershipTier | null =
     normalizeTier(user.membershipTier ?? null) ??
     detectTierFromName(membershipPlanName);
-  const membershipTierLabel =
-    membershipTierKey
-      ? TIER_LABELS[membershipTierKey]
-      : membershipPlanName ?? "Partner member";
-  const tierSummary =
-    membershipTierKey
-      ? TIER_SUMMARIES[membershipTierKey]
-      : "Partner with Ruach and unlock discipleship, media, and community content.";
-  const featureItems = ACCESS_FEATURES.map((feature) => ({
-    label: feature.label,
-    hasAccess:
-      hasActiveMembership &&
+	  const membershipTierLabel =
+	    membershipTierKey
+	      ? TIER_LABELS[membershipTierKey]
+	      : membershipPlanName ?? "Partner member";
+	  const primaryCtaLabel = (() => {
+	    if (isIncomplete) return "Activate Membership";
+	    if (isPaused) return "Resume Membership";
+	    if (hasActiveMembership) return "Manage Membership";
+	    return "Start Monthly Partnership";
+	  })();
+	  const inactiveNote = isIncomplete
+	    ? "Finish setup to unlock your full access and activate monthly giving."
+	    : !hasActiveMembership
+	      ? "Start monthly partnership to unlock your full access and activate monthly giving."
+	      : null;
+	  const featureItems = ACCESS_FEATURES.map((feature) => ({
+	    label: feature.label,
+	    hasAccess:
+	      hasActiveMembership &&
       membershipTierKey !== null &&
       feature.tiers.includes(membershipTierKey),
   }));
-  const isPastDue = rawMembershipStatus === "past_due";
-  const isCanceled = rawMembershipStatus === "canceled";
 
   const courseSlugs = Array.from(new Set(progressEntries.map((entry) => entry.courseSlug))).filter(Boolean);
   const courseDetailsList = await Promise.all(courseSlugs.map((slug) => fetchCourseDetail(slug)));
@@ -696,12 +742,13 @@ async function renderAccountPage(
         <div className="grid gap-6 lg:grid-cols-[1.3fr,0.7fr]">
           <MembershipStatusCard
             tierLabel={membershipTierLabel}
-            tierSummary={tierSummary}
             statusLabel={membershipStatusLabel}
             nextChargeLabel={membershipNextChargeLabel}
-            hasActiveMembership={hasActiveMembership}
             isPastDue={isPastDue}
             isCanceled={isCanceled}
+            showEmailConfirmationNote={!user.confirmed}
+            primaryCtaLabel={primaryCtaLabel}
+            inactiveNote={inactiveNote}
           />
           <AccessSummary features={featureItems} hasActiveMembership={hasActiveMembership} />
         </div>
@@ -710,44 +757,57 @@ async function renderAccountPage(
             currentTier={membershipTierKey}
             membershipStatus={rawMembershipStatus}
             hasActiveMembership={hasActiveMembership}
-          />
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-white/5">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Manage billing</h3>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-              Update cards, cancel your membership, or resume a paused subscription via Stripe's Customer Portal.
-            </p>
-            <div className="mt-4">
-              <StripeSubscriptionButtons
-                className="space-y-3"
-                orientation="column"
-                showCheckout={!hasActiveMembership}
-                showManage={hasActiveMembership}
-                checkoutLabel="Start monthly giving"
-                manageLabel="Open billing portal"
-                manageVariant="white"
-                size="md"
-              />
-            </div>
-            <p className="mt-3 text-xs text-zinc-500 dark:text-white/60">
-              {membershipSupportMessage}{" "}
-              <LocalizedLink href="/contact">
-                <span className="text-amber-300 hover:text-amber-200">Contact support</span>
-              </LocalizedLink>
-              .
-            </p>
-          </div>
-        </div>
-      </section>
+	          />
+	          <div
+	            id="billing-subscription"
+	            className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-white/5"
+	          >
+	            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+	              {hasActiveMembership ? "Billing & Subscription" : "Start Monthly Giving"}
+	            </h3>
+	            <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
+	              {hasActiveMembership
+	                ? "Update your card, view invoices, cancel, or resume through our secure billing portal."
+	                : "Join the people building Kingdom infrastructure—testimony media, discipleship courses, outreach tools, and practical support for families."}
+	            </p>
+	            <div className="mt-4">
+	              <StripeSubscriptionButtons
+	                className="space-y-3"
+	                orientation="column"
+	                showCheckout={!hasActiveMembership && !isPaused}
+	                showManage={showManageMembershipButton}
+	                checkoutLabel={isIncomplete ? "Activate Membership" : "Become a Monthly Partner"}
+	                manageLabel={isPaused ? "Resume Membership" : "Open Billing Portal"}
+	                manageVariant="white"
+	                size="md"
+	              />
+	            </div>
+	            <p className="mt-3 text-xs text-zinc-500 dark:text-white/60">
+	              Powered by Stripe&mdash;your payment details stay protected. {membershipSupportMessage}{" "}
+	              <LocalizedLink href="/contact">
+	                <span className="text-amber-300 hover:text-amber-200">Contact support</span>
+	              </LocalizedLink>
+	              &mdash;we&rsquo;ll take care of it.
+	            </p>
+	          </div>
+	        </div>
+	      </section>
 
-      <section className="space-y-3 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Giving</h2>
-        <p className="text-sm text-zinc-600 dark:text-white/70">
-          Manage your donations or send a one-time gift to advance Ruach testimonies and discipleship courses.
-        </p>
-        <Button as="a" href="/give" variant="gold" className="w-full justify-center">
-          View giving options
-        </Button>
-      </section>
+	      <section className="space-y-3 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
+	        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Give Anytime</h2>
+	        <p className="text-sm text-zinc-600 dark:text-white/70">
+	          Make a one-time gift to accelerate testimonies, discipleship, and outreach&mdash;right when it&rsquo;s needed
+	          most.
+	        </p>
+	        <div className="flex flex-col gap-3 sm:flex-row">
+	          <Button as="a" href="/give#donate" variant="gold" className="w-full justify-center">
+	            Give a One-Time Gift
+	          </Button>
+	          <Button as="a" href="/give" variant="white" className="w-full justify-center">
+	            View Giving Options
+	          </Button>
+	        </div>
+	      </section>
 
       <section className="space-y-3 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 text-zinc-900 dark:text-white">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Next steps</h2>

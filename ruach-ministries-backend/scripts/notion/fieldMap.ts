@@ -6,29 +6,49 @@ type FieldExtractor = (props: NotionProperties) => any;
 
 type EntityFieldMap = Record<string, FieldExtractor>;
 
-type EntityKey = 'Course' | 'CourseProfile' | 'Lesson' | 'Phase' | 'Assignment' | 'Resource';
+type EntityKey =
+  | 'Course'
+  | 'CourseProfile'
+  | 'Lesson'
+  | 'Phase'
+  | 'FormationPhase'
+  | 'Assignment'
+  | 'Resource';
 
 export const fieldMap: Record<EntityKey, EntityFieldMap> = {
   Phase: {
-    phaseId: (p) => ex.text(p['phaseId']),
-    phaseName: (p) => ex.text(p['phaseName']),
-    slug: (p) => ex.text(p['slug']),
-    phase: (p) => ex.select(p['phase']),
-    order: (p) => ex.number(p['order']),
-    description: (p) => ex.text(p['description']),
-    duration: (p) => ex.text(p['duration']),
-    status: (p) => ex.select(p['status']),
+    phaseId: (p) => ex.text(p['phaseId'] ?? p['Phase ID'] ?? p['slug'] ?? p['Slug']),
+    phaseName: (p) => ex.text(p['phaseName'] ?? p['Phase Name'] ?? p['name'] ?? p['Name']),
+    phase: (p) =>
+      ex.text(p['slug'] ?? p['Slug']) ??
+      ex.select(p['phase'] ?? p['formationPhase'] ?? p['Formation Phase']),
+    order: (p) => ex.number(p['order'] ?? p['Order']),
+    description: (p) => ex.text(p['description'] ?? p['Description']),
+  },
+
+  FormationPhase: {
+    phaseId: (p) => ex.text(p['phaseId'] ?? p['Phase ID'] ?? p['slug'] ?? p['Slug']),
+    phaseName: (p) => ex.text(p['phaseName'] ?? p['Phase Name'] ?? p['name'] ?? p['Name']),
+    phase: (p) =>
+      ex.text(p['slug'] ?? p['Slug']) ??
+      ex.select(p['phase'] ?? p['formationPhase'] ?? p['Formation Phase']),
+    order: (p) => ex.number(p['order'] ?? p['Order']),
+    description: (p) => ex.text(p['description'] ?? p['Description']),
   },
 
   Course: {
-    courseId: (p) => ex.text(p['courseId']),
-    slug: (p) => ex.text(p['slug']),
-    name: (p) => ex.text(p['courseName']),
-    excerpt: (p) => ex.text(p['excerpt']),
-    status: (p) => ex.select(p['status']),
-    level: (p) => ex.select(p['level']),
-    estimatedDuration: (p) => ex.text(p['estimatedDuration']),
-    phase: (p) => ex.text(p['linkedPhase']),
+    courseId: (p) => ex.text(p['courseId'] ?? p['Course ID']),
+    slug: (p) => ex.text(p['slug'] ?? p['Slug'] ?? p['courseId'] ?? p['Course ID']),
+    name: (p) => ex.text(p['courseName'] ?? p['Course Name'] ?? p['name'] ?? p['Name']),
+    excerpt: (p) => ex.text(p['excerpt'] ?? p['Excerpt']),
+    description: (p) => ex.text(p['description'] ?? p['Description']),
+    status: (p) => ex.select(p['status'] ?? p['Status']),
+    level: (p) => ex.select(p['level'] ?? p['Level'] ?? p['Course Level']),
+    estimatedDuration: (p) =>
+      ex.text(p['estimatedDuration'] ?? p['Estimated Duration']) ??
+      (ex.number(p['Duration (Weeks)']) !== undefined
+        ? `${ex.number(p['Duration (Weeks)'])} weeks`
+        : undefined),
   },
 
   CourseProfile: {
@@ -54,16 +74,13 @@ export const fieldMap: Record<EntityKey, EntityFieldMap> = {
   },
 
   Lesson: {
-    lessonId: (p) => ex.text(p['lessonId']),
-    slug: (p) => ex.text(p['slug']),
-    title: (p) => ex.text(p['lessonTitle']),
-    lessonType: (p) => ex.select(p['lessonType']),
-    order: (p) => ex.number(p['order']),
-    summary: (p) => ex.text(p['summary']),
-    coreTruth: (p) => ex.text(p['coreTruth']),
-    coreLieExposed: (p) => ex.text(p['coreLieExposed']),
-    keyScripture: (p) => ex.text(p['keyScripture']),
-    content: (p) => ex.text(p['content']),
+    slug: (p) => ex.text(p['slug'] ?? p['Slug'] ?? p['Lesson Slug']),
+    title: (p) => ex.text(p['lessonTitle'] ?? p['title'] ?? p['Title']),
+    order: (p) => ex.number(p['order'] ?? p['Order']),
+    summary: (p) => ex.text(p['summary'] ?? p['Summary']),
+    duration: (p) => ex.number(p['duration'] ?? p['Duration']),
+    videoUrl: (p) => ex.text(p['videoUrl'] ?? p['Video URL'] ?? p['video']),
+    transcript: (p) => ex.text(p['content'] ?? p['transcript'] ?? p['Transcript']),
   },
 
   Assignment: {

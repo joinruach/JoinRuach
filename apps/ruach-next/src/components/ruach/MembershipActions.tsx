@@ -87,19 +87,24 @@ export default function MembershipActions({
   if (!actions.length) {
     return (
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-sm dark:border-white/5 dark:bg-white/5">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Membership actions</h3>
+        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Membership Actions</h3>
         <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-          Join a membership to see upgrade or downgrade options.
+          Choose a level to unlock content and fuel the mission.
         </p>
+        <div className="mt-4">
+          <Button type="button" variant="gold" className="w-full" onClick={() => router.push("/give")}>
+            Choose a Membership
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-white/5">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Upgrade or downgrade</h3>
+      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Membership Actions</h3>
       <p className="mt-2 text-sm text-zinc-600 dark:text-white/70">
-        Adjust your tier while Stripe handles proration. Changes take effect immediately on your next billing cycle.
+        Upgrade, downgrade, pause, or resume&mdash;anytime.
       </p>
       <div className="mt-4 grid gap-3">
         {actions.map((action) => (
@@ -117,7 +122,7 @@ export default function MembershipActions({
       </div>
       {isDisabled ? (
         <p className="mt-3 text-sm text-amber-800 dark:text-amber-200">
-          Update your billing info before adjusting tiers.
+          Use Billing &amp; Subscription to resume or update billing before changing tiers.
         </p>
       ) : null}
       {message ? (

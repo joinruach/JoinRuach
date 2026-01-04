@@ -7,9 +7,10 @@ export function transformEntity(entity: keyof typeof fieldMap, page: NotionPage)
     throw new Error(`No field map defined for entity "${entity}"`);
   }
 
-  const output: Record<string, any> = {
-    notionPageId: page.id,
-  };
+  const output: Record<string, any> = {};
+  if (entity === 'Course') {
+    output.notionPageId = page.id;
+  }
 
   for (const [field, extractor] of Object.entries(map)) {
     const value = extractor(page.properties);

@@ -21,19 +21,19 @@ export const TIER_SUMMARIES: Record<MembershipTier, string> = {
 
 export const ACCESS_FEATURES: ReadonlyArray<{ label: string; tiers: readonly MembershipTier[] }> = [
   {
-    label: "Public devotionals, testimonies, and community updates",
+    label: "Public devotionals, testimonies, and updates",
     tiers: TIER_SEQUENCE,
   },
   {
-    label: "All courses, downloads, and member livestream teachings",
+    label: "Member courses, downloads, and livestream teachings",
     tiers: ["partner", "builder", "steward"] as const,
   },
   {
-    label: "Builder-only strategy sessions and leadership resources",
+    label: "Builder sessions: strategy, leadership, and mobilization",
     tiers: ["builder", "steward"] as const,
   },
   {
-    label: "Steward-only priorities and expanded resources",
+    label: "Steward access: expanded resources + priority releases",
     tiers: ["steward"] as const,
   },
 ];

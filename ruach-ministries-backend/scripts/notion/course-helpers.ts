@@ -19,26 +19,63 @@ const courseCache = new Map<string, NotionPage | null>();
 
 type DatabaseKey = keyof typeof DATABASE_ENV_MAP;
 
-export async function fetchNotionCourseById(courseId: string): Promise<NotionPage | null> {
-  if (courseCache.has(courseId)) {
-    return courseCache.get(courseId) ?? null;
+export async function fetchNotionCourseById(courseIdOrPageId: string): Promise<NotionPage | null> {
+  if (courseCache.has(courseIdOrPageId)) {
+    return courseCache.get(courseIdOrPageId) ?? null;
   }
 
+  const pageId = extractNotionId(courseIdOrPageId);
+  if (pageId) {
+    const match = await fetchNotionPage(formatNotionId(pageId));
+    const enrichedPage = await enrichCoursePage(match);
+    courseCache.set(courseIdOrPageId, enrichedPage);
+    if (enrichedPage.courseId) {
+      courseCache.set(enrichedPage.courseId, enrichedPage);
+    }
+    return enrichedPage;
+  }
+
+  const normalizedCourseId = courseIdOrPageId.trim().toLowerCase();
   const pages = await queryNotionDatabase(getDatabaseId('courses'));
   const matchIndex = pages.findIndex((page) => {
-    const candidate = getPlainText(page.properties['courseId']);
-    return candidate?.toLowerCase() === courseId.toLowerCase();
+    const candidate = getCourseIdText(page.properties);
+    return candidate?.toLowerCase() === normalizedCourseId;
   });
 
   if (matchIndex === -1) {
-    courseCache.set(courseId, null);
+    courseCache.set(courseIdOrPageId, null);
     return null;
   }
 
   const match = pages[matchIndex];
   const enrichedPage = await enrichCoursePage(match);
-  courseCache.set(courseId, enrichedPage);
+  courseCache.set(courseIdOrPageId, enrichedPage);
+  if (enrichedPage.courseId) {
+    courseCache.set(enrichedPage.courseId, enrichedPage);
+  }
   return enrichedPage;
+}
+
+export async function listNotionCourses(): Promise<
+  Array<{ pageId: string; courseId?: string; title?: string; status?: string }>
+> {
+  const pages = await queryNotionDatabase(getDatabaseId('courses'));
+  return pages.map((page) => {
+    const titleProperty =
+      page.properties['courseName'] ??
+      page.properties['Course Name'] ??
+      page.properties['name'] ??
+      page.properties['Name'] ??
+      page.properties['title'] ??
+      page.properties['Title'];
+
+    return {
+      pageId: page.id,
+      courseId: getCourseIdText(page.properties),
+      title: getPlainText(titleProperty),
+      status: getStatusText(page.properties),
+    };
+  });
 }
 
 export async function fetchNotionLessons(courseId: string): Promise<NotionPage[]> {
@@ -127,14 +164,25 @@ async function enrichCoursePage(page: NotionPage): Promise<NotionPage> {
     page.title = title;
   }
 
-  page.status = getPlainText(page.properties['status']);
-  page.courseId = getPlainText(page.properties['courseId']);
+  page.status = getStatusText(page.properties);
+  page.courseId = getCourseIdText(page.properties);
   page.phase = page.phase ?? (await resolvePhaseRelation(page));
   return page;
 }
 
 async function resolvePhaseRelation(page: NotionPage): Promise<NotionPage | null> {
-  const keys = ['linkedPhase', 'phase', 'Phase', 'Linked Phase'];
+  const keys = [
+    'linkedPhase',
+    'Linked Phase',
+    'phase',
+    'Phase',
+    'formationPhase',
+    'Formation Phase',
+    'Formation phase',
+    'formation phase',
+    'formation_phases',
+    'Formation Phases',
+  ];
 
   for (const key of keys) {
     const relationId = getFirstRelationId(page.properties[key]);
@@ -155,7 +203,23 @@ function getFirstRelationId(property: any): string | undefined {
     ? property.relations
     : [];
 
-  return relations[0]?.id;
+  const directId = relations[0]?.id;
+  if (directId) return directId;
+
+  const rollupArray = property?.rollup?.array;
+  if (Array.isArray(rollupArray) && rollupArray.length) {
+    for (const entry of rollupArray) {
+      const nested = Array.isArray(entry?.relation)
+        ? entry.relation
+        : Array.isArray(entry?.relations)
+        ? entry.relations
+        : [];
+      const nestedId = nested[0]?.id;
+      if (nestedId) return nestedId;
+    }
+  }
+
+  return undefined;
 }
 
 async function queryNotionDatabase(databaseId: string): Promise<NotionPage[]> {
@@ -219,7 +283,7 @@ async function fetchNotionPage(pageId: string): Promise<NotionPage> {
 
 function matchesCourse(page: NotionPage, courseId: string, notionCourseId: string): boolean {
   const lowerCourseId = courseId.toLowerCase();
-  const plainCourseId = getPlainText(page.properties['courseId']);
+  const plainCourseId = getCourseIdText(page.properties);
   if (plainCourseId?.toLowerCase() === lowerCourseId) {
     return true;
   }
@@ -237,6 +301,40 @@ function matchesCourse(page: NotionPage, courseId: string, notionCourseId: strin
   }
 
   return false;
+}
+
+function getCourseIdText(properties: Record<string, any>): string | undefined {
+  const keys = ['courseId', 'Course ID', 'Course Id', 'CourseId', 'course id'];
+  for (const key of keys) {
+    const value = getPlainText(properties[key]);
+    if (value) return value;
+  }
+  return undefined;
+}
+
+function getStatusText(properties: Record<string, any>): string | undefined {
+  const keys = ['status', 'Status', 'Import Status', 'importStatus'];
+  for (const key of keys) {
+    const value = getPlainText(properties[key]);
+    if (value) return value;
+  }
+  return undefined;
+}
+
+function extractNotionId(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const uuidMatch = trimmed.match(
+    /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i
+  );
+  if (uuidMatch) return uuidMatch[0];
+
+  const hex32Match = trimmed.match(/[a-f0-9]{32}/i);
+  if (hex32Match) return hex32Match[0];
+
+  return null;
 }
 
 function relationReferencesCourse(prop: any, notionCourseId: string): boolean {

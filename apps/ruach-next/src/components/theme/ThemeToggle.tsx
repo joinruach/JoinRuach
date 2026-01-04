@@ -13,7 +13,10 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="h-10 w-10 rounded-full bg-white/10" aria-hidden="true" />
+      <div
+        className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-white/10"
+        aria-hidden="true"
+      />
     );
   }
 
@@ -31,7 +34,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={handleToggle}
-      className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20"
+      className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-zinc-700 transition hover:bg-zinc-200 dark:bg-white/10 dark:text-zinc-200 dark:hover:bg-white/20"
       aria-label={`Switch to ${theme === "dark" ? "light" : theme === "light" ? "system" : "dark"} mode`}
       title={`Theme: ${theme === "system" ? `System (${resolvedTheme})` : theme}`}
     >

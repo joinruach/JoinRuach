@@ -105,7 +105,7 @@ export default async function LocaleLayout({
         <meta name="theme-color" content="#fbbf24" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
       </head>
-      <body className="bg-background text-foreground antialiased dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="isolate bg-background text-foreground antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {plausibleDomain ? (
           <Script
             defer
@@ -120,7 +120,7 @@ export default async function LocaleLayout({
               <div
                 id="page-atmosphere-root"
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-x-0 top-0 z-0 hidden h-[75vh] lg:block"
+                className="pointer-events-none fixed inset-x-0 top-0 z-0 hidden h-[75vh] md:block [mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)]"
                 style={{ pointerEvents: "none" }}
               />
               <Header />
