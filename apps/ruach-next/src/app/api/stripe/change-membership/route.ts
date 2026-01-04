@@ -2,20 +2,35 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { getStripeClient } from "@/lib/stripe";
-import { MEMBERSHIP_PRICES, type MembershipTier } from "@/lib/membership-prices";
+import {
+  getMembershipPrices,
+  type MembershipTier,
+  type MembershipPrices,
+} from "@/lib/membership-prices";
 import { postStripeSync } from "@/lib/stripe-sync";
 
 type MembershipChangeRequest = {
   tier?: MembershipTier;
 };
 
-function normalizeTier(value: string | null | undefined): MembershipTier | null {
+function normalizeTier(
+  value: string | null | undefined,
+  membershipPrices: MembershipPrices,
+): MembershipTier | null {
   if (!value) return null;
-  return value in MEMBERSHIP_PRICES ? (value as MembershipTier) : null;
+  return value in membershipPrices ? (value as MembershipTier) : null;
 }
 
 export async function POST(req: Request) {
   try {
+    const membershipPrices = getMembershipPrices();
+    if (!membershipPrices) {
+      return NextResponse.json(
+        { error: "Membership pricing is not configured." },
+        { status: 500 },
+      );
+    }
+
     const session = await auth();
     const jwt = session?.strapiJwt;
     if (!jwt) {
@@ -24,7 +39,7 @@ export async function POST(req: Request) {
 
     const payload: MembershipChangeRequest =
       (await req.json().catch(() => ({}))) ?? {};
-    const targetTier = normalizeTier(payload.tier ?? null);
+    const targetTier = normalizeTier(payload.tier ?? null, membershipPrices);
     if (!targetTier) {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
     }
@@ -38,7 +53,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const currentTier = normalizeTier(membership.membershipTier ?? null);
+    const currentTier = normalizeTier(
+      membership.membershipTier ?? null,
+      membershipPrices,
+    );
     if (currentTier === targetTier) {
       return NextResponse.json(
         { error: "Already on the requested tier" },
@@ -59,10 +77,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const targetConfig = MEMBERSHIP_PRICES[targetTier];
-    const currentRank = currentTier
-      ? MEMBERSHIP_PRICES[currentTier].rank
-      : 0;
+    const targetConfig = membershipPrices[targetTier];
+    const currentRank = currentTier ? membershipPrices[currentTier].rank : 0;
     const isUpgrade = targetConfig.rank > currentRank;
     const prorationBehavior = isUpgrade ? "create_prorations" : "none";
 

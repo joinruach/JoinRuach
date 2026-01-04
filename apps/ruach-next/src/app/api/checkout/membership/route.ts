@@ -5,7 +5,7 @@ import type Stripe from "stripe";
 import { auth } from "@/lib/auth";
 import { getStripeClient } from "@/lib/stripe";
 import { fetchStrapiMembership } from "@/lib/strapi-membership";
-import { MEMBERSHIP_PRICES, type MembershipTier } from "@/lib/membership-prices";
+import { getMembershipPrices, type MembershipTier } from "@/lib/membership-prices";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -20,12 +20,20 @@ type MembershipCheckoutRequest = {
 const ACTIVE_STATUSES = new Set(["trialing", "active", "past_due", "paused"]);
 
 export async function POST(request: Request) {
+  const membershipPrices = getMembershipPrices();
+  if (!membershipPrices) {
+    return NextResponse.json(
+      { error: "Membership pricing is not configured." },
+      { status: 500 },
+    );
+  }
+
   try {
     const body: Partial<MembershipCheckoutRequest> =
       (await request.json().catch(() => ({}))) ?? {};
 
     const tier = body.tier;
-    if (!tier || !(tier in MEMBERSHIP_PRICES)) {
+    if (!tier || !(tier in membershipPrices)) {
       return NextResponse.json(
         { error: "Invalid membership tier." },
         { status: 400 }
@@ -58,7 +66,7 @@ export async function POST(request: Request) {
     const metadata: Record<string, string> = {
       type: "membership",
       tier,
-      accessLevel: MEMBERSHIP_PRICES[tier].accessLevel,
+      accessLevel: membershipPrices[tier].accessLevel,
       source: "ruach-next",
     };
 
@@ -71,7 +79,7 @@ export async function POST(request: Request) {
 
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
-      line_items: [{ price: MEMBERSHIP_PRICES[tier].priceId, quantity: 1 }],
+      line_items: [{ price: membershipPrices[tier].priceId, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
@@ -96,4 +104,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

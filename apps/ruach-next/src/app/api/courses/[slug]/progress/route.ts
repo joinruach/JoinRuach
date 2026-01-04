@@ -1,14 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { fetchCourseProgressFromStrapi } from "@/app/api/courses/progress/utils";
 
-export async function GET(req: Request, { params }: { params: { slug?: string } }) {
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ slug: string }> }
+) {
   const session = await auth();
   const jwt = (session as { strapiJwt?: string } | null)?.strapiJwt;
   if (!jwt) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const params = await context.params;
   const slug = params.slug;
   if (!slug) {
     return NextResponse.json({ error: "Missing slug" }, { status: 400 });
