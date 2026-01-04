@@ -10,8 +10,6 @@ import {
   type SpringOptions
 } from "motion/react";
 import React, {
-  Children,
-  cloneElement,
   useEffect,
   useMemo,
   useRef,
@@ -40,7 +38,8 @@ export type DockProps = {
 
 type DockItemProps = {
   className?: string;
-  children: React.ReactNode;
+  icon: React.ReactNode;
+  label: React.ReactNode;
   onClick?: () => void;
   mouseX: MotionValue<number>;
   spring: SpringOptions;
@@ -50,7 +49,8 @@ type DockItemProps = {
 };
 
 function DockItem({
-  children,
+  icon,
+  label,
   className = "",
   onClick,
   mouseX,
@@ -63,12 +63,9 @@ function DockItem({
   const isHovered = useMotionValue(0);
 
   const mouseDistance = useTransform(mouseX, (val) => {
-    const rect =
-      ref.current?.getBoundingClientRect() ?? {
-        x: 0,
-        width: baseItemSize
-      };
-    const rawDistance = val - rect.x - baseItemSize / 2;
+    const rect = ref.current?.getBoundingClientRect();
+    const centerX = rect ? rect.x + rect.width / 2 : baseItemSize / 2;
+    const rawDistance = val - centerX;
     if (!Number.isFinite(rawDistance)) return distance;
     return Math.min(distance, Math.max(-distance, rawDistance));
   });
@@ -79,32 +76,32 @@ function DockItem({
     [baseItemSize, magnification, baseItemSize]
   );
   const size = useSpring(targetSize, spring);
+  const scale = useTransform(size, (latest) => latest / baseItemSize);
 
   return (
     <motion.div
       ref={ref}
       style={{
-        width: size,
-        height: size
+        width: baseItemSize,
+        height: baseItemSize
       }}
       onHoverStart={() => isHovered.set(1)}
       onHoverEnd={() => isHovered.set(0)}
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`${styles.dockItem} ${className}`}
+      className={`${styles.dockItemWrapper} ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
     >
-      {Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? cloneElement(
-              child as React.ReactElement<{ isHovered?: MotionValue<number> }>,
-              { isHovered }
-            )
-          : child
-      )}
+      <motion.div
+        className={styles.dockItem}
+        style={{ scale, transformOrigin: "50% 100%" }}
+      >
+        <DockIcon>{icon}</DockIcon>
+      </motion.div>
+      <DockLabel isHovered={isHovered}>{label}</DockLabel>
     </motion.div>
   );
 }
@@ -112,14 +109,13 @@ function DockItem({
 type DockLabelProps = {
   className?: string;
   children: React.ReactNode;
-  isHovered?: MotionValue<number>;
+  isHovered: MotionValue<number>;
 };
 
 function DockLabel({ children, className = "", isHovered }: DockLabelProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (!isHovered) return;
     const unsubscribe = isHovered.on("change", (latest) => {
       setIsVisible(latest === 1);
     });
@@ -198,15 +194,14 @@ export default function Dock({
             key={index}
             onClick={item.onClick}
             className={item.className}
+            icon={item.icon}
+            label={item.label}
             mouseX={mouseX}
             spring={spring}
             distance={distance}
             magnification={magnification}
             baseItemSize={baseItemSize}
-          >
-            <DockIcon>{item.icon}</DockIcon>
-            <DockLabel>{item.label}</DockLabel>
-          </DockItem>
+          />
         ))}
       </motion.div>
     </motion.div>
