@@ -78,6 +78,14 @@
     "syncErrors": {
       "type": "text"
     },
+    "syncLock": {
+      "type": "boolean",
+      "default": false
+    },
+    "syncedToStrapi": {
+      "type": "boolean",
+      "default": false
+    },
     "unlockRequirements": {
       "type": "json"
     },

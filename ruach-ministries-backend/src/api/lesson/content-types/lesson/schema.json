@@ -14,6 +14,18 @@
       "type": "string",
       "required": true
     },
+    "lessonId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
+    "lessonTitle": {
+      "type": "string"
+    },
     "slug": {
       "type": "uid",
       "targetField": "title",
@@ -34,8 +46,20 @@
       "type": "integer",
       "min": 0
     },
+    "runtime": {
+      "type": "integer",
+      "min": 0
+    },
     "videoUrl": {
       "type": "string"
+    },
+    "lessonType": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
+      "default": "Draft"
     },
     "source": {
       "type": "component",
@@ -51,6 +75,18 @@
       "allowedTypes": [
         "files"
       ]
+    },
+    "keyScripture": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "module": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::module.module",
+      "inversedBy": "lessons"
     },
     "course": {
       "type": "relation",
@@ -95,6 +131,27 @@
       "type": "enumeration",
       "enum": ["basic", "full", "leader"],
       "default": "basic"
+    },
+    "checksum": {
+      "type": "string"
+    },
+    "strapiEntryId": {
+      "type": "string",
+      "unique": true
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncErrors": {
+      "type": "text"
+    },
+    "syncLock": {
+      "type": "boolean",
+      "default": false
+    },
+    "syncedToStrapi": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

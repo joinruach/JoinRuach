@@ -1,72 +1,40 @@
 {
   "kind": "collectionType",
-  "collectionName": "assignments",
+  "collectionName": "resources",
   "info": {
-    "singularName": "assignment",
-    "pluralName": "assignments",
-    "displayName": "Assignment",
-    "description": "Practice, activation, or response tied to lessons or courses."
+    "singularName": "resource",
+    "pluralName": "resources",
+    "displayName": "Resource",
+    "description": "External lesson resources, references, or downloads."
   },
   "options": {
     "draftAndPublish": true
   },
   "attributes": {
-    "assignmentId": {
+    "resourceId": {
       "type": "string",
       "required": true,
       "unique": true
     },
-
     "notionPageId": {
       "type": "string",
       "unique": true
     },
-
     "title": {
-      "type": "string"
-    },
-
-    "name": {
       "type": "string",
       "required": true
     },
-
-    "assignmentType": {
+    "resourceType": {
       "type": "enumeration",
-      "enum": [
-        "audit",
-        "renunciation",
-        "build",
-        "journal",
-        "declaration",
-        "action-plan",
-        "assessment",
-        "practice-log"
-      ]
+      "enum": ["article", "video", "audio", "document", "tool", "link"]
     },
-
-    "outputFormat": {
-      "type": "enumeration",
-      "enum": ["written", "spoken", "action", "testimony"]
+    "url": {
+      "type": "string"
     },
-
-    "instructions": {
-      "type": "richtext"
-    },
-    "description": {
-      "type": "text"
-    },
-
     "course": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::course.course"
-    },
-
-    "lesson": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::lesson.lesson"
     },
     "checksum": {
       "type": "string"
