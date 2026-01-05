@@ -5,10 +5,7 @@ import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type {
-  AccessLevel as CourseAccessLevel,
-  Course,
-} from "@ruach/components/components/ruach/CourseCard";
+import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, getMediaByCategory, getFeaturedTestimony, imgUrl, getEvents } from "@/lib/strapi";
 import RecommendedForYou from "@/components/recommendations/RecommendedForYou";
 import {
@@ -17,10 +14,9 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 import type { CourseEntity, EventEntity, MediaItemEntity } from "@/lib/types/strapi-types";
-import { auth } from "@/lib/auth";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { getCourseProgressMap } from "@/lib/api/courseProgress";
-import { parseAccessLevel } from "@/lib/access-level";
+import { getViewerAccessContext } from "@/lib/access-context";
+import { normalizeAccessLevel } from "@ruach/utils";
 
 type MediaAttributes = MediaItemEntity["attributes"];
 type CourseAttributes = CourseEntity["attributes"];
@@ -38,22 +34,13 @@ async function safeFetch<T>(label: string, fetcher: () => Promise<T>): Promise<T
 // Ensure fresh data from Strapi on every request without breaking route generation
 export const revalidate = 0;
 
-type ExtendedSession = {
-  strapiJwt?: string;
-  [key: string]: unknown;
-};
-
 export default async function Home({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-
-  const session = await auth();
-  const jwt = (session as ExtendedSession | null)?.strapiJwt;
-  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
-  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
+  const { viewer, ownedCourseSlugs, jwt } = await getViewerAccessContext();
 
   const [courses, testimonies, featured, events] = await Promise.all([
     safeFetch('courses', () => getCourses()),
@@ -124,7 +111,7 @@ export default async function Home({
         typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
           ? attributes.unlockRequirements
           : undefined;
-      const requiredAccessLevel = parseAccessLevel(attributes.requiredAccessLevel ?? null);
+      const requiredAccessLevel = normalizeAccessLevel(attributes.requiredAccessLevel ?? null);
 
       return {
         title,
@@ -147,7 +134,8 @@ export default async function Home({
     const progress = progressMap.get(course.slug);
     return {
       ...course,
-      viewerAccessLevel,
+      viewer,
+      ownsCourse: ownedCourseSlugs.includes(course.slug),
       progress: progress
         ? {
             percentComplete: progress.percentComplete,

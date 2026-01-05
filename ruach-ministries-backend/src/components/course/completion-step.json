@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_course_completion_steps",
+  "info": {
+    "displayName": "Completion Step",
+    "icon": "check",
+    "description": "A step in the course completion path"
+  },
+  "options": {},
+  "attributes": {
+    "step": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

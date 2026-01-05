@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_course_scripture_passage",
+  "info": {
+    "displayName": "Scripture Passage",
+    "description": "Collapsible scripture reference blocks"
+  },
+  "attributes": {
+    "reference": {
+      "type": "string",
+      "required": true
+    },
+    "text": {
+      "type": "richtext",
+      "required": true
+    },
+    "translation": {
+      "type": "string"
+    }
+  }
+}

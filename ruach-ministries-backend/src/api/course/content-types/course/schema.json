@@ -15,6 +15,13 @@
       "type": "string",
       "required": true
     },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "unique": true,
+      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
     "courseId": {
       "type": "string",
       "required": true,
@@ -24,37 +31,56 @@
       "type": "string",
       "unique": true
     },
-    "profile": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::course-profile.course-profile",
-      "mappedBy": "course"
+    "snapshot": {
+      "type": "component",
+      "repeatable": false,
+      "component": "course.snapshot"
+    },
+    "startHere": {
+      "type": "component",
+      "repeatable": false,
+      "component": "course.start-here"
+    },
+    "description": {
+      "type": "richtext"
     },
     "excerpt": {
       "type": "text"
     },
-    "slug": {
-      "type": "uid",
-      "targetField": "name",
-      "required": true,
-      "unique": true,
-      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    "courseType": {
+      "type": "enumeration",
+      "enum": [
+        "lead_magnet",
+        "core_course",
+        "formation_track",
+        "warfare_freedom",
+        "ekklesia_equipping",
+        "media_creative",
+        "truth_systems",
+        "practical_life"
+      ]
     },
-    "description": {
-      "type": "text"
+    "priceType": {
+      "type": "enumeration",
+      "enum": ["free", "paid_core", "paid_flagship", "paid_specialty"]
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": ["public", "gated", "cohort_only", "private"],
+      "default": "public"
     },
     "status": {
       "type": "enumeration",
-      "enum": ["Draft", "Review", "Ready", "Synced", "Published", "Deprecated", "Needs Revision"],
-      "default": "Draft"
-    },
-    "requiredAccessLevel": {
-      "type": "enumeration",
-      "enum": ["basic", "full", "leader"],
-      "default": "basic"
-    },
-    "unlockRequirements": {
-      "type": "text"
+      "enum": [
+        "draft",
+        "review",
+        "ready",
+        "synced",
+        "published",
+        "deprecated",
+        "needs_revision"
+      ],
+      "default": "draft"
     },
     "level": {
       "type": "enumeration",
@@ -65,12 +91,51 @@
       ],
       "default": "foundation"
     },
-    "estimatedDuration": {
-      "type": "string"
+    "formationPhase": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-phase.formation-phase",
+      "inversedBy": "courses"
+    },
+    "phase": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::formation-phase.formation-phase",
+      "inversedBy": "courses"
+    },
+    "lessonCount": {
+      "type": "integer",
+      "min": 0
+    },
+    "moduleCount": {
+      "type": "integer",
+      "min": 0
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false
     },
     "featured": {
       "type": "boolean",
       "default": false
+    },
+    "profile": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-profile.course-profile",
+      "mappedBy": "course"
+    },
+    "requiredAccessLevel": {
+      "type": "enumeration",
+      "enum": ["public", "partner", "builder", "steward"],
+      "required": true,
+      "default": "partner"
+    },
+    "unlockRequirements": {
+      "type": "text"
+    },
+    "estimatedDuration": {
+      "type": "string"
     },
     "cover": {
       "type": "media",
@@ -98,17 +163,28 @@
       "target": "api::lesson-comment.lesson-comment",
       "mappedBy": "course"
     },
-    "phase": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::formation-phase.formation-phase",
-      "required": true,
-      "inversedBy": "courses"
-    },
     "modules": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::module.module",
+      "mappedBy": "course"
+    },
+    "resources": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::resource.resource",
+      "mappedBy": "course"
+    },
+    "courseEntitlements": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course-entitlement.course-entitlement",
+      "mappedBy": "course"
+    },
+    "courseSeats": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course-seat.course-seat",
       "mappedBy": "course"
     },
     "ctaLabel": {
@@ -116,6 +192,26 @@
     },
     "ctaUrl": {
       "type": "string"
+    },
+    "landingConfig": {
+      "type": "component",
+      "repeatable": false,
+      "component": "course.landing-config"
+    },
+    "playerConfig": {
+      "type": "component",
+      "repeatable": false,
+      "component": "course.player-config"
+    },
+    "auditConfig": {
+      "type": "component",
+      "repeatable": false,
+      "component": "course.audit-config"
+    },
+    "ctaDetoxCourse": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course"
     },
     "seoTitle": {
       "type": "string"

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_module_confrontations",
+  "info": {
+    "displayName": "Confrontation",
+    "icon": "lightbulb",
+    "description": "Heart and mind exposure - challenges and excuses destroyed"
+  },
+  "options": {},
+  "attributes": {
+    "challenges": {
+      "type": "component",
+      "repeatable": true,
+      "component": "module.bullet"
+    },
+    "destroysExcuses": {
+      "type": "component",
+      "repeatable": true,
+      "component": "module.bullet"
+    }
+  }
+}

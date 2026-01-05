@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_course_qualifier_item",
+  "info": {
+    "displayName": "Qualifier Item",
+    "description": "Who this course is for / not for"
+  },
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

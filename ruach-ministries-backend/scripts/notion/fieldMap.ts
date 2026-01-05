@@ -58,6 +58,13 @@ export const fieldMap: Record<EntityKey, EntityFieldMap> = {
       (ex.number(p['Duration (Weeks)']) !== undefined
         ? `${ex.number(p['Duration (Weeks)'])} weeks`
         : undefined),
+    courseType: (p) => ex.select(p['courseType'] ?? p['Course Type']),
+    priceType: (p) => ex.select(p['priceType'] ?? p['Price Type']),
+    visibility: (p) => ex.select(p['visibility'] ?? p['Visibility']),
+    lessonCount: (p) => ex.number(p['lessonCount'] ?? p['Lesson Count']),
+    moduleCount: (p) => ex.number(p['moduleCount'] ?? p['Module Count']),
+    isFeatured: (p) =>
+      ex.checkbox(p['isFeatured'] ?? p['Is Featured'] ?? p['featured'] ?? p['Featured']),
   },
 
   CourseProfile: {

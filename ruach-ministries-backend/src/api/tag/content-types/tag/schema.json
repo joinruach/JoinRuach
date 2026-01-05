@@ -48,6 +48,12 @@
       "relation": "manyToMany",
       "target": "api::video.video",
       "mappedBy": "tags"
+    },
+    "resources": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::resource.resource",
+      "mappedBy": "tags"
     }
   }
 }

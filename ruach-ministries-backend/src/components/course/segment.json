@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_course_segment",
+  "info": {
+    "displayName": "Segment",
+    "description": "A timeline card describing each mini-course segment"
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "durationMinutes": {
+      "type": "integer",
+      "required": true
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "previewLabel": {
+      "type": "string",
+      "default": "Tap to preview"
+    },
+    "previewUrl": {
+      "type": "string"
+    }
+  }
+}

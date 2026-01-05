@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_module_bullets",
+  "info": {
+    "displayName": "Bullet",
+    "icon": "circle",
+    "description": "Single text item for lists"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

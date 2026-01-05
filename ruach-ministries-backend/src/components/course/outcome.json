@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_course_outcome",
+  "info": {
+    "displayName": "Outcome",
+    "description": "Single bullet describing the transformation"
+  },
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

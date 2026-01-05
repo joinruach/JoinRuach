@@ -20,3 +20,6 @@ export * from './format';
 
 // URL utilities
 export * from './url';
+
+// Access utilities
+export * from './access';

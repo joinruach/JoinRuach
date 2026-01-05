@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_course_required_tools",
+  "info": {
+    "displayName": "Required Tool",
+    "icon": "book",
+    "description": "A required tool or resource for the course"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["bible", "journal", "worksheet", "audio", "video", "other"],
+      "default": "other"
+    },
+    "details": {
+      "type": "string"
+    }
+  }
+}

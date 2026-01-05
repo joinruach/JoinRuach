@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_course_community_rules",
+  "info": {
+    "displayName": "Community Rule",
+    "icon": "users",
+    "description": "A community or group rule"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

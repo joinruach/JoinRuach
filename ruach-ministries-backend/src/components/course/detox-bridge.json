@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_course_detox_bridge",
+  "info": {
+    "displayName": "Detox Bridge",
+    "description": "Paid course bridge content that introduces Detox 101"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "text"
+    },
+    "buttonLabel": {
+      "type": "string",
+      "required": true
+    },
+    "buttonUrl": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

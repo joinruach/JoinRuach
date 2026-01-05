@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_seats",
+  "info": {
+    "singularName": "course-seat",
+    "pluralName": "course-seats",
+    "displayName": "Course Seat",
+    "description": "Active seat assignments for partner/builder memberships"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "course_seats"
+    },
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "courseSeats"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "released"],
+      "default": "active",
+      "required": true
+    },
+    "assignedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "releasedAt": {
+      "type": "datetime"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

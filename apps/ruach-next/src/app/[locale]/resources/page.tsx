@@ -3,10 +3,7 @@ import LocalizedLink from "@/components/navigation/LocalizedLink";
 import MediaGrid from "@ruach/components/components/ruach/MediaGrid";
 import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCard";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type {
-  AccessLevel as CourseAccessLevel,
-  Course,
-} from "@ruach/components/components/ruach/CourseCard";
+import type { Course } from "@ruach/components/components/ruach/CourseCard";
 import NewsletterSignup from "@/components/ruach/NewsletterSignup";
 import SEOHead from "@/components/ruach/SEOHead";
 import TrackedLink from "@/components/ruach/TrackedLink";
@@ -34,10 +31,9 @@ import {
   extractSingleRelation,
 } from "@/lib/strapi-normalize";
 
-import { auth } from "@/lib/auth";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { getCourseProgressMap } from "@/lib/api/courseProgress";
-import { parseAccessLevel } from "@/lib/access-level";
+import { getViewerAccessContext, ViewerAccessContext } from "@/lib/access-context";
+import { normalizeAccessLevel } from "@ruach/utils";
 
 export const metadata = {
   title: "Resource Hub — Media, Courses, and Ministry Tools | Ruach Ministries",
@@ -48,11 +44,6 @@ export const metadata = {
     description:
       "Discover media, discipleship training, and outreach resources curated by Ruach Ministries to equip believers.",
   },
-};
-
-type ExtendedSession = {
-  strapiJwt?: string;
-  [key: string]: unknown;
 };
 
 type LessonResourceLink = {
@@ -296,10 +287,8 @@ export default async function ResourcesPage({
   // Await params (Next.js 15 requirement)
   await params;
 
-  const session = await auth();
-  const jwt = (session as ExtendedSession | null)?.strapiJwt;
-  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
-  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
+  const { viewer, ownedCourseSlugs, ownedCourseIds, jwt } = await getViewerAccessContext();
+  const accessContext: ViewerAccessContext = { viewer, ownedCourseSlugs, ownedCourseIds, jwt };
 
   const resourceDirectory = await getResourceDirectory().catch(() => null);
   const directory = normalizeResourceDirectory(resourceDirectory);
@@ -313,20 +302,25 @@ export default async function ResourcesPage({
 
   const sectionsWithData = await Promise.all(
     directory.sections.map(async (section) =>
-      resolveSection(section, directory, {
-        getCourses: async () => {
-          if (cachedCourses) return cachedCourses;
-          const rawCourses = await getCourses();
-          cachedCourses = normalizeCourses(rawCourses).slice(0, 6);
-          return cachedCourses;
+      resolveSection(
+        section,
+        directory,
+        {
+          getCourses: async () => {
+            if (cachedCourses) return cachedCourses;
+            const rawCourses = await getCourses();
+            cachedCourses = normalizeCourses(rawCourses).slice(0, 6);
+            return cachedCourses;
+          },
+          getBlogPosts: async () => {
+            if (cachedBlogPosts) return cachedBlogPosts;
+            const { data } = await getBlogPosts({ pageSize: 6 });
+            cachedBlogPosts = data || [];
+            return cachedBlogPosts;
+          },
         },
-        getBlogPosts: async () => {
-          if (cachedBlogPosts) return cachedBlogPosts;
-          const { data } = await getBlogPosts({ pageSize: 6 });
-          cachedBlogPosts = data || [];
-          return cachedBlogPosts;
-        },
-      })
+        accessContext
+      )
     )
   );
 
@@ -362,8 +356,6 @@ export default async function ResourcesPage({
                 totalLessons: progress.totalLessons,
               }
             : undefined,
-          viewerAccessLevel,
-          requiredAccessLevel: course.requiredAccessLevel ?? "basic",
         };
       }),
     };
@@ -495,7 +487,8 @@ async function resolveSection(
   loaders: {
     getCourses: () => Promise<Course[]>;
     getBlogPosts: () => Promise<BlogPostEntity[]>;
-  }
+  },
+  accessContext: ViewerAccessContext
 ): Promise<SectionRenderData | null> {
   const base: BaseSectionData = {
     id: section.id,
@@ -523,7 +516,7 @@ async function resolveSection(
       return { ...base, type: "article", items };
     }
     case "course": {
-      const items = await resolveCourseCards(section, loaders);
+      const items = await resolveCourseCards(section, loaders, accessContext);
       return { ...base, type: "course", items };
     }
     case "custom":
@@ -661,14 +654,21 @@ async function resolveCourseCards(
   section: ResourceSection,
   loaders: {
     getCourses: () => Promise<Course[]>;
-  }
+  },
+  accessContext: ViewerAccessContext
 ): Promise<Course[]> {
   const highlighted = normalizeCourses(section.highlightedCourses).slice(0, 6);
-  if (highlighted.length) {
-    return highlighted;
-  }
+  const selection =
+    highlighted.length ? highlighted : (await loaders.getCourses()).slice(0, 6);
+  const viewer = accessContext.viewer ?? null;
+  const ownedCourseSlugs = accessContext.ownedCourseSlugs;
 
-  return (await loaders.getCourses()).slice(0, 6);
+  return selection.map((course) => ({
+    ...course,
+    viewer,
+    ownsCourse: ownedCourseSlugs.includes(course.slug),
+    requiredAccessLevel: normalizeAccessLevel(course.requiredAccessLevel ?? null),
+  }));
 }
 
 function resolveCustomResources(section: ResourceSection): CustomResourceCard[] {
@@ -971,7 +971,7 @@ function normalizeCourses(items: unknown[]): Course[] {
         typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
           ? attributes.unlockRequirements
           : undefined;
-      const requiredAccessLevel = parseAccessLevel(attributes.requiredAccessLevel ?? null);
+      const requiredAccessLevel = normalizeAccessLevel(attributes.requiredAccessLevel ?? null);
 
       const course: Course = {
         title,

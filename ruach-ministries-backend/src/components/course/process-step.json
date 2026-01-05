@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_course_process_step",
+  "info": {
+    "displayName": "Process Step",
+    "description": "Step description for the how-this-works strip"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "text"
+    }
+  }
+}

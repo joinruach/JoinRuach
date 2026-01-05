@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_module_teaching_summaries",
+  "info": {
+    "displayName": "Teaching Summary",
+    "icon": "book",
+    "description": "Three-part teaching structure for modules"
+  },
+  "options": {},
+  "attributes": {
+    "patternRevealed": {
+      "type": "text",
+      "required": true
+    },
+    "whyItPersists": {
+      "type": "text",
+      "required": true
+    },
+    "whyItMustBeSevered": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

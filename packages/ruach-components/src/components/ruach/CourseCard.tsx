@@ -5,14 +5,13 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { imgUrl } from "../../utils/strapi";
 import { useCourseProgress } from "../../hooks/useCourseProgress";
-
-export type AccessLevel = "basic" | "full" | "leader";
-
-export type CourseProgress = {
-  percentComplete: number;
-  completedLessons: number;
-  totalLessons: number;
-};
+import {
+  AccessLevel,
+  ViewerAccess,
+  canAccessCourse,
+  ACCESS_LEVEL_RANK,
+} from "@ruach/utils";
+import type { CourseProgress } from "../../hooks/useCourseProgress";
 
 export type Course = {
   title: string;
@@ -22,20 +21,16 @@ export type Course = {
   ctaLabel?: string;
   unlockRequirements?: string;
   requiredAccessLevel?: AccessLevel;
-  viewerAccessLevel?: AccessLevel;
+  viewer?: ViewerAccess | null;
+  ownsCourse?: boolean;
   progress?: CourseProgress;
 };
 
-const ACCESS_LEVEL_RANK: Record<AccessLevel, number> = {
-  basic: 1,
-  full: 2,
-  leader: 3,
-};
-
 const ACCESS_LEVEL_LABEL: Record<AccessLevel, string> = {
-  basic: "Supporter",
-  full: "Partner",
-  leader: "Builder",
+  public: "Public",
+  partner: "Partner",
+  builder: "Builder",
+  steward: "Steward",
 };
 
 export function CourseCard({
@@ -46,7 +41,8 @@ export function CourseCard({
   ctaLabel,
   unlockRequirements,
   requiredAccessLevel,
-  viewerAccessLevel,
+  viewer,
+  ownsCourse,
   progress,
 }: Course): ReactElement {
   const initialProgress = progress
@@ -60,9 +56,13 @@ export function CourseCard({
 
   const { loading, percentComplete, started, completed } = useCourseProgress(slug, initialProgress);
 
-  const viewerLevel: AccessLevel = viewerAccessLevel ?? "basic";
-  const courseLevel: AccessLevel = requiredAccessLevel ?? "basic";
-  const isLocked = ACCESS_LEVEL_RANK[viewerLevel] < ACCESS_LEVEL_RANK[courseLevel];
+  const courseLevel: AccessLevel = requiredAccessLevel ?? "partner";
+  const hasAccess = canAccessCourse({
+    viewer,
+    course: { requiredAccessLevel: courseLevel },
+    ownsCourse,
+  });
+  const isLocked = !hasAccess;
 
   const ctaText = isLocked
     ? `Upgrade to unlock`

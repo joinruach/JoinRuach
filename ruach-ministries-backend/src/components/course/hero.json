@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_course_hero",
+  "info": {
+    "displayName": "Hero",
+    "description": "Landing hero content for mobile-first mini courses"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "promiseLine": {
+      "type": "string",
+      "required": true
+    },
+    "microTrustLine": {
+      "type": "string"
+    },
+    "optionalBadge": {
+      "type": "string"
+    },
+    "primaryCtaLabel": {
+      "type": "string",
+      "default": "Start Free Course"
+    },
+    "primaryCtaUrl": {
+      "type": "string"
+    },
+    "secondaryCtaLabel": {
+      "type": "string"
+    },
+    "secondaryCtaUrl": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_module_core_scriptures",
+  "info": {
+    "displayName": "Core Scripture",
+    "icon": "book-open",
+    "description": "Anchoring Scripture references for the module"
+  },
+  "options": {},
+  "attributes": {
+    "reference": {
+      "type": "string",
+      "required": true
+    },
+    "excerpt": {
+      "type": "text"
+    },
+    "note": {
+      "type": "text"
+    }
+  }
+}

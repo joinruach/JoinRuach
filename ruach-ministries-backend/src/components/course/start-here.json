@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_course_start_heres",
+  "info": {
+    "displayName": "Start Here",
+    "icon": "play",
+    "description": "Start Here section for courses"
+  },
+  "options": {},
+  "attributes": {
+    "welcomeVideoUrl": {
+      "type": "string"
+    },
+    "howToUse": {
+      "type": "richtext",
+      "required": true
+    },
+    "communityRules": {
+      "type": "component",
+      "repeatable": true,
+      "component": "course.community-rule"
+    },
+    "completionPath": {
+      "type": "component",
+      "repeatable": true,
+      "component": "course.completion-step"
+    },
+    "supportEmail": {
+      "type": "email"
+    }
+  }
+}

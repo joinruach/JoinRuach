@@ -5,7 +5,7 @@
     "singularName": "module",
     "pluralName": "modules",
     "displayName": "Module",
-    "description": "Ordered structural unit within a course."
+    "description": "Course modules - navigation spine for lessons, resources, assignments"
   },
   "options": {
     "draftAndPublish": true
@@ -16,35 +16,99 @@
       "required": true,
       "unique": true
     },
-
-    "name": {
+    "title": {
       "type": "string",
       "required": true
     },
-
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "unique": true,
+      "regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
     "order": {
       "type": "integer",
-      "required": true,
-      "min": 1
+      "required": true
     },
-
-    "description": {
+    "bigIdea": {
+      "type": "text",
+      "required": true
+    },
+    "focusQuestion": {
+      "type": "text",
+      "required": true
+    },
+    "teachingSummary": {
+      "type": "component",
+      "repeatable": false,
+      "component": "module.teaching-summary",
+      "required": true
+    },
+    "coreScriptures": {
+      "type": "component",
+      "repeatable": true,
+      "component": "module.core-scripture"
+    },
+    "confrontation": {
+      "type": "component",
+      "repeatable": false,
+      "component": "module.confrontation"
+    },
+    "oneObedienceStep": {
+      "type": "text",
+      "required": true
+    },
+    "closingPrayer": {
       "type": "richtext"
     },
-
+    "estimatedMinutes": {
+      "type": "integer"
+    },
     "course": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::course.course",
-      "inversedBy": "modules",
-      "required": true
+      "inversedBy": "modules"
     },
-
     "lessons": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::lesson.lesson",
       "mappedBy": "module"
+    },
+    "assignments": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::assignment.assignment",
+      "mappedBy": "modules"
+    },
+    "resources": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::resource.resource",
+      "mappedBy": "module"
+    },
+    "notionPageId": {
+      "type": "string",
+      "unique": true
+    },
+    "checksum": {
+      "type": "string"
+    },
+    "lastSyncedAt": {
+      "type": "datetime"
+    },
+    "syncLock": {
+      "type": "boolean",
+      "default": false
+    },
+    "syncErrors": {
+      "type": "text"
+    },
+    "moduleNotes": {
+      "type": "richtext",
+      "description": "Optional internal notes (not synced to UI)"
     }
   }
 }

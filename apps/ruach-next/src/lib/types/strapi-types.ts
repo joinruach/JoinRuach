@@ -141,7 +141,114 @@ export interface CourseEntity extends StrapiBase {
     seoImage?: { data?: { attributes?: Media } };
     unlockRequirements?: string;
     requiredAccessLevel?: CourseAccessLevel;
+    landingConfig?: LandingConfig;
+    playerConfig?: PlayerConfig;
+    auditConfig?: AuditConfig;
+    ctaDetoxCourse?: {
+      data?: {
+        attributes?: {
+          slug?: string;
+          name?: string;
+        };
+      };
+    };
   };
+}
+
+export interface LandingHero {
+  title?: string;
+  promiseLine?: string;
+  microTrustLine?: string;
+  optionalBadge?: string;
+  primaryCtaLabel?: string;
+  primaryCtaUrl?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaUrl?: string;
+}
+
+export interface LandingSegment {
+  name?: string;
+  durationMinutes?: number;
+  outcome?: string;
+  previewLabel?: string;
+  previewUrl?: string;
+}
+
+export interface ScripturePassage {
+  reference?: string;
+  text?: string;
+  translation?: string;
+}
+
+export interface DeliverableBlock {
+  title?: string;
+  description?: string;
+  auditWizardUrl?: string;
+  pdfUrl?: string;
+  tagline?: string;
+}
+
+export interface QualifierItem {
+  text?: string;
+}
+
+export interface ProcessStep {
+  title?: string;
+  body?: string;
+}
+
+export interface DetoxBridge {
+  title?: string;
+  body?: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
+}
+
+export interface FAQItem {
+  question?: string;
+  answer?: string;
+}
+
+export interface LandingConfig {
+  hero?: LandingHero;
+  outcomes?: QualifierItem[];
+  segments?: LandingSegment[];
+  scriptureHelperLine?: string;
+  scripturePassages?: ScripturePassage[];
+  deliverable?: DeliverableBlock;
+  whoItsFor?: QualifierItem[];
+  whoItsNotFor?: QualifierItem[];
+  processSteps?: ProcessStep[];
+  detoxBridge?: DetoxBridge;
+  faqItems?: FAQItem[];
+}
+
+export interface PlayerConfig {
+  readModeEnabled?: boolean;
+  listenModeEnabled?: boolean;
+  doModeEnabled?: boolean;
+  freedomMeterLabels?: string[];
+  convictionTimerHours?: number;
+  microDrillPrompts?: string[];
+  offlineFirst?: boolean;
+  windowOfObedienceLabel?: string;
+}
+
+export interface ObedienceCardTemplate {
+  patternLabel?: string;
+  oneStepLabel?: string;
+  scheduledTimeLabel?: string;
+  witnessLabel?: string;
+  shareInstructions?: string;
+}
+
+export interface AuditConfig {
+  renunciationHoldSeconds?: number;
+  contractEnabled?: boolean;
+  witnessEnabled?: boolean;
+  generateObedienceCard?: boolean;
+  instructions?: string;
+  obedienceCardTemplate?: ObedienceCardTemplate;
 }
 
 export interface PrayerEntity extends StrapiBase {

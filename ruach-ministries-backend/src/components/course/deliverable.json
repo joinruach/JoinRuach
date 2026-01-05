@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_course_deliverable",
+  "info": {
+    "displayName": "Deliverable",
+    "description": "Action-oriented deliverable block for the audit + obedience step"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "auditWizardUrl": {
+      "type": "string"
+    },
+    "pdfUrl": {
+      "type": "string"
+    },
+    "tagline": {
+      "type": "string"
+    }
+  }
+}

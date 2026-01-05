@@ -149,11 +149,23 @@
   "entitlements": {
     "type": "json"
   },
-  "course_licenses": {
-    "type": "relation",
-    "relation": "oneToMany",
-    "target": "api::course-license.course-license",
-    "mappedBy": "user"
+    "course_licenses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course-license.course-license",
+      "mappedBy": "user"
+    },
+    "course_entitlements": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course-entitlement.course-entitlement",
+      "mappedBy": "user"
+    },
+    "course_seats": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course-seat.course-seat",
+      "mappedBy": "user"
+    }
   }
-}
 }

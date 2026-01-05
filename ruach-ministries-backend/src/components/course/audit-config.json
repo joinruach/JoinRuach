@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_course_audit_config",
+  "info": {
+    "displayName": "Audit Config",
+    "description": "Guided obedience wizard metadata"
+  },
+  "attributes": {
+    "renunciationHoldSeconds": {
+      "type": "integer",
+      "default": 5
+    },
+    "contractEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "witnessEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "generateObedienceCard": {
+      "type": "boolean",
+      "default": true
+    },
+    "instructions": {
+      "type": "text"
+    },
+    "obedienceCardTemplate": {
+      "type": "component",
+      "component": "course.obedience-card-template"
+    }
+  }
+}

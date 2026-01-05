@@ -534,6 +534,11 @@ export async function getCourseBySlug(slug: string, authToken?: string) {
   params.set("fields[3]", "description");
   params.set("fields[4]", "seoTitle");
   params.set("fields[5]", "seoDescription");
+  params.set("fields[6]", "landingConfig");
+  params.set("fields[7]", "playerConfig");
+  params.set("fields[8]", "auditConfig");
+  params.set("fields[9]", "requiredAccessLevel");
+  params.set("fields[10]", "visibility");
   params.set("populate[cover][fields][0]", "url");
   params.set("populate[cover][fields][1]", "alternativeText");
   params.set("populate[lessons][fields][0]", "title");
@@ -546,6 +551,18 @@ export async function getCourseBySlug(slug: string, authToken?: string) {
   params.set("populate[lessons][fields][7]", "transcript");
   params.set("populate[lessons][populate][transcriptFile][fields][0]", "url");
   params.set("pagination[pageSize]", "1");
+  params.set("populate[landingConfig][populate][hero]", "*");
+  params.set("populate[landingConfig][populate][outcomes]", "*");
+  params.set("populate[landingConfig][populate][segments]", "*");
+  params.set("populate[landingConfig][populate][scripturePassages]", "*");
+  params.set("populate[landingConfig][populate][deliverable]", "*");
+  params.set("populate[landingConfig][populate][whoItsFor]", "*");
+  params.set("populate[landingConfig][populate][whoItsNotFor]", "*");
+  params.set("populate[landingConfig][populate][processSteps]", "*");
+  params.set("populate[landingConfig][populate][detoxBridge]", "*");
+  params.set("populate[landingConfig][populate][faqItems]", "*");
+  params.set("populate[ctaDetoxCourse][fields][0]", "slug");
+  params.set("populate[ctaDetoxCourse][fields][1]", "name");
 
   try {
     const j = await getJSON<{ data: CourseEntity[] }>(`/api/courses?${params.toString()}`, {

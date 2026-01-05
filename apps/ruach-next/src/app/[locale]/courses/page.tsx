@@ -1,20 +1,12 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import CourseGrid from "@ruach/components/components/ruach/CourseGrid";
-import type {
-  AccessLevel as CourseAccessLevel,
-  Course as CourseCardType,
-} from "@ruach/components/components/ruach/CourseCard";
+import type { Course as CourseCardType } from "@ruach/components/components/ruach/CourseCard";
 import { getCourses, imgUrl } from "@/lib/strapi";
-import { auth } from "@/lib/auth";
-import { fetchStrapiMembership } from "@/lib/strapi-membership";
 import { getCourseProgressMap } from "@/lib/api/courseProgress";
+import { getViewerAccessContext } from "@/lib/access-context";
+import { normalizeAccessLevel } from "@ruach/utils";
 
 export const dynamic = "force-dynamic";
-
-interface ExtendedSession {
-  strapiJwt?: string;
-  [key: string]: unknown;
-}
 
 function titleFromSlug(slug: string) {
   return slug
@@ -24,14 +16,6 @@ function titleFromSlug(slug: string) {
     .join(" ");
 }
 
-function parseAccessLevel(value?: string | null): CourseAccessLevel {
-  if (!value) return "basic";
-  const normalized = value.toLowerCase();
-  if (normalized === "full") return "full";
-  if (normalized === "leader") return "leader";
-  return "basic";
-}
-
 export default async function CoursesPage({
   params,
 }: {
@@ -39,10 +23,7 @@ export default async function CoursesPage({
 }) {
   await params;
 
-  const session = await auth();
-  const jwt = (session as ExtendedSession | null)?.strapiJwt;
-  const membership = jwt ? await fetchStrapiMembership(jwt) : null;
-  const viewerAccessLevel = parseAccessLevel(membership?.accessLevel ?? null);
+  const { viewer, ownedCourseSlugs, jwt } = await getViewerAccessContext();
 
   const items = await getCourses();
   const courseSlugs = Array.from(
@@ -88,8 +69,9 @@ export default async function CoursesPage({
               totalLessons: progress.totalLessons,
             }
           : undefined,
-        requiredAccessLevel: parseAccessLevel(attributes.requiredAccessLevel ?? null),
-        viewerAccessLevel,
+        requiredAccessLevel: normalizeAccessLevel(attributes.requiredAccessLevel ?? null),
+        viewer: viewer ?? null,
+        ownsCourse: ownedCourseSlugs.includes(slug),
       };
 
       return courseCard;

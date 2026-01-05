@@ -9,6 +9,8 @@ type CourseProgressApiResponse = {
   percentComplete: number;
 };
 
+export type CourseProgress = CourseProgressApiResponse;
+
 export function useCourseProgress(
   courseSlug: string | null,
   initialData?: CourseProgressApiResponse

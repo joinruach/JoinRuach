@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_course_snapshots",
+  "info": {
+    "displayName": "Snapshot",
+    "icon": "layer",
+    "description": "Course snapshot/overview information"
+  },
+  "options": {},
+  "attributes": {
+    "oneSentencePromise": {
+      "type": "string",
+      "required": true
+    },
+    "whoItsFor": {
+      "type": "text",
+      "required": true
+    },
+    "prerequisites": {
+      "type": "text"
+    },
+    "outcome": {
+      "type": "text",
+      "required": true
+    },
+    "runtimeWeeks": {
+      "type": "integer",
+      "min": 0
+    },
+    "format": {
+      "type": "enumeration",
+      "enum": ["self_paced", "cohort_optional", "cohort_required", "live"],
+      "default": "self_paced"
+    },
+    "requiredTools": {
+      "type": "component",
+      "repeatable": true,
+      "component": "course.required-tool"
+    }
+  }
+}

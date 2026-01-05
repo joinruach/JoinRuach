@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_course_obedience_card_template",
+  "info": {
+    "displayName": "Obedience Card Template",
+    "description": "Data used to render the obedience card after Audit Wizard completion"
+  },
+  "attributes": {
+    "patternLabel": {
+      "type": "string"
+    },
+    "oneStepLabel": {
+      "type": "string"
+    },
+    "scheduledTimeLabel": {
+      "type": "string"
+    },
+    "witnessLabel": {
+      "type": "string"
+    },
+    "shareInstructions": {
+      "type": "text"
+    }
+  }
+}

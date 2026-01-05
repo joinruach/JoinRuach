@@ -1,0 +1,59 @@
+{
+  "collectionName": "components_course_landing_config",
+  "info": {
+    "displayName": "Landing Config",
+    "description": "Landing page configuration for mobile-first mini courses"
+  },
+  "attributes": {
+    "hero": {
+      "type": "component",
+      "component": "course.hero"
+    },
+    "outcomes": {
+      "type": "component",
+      "component": "course.outcome",
+      "repeatable": true
+    },
+    "segments": {
+      "type": "component",
+      "component": "course.segment",
+      "repeatable": true
+    },
+    "scriptureHelperLine": {
+      "type": "string"
+    },
+    "scripturePassages": {
+      "type": "component",
+      "component": "course.scripture-passage",
+      "repeatable": true
+    },
+    "deliverable": {
+      "type": "component",
+      "component": "course.deliverable"
+    },
+    "whoItsFor": {
+      "type": "component",
+      "component": "course.qualifier-item",
+      "repeatable": true
+    },
+    "whoItsNotFor": {
+      "type": "component",
+      "component": "course.qualifier-item",
+      "repeatable": true
+    },
+    "processSteps": {
+      "type": "component",
+      "component": "course.process-step",
+      "repeatable": true
+    },
+    "detoxBridge": {
+      "type": "component",
+      "component": "course.detox-bridge"
+    },
+    "faqItems": {
+      "type": "component",
+      "component": "course.faq-item",
+      "repeatable": true
+    }
+  }
+}

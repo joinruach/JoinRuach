@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_course_player_config",
+  "info": {
+    "displayName": "Player Config",
+    "description": "Player behavior metadata such as modes, meters, and urgency"
+  },
+  "attributes": {
+    "readModeEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "listenModeEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "doModeEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "freedomMeterLabels": {
+      "type": "json",
+      "default": [
+        "Clarity",
+        "Separation",
+        "Replacement",
+        "Witness"
+      ]
+    },
+    "convictionTimerHours": {
+      "type": "integer",
+      "default": 24
+    },
+    "microDrillPrompts": {
+      "type": "json"
+    },
+    "offlineFirst": {
+      "type": "boolean",
+      "default": true
+    },
+    "windowOfObedienceLabel": {
+      "type": "string",
+      "default": "Window of Obedience"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_entitlements",
+  "info": {
+    "singularName": "course-entitlement",
+    "pluralName": "course-entitlements",
+    "displayName": "Course Entitlement",
+    "description": "Explicit access grants for individual courses"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "course_entitlements"
+    },
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "courseEntitlements"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "revoked", "refunded"],
+      "default": "active",
+      "required": true
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["stripe_purchase", "manual_grant", "gift"],
+      "default": "stripe_purchase",
+      "required": true
+    },
+    "stripeCheckoutSessionId": {
+      "type": "string",
+      "unique": true,
+      "private": true
+    },
+    "purchasedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "note": {
+      "type": "text"
+    }
+  }
+}

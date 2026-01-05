@@ -46,12 +46,20 @@ type CourseSeed = {
   excerpt?: string;
   slug?: string;
   description?: string;
-  status?: "Draft" | "Review" | "Ready" | "Synced" | "Published" | "Deprecated" | "Needs Revision";
-  requiredAccessLevel?: "basic" | "full" | "leader";
+  status?: string;
+  requiredAccessLevel?: string;
   unlockRequirements?: string;
   level?: "foundation" | "intermediate" | "advanced";
   estimatedDuration?: string;
   featured?: boolean;
+  isFeatured?: boolean;
+  courseType?: string;
+  priceType?: string;
+  visibility?: string;
+  lessonCount?: number;
+  moduleCount?: number;
+  snapshot?: Record<string, unknown>;
+  startHere?: Record<string, unknown>;
   phase: PhaseSeed["phase"];
   ctaLabel?: string;
   ctaUrl?: string;
@@ -59,6 +67,10 @@ type CourseSeed = {
   seoDescription?: string;
   profile?: CourseProfileSeed;
   modules?: ModuleSeed[];
+  landingConfig?: LandingConfigSeed;
+  playerConfig?: PlayerConfigSeed;
+  auditConfig?: AuditConfigSeed;
+  ctaDetoxCourseSlug?: string;
 };
 
 type CourseProfileSeed = {
@@ -83,11 +95,42 @@ type CourseProfileSeed = {
   communityRules?: string;
 };
 
+type ModuleTeachingSummary = {
+  patternRevealed?: string;
+  whyItPersists?: string;
+  whyItMustBeSevered?: string;
+};
+
+type ModuleBullet = {
+  text: string;
+};
+
+type ModuleConfrontation = {
+  challenges?: ModuleBullet[];
+  destroysExcuses?: ModuleBullet[];
+};
+
+type ModuleScripture = {
+  reference?: string;
+  excerpt?: string;
+  note?: string;
+};
+
 type ModuleSeed = {
   moduleId: string;
   name: string;
+  slug?: string;
   order: number;
   description?: string;
+  bigIdea?: string;
+  focusQuestion?: string;
+  teachingSummary?: ModuleTeachingSummary;
+  coreScriptures?: ModuleScripture[];
+  confrontation?: ModuleConfrontation;
+  oneObedienceStep?: string;
+  closingPrayer?: string;
+  estimatedMinutes?: number;
+  moduleNotes?: string;
   lessons?: LessonSeed[];
 };
 
@@ -108,8 +151,12 @@ type LessonSeed = {
   keyScripture?: string;
   content?: string;
   previewAvailable?: boolean;
-  requiredAccessLevel?: "basic" | "full" | "leader";
+  requiredAccessLevel?: string;
 };
+
+type LandingConfigSeed = Record<string, unknown>;
+type PlayerConfigSeed = Record<string, unknown>;
+type AuditConfigSeed = Record<string, unknown>;
 
 type SeedFile = {
   phases?: PhaseSeed[];
@@ -172,6 +219,58 @@ function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/--+/g, "-");
+}
+
+function normalizeEnumValue(value?: string): string | undefined {
+  if (!value) return undefined;
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+type CanonicalAccessLevel = "public" | "partner" | "builder" | "steward";
+
+function normalizeRequiredAccessLevel(value?: string | null): CanonicalAccessLevel {
+  if (!value) return "partner";
+  switch (value.toString().trim().toLowerCase()) {
+    case "public":
+    case "free":
+    case "basic":
+      return "public";
+    case "partner":
+    case "full":
+      return "partner";
+    case "builder":
+    case "leader":
+      return "builder";
+    case "steward":
+    case "stewardship":
+      return "steward";
+    default:
+      return "partner";
+  }
+}
+
+function buildTeachingSummary(
+  summary: ModuleTeachingSummary | undefined,
+  moduleName?: string,
+  moduleDescription?: string
+): ModuleTeachingSummary {
+  const fallbackBase = moduleDescription ?? moduleName ?? "This module";
+  return {
+    patternRevealed: summary?.patternRevealed ?? `${fallbackBase} pattern is revealed.`,
+    whyItPersists: summary?.whyItPersists ?? `${fallbackBase} persists because it is familiar.`,
+    whyItMustBeSevered:
+      summary?.whyItMustBeSevered ?? `${fallbackBase} must be severed before we can move louder.`
+  };
+}
+
+function normalizeModuleScriptures(values?: ModuleScripture[]): ModuleScripture[] {
+  return (values ?? []).filter((scripture) => {
+    return Boolean(scripture.reference?.trim() || scripture.excerpt?.trim() || scripture.note?.trim());
+  });
 }
 
 async function strapiFetch<T>(
@@ -280,6 +379,7 @@ async function ensurePhase(phase: PhaseSeed): Promise<number> {
 }
 
 async function importCourse(course: CourseSeed, phaseId: number): Promise<number> {
+  const normalizedStatus = normalizeEnumValue(course.status) ?? "draft";
   const coursePayload = applyPublishState({
     name: course.name,
     courseId: course.courseId,
@@ -287,17 +387,29 @@ async function importCourse(course: CourseSeed, phaseId: number): Promise<number
     excerpt: course.excerpt,
     slug: course.slug ?? slugify(course.name),
     description: course.description,
-    status: course.status ?? "Draft",
-    requiredAccessLevel: course.requiredAccessLevel ?? "basic",
+    status: normalizedStatus,
+    courseType: normalizeEnumValue(course.courseType),
+    priceType: normalizeEnumValue(course.priceType),
+    visibility: normalizeEnumValue(course.visibility),
+    requiredAccessLevel: normalizeRequiredAccessLevel(course.requiredAccessLevel ?? null),
     unlockRequirements: course.unlockRequirements,
     level: course.level ?? "foundation",
     estimatedDuration: course.estimatedDuration,
     featured: course.featured ?? false,
+    isFeatured: course.isFeatured ?? course.featured ?? false,
     ctaLabel: course.ctaLabel,
     ctaUrl: course.ctaUrl,
     seoTitle: course.seoTitle,
     seoDescription: course.seoDescription,
-    phase: phaseId
+    lessonCount: course.lessonCount,
+    moduleCount: course.moduleCount,
+    snapshot: course.snapshot,
+    startHere: course.startHere,
+    formationPhase: phaseId,
+    phase: phaseId,
+    landingConfig: course.landingConfig,
+    playerConfig: course.playerConfig,
+    auditConfig: course.auditConfig
   });
 
   const courseId = await upsertByUnique("courses", { courseId: course.courseId }, coursePayload);
@@ -310,9 +422,18 @@ async function importCourse(course: CourseSeed, phaseId: number): Promise<number
     for (const mod of course.modules) {
       const modulePayload = applyPublishState({
         moduleId: mod.moduleId,
-        name: mod.name,
+        title: mod.name,
+        slug: mod.slug ?? slugify(mod.name),
         order: mod.order,
-        description: mod.description,
+        bigIdea: mod.bigIdea ?? mod.description ?? `${mod.name} big idea`,
+        focusQuestion: mod.focusQuestion ?? mod.description ?? `Why does ${mod.name} matter?`,
+        teachingSummary: buildTeachingSummary(mod.teachingSummary, mod.name, mod.description),
+        coreScriptures: normalizeModuleScriptures(mod.coreScriptures),
+        confrontation: mod.confrontation,
+        oneObedienceStep: mod.oneObedienceStep ?? "Obey the next practical step.",
+        closingPrayer: mod.closingPrayer,
+        estimatedMinutes: mod.estimatedMinutes,
+        moduleNotes: mod.moduleNotes,
         course: courseId
       });
 
@@ -320,6 +441,9 @@ async function importCourse(course: CourseSeed, phaseId: number): Promise<number
 
       if (mod.lessons?.length) {
         for (const lesson of mod.lessons) {
+          const lessonAccessLevel = normalizeRequiredAccessLevel(
+            lesson.requiredAccessLevel ?? course.requiredAccessLevel ?? null
+          );
           const lessonPayload = applyPublishState({
             title: lesson.title,
             lessonId: lesson.lessonId,
@@ -337,7 +461,7 @@ async function importCourse(course: CourseSeed, phaseId: number): Promise<number
             keyScripture: lesson.keyScripture,
             content: lesson.content,
             previewAvailable: lesson.previewAvailable ?? false,
-            requiredAccessLevel: lesson.requiredAccessLevel ?? course.requiredAccessLevel ?? "basic",
+            requiredAccessLevel: lessonAccessLevel,
             course: courseId,
             module: moduleId
           });
@@ -345,6 +469,16 @@ async function importCourse(course: CourseSeed, phaseId: number): Promise<number
           await upsertByUnique("lessons", { lessonId: lesson.lessonId }, lessonPayload);
         }
       }
+    }
+  }
+
+  if (course.ctaDetoxCourseSlug) {
+    const targetId = await findOneBy<any>("courses", { slug: course.ctaDetoxCourseSlug });
+    if (targetId) {
+      await updateEntry("courses", courseId, { ctaDetoxCourse: targetId });
+      console.log(`➡️ linked CTA Detox course for ${course.courseId} -> ${course.ctaDetoxCourseSlug}`);
+    } else {
+      console.warn(`⚠️ Detox target not found: ${course.ctaDetoxCourseSlug}`);
     }
   }
 
@@ -513,7 +647,9 @@ async function loadSeedFromNotion(options: { filters?: string[] } = {}): Promise
         transcript: lessonFields.transcript,
         content: lessonFields.transcript,
         status: "Draft",
-        requiredAccessLevel: "basic"
+        requiredAccessLevel: normalizeRequiredAccessLevel(
+          lessonFields.requiredAccessLevel ?? courseFields.requiredAccessLevel ?? null
+        )
       };
     });
 
@@ -537,7 +673,7 @@ async function loadSeedFromNotion(options: { filters?: string[] } = {}): Promise
       slug: courseSlug,
       description: courseFields.description,
       status: courseFields.status as CourseSeed["status"],
-      requiredAccessLevel: courseFields.requiredAccessLevel as CourseSeed["requiredAccessLevel"],
+      requiredAccessLevel: normalizeRequiredAccessLevel(courseFields.requiredAccessLevel ?? null),
       level: courseFields.level as CourseSeed["level"],
       estimatedDuration: courseFields.estimatedDuration,
       featured: courseFields.featured,

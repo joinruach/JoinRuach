@@ -4,6 +4,9 @@ import LessonPlayer from "@/components/ruach/LessonPlayer";
 import LessonTranscript from "@/components/ruach/LessonTranscript";
 import LessonDiscussion, { type Comment } from "@/components/ruach/LessonDiscussion";
 import SEOHead from "@/components/ruach/SEOHead";
+import MiniCourseTabs from "@/components/ruach/MiniCourseTabs";
+import RenunciationHoldButton from "@/components/ruach/RenunciationHoldButton";
+import OneStepContract from "@/components/ruach/OneStepContract";
 import { getCourseBySlug, imgUrl } from "@/lib/strapi";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +53,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const course = await getCourseBySlug(slug, jwt);
   const lessonsRaw = (course?.attributes?.lessons?.data ?? []).map((d:any)=>d.attributes).sort((x:any,y:any)=>(x.order||0)-(y.order||0));
   const lesson = lessonsRaw.find((x:any)=>x.slug===lessonSlug);
+  const totalLessons = lessonsRaw.length;
   if (!course || !lesson) {
     return <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-600 dark:text-white/70">Lesson not found.</div>;
   }
@@ -85,6 +89,19 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     }
   };
 
+  const miniLanding = course.attributes?.landingConfig;
+  const playerConfig = course.attributes?.playerConfig;
+  const auditConfig = course.attributes?.auditConfig;
+  const deliverable = miniLanding?.deliverable;
+  const isMiniCourse = Boolean(miniLanding);
+  const freedomLabels =
+    playerConfig?.freedomMeterLabels?.filter(Boolean) ?? ["Clarity", "Separation", "Replacement", "Witness"];
+  const normalizedProgress = totalLessons > 0 ? (currentIndex + 1) / totalLessons : 0;
+  const convictionHours = playerConfig?.convictionTimerHours ?? 24;
+  const windowLabel = playerConfig?.windowOfObedienceLabel ?? "Window of Obedience";
+  const isActivationLesson =
+    typeof lesson.order === "number" ? lesson.order >= totalLessons : currentIndex >= totalLessons - 1;
+
   return (
     <div className="space-y-12">
       <SEOHead jsonLd={lessonSchema} />
@@ -95,6 +112,57 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         <span>/</span>
         <span className="text-zinc-900 dark:text-white">{lesson.title}</span>
       </nav>
+
+      {isMiniCourse ? (
+        <section className="space-y-5 rounded-3xl border border-zinc-200 bg-white p-6 text-neutral-900 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs uppercase tracking-[0.4em] text-amber-500">
+              <span>Freedom meter</span>
+              <span className="text-xs font-semibold text-neutral-600 dark:text-white/70">{Math.round(normalizedProgress * 100)}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-700">
+              <div
+                className="h-full rounded-full bg-amber-400 transition-all"
+                style={{ width: `${Math.min(100, normalizedProgress * 100)}%` }}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-[10px] uppercase tracking-[0.3em] text-neutral-500">
+              {freedomLabels.map((label, index) => {
+                const milestone = (index + 1) / freedomLabels.length;
+                const status = normalizedProgress >= milestone ? "Complete" : "Next";
+                return (
+                  <div
+                    key={`${label}-${index}`}
+                    className="flex items-center justify-between rounded-2xl border border-neutral-200 bg-neutral-50 px-3 py-2 font-semibold text-neutral-700 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                  >
+                    <span>{label}</span>
+                    <span className="text-amber-500">{status}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="space-y-1 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-neutral-900">
+            <p className="text-xs uppercase tracking-[0.4em] text-amber-500">{windowLabel}</p>
+            <p className="text-lg font-semibold">{convictionHours} hours</p>
+            <p className="text-xs text-neutral-600">
+              {isActivationLesson
+                ? "This timer begins after Activation—don’t delay what He made clear."
+                : "Keep the obedience window soft and responsive until the step lands."}
+            </p>
+          </div>
+          <MiniCourseTabs lessonTitle={lesson.title} lessonSummary={lesson.summary} playerConfig={playerConfig} />
+          <RenunciationHoldButton seconds={auditConfig?.renunciationHoldSeconds ?? 5} />
+          <OneStepContract template={auditConfig?.obedienceCardTemplate} />
+          {deliverable?.auditWizardUrl ? (
+            <LocalizedLink href={deliverable.auditWizardUrl}>
+              <span className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-neutral-700">
+                {deliverable.title ? `Start ${deliverable.title}` : "Start the Audit Wizard"}
+              </span>
+            </LocalizedLink>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="space-y-6 rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-8">
         <div className="space-y-3">

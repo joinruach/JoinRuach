@@ -1,0 +1,144 @@
+{
+  "courses": [
+    {
+      "name": "Babylon Detox 101",
+      "courseId": "babylon-detox-101",
+      "slug": "babylon-detox-101",
+      "excerpt": "Babylon Detox 101 is a four-week separation path—one area of compromise at a time.",
+      "description": "If you identify a real pattern, this structured process helps you separate, replace, and rebuild with clarity.",
+      "phase": "separation",
+      "status": "Ready",
+      "requiredAccessLevel": "partner",
+      "courseType": "formation_track",
+      "priceType": "paid_core",
+      "visibility": "public",
+      "level": "intermediate"
+    },
+    {
+      "name": "Come Out of Her — 60-Min Detox Gate",
+      "courseId": "come-out-of-her",
+      "slug": "come-out-of-her",
+      "excerpt": "A mobile-first mini course that surfaces Babylon’s system, exposes a pattern, and lands one obedience step.",
+      "description": "Condensed for phones, this session pairs Scripture with a guided audit so you leave with a decisive obedience move rather than more theory.",
+      "phase": "separation",
+      "status": "Ready",
+      "requiredAccessLevel": "public",
+      "courseType": "lead_magnet",
+      "priceType": "free",
+      "visibility": "public",
+      "level": "foundation",
+      "lessonCount": 5,
+      "moduleCount": 1,
+      "landingConfig": {
+        "hero": {
+          "title": "Come Out of Her — 60-Min Detox Gate",
+          "promiseLine": "Identify the pattern. Break one allegiance. Take one obedience step.",
+          "microTrustLine": "Scripture speaks first. Teaching only clarifies.",
+          "optionalBadge": "60 minutes • 5 segments • mobile-first",
+          "primaryCtaLabel": "Start Free Course",
+          "primaryCtaUrl": "/courses/come-out-of-her",
+          "secondaryCtaLabel": "Start Detox 101",
+          "secondaryCtaUrl": "/courses/babylon-detox-101"
+        },
+        "outcomes": [
+          { "label": "See Babylon as a system, not just a symbol" },
+          { "label": "Locate one compromised pattern with clarity (no shame)" },
+          { "label": "Leave with one decisive obedience step" }
+        ],
+        "segments": [
+          { "name": "Welcome", "durationMinutes": 5, "outcome": "This is a detox—clarity without overwhelm.", "previewLabel": "Tap to preview" },
+          { "name": "Lesson 1", "durationMinutes": 15, "outcome": "Name Babylon as an operating system." },
+          { "name": "Lesson 2", "durationMinutes": 15, "outcome": "Separation is obedience, not extremism." },
+          { "name": "Lesson 3", "durationMinutes": 15, "outcome": "Expose the hidden contracts." },
+          { "name": "Activation", "durationMinutes": 10, "outcome": "One step. One cut. One replacement." }
+        ],
+        "scriptureHelperLine": "Read slowly. Let Scripture set the frame.",
+        "scripturePassages": [
+          {
+            "reference": "Revelation 18:1–5",
+            "text": "Witness Babylon collapse and hear the call to come out of her so you do not share in her plagues."
+          },
+          {
+            "reference": "Jeremiah 51:6",
+            "text": "Flee from the midst of Babylon, save your life, do not be found among her."
+          },
+          {
+            "reference": "James 4:4",
+            "text": "Friendship with the world is enmity with God—choose allegiance accordingly."
+          },
+          {
+            "reference": "Romans 12:1–2",
+            "text": "Present your body as a living sacrifice and be transformed by renewing your mind."
+          },
+          {
+            "reference": "2 Corinthians 6:17",
+            "text": "Come out and be separate; touch no unclean thing."
+          }
+        ],
+        "deliverable": {
+          "title": "Babylon Audit + One Obedience Step",
+          "description": "This tool surfaces the pattern, exposes the fear, and ends with one decisive act of obedience.",
+          "auditWizardUrl": "/courses/come-out-of-her/audit",
+          "pdfUrl": "/assets/come-out-of-her-audit.pdf",
+          "tagline": "This ends with a step—no overprocessing, no overwhelm."
+        },
+        "whoItsFor": [
+          { "text": "You feel uneasiness you can’t fully name" },
+          { "text": "You want alignment more than comfort" },
+          { "text": "You’re ready to obey, not just learn" }
+        ],
+        "whoItsNotFor": [
+          { "text": "Debate for entertainment" },
+          { "text": "Doom content and speculation" },
+          { "text": "A “no-cost” course with no change required" }
+        ],
+        "processSteps": [
+          { "title": "Watch / read the five segments", "body": "Engage every card in swipeable, mobile-friendly fashion." },
+          { "title": "Complete the Babylon Audit (guided)", "body": "Capture the pattern, fear, and obedience step with thumb-friendly taps." },
+          { "title": "Take one step—then begin Detox 101 while the window is open", "body": "Lock in a contract, renounce the agreement, and move forward." }
+        ],
+        "detoxBridge": {
+          "title": "Don’t manage what was exposed—detox it.",
+          "body": "If you identified a real pattern today, you don’t need more information—you need a process. Babylon Detox 101 is a structured 4-week path to separate, replace, and rebuild alignment one area at a time.",
+          "buttonLabel": "Start Babylon Detox 101",
+          "buttonUrl": "/courses/babylon-detox-101"
+        },
+        "faqItems": [
+          { "question": "Is this fear-based?", "answer": "No. This is obedience-based—conviction without shame, clarity without panic." },
+          { "question": "Do I need to leave my church?", "answer": "Start with discernment and obedience. This course trains alignment, not isolation." },
+          { "question": "How long does Detox 101 take?", "answer": "Four weeks, paced and focused on one area at a time." },
+          { "question": "What if I’m new to Scripture?", "answer": "Perfect. Scripture speaks first here—everything is explained plainly and applied practically." }
+        ]
+      },
+      "playerConfig": {
+        "readModeEnabled": true,
+        "listenModeEnabled": true,
+        "doModeEnabled": true,
+        "freedomMeterLabels": ["Clarity", "Separation", "Replacement", "Witness"],
+        "convictionTimerHours": 24,
+        "microDrillPrompts": [
+          "Name the cost of compromise in one sentence.",
+          "What do you fear losing?",
+          "What would obedience cost today?"
+        ],
+        "offlineFirst": true,
+        "windowOfObedienceLabel": "Window of Obedience"
+      },
+      "auditConfig": {
+        "renunciationHoldSeconds": 5,
+        "contractEnabled": true,
+        "witnessEnabled": true,
+        "generateObedienceCard": true,
+        "instructions": "Move through each step carefully. Hold to renounce with intention.",
+        "obedienceCardTemplate": {
+          "patternLabel": "Pattern",
+          "oneStepLabel": "One Step",
+          "scheduledTimeLabel": "Scheduled Time",
+          "witnessLabel": "Witness",
+          "shareInstructions": "Save this card or share it with a witness to reinforce the promise."
+        }
+      },
+      "ctaDetoxCourseSlug": "babylon-detox-101"
+    }
+  ]
+}
