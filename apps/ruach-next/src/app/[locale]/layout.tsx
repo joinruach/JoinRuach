@@ -81,7 +81,7 @@ export default async function LocaleLayout({
           {`
             (function() {
               try {
-                const theme = localStorage.getItem('theme') || 'system';
+            const theme = localStorage.getItem('theme') || 'dark';
                 const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 const resolved = theme === 'system' ? getSystemTheme() : theme;
                 document.documentElement.classList.add(resolved);
@@ -117,16 +117,18 @@ export default async function LocaleLayout({
           <ThemeProvider>
             <Providers>
               <LivePreview />
-              <div
-                id="page-atmosphere-root"
-                aria-hidden="true"
-                className="pointer-events-none fixed inset-x-0 top-0 z-0 hidden h-[75vh] md:block [mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)]"
-                style={{ pointerEvents: "none" }}
-              />
               <Header />
-              <main className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-24 lg:pt-28">
-                {children}
-              </main>
+              <div className="relative isolate mx-auto max-w-6xl px-4">
+                <div
+                  id="page-atmosphere-root"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[85vh] bg-transparent dark:bg-transparent [mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0px,black_140px)]"
+                  style={{ pointerEvents: "none" }}
+                />
+                <main className="relative z-10 pb-16 pt-24 lg:pt-28">
+                  {children}
+                </main>
+              </div>
               <Footer />
               {aiAssistantEnabled && <RuachAssistant />}
               <InstallPrompt />

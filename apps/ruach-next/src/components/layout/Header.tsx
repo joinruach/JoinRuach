@@ -40,7 +40,7 @@ export default function Header() {
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <header className="fixed left-0 top-0 z-50 w-full border-b border-subtle bg-white/95 shadow-sm backdrop-blur-md md:bg-white md:backdrop-blur-none dark:border-zinc-800 dark:bg-zinc-900/80 md:dark:bg-zinc-900">
+    <header className="fixed left-0 top-0 z-50 w-full border-b border-subtle bg-white/95 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/80 md:dark:bg-zinc-900">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         {/* Brand */}
         <LocalizedLink href="/" aria-label="Ruach Ministries Home">
@@ -154,7 +154,9 @@ export default function Header() {
           <div className="hidden items-center gap-2 text-zinc-500 dark:text-zinc-400 lg:flex">
             <LocaleSwitcher />
           </div>
-          <ThemeToggle />
+          <div className="hidden md:flex">
+            <ThemeToggle />
+          </div>
           <div className="flex items-center gap-3">
             {status === "authenticated" ? (
               <LocalizedLink href="/logout">
@@ -239,8 +241,9 @@ export default function Header() {
                 </LocalizedLink>
               ))}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3">
               <LocaleSwitcher />
+              <ThemeToggle />
             </div>
             {status === "authenticated" ? (
               <LocalizedLink

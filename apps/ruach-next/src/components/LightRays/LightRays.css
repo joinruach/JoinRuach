@@ -9,4 +9,6 @@
 
 .light-rays-container canvas {
   pointer-events: none;
+  background: transparent;
+  display: block;
 }

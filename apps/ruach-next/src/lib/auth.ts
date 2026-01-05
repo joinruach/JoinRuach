@@ -116,29 +116,61 @@ const nextAuth = NextAuth({
 
           console.log("[Auth] Strapi response status:", r.status);
 
-          if (!r.ok) {
-            const errorText = await r.text();
-            console.error("[Auth] Strapi error response:", errorText);
-            throw new Error(`Login failed: ${r.status} ${r.statusText}`);
+          let responsePayload: StrapiResponse | null = null;
+          try {
+            responsePayload = (await r.json()) as StrapiResponse;
+          } catch (err) {
+            console.error("[Auth] Failed to parse Strapi response:", err);
           }
 
-          const j = await r.json() as StrapiResponse;
+          if (!responsePayload) {
+            const fallbackMessage = r.statusText || "Login failed";
+            const fallbackStatus = r.status;
+            console.error("[Auth] Strapi error:", fallbackMessage, {
+              status: fallbackStatus,
+              payload: null,
+            });
 
-          if (isStrapiError(j)) {
-            const errorMsg = j.error?.message || "Login failed";
-            console.error("[Auth] Strapi error:", errorMsg);
-            throw new Error(errorMsg);
+            const isClientError = fallbackStatus >= 400 && fallbackStatus < 500;
+            if (isClientError) {
+              return null;
+            }
+
+            throw new Error(fallbackMessage);
           }
 
-          console.log("[Auth] Login successful for user:", j.user.id);
+          const strapiError = isStrapiError(responsePayload)
+            ? responsePayload.error
+            : undefined;
+
+          const errorMessage = strapiError?.message || r.statusText || "Login failed";
+          const statusCode = strapiError?.status || r.status;
+
+          if (!r.ok || strapiError) {
+            console.error("[Auth] Strapi error:", errorMessage, {
+              status: statusCode,
+              payload: responsePayload,
+            });
+
+            const isClientError = statusCode >= 400 && statusCode < 500;
+            if (isClientError) {
+              return null;
+            }
+
+            throw new Error(errorMessage);
+          }
+
+          const loginResponse = responsePayload as StrapiLoginResponse;
+
+          console.log("[Auth] Login successful for user:", loginResponse.user.id);
 
           // Expect Strapi returns { jwt, user }
           // Refresh token is set in httpOnly cookie by backend
           return {
-            id: String(j.user.id),
-            name: j.user.username || j.user.email,
-            email: j.user.email,
-            strapiJwt: j.jwt
+            id: String(loginResponse.user.id),
+            name: loginResponse.user.username || loginResponse.user.email,
+            email: loginResponse.user.email,
+            strapiJwt: loginResponse.jwt,
           } as ExtendedUser;
         } catch (error) {
           console.error("[Auth] Login error:", error);

@@ -7,6 +7,19 @@ import { useLocale } from "next-intl";
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { Button } from "@/components/ruach/ui/Button";
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  AccessDenied: "You do not have permission to sign in with those credentials.",
+  SessionRequired: "Please sign in to continue.",
+  OAuthCallback: "Unable to sign in with that provider right now. Please try again.",
+  OAuthSignin: "Unable to sign in with that provider right now. Please try again.",
+};
+
+const getAuthErrorMessage = (code: string | null) => {
+  if (!code) return null;
+  return AUTH_ERROR_MESSAGES[code] ?? "Invalid email or password. Please try again.";
+};
+
 function LoginForm() {
   const searchParams = useSearchParams();
   const locale = useLocale();
@@ -15,6 +28,7 @@ function LoginForm() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showConfirmedMessage, setShowConfirmedMessage] = useState(false);
+  const authErrorMessage = getAuthErrorMessage(searchParams.get("error"));
 
   useEffect(() => {
     // Check if user was redirected after email confirmation
@@ -82,7 +96,9 @@ function LoginForm() {
           disabled={loading}
           required
         />
-        {err && <p className="text-sm text-red-600">{err}</p>}
+        {(err || authErrorMessage) && (
+          <p className="text-sm text-red-600">{err || authErrorMessage}</p>
+        )}
         <div className="flex items-center justify-between gap-3">
           <Button
             as="a"

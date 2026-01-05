@@ -29,6 +29,8 @@ interface LightRaysProps {
   noiseAmount?: number;
   distortion?: number;
   className?: string;
+  intensity?: number;
+  pulsationStrength?: number;
 }
 
 const DEFAULT_COLOR = "#ffdb8c";
@@ -89,6 +91,8 @@ interface Uniforms {
   mouseInfluence: { value: number };
   noiseAmount: { value: number };
   distortion: { value: number };
+  intensity: { value: number };
+  pulseStrength: { value: number };
 }
 
 const LightRays: FC<LightRaysProps> = ({
@@ -105,6 +109,8 @@ const LightRays: FC<LightRaysProps> = ({
   noiseAmount = 0.0,
   distortion = 0.0,
   className = "",
+  intensity = 1.0,
+  pulsationStrength = 0.2,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const uniformsRef = useRef<Uniforms | null>(null);
@@ -160,9 +166,12 @@ const LightRays: FC<LightRaysProps> = ({
       rendererRef.current = renderer;
 
       const gl = renderer.gl;
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
       gl.canvas.style.width = "100%";
       gl.canvas.style.height = "100%";
       gl.canvas.style.pointerEvents = "none";
+      gl.canvas.style.background = "transparent";
 
       while (containerRef.current.firstChild) {
         containerRef.current.removeChild(containerRef.current.firstChild);
@@ -195,6 +204,8 @@ uniform vec2  mousePos;
 uniform float mouseInfluence;
 uniform float noiseAmount;
 uniform float distortion;
+uniform float intensity;
+uniform float pulseStrength;
 
 varying vec2 vUv;
 
@@ -217,7 +228,7 @@ float rayStrength(vec2 raySource, vec2 rayRefDirection, vec2 coord,
   float lengthFalloff = clamp((maxDistance - distance) / maxDistance, 0.0, 1.0);
   
   float fadeFalloff = clamp((iResolution.x * fadeDistance - distance) / (iResolution.x * fadeDistance), 0.5, 1.0);
-  float pulse = pulsating > 0.5 ? (0.8 + 0.2 * sin(iTime * speed * 3.0)) : 1.0;
+  float pulse = pulsating > 0.5 ? (0.8 + pulseStrength * sin(iTime * speed * 3.0)) : 1.0;
 
   float baseStrength = clamp(
     (0.45 + 0.15 * sin(distortedAngle * seedA + iTime * speed)) +
@@ -263,6 +274,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   }
 
   fragColor.rgb *= raysColor;
+  fragColor.rgb *= intensity;
 }
 
 void main() {
@@ -289,6 +301,8 @@ void main() {
         mouseInfluence: { value: mouseInfluence },
         noiseAmount: { value: noiseAmount },
         distortion: { value: distortion },
+        intensity: { value: intensity },
+        pulseStrength: { value: pulsationStrength },
       };
       uniformsRef.current = uniforms;
 
@@ -318,12 +332,14 @@ void main() {
         const { anchor, dir } = getAnchorAndDir(raysOrigin, w, h);
         uniforms.rayPos.value = anchor;
         uniforms.rayDir.value = dir;
+        uniforms.intensity.value = intensity;
+        uniforms.pulseStrength.value = pulsationStrength;
       };
 
       const loop = (t: number) => {
         if (!rendererRef.current || !uniformsRef.current || !meshRef.current) {
           return;
-        }
+}
 
         uniforms.iTime.value = t * 0.001;
 
@@ -421,6 +437,8 @@ void main() {
     u.mouseInfluence.value = mouseInfluence;
     u.noiseAmount.value = noiseAmount;
     u.distortion.value = distortion;
+    u.intensity.value = intensity;
+    u.pulseStrength.value = pulsationStrength;
 
     const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current;
     const dpr = renderer.dpr;
@@ -439,6 +457,8 @@ void main() {
     mouseInfluence,
     noiseAmount,
     distortion,
+    intensity,
+    pulsationStrength,
   ]);
 
   useEffect(() => {

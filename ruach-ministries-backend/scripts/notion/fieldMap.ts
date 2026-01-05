@@ -41,8 +41,17 @@ export const fieldMap: Record<EntityKey, EntityFieldMap> = {
     slug: (p) => ex.text(p['slug'] ?? p['Slug'] ?? p['courseId'] ?? p['Course ID']),
     name: (p) => ex.text(p['courseName'] ?? p['Course Name'] ?? p['name'] ?? p['Name']),
     excerpt: (p) => ex.text(p['excerpt'] ?? p['Excerpt']),
+    ctaLabel: (p) =>
+      ex.text(p['ctaLabel'] ?? p['CTA Label'] ?? p['Call to Action Label']),
+    ctaUrl: (p) =>
+      ex.text(p['ctaUrl'] ?? p['CTA URL'] ?? p['Call to Action URL']),
+    seoTitle: (p) => ex.text(p['seoTitle'] ?? p['SEO Title']),
+    seoDescription: (p) => ex.text(p['seoDescription'] ?? p['SEO Description']),
     description: (p) => ex.text(p['description'] ?? p['Description']),
     status: (p) => ex.select(p['status'] ?? p['Status']),
+    requiredAccessLevel: (p) =>
+      ex.select(p['requiredAccessLevel'] ?? p['Required Access Level']),
+    featured: (p) => ex.checkbox(p['featured'] ?? p['Featured']),
     level: (p) => ex.select(p['level'] ?? p['Level'] ?? p['Course Level']),
     estimatedDuration: (p) =>
       ex.text(p['estimatedDuration'] ?? p['Estimated Duration']) ??

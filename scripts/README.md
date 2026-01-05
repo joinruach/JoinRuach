@@ -62,6 +62,51 @@ Summary:
 🎉 Your development database is ready!
 ```
 
+### strapi/import-courses.ts
+
+Upserts Formation Phases → Courses → Course Profiles → Modules → Lessons from a JSON seed file. The importer creates parents first, reuses existing entries via their unique fields (`phase`, `courseId`, `moduleId`, `lessonId`), and supports publishing/dry-run toggles.
+
+**Prerequisites:**
+1. Strapi backend running (`cd ruach-ministries-backend && pnpm develop`).
+2. API token with write permissions stored in `STRAPI_TOKEN` (or `STRAPI_API_TOKEN` for legacy scripts).
+3. A seed file such as `data/courses.seed.json` with `phases` + `courses` that match your Strapi schema.
+
+**Usage:**
+```
+export STRAPI_URL=http://localhost:1337
+export STRAPI_TOKEN=your-token
+
+pnpm exec tsx scripts/strapi/import-courses.ts --file data/courses.seed.json
+
+# Optional flags
+pnpm exec tsx scripts/strapi/import-courses.ts --file data/courses.seed.json --publish true
+pnpm exec tsx scripts/strapi/import-courses.ts --file data/courses.seed.json --dry-run
+```
+
+```
+# Or import straight from Notion
+export NOTION_TOKEN=your-token
+export NOTION_DB_COURSES=your-courses-db-id
+export NOTION_DB_LESSONS=your-lessons-db-id
+
+pnpm exec tsx scripts/strapi/import-courses.ts --notion
+
+# Limit to a single course by passing the configured Notion courseId or page URL/ID
+pnpm exec tsx scripts/strapi/import-courses.ts --notion --notion-course course_babylon_001
+```
+
+**Notion env vars**
+- `NOTION_TOKEN` (or legacy `NOTION_API_KEY`) with a Notion integration that has access to the databases below.
+- `NOTION_DB_COURSES` and `NOTION_DB_LESSONS` pointing at your course/lesson tables.
+
+**Seed format notes:**
+- `phase` on each course must match the `formation_phases.phase` enum (awakening, separation, etc.).
+- Richtext fields expect HTML strings (e.g., `<p>text</p>`).
+- Lessons inherit the course’s `requiredAccessLevel` when omitted.
+- `--notion` mode builds the same seeds automatically by reading your Notion Courses + Lessons databases; it honors `--notion-course` for a single course and still respects the publish/dry-run toggles.
+
+This script uses `scripts/strapi/import-courses.ts` and can be run with `pnpm exec tsx` from the repo root.
+
 ---
 
 ## 🔄 Clearing Data
