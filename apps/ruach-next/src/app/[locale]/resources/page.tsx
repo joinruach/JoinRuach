@@ -336,7 +336,7 @@ export default async function ResourcesPage({
     new Set(courseSections.flatMap((section) => section.items.map((course) => course.slug)))
   );
 
-  const courseProgressMap = await getCourseProgressMap(courseSlugs, jwt);
+  const courseProgressMap = await getCourseProgressMap(courseSlugs, jwt ?? undefined);
 
   const sectionsWithProgress = filteredSections.map((section) => {
     if (section.type !== "course") {
@@ -349,13 +349,7 @@ export default async function ResourcesPage({
         const progress = courseProgressMap.get(course.slug);
         return {
           ...course,
-          progress: progress
-            ? {
-                percentComplete: progress.percentComplete,
-                completedLessons: progress.completedLessons,
-                totalLessons: progress.totalLessons,
-              }
-            : undefined,
+          progress: progress ?? undefined,
         };
       }),
     };

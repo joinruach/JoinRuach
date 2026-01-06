@@ -419,6 +419,8 @@ void main() {
     mouseInfluence,
     noiseAmount,
     distortion,
+    intensity,
+    pulsationStrength,
   ]);
 
   useEffect(() => {

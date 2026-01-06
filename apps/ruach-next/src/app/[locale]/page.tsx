@@ -127,7 +127,7 @@ export default async function Home({
   const selectedCourses = normalizedCourseList.slice(0, 3);
   const progressMap = await getCourseProgressMap(
     selectedCourses.map((course) => course.slug),
-    jwt
+    jwt ?? undefined
   );
 
   const courseList: Course[] = selectedCourses.map((course) => {
@@ -136,13 +136,7 @@ export default async function Home({
       ...course,
       viewer,
       ownsCourse: ownedCourseSlugs.includes(course.slug),
-      progress: progress
-        ? {
-            percentComplete: progress.percentComplete,
-            completedLessons: progress.completedLessons,
-            totalLessons: progress.totalLessons,
-          }
-        : undefined,
+      progress: progress ?? undefined,
     };
   });
 

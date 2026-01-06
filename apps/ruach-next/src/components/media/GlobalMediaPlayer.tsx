@@ -1,6 +1,7 @@
 "use client";
 
 import { useMediaPlayer } from "@/hooks/useMediaPlayer";
+import { useEffect } from "react";
 import { FullscreenPlayer } from "./FullscreenPlayer";
 import { DockedPlayer } from "./DockedPlayer";
 import { CollapsedBar } from "./CollapsedBar";
@@ -21,16 +22,18 @@ import { getMediaFormat } from "@/lib/media-utils";
 export function GlobalMediaPlayer() {
   const { state, actions } = useMediaPlayer();
 
+  const format = state.currentMedia ? getMediaFormat(state.currentMedia) : null;
+  // Auto-switch to collapsed mode for audio when in docked/mini mode.
+  // Important: do this in an effect to avoid state updates during render.
+  useEffect(() => {
+    if (!state.currentMedia) return;
+    if (format === "audio" && (state.mode === "docked" || state.mode === "mini")) {
+      actions.setMode("collapsed");
+    }
+  }, [actions, format, state.currentMedia, state.mode]);
+
   // Don't render anything if no media is loaded
   if (!state.currentMedia || state.mode === "hidden") {
-    return null;
-  }
-
-  // Auto-switch to collapsed mode for audio when in docked mode
-  const format = getMediaFormat(state.currentMedia);
-  if (format === "audio" && (state.mode === "docked" || state.mode === "mini")) {
-    // Audio should use collapsed bar instead of docked/mini
-    actions.setMode("collapsed");
     return null;
   }
 
