@@ -9,7 +9,7 @@
  * Usage: npx tsx scripts/seed-library-tags.ts
  */
 
-import Strapi from "@strapi/strapi";
+import { createStrapi } from "@strapi/strapi";
 
 const LIBRARY_TAGS = [
   // ========================================================================
@@ -222,44 +222,48 @@ const LIBRARY_TAGS = [
 ];
 
 async function main() {
-  const strapi = await Strapi().load();
+  const strapi = await createStrapi().load();
 
-  console.log("🌱 Seeding library tags...");
+  try {
+    console.log("🌱 Seeding library tags...");
 
-  let created = 0;
-  let skipped = 0;
+    let created = 0;
+    let skipped = 0;
 
-  for (const tag of LIBRARY_TAGS) {
-    try {
-      // Check if tag already exists
-      const existing = await strapi.db.query("api::tag.tag").findOne({
-        where: { slug: tag.slug },
-      });
+    for (const tag of LIBRARY_TAGS) {
+      try {
+        // Check if tag already exists
+        const existing = await strapi.db
+          .query("api::tag.tag")
+          .findOne({
+            where: { slug: tag.slug },
+          });
 
-      if (existing) {
-        console.log(`⏭️  Skipping existing tag: ${tag.name}`);
-        skipped++;
-        continue;
+        if (existing) {
+          console.log(`⏭️  Skipping existing tag: ${tag.name}`);
+          skipped++;
+          continue;
+        }
+
+        // Create tag
+        await strapi.db.query("api::tag.tag").create({
+          data: tag,
+        });
+
+        console.log(`✅ Created tag: ${tag.name} (${tag.tagType})`);
+        created++;
+      } catch (error) {
+        console.error(`❌ Failed to create tag ${tag.name}:`, error);
       }
-
-      // Create tag
-      await strapi.db.query("api::tag.tag").create({
-        data: tag,
-      });
-
-      console.log(`✅ Created tag: ${tag.name} (${tag.tagType})`);
-      created++;
-    } catch (error) {
-      console.error(`❌ Failed to create tag ${tag.name}:`, error);
     }
+
+    console.log(`\n📊 Summary:`);
+    console.log(`   Created: ${created}`);
+    console.log(`   Skipped: ${skipped}`);
+    console.log(`   Total: ${LIBRARY_TAGS.length}`);
+  } finally {
+    await strapi.destroy();
   }
-
-  console.log(`\n📊 Summary:`);
-  console.log(`   Created: ${created}`);
-  console.log(`   Skipped: ${skipped}`);
-  console.log(`   Total: ${LIBRARY_TAGS.length}`);
-
-  await strapi.destroy();
 }
 
 main().catch((error) => {

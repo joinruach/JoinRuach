@@ -35,6 +35,12 @@ export interface SearchResponse {
   };
 }
 
+interface OpenAIEmbeddingResponse {
+  data: Array<{
+    embedding: number[];
+  }>;
+}
+
 /**
  * Generate embedding for search query via OpenAI
  */
@@ -61,8 +67,12 @@ async function generateQueryEmbedding(query: string): Promise<number[]> {
     throw new Error(`OpenAI API error: ${response.statusText}`);
   }
 
-  const data = await response.json();
-  return data.data[0].embedding;
+  const data = (await response.json()) as OpenAIEmbeddingResponse;
+  const embedding = data.data?.[0]?.embedding;
+  if (!embedding) {
+    throw new Error("OpenAI response did not include an embedding");
+  }
+  return embedding;
 }
 
 /**
