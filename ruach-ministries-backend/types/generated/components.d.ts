@@ -1,5 +1,308 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface CourseAuditConfig extends Struct.ComponentSchema {
+  collectionName: 'components_course_audit_config';
+  info: {
+    description: 'Guided obedience wizard metadata';
+    displayName: 'Audit Config';
+  };
+  attributes: {
+    contractEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    generateObedienceCard: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    instructions: Schema.Attribute.Text;
+    obedienceCardTemplate: Schema.Attribute.Component<
+      'course.obedience-card-template',
+      false
+    >;
+    renunciationHoldSeconds: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<5>;
+    witnessEnabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+  };
+}
+
+export interface CourseCommunityRule extends Struct.ComponentSchema {
+  collectionName: 'components_course_community_rules';
+  info: {
+    description: 'A community or group rule';
+    displayName: 'Community Rule';
+    icon: 'users';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseCompletionStep extends Struct.ComponentSchema {
+  collectionName: 'components_course_completion_steps';
+  info: {
+    description: 'A step in the course completion path';
+    displayName: 'Completion Step';
+    icon: 'check';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+    step: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+  };
+}
+
+export interface CourseDeliverable extends Struct.ComponentSchema {
+  collectionName: 'components_course_deliverable';
+  info: {
+    description: 'Action-oriented deliverable block for the audit + obedience step';
+    displayName: 'Deliverable';
+  };
+  attributes: {
+    auditWizardUrl: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    pdfUrl: Schema.Attribute.String;
+    tagline: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseDetoxBridge extends Struct.ComponentSchema {
+  collectionName: 'components_course_detox_bridge';
+  info: {
+    description: 'Paid course bridge content that introduces Detox 101';
+    displayName: 'Detox Bridge';
+  };
+  attributes: {
+    body: Schema.Attribute.Text;
+    buttonLabel: Schema.Attribute.String & Schema.Attribute.Required;
+    buttonUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseFaqItem extends Struct.ComponentSchema {
+  collectionName: 'components_course_faq_item';
+  info: {
+    description: 'Accordion entry for objections';
+    displayName: 'FAQ Item';
+  };
+  attributes: {
+    answer: Schema.Attribute.Text & Schema.Attribute.Required;
+    question: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseHero extends Struct.ComponentSchema {
+  collectionName: 'components_course_hero';
+  info: {
+    description: 'Landing hero content for mobile-first mini courses';
+    displayName: 'Hero';
+  };
+  attributes: {
+    microTrustLine: Schema.Attribute.String;
+    optionalBadge: Schema.Attribute.String;
+    primaryCtaLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Start Free Course'>;
+    primaryCtaUrl: Schema.Attribute.String;
+    promiseLine: Schema.Attribute.String & Schema.Attribute.Required;
+    secondaryCtaLabel: Schema.Attribute.String;
+    secondaryCtaUrl: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseLandingConfig extends Struct.ComponentSchema {
+  collectionName: 'components_course_landing_config';
+  info: {
+    description: 'Landing page configuration for mobile-first mini courses';
+    displayName: 'Landing Config';
+  };
+  attributes: {
+    deliverable: Schema.Attribute.Component<'course.deliverable', false>;
+    detoxBridge: Schema.Attribute.Component<'course.detox-bridge', false>;
+    faqItems: Schema.Attribute.Component<'course.faq-item', true>;
+    hero: Schema.Attribute.Component<'course.hero', false>;
+    outcomes: Schema.Attribute.Component<'course.outcome', true>;
+    processSteps: Schema.Attribute.Component<'course.process-step', true>;
+    scriptureHelperLine: Schema.Attribute.String;
+    scripturePassages: Schema.Attribute.Component<
+      'course.scripture-passage',
+      true
+    >;
+    segments: Schema.Attribute.Component<'course.segment', true>;
+    whoItsFor: Schema.Attribute.Component<'course.qualifier-item', true>;
+    whoItsNotFor: Schema.Attribute.Component<'course.qualifier-item', true>;
+  };
+}
+
+export interface CourseObedienceCardTemplate extends Struct.ComponentSchema {
+  collectionName: 'components_course_obedience_card_template';
+  info: {
+    description: 'Data used to render the obedience card after Audit Wizard completion';
+    displayName: 'Obedience Card Template';
+  };
+  attributes: {
+    oneStepLabel: Schema.Attribute.String;
+    patternLabel: Schema.Attribute.String;
+    scheduledTimeLabel: Schema.Attribute.String;
+    shareInstructions: Schema.Attribute.Text;
+    witnessLabel: Schema.Attribute.String;
+  };
+}
+
+export interface CourseOutcome extends Struct.ComponentSchema {
+  collectionName: 'components_course_outcome';
+  info: {
+    description: 'Single bullet describing the transformation';
+    displayName: 'Outcome';
+  };
+  attributes: {
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CoursePlayerConfig extends Struct.ComponentSchema {
+  collectionName: 'components_course_player_config';
+  info: {
+    description: 'Player behavior metadata such as modes, meters, and urgency';
+    displayName: 'Player Config';
+  };
+  attributes: {
+    convictionTimerHours: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<24>;
+    doModeEnabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    freedomMeterLabels: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<
+        ['Clarity', 'Separation', 'Replacement', 'Witness']
+      >;
+    listenModeEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    microDrillPrompts: Schema.Attribute.JSON;
+    offlineFirst: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    readModeEnabled: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    windowOfObedienceLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Window of Obedience'>;
+  };
+}
+
+export interface CourseProcessStep extends Struct.ComponentSchema {
+  collectionName: 'components_course_process_step';
+  info: {
+    description: 'Step description for the how-this-works strip';
+    displayName: 'Process Step';
+  };
+  attributes: {
+    body: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseQualifierItem extends Struct.ComponentSchema {
+  collectionName: 'components_course_qualifier_item';
+  info: {
+    description: 'Who this course is for / not for';
+    displayName: 'Qualifier Item';
+  };
+  attributes: {
+    text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseRequiredTool extends Struct.ComponentSchema {
+  collectionName: 'components_course_required_tools';
+  info: {
+    description: 'A required tool or resource for the course';
+    displayName: 'Required Tool';
+    icon: 'book';
+  };
+  attributes: {
+    details: Schema.Attribute.String;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['bible', 'journal', 'worksheet', 'audio', 'video', 'other']
+    > &
+      Schema.Attribute.DefaultTo<'other'>;
+  };
+}
+
+export interface CourseScripturePassage extends Struct.ComponentSchema {
+  collectionName: 'components_course_scripture_passage';
+  info: {
+    description: 'Collapsible scripture reference blocks';
+    displayName: 'Scripture Passage';
+  };
+  attributes: {
+    reference: Schema.Attribute.String & Schema.Attribute.Required;
+    text: Schema.Attribute.RichText & Schema.Attribute.Required;
+    translation: Schema.Attribute.String;
+  };
+}
+
+export interface CourseSegment extends Struct.ComponentSchema {
+  collectionName: 'components_course_segment';
+  info: {
+    description: 'A timeline card describing each mini-course segment';
+    displayName: 'Segment';
+  };
+  attributes: {
+    durationMinutes: Schema.Attribute.Integer & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    outcome: Schema.Attribute.String;
+    previewLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Tap to preview'>;
+    previewUrl: Schema.Attribute.String;
+  };
+}
+
+export interface CourseSnapshot extends Struct.ComponentSchema {
+  collectionName: 'components_course_snapshots';
+  info: {
+    description: 'Course snapshot/overview information';
+    displayName: 'Snapshot';
+    icon: 'layer';
+  };
+  attributes: {
+    format: Schema.Attribute.Enumeration<
+      ['self_paced', 'cohort_optional', 'cohort_required', 'live']
+    > &
+      Schema.Attribute.DefaultTo<'self_paced'>;
+    oneSentencePromise: Schema.Attribute.String & Schema.Attribute.Required;
+    outcome: Schema.Attribute.Text & Schema.Attribute.Required;
+    prerequisites: Schema.Attribute.Text;
+    requiredTools: Schema.Attribute.Component<'course.required-tool', true>;
+    runtimeWeeks: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    whoItsFor: Schema.Attribute.Text & Schema.Attribute.Required;
+  };
+}
+
+export interface CourseStartHere extends Struct.ComponentSchema {
+  collectionName: 'components_course_start_heres';
+  info: {
+    description: 'Start Here section for courses';
+    displayName: 'Start Here';
+    icon: 'play';
+  };
+  attributes: {
+    communityRules: Schema.Attribute.Component<'course.community-rule', true>;
+    completionPath: Schema.Attribute.Component<'course.completion-step', true>;
+    howToUse: Schema.Attribute.RichText & Schema.Attribute.Required;
+    supportEmail: Schema.Attribute.Email;
+    welcomeVideoUrl: Schema.Attribute.String;
+  };
+}
+
 export interface GeneralButton extends Struct.ComponentSchema {
   collectionName: 'components_general_buttons';
   info: {
@@ -137,6 +440,59 @@ export interface MediaVideoSource extends Struct.ComponentSchema {
       >;
     title: Schema.Attribute.String;
     url: Schema.Attribute.String;
+  };
+}
+
+export interface ModuleBullet extends Struct.ComponentSchema {
+  collectionName: 'components_module_bullets';
+  info: {
+    description: 'Single text item for lists';
+    displayName: 'Bullet';
+    icon: 'circle';
+  };
+  attributes: {
+    text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ModuleConfrontation extends Struct.ComponentSchema {
+  collectionName: 'components_module_confrontations';
+  info: {
+    description: 'Heart and mind exposure - challenges and excuses destroyed';
+    displayName: 'Confrontation';
+    icon: 'lightbulb';
+  };
+  attributes: {
+    challenges: Schema.Attribute.Component<'module.bullet', true>;
+    destroysExcuses: Schema.Attribute.Component<'module.bullet', true>;
+  };
+}
+
+export interface ModuleCoreScripture extends Struct.ComponentSchema {
+  collectionName: 'components_module_core_scriptures';
+  info: {
+    description: 'Anchoring Scripture references for the module';
+    displayName: 'Core Scripture';
+    icon: 'book-open';
+  };
+  attributes: {
+    excerpt: Schema.Attribute.Text;
+    note: Schema.Attribute.Text;
+    reference: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ModuleTeachingSummary extends Struct.ComponentSchema {
+  collectionName: 'components_module_teaching_summaries';
+  info: {
+    description: 'Three-part teaching structure for modules';
+    displayName: 'Teaching Summary';
+    icon: 'book';
+  };
+  attributes: {
+    patternRevealed: Schema.Attribute.Text & Schema.Attribute.Required;
+    whyItMustBeSevered: Schema.Attribute.Text & Schema.Attribute.Required;
+    whyItPersists: Schema.Attribute.Text & Schema.Attribute.Required;
   };
 }
 
@@ -443,6 +799,24 @@ export interface SharedSocialLink extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'course.audit-config': CourseAuditConfig;
+      'course.community-rule': CourseCommunityRule;
+      'course.completion-step': CourseCompletionStep;
+      'course.deliverable': CourseDeliverable;
+      'course.detox-bridge': CourseDetoxBridge;
+      'course.faq-item': CourseFaqItem;
+      'course.hero': CourseHero;
+      'course.landing-config': CourseLandingConfig;
+      'course.obedience-card-template': CourseObedienceCardTemplate;
+      'course.outcome': CourseOutcome;
+      'course.player-config': CoursePlayerConfig;
+      'course.process-step': CourseProcessStep;
+      'course.qualifier-item': CourseQualifierItem;
+      'course.required-tool': CourseRequiredTool;
+      'course.scripture-passage': CourseScripturePassage;
+      'course.segment': CourseSegment;
+      'course.snapshot': CourseSnapshot;
+      'course.start-here': CourseStartHere;
       'general.button': GeneralButton;
       'general.se-ometadata': GeneralSeOmetadata;
       'general.social-links': GeneralSocialLinks;
@@ -451,6 +825,10 @@ declare module '@strapi/strapi' {
       'media.reflection-prompt': MediaReflectionPrompt;
       'media.resource': MediaResource;
       'media.video-source': MediaVideoSource;
+      'module.bullet': ModuleBullet;
+      'module.confrontation': ModuleConfrontation;
+      'module.core-scripture': ModuleCoreScripture;
+      'module.teaching-summary': ModuleTeachingSummary;
       'outreach.giving-highlight': OutreachGivingHighlight;
       'outreach.subscription-banner': OutreachSubscriptionBanner;
       'outreach.volunteer-point': OutreachVolunteerPoint;

@@ -25,6 +25,17 @@
     "description": {
       "type": "text"
     },
+    "tagType": {
+      "type": "enumeration",
+      "enum": [
+        "general",
+        "theme",
+        "writing_craft",
+        "scripture_topic",
+        "spiritual_discipline"
+      ],
+      "default": "general"
+    },
     "mediaItems": {
       "type": "relation",
       "relation": "manyToMany",

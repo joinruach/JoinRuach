@@ -301,6 +301,9 @@ importers:
 
   packages/ruach-components:
     dependencies:
+      '@ruach/utils':
+        specifier: workspace:*
+        version: link:../ruach-utils
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

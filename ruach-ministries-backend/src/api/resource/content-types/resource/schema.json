@@ -39,7 +39,9 @@
         "tool",
         "podcast",
         "document",
-        "other"
+        "other",
+        "library_book",
+        "library_document"
       ]
     },
     "authorityLevel": {
@@ -132,6 +134,28 @@
     "syncedToStrapi": {
       "type": "boolean",
       "default": false
+    },
+    "librarySourceId": {
+      "type": "integer",
+      "private": false
+    },
+    "libraryVersionId": {
+      "type": "integer",
+      "private": false
+    },
+    "libraryCategory": {
+      "type": "enumeration",
+      "enum": [
+        "theology",
+        "discipleship",
+        "writing_craft",
+        "bible_study",
+        "spiritual_formation",
+        "leadership"
+      ]
+    },
+    "libraryMetadata": {
+      "type": "json"
     }
   }
 }

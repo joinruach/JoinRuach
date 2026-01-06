@@ -1139,6 +1139,53 @@ export interface ApiContactSubmissionContactSubmission
   };
 }
 
+export interface ApiCourseEntitlementCourseEntitlement
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'course_entitlements';
+  info: {
+    description: 'Explicit access grants for individual courses';
+    displayName: 'Course Entitlement';
+    pluralName: 'course-entitlements';
+    singularName: 'course-entitlement';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-entitlement.course-entitlement'
+    > &
+      Schema.Attribute.Private;
+    note: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    purchasedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    source: Schema.Attribute.Enumeration<
+      ['stripe_purchase', 'manual_grant', 'gift']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'stripe_purchase'>;
+    status: Schema.Attribute.Enumeration<['active', 'revoked', 'refunded']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'active'>;
+    stripeCheckoutSessionId: Schema.Attribute.String &
+      Schema.Attribute.Private &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiCourseLicenseCourseLicense
   extends Struct.CollectionTypeSchema {
   collectionName: 'course_licenses';
@@ -1235,6 +1282,45 @@ export interface ApiCourseProfileCourseProfile
   };
 }
 
+export interface ApiCourseSeatCourseSeat extends Struct.CollectionTypeSchema {
+  collectionName: 'course_seats';
+  info: {
+    description: 'Active seat assignments for partner/builder memberships';
+    displayName: 'Course Seat';
+    pluralName: 'course-seats';
+    singularName: 'course-seat';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    assignedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-seat.course-seat'
+    > &
+      Schema.Attribute.Private;
+    note: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    releasedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['active', 'released']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'active'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
   collectionName: 'courses';
   info: {
@@ -1247,26 +1333,64 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    auditConfig: Schema.Attribute.Component<'course.audit-config', false>;
     checksum: Schema.Attribute.String;
     comments: Schema.Attribute.Relation<
       'oneToMany',
       'api::lesson-comment.lesson-comment'
     >;
+    courseEntitlements: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-entitlement.course-entitlement'
+    >;
     courseId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    courseSeats: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-seat.course-seat'
+    >;
+    courseType: Schema.Attribute.Enumeration<
+      [
+        'lead_magnet',
+        'core_course',
+        'formation_track',
+        'warfare_freedom',
+        'ekklesia_equipping',
+        'media_creative',
+        'truth_systems',
+        'practical_life',
+      ]
+    >;
     cover: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    ctaDetoxCourse: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::course.course'
+    >;
     ctaLabel: Schema.Attribute.String;
     ctaUrl: Schema.Attribute.String;
-    description: Schema.Attribute.Text;
+    description: Schema.Attribute.RichText;
     estimatedDuration: Schema.Attribute.String;
     excerpt: Schema.Attribute.Text;
     featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    formationPhase: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::formation-phase.formation-phase'
+    >;
     heroVideo: Schema.Attribute.Media<'videos'>;
+    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    landingConfig: Schema.Attribute.Component<'course.landing-config', false>;
     lastSyncedAt: Schema.Attribute.DateTime;
+    lessonCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
     lessons: Schema.Attribute.Relation<'oneToMany', 'api::lesson.lesson'>;
     level: Schema.Attribute.Enumeration<
       ['foundation', 'intermediate', 'advanced']
@@ -1278,41 +1402,55 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       'api::course.course'
     > &
       Schema.Attribute.Private;
+    moduleCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
     modules: Schema.Attribute.Relation<'oneToMany', 'api::module.module'>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     phase: Schema.Attribute.Relation<
       'manyToOne',
       'api::formation-phase.formation-phase'
-    > &
-      Schema.Attribute.Required;
+    >;
+    playerConfig: Schema.Attribute.Component<'course.player-config', false>;
+    priceType: Schema.Attribute.Enumeration<
+      ['free', 'paid_core', 'paid_flagship', 'paid_specialty']
+    >;
     profile: Schema.Attribute.Relation<
       'oneToOne',
       'api::course-profile.course-profile'
     >;
     publishedAt: Schema.Attribute.DateTime;
     requiredAccessLevel: Schema.Attribute.Enumeration<
-      ['basic', 'full', 'leader']
+      ['public', 'partner', 'builder', 'steward']
     > &
-      Schema.Attribute.DefaultTo<'basic'>;
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'partner'>;
+    resources: Schema.Attribute.Relation<'oneToMany', 'api::resource.resource'>;
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
     slug: Schema.Attribute.UID<'name'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    snapshot: Schema.Attribute.Component<'course.snapshot', false>;
+    startHere: Schema.Attribute.Component<'course.start-here', false>;
     status: Schema.Attribute.Enumeration<
       [
-        'Draft',
-        'Review',
-        'Ready',
-        'Synced',
-        'Published',
-        'Deprecated',
-        'Needs Revision',
+        'draft',
+        'review',
+        'ready',
+        'synced',
+        'published',
+        'deprecated',
+        'needs_revision',
       ]
     > &
-      Schema.Attribute.DefaultTo<'Draft'>;
+      Schema.Attribute.DefaultTo<'draft'>;
     strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
     syncedToStrapi: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
@@ -1322,6 +1460,10 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    visibility: Schema.Attribute.Enumeration<
+      ['public', 'gated', 'cohort_only', 'private']
+    > &
+      Schema.Attribute.DefaultTo<'public'>;
   };
 }
 
@@ -2645,7 +2787,7 @@ export interface ApiMediaProgressMediaProgress
 export interface ApiModuleModule extends Struct.CollectionTypeSchema {
   collectionName: 'modules';
   info: {
-    description: 'Ordered structural unit within a course.';
+    description: 'Course modules - navigation spine for lessons, resources, assignments';
     displayName: 'Module';
     pluralName: 'modules';
     singularName: 'module';
@@ -2654,12 +2796,22 @@ export interface ApiModuleModule extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
-      Schema.Attribute.Required;
+    assignments: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::assignment.assignment'
+    >;
+    bigIdea: Schema.Attribute.Text & Schema.Attribute.Required;
+    checksum: Schema.Attribute.String;
+    closingPrayer: Schema.Attribute.RichText;
+    confrontation: Schema.Attribute.Component<'module.confrontation', false>;
+    coreScriptures: Schema.Attribute.Component<'module.core-scripture', true>;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    description: Schema.Attribute.RichText;
+    estimatedMinutes: Schema.Attribute.Integer;
+    focusQuestion: Schema.Attribute.Text & Schema.Attribute.Required;
+    lastSyncedAt: Schema.Attribute.DateTime;
     lessons: Schema.Attribute.Relation<'oneToMany', 'api::lesson.lesson'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -2670,16 +2822,23 @@ export interface ApiModuleModule extends Struct.CollectionTypeSchema {
     moduleId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    order: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 1;
-        },
-        number
-      >;
+    moduleNotes: Schema.Attribute.RichText;
+    notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
+    oneObedienceStep: Schema.Attribute.Text & Schema.Attribute.Required;
+    order: Schema.Attribute.Integer & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    resources: Schema.Attribute.Relation<'oneToMany', 'api::resource.resource'>;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    syncErrors: Schema.Attribute.Text;
+    syncLock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    teachingSummary: Schema.Attribute.Component<
+      'module.teaching-summary',
+      false
+    > &
+      Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -3077,36 +3236,104 @@ export interface ApiResourceResource extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    author: Schema.Attribute.String;
+    authorityLevel: Schema.Attribute.Enumeration<
+      ['canon', 'anchor', 'companion', 'context', 'caution']
+    > &
+      Schema.Attribute.Required;
     checksum: Schema.Attribute.String;
-    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    howToUse: Schema.Attribute.RichText;
+    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isRequired: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     lastSyncedAt: Schema.Attribute.DateTime;
+    libraryCategory: Schema.Attribute.Enumeration<
+      [
+        'theology',
+        'discipleship',
+        'writing_craft',
+        'bible_study',
+        'spiritual_formation',
+        'leadership',
+      ]
+    >;
+    libraryMetadata: Schema.Attribute.JSON;
+    librarySourceId: Schema.Attribute.Integer;
+    libraryVersionId: Schema.Attribute.Integer;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::resource.resource'
     > &
       Schema.Attribute.Private;
+    module: Schema.Attribute.Relation<'manyToOne', 'api::module.module'>;
     notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
     resourceId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    resourceType: Schema.Attribute.Enumeration<
-      ['article', 'video', 'audio', 'document', 'tool', 'link']
+    runtimeMinutes: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    sortOrder: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    source: Schema.Attribute.Enumeration<
+      [
+        'bible',
+        'youtube',
+        'rumble',
+        'spotify',
+        'apple_podcasts',
+        'pdf',
+        'website',
+        'notion',
+        'other',
+      ]
     >;
     strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
     syncedToStrapi: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     syncErrors: Schema.Attribute.Text;
     syncLock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      [
+        'scripture',
+        'teaching',
+        'book',
+        'video',
+        'article',
+        'tool',
+        'podcast',
+        'document',
+        'other',
+        'library_book',
+        'library_document',
+      ]
+    > &
+      Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     url: Schema.Attribute.String;
+    whyThisMatters: Schema.Attribute.Text;
   };
 }
 
@@ -3660,9 +3887,23 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
+    resources: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::resource.resource'
+    >;
     slug: Schema.Attribute.UID<'name'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    tagType: Schema.Attribute.Enumeration<
+      [
+        'general',
+        'theme',
+        'writing_craft',
+        'scripture_topic',
+        'spiritual_discipline',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'general'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -4459,9 +4700,17 @@ export interface PluginUsersPermissionsUser
     >;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    course_entitlements: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-entitlement.course-entitlement'
+    >;
     course_licenses: Schema.Attribute.Relation<
       'oneToMany',
       'api::course-license.course-license'
+    >;
+    course_seats: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::course-seat.course-seat'
     >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -4563,8 +4812,10 @@ declare module '@strapi/strapi' {
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::contact-message.contact-message': ApiContactMessageContactMessage;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
+      'api::course-entitlement.course-entitlement': ApiCourseEntitlementCourseEntitlement;
       'api::course-license.course-license': ApiCourseLicenseCourseLicense;
       'api::course-profile.course-profile': ApiCourseProfileCourseProfile;
+      'api::course-seat.course-seat': ApiCourseSeatCourseSeat;
       'api::course.course': ApiCourseCourse;
       'api::donation.donation': ApiDonationDonation;
       'api::event.event': ApiEventEvent;

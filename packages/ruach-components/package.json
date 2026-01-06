@@ -35,7 +35,7 @@
     "clsx": "^2.1.1",
     "isomorphic-dompurify": "^2.31.0",
     "tailwind-merge": "^2.5.2",
-    "@ruach/utils": "*"
+    "@ruach/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",

@@ -1,0 +1,17 @@
+# Ruach Library Parser Dependencies
+
+# PDF extraction
+pdfplumber>=0.10.0
+
+# EPUB extraction
+ebooklib>=0.18
+beautifulsoup4>=4.12.0
+
+# Database
+psycopg2-binary>=2.9.9
+
+# OpenAI embeddings
+openai>=1.10.0
+
+# Utilities
+lxml>=4.9.0
