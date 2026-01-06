@@ -3,11 +3,56 @@
  * Configures authentication, API tokens, and Preview feature
  */
 
+const DEFAULT_REFRESH_TOKEN_LIFESPAN_MS = 30 * 24 * 60 * 60 * 1000;
+const DEFAULT_SESSION_LIFESPAN_MS = 7 * 24 * 60 * 60 * 1000;
+
+const parseDurationMs = (value: string | undefined, fallback: number): number => {
+  if (!value) {
+    return fallback;
+  }
+
+  const numericValue = Number(value);
+  if (!Number.isNaN(numericValue)) {
+    return numericValue;
+  }
+
+  const matches = value.match(/^(\d+(?:\.\d+)?)([dhms])$/i);
+  if (!matches) {
+    return fallback;
+  }
+
+  const [, amountStr, unit] = matches;
+  const amount = Number(amountStr);
+  if (Number.isNaN(amount)) {
+    return fallback;
+  }
+
+  const multipliers: Record<string, number> = {
+    d: 24 * 60 * 60 * 1000,
+    h: 60 * 60 * 1000,
+    m: 60 * 1000,
+    s: 1000,
+  };
+
+  const multiplier = multipliers[unit.toLowerCase()];
+  if (!multiplier) {
+    return fallback;
+  }
+
+  return amount * multiplier;
+};
+
 export default ({ env }) => {
   const clientUrl = env('CLIENT_URL', 'http://localhost:3000');
   const previewSecret = env('PREVIEW_SECRET');
-  const adminRefreshTokenLifespan = env('ADMIN_REFRESH_TOKEN_LIFESPAN', '30d');
-  const adminSessionLifespan = env('ADMIN_SESSION_LIFESPAN', '7d');
+  const adminRefreshTokenLifespan = parseDurationMs(
+    env('ADMIN_REFRESH_TOKEN_LIFESPAN', '30d'),
+    DEFAULT_REFRESH_TOKEN_LIFESPAN_MS
+  );
+  const adminSessionLifespan = parseDurationMs(
+    env('ADMIN_SESSION_LIFESPAN', '7d'),
+    DEFAULT_SESSION_LIFESPAN_MS
+  );
 
   /**
    * Generate preview pathname based on content type and document
