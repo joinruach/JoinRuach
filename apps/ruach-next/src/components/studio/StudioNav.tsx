@@ -13,6 +13,7 @@ export default function StudioNav() {
     { name: 'Content', href: '/studio/content', icon: '📚' },
     { name: 'Publishing', href: '/studio/publishing', icon: '🚀' },
     { name: 'Series', href: '/studio/series', icon: '📖' },
+    { name: 'Ingestion', href: '/studio/ingestion', icon: '📥' },
   ];
 
   // Extract locale from pathname (e.g., /en/studio -> en)
