@@ -1,0 +1,139 @@
+/Users/marcseals/Developer/ruach-new/ruach-monorepo/ruach-ministries-backend/scripts/unified-extraction/scripture-extractor.py:621: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  extraction_timestamp=datetime.utcnow().isoformat() + "Z",
+📖 Extracting scripture from: yahscriptures.pdf
+
+📋 Parsing Table of Contents...
+   → TOC detected on page 4 (toc_lines=0, books=27)
+   → TOC detected on page 5 (toc_lines=0, books=24)
+   → TOC detected on page 6 (toc_lines=0, books=14)
+   → Genesis: page 8
+   → Exodus: page 142
+   → Leviticus: page 253
+   → Numbers: page 333
+   → Deuteronomy: page 446
+   → Joshua: page 540
+   → Judges: page 604
+   → 1 Samuel: page 669
+   → 2 Samuel: page 754
+   → 1 Kings: page 826
+   → 2 Kings: page 912
+   → Isaiah: page 992
+   → Jeremiah: page 1117
+   → Ezekiel: page 1259
+   → Daniel: page 1389
+   → Hosea: page 1431
+   → Joel: page 1450
+   → Amos: page 1458
+   → Obadiah: page 1473
+   → Jonah: page 1476
+   → Micah: page 1481
+   → Nahum: page 1492
+   → Habakkuk: page 1497
+   → Zephaniah: page 1503
+   → Haggai: page 1509
+   → Zechariah: page 1513
+   → Malachi: page 1533
+   → Psalms: page 1539
+   → Proverbs: page 1730
+   → Job: page 1791
+   → Ruth: page 1872
+   → Lamentations: page 1881
+   → Ecclesiastes: page 1897
+   → Esther: page 1916
+   → Ezra: page 1936
+   → Nehemiah: page 1961
+   → 1 Chronicles: page 1999
+   → 2 Chronicles: page 2076
+   → Matthew: page 2169
+   → Mark: page 2256
+   → Luke: page 2311
+   → John: page 2394
+   → Acts: page 2463
+   → Galatians: page 2557
+   → 1 Thessalonians: page 2569
+   → 2 Thessalonians: page 2577
+   → 1 Corinthians: page 2581
+   → 2 Corinthians: page 2616
+   → Romans: page 2638
+   → Philemon: page 2675
+   → Colossians: page 2677
+   → Ephesians: page 2685
+   → Philippians: page 2697
+   → 1 Timothy: page 2706
+   → Titus: page 2716
+   → 2 Timothy: page 2720
+   → Hebrews: page 2727
+   → James: page 2753
+   → 1 Peter: page 2762
+   → 2 Peter: page 2772
+   → Jude: page 2791
+   → Revelation: page 2794
+
+   ✅ Found 62 books in TOC
+
+📌 Filtering to book: Genesis
+
+📖 Extracting Genesis (pages 8 → 141)...
+   → Filtered to 42909 BODY blocks (from 43177 total)
+   → Assembled 6037 lines from word blocks
+      Chapter 1
+      Chapter 2
+      Chapter 3
+      Chapter 4
+      Chapter 5
+      Chapter 6
+      Chapter 7
+      Chapter 8
+      Chapter 9
+      Chapter 10
+      Chapter 11
+      Chapter 12
+      Chapter 13
+      Chapter 14
+      Chapter 15
+      Chapter 16
+      Chapter 17
+      Chapter 18
+      Chapter 19
+      Chapter 20
+      Chapter 21
+      Chapter 22
+      Chapter 23
+      Chapter 24
+      Chapter 25
+      Chapter 26
+      Chapter 27
+      Chapter 28
+      Chapter 29
+      Chapter 30
+      Chapter 31
+      Chapter 32
+      Chapter 33
+      Chapter 34
+      Chapter 35
+      Chapter 36
+      Chapter 37
+      Chapter 38
+      Chapter 39
+      Chapter 40
+      Chapter 41
+      Chapter 42
+      Chapter 43
+      Chapter 44
+      Chapter 45
+      Chapter 46
+      Chapter 47
+      Chapter 48
+      Chapter 49
+      Chapter 50
+
+💾 Saved to: test-output/genesis-v3
+   - extraction-metadata.json
+   - works.json
+   - verses_chunk_01.json (1532 verses)
+
+✅ Extraction PASSED
+   Works: 1
+   Verses: 1532
+   Errors: 0
+   Warnings: 0

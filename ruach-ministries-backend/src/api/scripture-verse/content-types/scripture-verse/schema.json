@@ -5,7 +5,7 @@
     "singularName": "scripture-verse",
     "pluralName": "scripture-verses",
     "displayName": "Scripture Verse",
-    "description": "Individual verse from YahScriptures translation"
+    "description": "Individual Bible verses"
   },
   "options": {
     "draftAndPublish": false
@@ -15,12 +15,6 @@
       "type": "string",
       "required": true,
       "unique": true
-    },
-    "work": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::scripture-work.scripture-work",
-      "inversedBy": "verses"
     },
     "chapter": {
       "type": "integer",
@@ -34,34 +28,32 @@
       "type": "text",
       "required": true
     },
-    "paleoHebrewDivineNames": {
-      "type": "boolean",
-      "default": true
+    "textHash": {
+      "type": "string"
     },
-    "hasFootnotes": {
-      "type": "boolean",
-      "default": false
+    "osisRef": {
+      "type": "string"
     },
     "footnotes": {
       "type": "json"
     },
-    "tokens": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::scripture-token.scripture-token",
-      "mappedBy": "verse"
+    "crossReferences": {
+      "type": "json"
     },
-    "themes": {
+    "strongsNumbers": {
+      "type": "json"
+    },
+    "morphology": {
+      "type": "json"
+    },
+    "extractionMetadata": {
+      "type": "json"
+    },
+    "work": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::scripture-theme.scripture-theme",
+      "relation": "manyToOne",
+      "target": "api::scripture-work.scripture-work",
       "inversedBy": "verses"
-    },
-    "reflections": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::formation-reflection.formation-reflection",
-      "mappedBy": "verse"
     }
   }
 }

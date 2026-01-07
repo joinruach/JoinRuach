@@ -1,0 +1,257 @@
+{
+  "analysisDate": "2026-01-07T01:14:50.452Z",
+  "workMetadata": {
+    "workId": "yah-gen",
+    "canonicalName": "Genesis",
+    "reportedChapters": 50,
+    "reportedVerses": 1277
+  },
+  "expected": {
+    "chapters": 50,
+    "totalVerses": 1533,
+    "chapter1": 31,
+    "chapter50": 26
+  },
+  "actual": {
+    "chaptersFound": 42,
+    "uniqueVerses": 1128,
+    "totalVerseRecords": 1277,
+    "duplicates": 149
+  },
+  "quality": {
+    "firstVersePresent": false,
+    "lastVersePresent": true,
+    "missingVerses": [
+      {
+        "chapter": 1,
+        "verse": 1
+      },
+      {
+        "chapter": 1,
+        "verse": 39
+      },
+      {
+        "chapter": 1,
+        "verse": 40
+      },
+      {
+        "chapter": 1,
+        "verse": 41
+      },
+      {
+        "chapter": 1,
+        "verse": 42
+      },
+      {
+        "chapter": 1,
+        "verse": 43
+      },
+      {
+        "chapter": 1,
+        "verse": 49
+      },
+      {
+        "chapter": 1,
+        "verse": 50
+      },
+      {
+        "chapter": 1,
+        "verse": 51
+      },
+      {
+        "chapter": 1,
+        "verse": 52
+      },
+      {
+        "chapter": 1,
+        "verse": 53
+      },
+      {
+        "chapter": 1,
+        "verse": 54
+      },
+      {
+        "chapter": 1,
+        "verse": 55
+      },
+      {
+        "chapter": 1,
+        "verse": 56
+      },
+      {
+        "chapter": 1,
+        "verse": 57
+      },
+      {
+        "chapter": 1,
+        "verse": 58
+      },
+      {
+        "chapter": 1,
+        "verse": 59
+      },
+      {
+        "chapter": 1,
+        "verse": 60
+      },
+      {
+        "chapter": 1,
+        "verse": 61
+      },
+      {
+        "chapter": 1,
+        "verse": 62
+      },
+      {
+        "chapter": 1,
+        "verse": 63
+      },
+      {
+        "chapter": 1,
+        "verse": 64
+      },
+      {
+        "chapter": 1,
+        "verse": 65
+      },
+      {
+        "chapter": 3,
+        "verse": 1
+      },
+      {
+        "chapter": 3,
+        "verse": 3
+      },
+      {
+        "chapter": 3,
+        "verse": 12
+      },
+      {
+        "chapter": 3,
+        "verse": 23
+      },
+      {
+        "chapter": 4,
+        "verse": 1
+      },
+      {
+        "chapter": 4,
+        "verse": 4
+      },
+      {
+        "chapter": 4,
+        "verse": 11
+      },
+      {
+        "chapter": 4,
+        "verse": 23
+      },
+      {
+        "chapter": 5,
+        "verse": 1
+      },
+      {
+        "chapter": 5,
+        "verse": 5
+      },
+      {
+        "chapter": 5,
+        "verse": 8
+      },
+      {
+        "chapter": 5,
+        "verse": 9
+      },
+      {
+        "chapter": 5,
+        "verse": 24
+      },
+      {
+        "chapter": 6,
+        "verse": 1
+      },
+      {
+        "chapter": 6,
+        "verse": 17
+      },
+      {
+        "chapter": 7,
+        "verse": 1
+      },
+      {
+        "chapter": 7,
+        "verse": 6
+      },
+      {
+        "chapter": 7,
+        "verse": 7
+      },
+      {
+        "chapter": 7,
+        "verse": 19
+      },
+      {
+        "chapter": 8,
+        "verse": 1
+      },
+      {
+        "chapter": 8,
+        "verse": 6
+      },
+      {
+        "chapter": 8,
+        "verse": 18
+      },
+      {
+        "chapter": 8,
+        "verse": 19
+      },
+      {
+        "chapter": 9,
+        "verse": 1
+      },
+      {
+        "chapter": 9,
+        "verse": 8
+      },
+      {
+        "chapter": 9,
+        "verse": 9
+      },
+      {
+        "chapter": 9,
+        "verse": 21
+      }
+    ],
+    "duplicatesInArray": 149
+  },
+  "sampleVerses": [
+    {
+      "chapter": 1,
+      "verse": 1,
+      "present": false
+    },
+    {
+      "chapter": 1,
+      "verse": 31,
+      "present": true,
+      "textPreview": "was very good. And there came to be evening and there came to be morning, the sixth day. Thus the sh",
+      "paleoHebrew": true
+    },
+    {
+      "chapter": 2,
+      "verse": 1,
+      "present": false
+    },
+    {
+      "chapter": 25,
+      "verse": 1,
+      "present": false
+    },
+    {
+      "chapter": 50,
+      "verse": 26,
+      "present": false
+    }
+  ]
+}

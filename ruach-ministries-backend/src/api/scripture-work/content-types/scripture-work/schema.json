@@ -5,7 +5,7 @@
     "singularName": "scripture-work",
     "pluralName": "scripture-works",
     "displayName": "Scripture Work",
-    "description": "A work/book in the YahScriptures collection (103 total)"
+    "description": "Individual books of the Bible (Genesis, Exodus, Matthew, etc.)"
   },
   "options": {
     "draftAndPublish": false
@@ -21,22 +21,32 @@
       "required": true
     },
     "translatedTitle": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "shortCode": {
       "type": "string",
-      "required": true,
-      "unique": true
+      "required": true
     },
     "testament": {
       "type": "enumeration",
-      "enum": ["tanakh", "renewed_covenant", "apocrypha"],
+      "enum": ["old", "new", "apocrypha"],
       "required": true
     },
     "canonicalOrder": {
       "type": "integer",
       "required": true
+    },
+    "genre": {
+      "type": "enumeration",
+      "enum": [
+        "law",
+        "history",
+        "wisdom",
+        "prophecy",
+        "gospel",
+        "epistle",
+        "apocalyptic"
+      ]
     },
     "totalChapters": {
       "type": "integer",
@@ -46,24 +56,19 @@
       "type": "integer",
       "required": true
     },
-    "author": {
-      "type": "string"
-    },
-    "estimatedDate": {
-      "type": "string"
-    },
-    "genre": {
+    "extractionStatus": {
       "type": "enumeration",
-      "enum": ["law", "history", "wisdom", "prophecy", "gospel", "epistle", "apocalyptic"]
+      "enum": ["pending", "processing", "completed", "failed", "validated"],
+      "default": "pending"
     },
-    "summary": {
-      "type": "text"
+    "extractionMetadata": {
+      "type": "json"
     },
-    "hebrewName": {
-      "type": "string"
-    },
-    "greekName": {
-      "type": "string"
+    "version": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-version.scripture-version",
+      "inversedBy": "works"
     },
     "verses": {
       "type": "relation",

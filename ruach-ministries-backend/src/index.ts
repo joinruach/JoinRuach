@@ -3,6 +3,7 @@ import { registerReadOnlyLocks } from './utils/register-read-only-locks';
 import { syncPublicPermissions } from './utils/sync-public-permissions';
 import { initializeDonationThankYouQueue } from "./services/donation-thankyou-queue";
 import { initializeLibraryIngestionQueue } from "./services/library-ingestion-queue";
+import { initializeUnifiedIngestionQueue } from "./services/unified-ingestion-queue";
 
 export default {
   /**
@@ -19,5 +20,6 @@ export default {
     await syncPublicPermissions(strapi);
     await initializeDonationThankYouQueue({ strapi });
     await initializeLibraryIngestionQueue({ strapi });
+    await initializeUnifiedIngestionQueue({ strapi });
   },
 };

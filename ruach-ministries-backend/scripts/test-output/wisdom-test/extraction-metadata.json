@@ -1,0 +1,10 @@
+{
+  "extractor_version": "3.0.0",
+  "content_type": "scripture",
+  "source_file": "/Users/marcseals/Downloads/Apocrypha_Single_Column_Ed1.pdf",
+  "source_sha256": "d363f216c96f85fe37bf5d187a25f78df300d196fb58641ac29ee0553846ad08",
+  "extraction_timestamp": "2026-01-07T17:06:50.710278Z",
+  "total_pages": null,
+  "total_items": 0,
+  "validation_status": "invalid"
+}
