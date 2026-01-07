@@ -1,0 +1,10 @@
+{
+  "extractor_version": "2.0.0",
+  "content_type": "scripture",
+  "source_file": "/Users/marcseals/Developer/ruach-new/ruach-monorepo/scripts/scripture-extraction/input/yahscriptures.pdf",
+  "source_sha256": "e8d0cbb50159e0e30362050f04a1fe9d7d4575a54f25b3dc1474adb0ce217e50",
+  "extraction_timestamp": "2026-01-07T00:22:34.393049Z",
+  "total_pages": null,
+  "total_items": 0,
+  "validation_status": "valid"
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_versions",
+  "info": {
+    "singularName": "scripture-version",
+    "pluralName": "scripture-versions",
+    "displayName": "Scripture Version",
+    "description": "Bible versions (e.g., YAH Scriptures, KJV, ESV)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "versionId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "versionName": {
+      "type": "string",
+      "required": true
+    },
+    "versionCode": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "publishedYear": {
+      "type": "integer"
+    },
+    "copyright": {
+      "type": "text"
+    },
+    "description": {
+      "type": "text"
+    },
+    "isPublic": {
+      "type": "boolean",
+      "default": true
+    },
+    "canonStructure": {
+      "type": "enumeration",
+      "enum": ["protestant", "catholic", "orthodox", "hebrew"],
+      "default": "protestant"
+    },
+    "totalBooks": {
+      "type": "integer"
+    },
+    "totalVerses": {
+      "type": "integer"
+    },
+    "extractionMetadata": {
+      "type": "json"
+    },
+    "source": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scripture-source.scripture-source",
+      "inversedBy": "versions"
+    },
+    "works": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scripture-work.scripture-work",
+      "mappedBy": "version"
+    }
+  }
+}

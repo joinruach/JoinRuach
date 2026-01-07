@@ -167,20 +167,26 @@ async function processScriptureIngestion(
   if (scriptureParams.validateCanonical) {
     const validatorScript = path.join(
       __dirname,
-      "../../scripts/scripture-extraction/scripture-validator.ts"
+      "../../scripts/unified-extraction/canonical-validator.py"
     );
 
-    const validateResult = await runNodeScript(strapi, {
+    const canonicalStructure = path.join(
+      __dirname,
+      "../../scripts/scripture-extraction/canonical-structure.json"
+    );
+
+    const validateResult = await runPythonScript(strapi, {
       scriptPath: validatorScript,
       args: [
         `/tmp/scripture-extraction/${versionId}/works.json`,
-        `/tmp/scripture-extraction/${versionId}/`,
+        `/tmp/scripture-extraction/${versionId}/verses_chunk_01.json`,
+        canonicalStructure,
       ],
     });
 
     validationPassed = validateResult.exitCode === 0;
     if (!validationPassed) {
-      strapi.log.warn(`[scripture-ingestion] Validation warnings for ${versionId}: ${validateResult.stderr}`);
+      strapi.log.warn(`[scripture-ingestion] Validation warnings for ${versionId}`);
     }
   }
 
@@ -297,7 +303,7 @@ interface PythonScriptArgs {
 async function runPythonScript(
   strapi: Core.Strapi,
   config: PythonScriptArgs
-): Promise<any> {
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const python = spawn("python3", [config.scriptPath, ...config.args]);
 
@@ -315,16 +321,7 @@ async function runPythonScript(
     });
 
     python.on("close", (code) => {
-      if (code === 0) {
-        try {
-          const result = JSON.parse(stdout);
-          resolve(result);
-        } catch (parseError) {
-          resolve({ stdout, stderr });
-        }
-      } else {
-        reject(new Error(`Python script exited with code ${code}: ${stderr}`));
-      }
+      resolve({ exitCode: code || 0, stdout, stderr });
     });
 
     python.on("error", (error) => {

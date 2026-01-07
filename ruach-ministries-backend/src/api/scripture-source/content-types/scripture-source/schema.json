@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scripture_sources",
+  "info": {
+    "singularName": "scripture-source",
+    "pluralName": "scripture-sources",
+    "displayName": "Scripture Source",
+    "description": "Source documents (PDFs, etc.) for scripture extraction"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "sourceId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "sourceName": {
+      "type": "string",
+      "required": true
+    },
+    "sourceType": {
+      "type": "enumeration",
+      "enum": ["pdf", "docx", "epub", "markdown"],
+      "required": true,
+      "default": "pdf"
+    },
+    "filePath": {
+      "type": "string",
+      "required": true
+    },
+    "fileHash": {
+      "type": "string",
+      "required": true
+    },
+    "fileSize": {
+      "type": "biginteger"
+    },
+    "uploadedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "extractionStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "processing", "completed", "failed", "validated"],
+      "default": "pending"
+    },
+    "extractionMetadata": {
+      "type": "json"
+    },
+    "extractionErrors": {
+      "type": "json"
+    },
+    "versions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::scripture-version.scripture-version",
+      "mappedBy": "source"
+    }
+  }
+}

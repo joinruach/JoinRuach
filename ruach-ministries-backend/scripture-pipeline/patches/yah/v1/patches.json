@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "description": "Surgical patches for YAH Scriptures export anomalies",
+  "patches": [
+    {
+      "id": "genesis-2-25-restore",
+      "type": "add",
+      "book": "Genesis",
+      "chapter": 2,
+      "verse": 25,
+      "text": "And they were both naked, the man and his wife, and were not ashamed.",
+      "reason": "Source merge anomaly - verse missing in bbli export due to database merge",
+      "source": "YAH Scriptures bbli database, cross-referenced with KJV and Masoretic text",
+      "author": "Marc Seals",
+      "date": "2026-01-07",
+      "notes": [
+        "This verse is present in the source .bbli file but was lost during export",
+        "Text verified against multiple translations (KJV, NKJV, ESV)",
+        "Masoretic reference: וַיִּהְיוּ שְׁנֵיהֶם עֲרוּמִּים הָאָדָם וְאִשְׁתּוֹ וְלֹא יִתְבֹּשָׁשׁוּ"
+      ]
+    }
+  ],
+  "audit": {
+    "created": "2026-01-07T00:00:00Z",
+    "last_modified": "2026-01-07T00:00:00Z",
+    "approved_by": "Marc Seals",
+    "review_status": "pending"
+  }
+}
