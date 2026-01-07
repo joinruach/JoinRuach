@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { useSession } from "next-auth/react";
 import type { IconType } from "react-icons";
 import { VscAccount, VscArchive, VscHome, VscSettingsGear } from "react-icons/vsc";
 
@@ -18,7 +17,6 @@ const ROUTES: Array<{ label: string; path: string; icon: IconType }> = [
 ];
 
 export default function LoggedInDock() {
-  const { status } = useSession();
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
@@ -43,10 +41,6 @@ export default function LoggedInDock() {
       };
     });
   }, [locale, pathname, router]);
-
-  if (status !== "authenticated") {
-    return null;
-  }
 
   return (
     <Dock

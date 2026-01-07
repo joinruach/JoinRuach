@@ -4,12 +4,11 @@ import Providers from "./providers";
 import Script from "next/script";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import LivePreview from "@/components/preview/LivePreview";
 import { RuachAssistant } from "@/components/ai/RuachAssistant";
-import InstallPrompt from "@/components/pwa/InstallPrompt";
-import OfflineIndicator from "@/components/offline/OfflineIndicator";
-import LoggedInDock from "@/components/navigation/LoggedInDock";
-import { GlobalMediaPlayer } from "@/components/media/GlobalMediaPlayer";
+import LivePreviewGate from "@/components/preview/LivePreviewGate";
+import LoggedInDockGate from "@/components/navigation/LoggedInDockGate";
+import GlobalMediaPlayerGate from "@/components/media/GlobalMediaPlayerGate";
+import ClientUtilities from "@/components/perf/ClientUtilities";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
@@ -72,6 +71,7 @@ export default async function LocaleLayout({
   }
   const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
   const aiAssistantEnabled = process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === 'true';
+  const livePreviewEnabled = process.env.NEXT_PUBLIC_ENABLE_LIVE_PREVIEW === "true";
 
   return (
     <html lang={locale}>
@@ -116,7 +116,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <Providers>
-              <LivePreview />
+              <LivePreviewGate enabled={livePreviewEnabled} />
               <Header />
               <div className="relative isolate mx-auto max-w-6xl px-4">
                 <div
@@ -131,10 +131,9 @@ export default async function LocaleLayout({
               </div>
               <Footer />
               {aiAssistantEnabled && <RuachAssistant />}
-              <InstallPrompt />
-              <OfflineIndicator />
-              <GlobalMediaPlayer />
-              <LoggedInDock />
+              <ClientUtilities />
+              <GlobalMediaPlayerGate />
+              <LoggedInDockGate />
             </Providers>
           </ThemeProvider>
         </NextIntlClientProvider>

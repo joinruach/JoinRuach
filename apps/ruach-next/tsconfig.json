@@ -19,6 +19,24 @@
       "@ruach/formation/*": [
         "../../packages/ruach-formation/src/*"
       ],
+      "@ruach/utils": [
+        "../../packages/ruach-utils/src/index.ts"
+      ],
+      "@ruach/utils/*": [
+        "../../packages/ruach-utils/src/*"
+      ],
+      "@ruach/hooks": [
+        "../../packages/ruach-hooks/src/index.ts"
+      ],
+      "@ruach/hooks/*": [
+        "../../packages/ruach-hooks/src/*"
+      ],
+      "@ruach/ai": [
+        "../../packages/ruach-ai/src/index.ts"
+      ],
+      "@ruach/ai/*": [
+        "../../packages/ruach-ai/src/*"
+      ],
       "next-intl/link": [
         "src/components/navigation/LocalizedLink.tsx"
       ]
@@ -62,7 +80,13 @@
     "../../packages/ruach-next-addons/src/**/*.ts",
     "../../packages/ruach-next-addons/src/**/*.tsx",
     "../../packages/ruach-formation/src/**/*.ts",
-    "../../packages/ruach-formation/src/**/*.tsx"
+    "../../packages/ruach-formation/src/**/*.tsx",
+    "../../packages/ruach-utils/src/**/*.ts",
+    "../../packages/ruach-utils/src/**/*.tsx",
+    "../../packages/ruach-hooks/src/**/*.ts",
+    "../../packages/ruach-hooks/src/**/*.tsx",
+    "../../packages/ruach-ai/src/**/*.ts",
+    "../../packages/ruach-ai/src/**/*.tsx"
   ],
   "exclude": [
     "node_modules",

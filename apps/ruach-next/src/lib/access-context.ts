@@ -31,7 +31,9 @@ async function fetchCourseIdsForSlugs(jwt: string, slugs: string[]): Promise<str
     return [];
   }
 
-  const json = await res.json();
+  const json = (await res.json()) as {
+    data?: Array<{ attributes?: { slug?: unknown; courseId?: unknown } }>;
+  };
   const data = Array.isArray(json?.data) ? json.data : [];
   const slugMap = new Map<string, string>();
 
@@ -64,7 +66,9 @@ async function fetchOwnedCourseMeta(jwt: string, userId: number): Promise<OwnedC
     return { slugs: [], courseIds: [] };
   }
 
-  const json = await res.json();
+  const json = (await res.json()) as {
+    data?: Array<{ attributes?: { courseSlug?: unknown } }>;
+  };
   const licenses = Array.isArray(json?.data) ? json.data : [];
   const slugs = Array.from(
     new Set(
