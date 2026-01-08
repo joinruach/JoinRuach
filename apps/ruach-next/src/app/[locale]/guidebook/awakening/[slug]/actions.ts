@@ -15,6 +15,37 @@ import {
 } from "@ruach/formation";
 
 // ============================================================================
+// WORD COUNT UTILITY (Unicode-safe, deterministic)
+// ============================================================================
+
+/**
+ * Deterministic word count algorithm
+ * MUST MATCH client-side validation in SectionView.tsx
+ *
+ * Unicode-safe: Uses [\p{L}\p{N}] to match letters and numbers across all languages
+ * (Hebrew, Greek, accents, etc.) instead of ASCII-only \w pattern
+ */
+function countWords(text: string): number {
+  // Normalize: trim leading/trailing whitespace
+  const normalized = text.trim();
+
+  // Handle empty string
+  if (normalized.length === 0) return 0;
+
+  // Split on any whitespace (space, tab, newline)
+  const tokens = normalized.split(/\s+/);
+
+  // Filter out empty tokens and punctuation-only tokens
+  // Unicode-safe: matches letters (including Hebrew/Greek) and numbers, not just ASCII
+  const HAS_WORD = /[\p{L}\p{N}]/u;
+  const words = tokens.filter(token => {
+    return token.length > 0 && HAS_WORD.test(token);
+  });
+
+  return words.length;
+}
+
+// ============================================================================
 // VALIDATION SCHEMA
 // ============================================================================
 
@@ -69,11 +100,19 @@ export async function submitCheckpoint(
     const { checkpointId, sectionId, phase, dwellTimeSeconds, reflection } =
       validation.data;
 
-    // 3. Calculate reflection metrics
-    const wordCount = reflection.trim().split(/\s+/).length;
+    // 3. Validate word count (server-side enforcement - hard gate)
+    const wordCount = countWords(reflection);
+    if (wordCount < 50) {
+      return {
+        ok: false,
+        message: `Reflection must be at least 50 words (you submitted ${wordCount} words).`
+      };
+    }
+
+    // 4. Calculate reflection metrics
     const reflectionId = `reflection-${Date.now()}-${userId}`;
 
-    // 4. Create Formation Events
+    // 5. Create Formation Events
     const checkpointReachedEvent = createCheckpointReachedEvent(
       userId,
       checkpointId,
@@ -99,7 +138,7 @@ export async function submitCheckpoint(
       dwellTimeSeconds
     );
 
-    // 5. Store Events + Reflection + Update Journey
+    // 6. Store Events + Reflection + Update Journey
     try {
       // Initialize Strapi persistence client
       const client = initializeFormationClient({
@@ -173,7 +212,7 @@ export async function submitCheckpoint(
       });
     }
 
-    // 6. Determine next section
+    // 7. Determine next section
     const currentSection = AwakeningPhase.sections.find((s) => s.id === sectionId);
     if (!currentSection) {
       throw new Error("Section not found");
@@ -183,7 +222,7 @@ export async function submitCheckpoint(
       (s) => s.order === currentSection.order + 1
     );
 
-    // 7. Redirect to next section or completion
+    // 8. Redirect to next section or completion
     if (nextSection) {
       redirect(`/guidebook/awakening/${nextSection.slug}`);
     } else {
