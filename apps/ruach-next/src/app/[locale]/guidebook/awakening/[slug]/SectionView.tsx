@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useActionState } from "react";
 import { FormationSection, Checkpoint } from "@ruach/formation";
-import { submitCheckpoint } from "./actions";
+import { submitCheckpoint, trackDwellHeartbeat, getUserId } from "./actions";
 import { Prose } from "@/components/Prose";
 
 interface SectionViewProps {
@@ -60,6 +60,22 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   const [reflection, setReflection] = useState("");
   const [wordCount, setWordCount] = useState(0);
 
+  // Heartbeat tracking state
+  const [attemptId] = useState(() => {
+    return `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  });
+  const [heartbeatSeq, setHeartbeatSeq] = useState(0);
+  const [serverAccumulatedSeconds, setServerAccumulatedSeconds] = useState(0);
+  const [lastVisibleAt, setLastVisibleAt] = useState<number | null>(null);
+  const [isTabVisible, setIsTabVisible] = useState(true);
+  const [displaySeconds, setDisplaySeconds] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch userId on mount
+  useEffect(() => {
+    getUserId().then(setUserId);
+  }, []);
+
   // Track section view on mount
   useEffect(() => {
     // Emit SectionViewedEvent (placeholder for now)
@@ -77,6 +93,81 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
     setWordCount(countWords(text));
   };
 
+  // Track tab visibility
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsTabVisible(document.visibilityState === 'visible');
+    };
+
+    const handlePageHide = () => {
+      // Safari/iOS: ensure cleanup on page hide
+      setIsTabVisible(false);
+      setLastVisibleAt(null);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
+
+    // Initialize on mount
+    if (document.visibilityState === 'visible') {
+      setLastVisibleAt(performance.now());
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
+    };
+  }, []);
+
+  // Update display time every second (optimistic + server reconciliation)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isTabVisible && lastVisibleAt !== null) {
+        // Optimistic: show local elapsed time since last visible
+        const localElapsed = Math.floor((performance.now() - lastVisibleAt) / 1000);
+        setDisplaySeconds(serverAccumulatedSeconds + localElapsed);
+      } else {
+        // Hidden: show server truth
+        setDisplaySeconds(serverAccumulatedSeconds);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isTabVisible, lastVisibleAt, serverAccumulatedSeconds]);
+
+  // Send heartbeat ping every 10 seconds
+  useEffect(() => {
+    if (!isTabVisible || !userId) return;
+
+    const heartbeatInterval = setInterval(async () => {
+      if (isTabVisible && userId) {
+        // Increment sequence (monotonic)
+        const seq = heartbeatSeq + 1;
+        setHeartbeatSeq(seq);
+
+        const formData = new FormData();
+        formData.append('sectionId', section.id);
+        formData.append('checkpointId', checkpoint.id);
+        formData.append('userId', userId);
+        formData.append('attemptId', attemptId);
+        formData.append('heartbeatSeq', seq.toString());
+
+        const response = await trackDwellHeartbeat(formData);
+
+        // Reconcile with server truth
+        if (response.ok) {
+          setServerAccumulatedSeconds(response.accumulatedSeconds);
+          // Reset local tracking baseline
+          setLastVisibleAt(performance.now());
+        }
+      }
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(heartbeatInterval);
+  }, [isTabVisible, heartbeatSeq, section.id, checkpoint.id, userId, attemptId]);
+
   // Calculate minimum wait time for checkpoint
   const minimumWaitMs = checkpoint.minimumDwellSeconds * 1000;
 
@@ -90,8 +181,9 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   }, [minimumWaitMs]);
 
   // Calculate submit button state
+  const dwellRequirementMet = displaySeconds >= checkpoint.minimumDwellSeconds;
   const wordRequirementMet = wordCount >= 50;
-  const canSubmit = wordRequirementMet && showCheckpoint;
+  const canSubmit = dwellRequirementMet && wordRequirementMet && showCheckpoint;
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
@@ -167,6 +259,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                 <input type="hidden" name="checkpointId" value={checkpoint.id} />
                 <input type="hidden" name="sectionId" value={section.id} />
                 <input type="hidden" name="phase" value={section.phase} />
+                <input type="hidden" name="attemptId" value={attemptId} />
                 <input
                   type="hidden"
                   name="dwellTimeSeconds"
@@ -207,6 +300,28 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                   </p>
                 </div>
 
+                {/* Dwell Time Progress */}
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={dwellRequirementMet ? "text-green-600 dark:text-green-400 font-medium" : "text-neutral-600 dark:text-neutral-400"}>
+                    Time: {displaySeconds}s / {checkpoint.minimumDwellSeconds}s {dwellRequirementMet ? "✓" : ""}
+                  </span>
+                  {!isTabVisible && (
+                    <span className="text-amber-600 dark:text-amber-400 text-xs">
+                      (paused - tab not visible)
+                    </span>
+                  )}
+                </div>
+
+                {/* Requirements Checklist */}
+                <div className="mb-4 space-y-2 text-sm">
+                  <div className={dwellRequirementMet ? "text-green-600 dark:text-green-400" : "text-neutral-500"}>
+                    {dwellRequirementMet ? "✓" : "○"} Minimum reading time ({checkpoint.minimumDwellSeconds}s)
+                  </div>
+                  <div className={wordRequirementMet ? "text-green-600 dark:text-green-400" : "text-neutral-500"}>
+                    {wordRequirementMet ? "✓" : "○"} Minimum reflection length (50 words)
+                  </div>
+                </div>
+
                 {/* Error Message */}
                 {state.message && !state.ok && (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-200">
@@ -215,13 +330,13 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                 )}
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div>
                   <button
                     type="submit"
                     disabled={!canSubmit || pending}
-                    className={`rounded-xl px-6 py-3 font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${
+                    className={`w-full rounded-xl px-6 py-4 font-bold text-white transition-all ${
                       canSubmit && !pending
-                        ? "bg-amber-600 hover:bg-amber-700 cursor-pointer dark:bg-amber-700 dark:hover:bg-amber-600"
+                        ? "bg-amber-600 hover:bg-amber-700 cursor-pointer"
                         : "bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed opacity-50"
                     }`}
                   >

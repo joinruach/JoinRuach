@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import { getOrCreateUserId } from "@/lib/formation/user-id";
+import { redis } from "@/lib/redis";
 import {
   FormationPhase,
   createCheckpointReachedEvent,
@@ -46,6 +47,83 @@ function countWords(text: string): number {
 }
 
 // ============================================================================
+// DWELL SESSION MANAGEMENT (Redis-backed heartbeat tracking)
+// ============================================================================
+
+interface DwellSession {
+  userId: string;
+  sectionId: string;
+  checkpointId: string;
+  accumulatedSeconds: number;
+  lastHeartbeatAt: number; // timestamp (ms)
+  lastHeartbeatSeq: number; // monotonic sequence
+  startedAt: number; // timestamp (ms)
+}
+
+/**
+ * Get dwell session from Redis by attemptId
+ */
+async function getDwellSession(attemptId: string): Promise<DwellSession | null> {
+  if (!redis) return null;
+
+  const key = `dwell:attempt:${attemptId}`;
+  const data = await redis.get(key);
+
+  if (!data) return null;
+
+  return typeof data === 'string' ? JSON.parse(data) : data;
+}
+
+/**
+ * Get or create dwell session
+ */
+async function getOrCreateDwellSession(
+  attemptId: string,
+  initialData: Omit<DwellSession, 'accumulatedSeconds' | 'lastHeartbeatAt' | 'lastHeartbeatSeq'>
+): Promise<DwellSession> {
+  const existing = await getDwellSession(attemptId);
+
+  if (existing) {
+    return existing;
+  }
+
+  // Create new session
+  const session: DwellSession = {
+    ...initialData,
+    accumulatedSeconds: 0,
+    lastHeartbeatAt: Date.now(),
+    lastHeartbeatSeq: 0,
+  };
+
+  if (redis) {
+    const key = `dwell:attempt:${attemptId}`;
+    await redis.set(key, JSON.stringify(session), { ex: 3600 }); // 1 hour TTL
+  }
+
+  return session;
+}
+
+/**
+ * Save dwell session with TTL refresh
+ */
+async function saveDwellSession(attemptId: string, session: DwellSession, ttlSeconds: number): Promise<void> {
+  if (!redis) return;
+
+  const key = `dwell:attempt:${attemptId}`;
+  await redis.set(key, JSON.stringify(session), { ex: ttlSeconds });
+}
+
+/**
+ * Clear dwell session after successful submission
+ */
+async function clearDwellSession(attemptId: string): Promise<void> {
+  if (!redis) return;
+
+  const key = `dwell:attempt:${attemptId}`;
+  await redis.del(key);
+}
+
+// ============================================================================
 // VALIDATION SCHEMA
 // ============================================================================
 
@@ -55,6 +133,7 @@ const CheckpointSubmissionSchema = z.object({
   phase: z.nativeEnum(FormationPhase),
   dwellTimeSeconds: z.coerce.number().min(0),
   reflection: z.string().min(10, "Reflection must be at least 10 characters"),
+  attemptId: z.string().min(1), // Session-scoped ID for heartbeat tracking
 });
 
 // ============================================================================
@@ -65,6 +144,90 @@ interface FormState {
   ok: boolean;
   message?: string;
   redirectTo?: string;
+}
+
+// ============================================================================
+// SERVER ACTION: GET USER ID (callable from client)
+// ============================================================================
+
+export async function getUserId(): Promise<string> {
+  const { userId } = await getOrCreateUserId();
+  return userId;
+}
+
+// ============================================================================
+// SERVER ACTION: TRACK DWELL HEARTBEAT
+// ============================================================================
+
+export async function trackDwellHeartbeat(formData: FormData): Promise<{
+  ok: boolean;
+  accumulatedSeconds: number;
+  rateLimited?: boolean;
+  duplicate?: boolean;
+}> {
+  try {
+    // If Redis is not available, return 0 seconds (graceful degradation)
+    if (!redis) {
+      return { ok: true, accumulatedSeconds: 0 };
+    }
+
+    const sectionId = formData.get('sectionId') as string;
+    const checkpointId = formData.get('checkpointId') as string;
+    const userId = formData.get('userId') as string;
+    const attemptId = formData.get('attemptId') as string;
+    const heartbeatSeq = parseInt(formData.get('heartbeatSeq') as string);
+
+    // Rate limit: 1 heartbeat per 8-12 seconds per attempt
+    const rateLimitKey = `ratelimit:heartbeat:${attemptId}`;
+    const lastPing = await redis.get(rateLimitKey);
+
+    if (lastPing) {
+      const lastPingTime = typeof lastPing === 'string' ? parseInt(lastPing) : lastPing;
+      if (Date.now() - lastPingTime < 8000) {
+        // Too frequent - return last known state
+        const session = await getDwellSession(attemptId);
+        return { ok: true, accumulatedSeconds: session?.accumulatedSeconds || 0, rateLimited: true };
+      }
+    }
+
+    await redis.set(rateLimitKey, Date.now().toString(), { ex: 12 });
+
+    // Get or create dwell session
+    const session = await getOrCreateDwellSession(attemptId, {
+      userId,
+      sectionId,
+      checkpointId,
+      startedAt: Date.now()
+    });
+
+    // Idempotency: check heartbeat sequence
+    if (heartbeatSeq <= session.lastHeartbeatSeq) {
+      // Duplicate or old heartbeat - ignore, return current state
+      return { ok: true, accumulatedSeconds: session.accumulatedSeconds, duplicate: true };
+    }
+
+    // Delta-based accumulation (not fixed +10)
+    const now = Date.now();
+    const delta = session.lastHeartbeatAt
+      ? Math.floor((now - session.lastHeartbeatAt) / 1000)
+      : 0;
+
+    // Clamp delta: 0 <= delta <= 15 (heartbeat interval is 10s, allow 5s grace for jitter)
+    const clampedDelta = Math.max(0, Math.min(delta, 15));
+
+    // Accumulate clamped delta
+    session.accumulatedSeconds += clampedDelta;
+    session.lastHeartbeatAt = now;
+    session.lastHeartbeatSeq = heartbeatSeq;
+
+    // Save with TTL refresh (1 hour, extends on each ping)
+    await saveDwellSession(attemptId, session, 3600); // TTL 3600s
+
+    return { ok: true, accumulatedSeconds: session.accumulatedSeconds };
+  } catch (error) {
+    console.error('[Dwell Heartbeat Error]', error);
+    return { ok: true, accumulatedSeconds: 0 }; // Graceful degradation
+  }
 }
 
 // ============================================================================
@@ -97,7 +260,7 @@ export async function submitCheckpoint(
       };
     }
 
-    const { checkpointId, sectionId, phase, dwellTimeSeconds, reflection } =
+    const { checkpointId, sectionId, phase, dwellTimeSeconds, reflection, attemptId } =
       validation.data;
 
     // 3. Validate word count (server-side enforcement - hard gate)
@@ -106,6 +269,37 @@ export async function submitCheckpoint(
       return {
         ok: false,
         message: `Reflection must be at least 50 words (you submitted ${wordCount} words).`
+      };
+    }
+
+    // 3.5. Validate accumulated dwell time from server session (heartbeat-based)
+    // Get the checkpoint to check minimumDwellSeconds
+    const currentCheckpoint = AwakeningPhase.sections
+      .find((s) => s.id === sectionId)
+      ?.checkpoints.find((c) => c.id === checkpointId);
+
+    if (!currentCheckpoint) {
+      return {
+        ok: false,
+        message: 'Checkpoint not found. Please reload and try again.'
+      };
+    }
+
+    // Get accumulated dwell time from server session (by attemptId)
+    const session = await getDwellSession(attemptId);
+
+    if (!session || session.accumulatedSeconds < currentCheckpoint.minimumDwellSeconds) {
+      return {
+        ok: false,
+        message: `Please spend at least ${currentCheckpoint.minimumDwellSeconds} seconds engaging with the content. (You've accumulated ${session?.accumulatedSeconds || 0} seconds.)`
+      };
+    }
+
+    // Validate attemptId matches session metadata (prevent attempt swapping)
+    if (session.checkpointId !== checkpointId) {
+      return {
+        ok: false,
+        message: 'Invalid dwell session. Please reload and try again.'
       };
     }
 
@@ -187,6 +381,9 @@ export async function submitCheckpoint(
         reflectionId,
         wordCount,
       });
+
+      // Clear dwell session after successful submission
+      await clearDwellSession(attemptId);
     } catch (error) {
       // Graceful degradation: log error but allow user to proceed
       console.error("[Formation Persistence] Failed to persist checkpoint submission", {
