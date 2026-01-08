@@ -1,22 +1,22 @@
 # Project State
 
 **Last Updated:** 2026-01-08
-**Current Phase:** 1 - Checkpoint Submission Enhancement
+**Current Phase:** 1 - Checkpoint Submission Enhancement (COMPLETE)
 **Project Health:** 🟢 Green
 
 ---
 
 ## Current Position
 
-**Active Work:** Planning Phase 1
-**Next Milestone:** Phase 1 execution (checkpoint validation)
+**Active Work:** Phase 1 Complete - Ready for Phase 2
+**Next Milestone:** Phase 2 - Voice Input & Transcription
 **Blockers:** None
 
 **Progress:**
 - ✅ Project initialized (PROJECT.md, config.json)
 - ✅ Codebase mapped (7 documents in .planning/codebase/)
 - ✅ Roadmap created (7 phases planned)
-- 🔵 Phase 1 planning in progress
+- ✅ Phase 1 complete (word count + heartbeat dwell + draft persistence)
 
 ---
 
@@ -27,6 +27,10 @@
 - Leverage existing Formation Engine API (event sourcing backend)
 - Integrate OpenAI Whisper for voice transcription (Phase 2)
 - Keep XSS fixes integrated with feature work (not separate security phase)
+- **Phase 1:** Unicode-safe word count with `[\p{L}\p{N}]` regex pattern
+- **Phase 1:** Delta-based heartbeat accumulation with Redis sessions (attemptId scoping)
+- **Phase 1:** Timestamp-based timer using performance.now() (no drift)
+- **Phase 1:** Checkpoint-specific localStorage keys for draft isolation
 
 **Scope:**
 - Focus ONLY on Formation Guidebook UI (not LSS, Iron Chamber, or Ministry Works)
