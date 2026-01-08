@@ -51,14 +51,32 @@ function countWords(text: string): number {
   return words.length;
 }
 
+/**
+ * Generate draft key for localStorage
+ */
+function getDraftKey(locale: string, sectionId: string, checkpointId: string): string {
+  return `draft:guidebook:${locale}:${sectionId}:${checkpointId}`;
+}
+
 export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   const [dwellStartTime] = useState(() => Date.now());
   const [showCheckpoint, setShowCheckpoint] = useState(false);
   const [state, action, pending] = useActionState(submitCheckpoint, initialState);
 
-  // Word count state
-  const [reflection, setReflection] = useState("");
-  const [wordCount, setWordCount] = useState(0);
+  // Word count state with draft restoration
+  const [reflection, setReflection] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+    const saved = localStorage.getItem(draftKey);
+    return saved || "";
+  });
+
+  const [wordCount, setWordCount] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+    const saved = localStorage.getItem(draftKey);
+    return saved ? countWords(saved) : 0;
+  });
 
   // Heartbeat tracking state
   const [attemptId] = useState(() => {
@@ -92,6 +110,31 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
     setReflection(text);
     setWordCount(countWords(text));
   };
+
+  // Handle blur (immediate save)
+  const handleBlur = () => {
+    const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+    if (reflection) {
+      localStorage.setItem(draftKey, reflection);
+    }
+  };
+
+  // Save draft with debouncing (500ms delay to reduce write frequency)
+  useEffect(() => {
+    const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+
+    // Debounce: wait 500ms after last change before saving
+    const timeoutId = setTimeout(() => {
+      if (reflection) {
+        localStorage.setItem(draftKey, reflection);
+      } else {
+        // Clear if empty
+        localStorage.removeItem(draftKey);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [reflection, locale, section.id, checkpoint.id]);
 
   // Track tab visibility
   useEffect(() => {
@@ -184,6 +227,16 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   const dwellRequirementMet = displaySeconds >= checkpoint.minimumDwellSeconds;
   const wordRequirementMet = wordCount >= 50;
   const canSubmit = dwellRequirementMet && wordRequirementMet && showCheckpoint;
+
+  // Clear draft ONLY on confirmed successful submission
+  useEffect(() => {
+    // Only clear if submission was successful AND has redirect URL
+    if (state.ok && state.redirectTo) {
+      const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+      localStorage.removeItem(draftKey);
+    }
+    // If state.ok === false, draft remains intact for retry
+  }, [state, locale, section.id, checkpoint.id]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
@@ -279,6 +332,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                     name="reflection"
                     value={reflection}
                     onChange={handleReflectionChange}
+                    onBlur={handleBlur}
                     required
                     disabled={pending}
                     rows={8}
@@ -289,11 +343,27 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                     <span className={wordCount >= 50 ? "text-green-600 dark:text-green-400 font-medium" : "text-neutral-600 dark:text-neutral-400"}>
                       {wordCount} / 50 words {wordCount >= 50 ? "✓" : ""}
                     </span>
-                    {wordCount < 50 && (
-                      <span className="text-amber-600 dark:text-amber-400">
-                        {50 - wordCount} remaining
-                      </span>
-                    )}
+                    <div className="flex items-center gap-4">
+                      {wordCount < 50 && (
+                        <span className="text-amber-600 dark:text-amber-400">
+                          {50 - wordCount} remaining
+                        </span>
+                      )}
+                      {reflection && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const draftKey = getDraftKey(locale, section.id, checkpoint.id);
+                            setReflection("");
+                            setWordCount(0);
+                            localStorage.removeItem(draftKey);
+                          }}
+                          className="text-xs text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 underline"
+                        >
+                          Clear Draft
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                     This reflection is for your formation, not evaluation. Be honest.
