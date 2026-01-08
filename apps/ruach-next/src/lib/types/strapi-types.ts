@@ -189,6 +189,7 @@ export interface DeliverableBlock {
 }
 
 export interface QualifierItem {
+  label?: string;
   text?: string;
 }
 

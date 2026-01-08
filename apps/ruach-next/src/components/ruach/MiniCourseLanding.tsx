@@ -75,7 +75,7 @@ export default function MiniCourseLanding({
             {outcomes.map((outcome, index) => (
               <p key={index} className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-neutral-900" />
-                <span>{outcome.label}</span>
+                <span>{outcome.label ?? outcome.text}</span>
               </p>
             ))}
           </div>

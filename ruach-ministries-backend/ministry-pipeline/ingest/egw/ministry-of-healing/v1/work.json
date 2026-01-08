@@ -1,0 +1,24 @@
+{
+  "workId": "MOH-EGW-1905",
+  "title": "The Ministry of Healing",
+  "slug": "the-ministry-of-healing",
+  "shortCode": "MOH",
+  "author": "Ellen G. White",
+  "category": "health",
+  "totalChapters": 43,
+  "totalParagraphs": 2225,
+  "extractionStatus": "completed",
+  "extractionMetadata": {
+    "extractor_version": "1.0.0",
+    "extraction_method": "pdf-extractor.py",
+    "source_pages": {
+      "first": 16,
+      "last": 367,
+      "total": 349
+    }
+  },
+  "sourceMetadata": {
+    "format": "pdf",
+    "publisher": "Pacific Press"
+  }
+}

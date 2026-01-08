@@ -1,0 +1,89 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_license_policies",
+  "info": {
+    "singularName": "library-license-policy",
+    "pluralName": "library-license-policies",
+    "displayName": "Library License Policy",
+    "description": "Legal gates and retrieval rules for library content"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "policyId": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "regex": "^lic:[a-z0-9-]+$"
+    },
+    "policyName": {
+      "type": "string",
+      "required": true
+    },
+    "licenseType": {
+      "type": "enumeration",
+      "enum": [
+        "public_domain",
+        "creative_commons",
+        "fair_use",
+        "proprietary",
+        "custom"
+      ],
+      "required": true
+    },
+    "allowCommercial": {
+      "type": "boolean",
+      "default": false
+    },
+    "allowDerivatives": {
+      "type": "boolean",
+      "default": false
+    },
+    "requireAttribution": {
+      "type": "boolean",
+      "default": true
+    },
+    "maxChunkLength": {
+      "type": "integer",
+      "default": 500,
+      "min": 100,
+      "max": 5000
+    },
+    "maxChunksPerResponse": {
+      "type": "integer",
+      "default": 3,
+      "min": 1,
+      "max": 20
+    },
+    "allowRagRetrieval": {
+      "type": "boolean",
+      "default": true
+    },
+    "allowFullTextSearch": {
+      "type": "boolean",
+      "default": true
+    },
+    "allowEmbedding": {
+      "type": "boolean",
+      "default": true
+    },
+    "attributionTemplate": {
+      "type": "text",
+      "default": "From {title} by {author}"
+    },
+    "legalText": {
+      "type": "richtext"
+    },
+    "policyMetadata": {
+      "type": "json"
+    },
+    "documents": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-document.library-document",
+      "mappedBy": "licensePolicy"
+    }
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_documents",
+  "info": {
+    "singularName": "library-document",
+    "pluralName": "library-documents",
+    "displayName": "Library Document",
+    "description": "Unified parent record for all library sources (scripture, ministry books, general books)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "documentKey": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "documentType": {
+      "type": "enumeration",
+      "enum": [
+        "scripture",
+        "ministry_book",
+        "theology_book",
+        "reference",
+        "article",
+        "web_content"
+      ],
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "author": {
+      "type": "string"
+    },
+    "translationId": {
+      "type": "string"
+    },
+    "testament": {
+      "type": "enumeration",
+      "enum": [
+        "old",
+        "new",
+        "apocrypha",
+        "tanakh",
+        "renewed_covenant",
+        "pseudepigrapha",
+        "deuterocanonical"
+      ]
+    },
+    "genre": {
+      "type": "enumeration",
+      "enum": [
+        "law",
+        "history",
+        "wisdom",
+        "prophecy",
+        "gospel",
+        "epistle",
+        "apocalyptic",
+        "devotional",
+        "theology",
+        "commentary"
+      ]
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "health",
+        "education",
+        "prophecy",
+        "devotional",
+        "counsel",
+        "biography",
+        "theology",
+        "bible_study"
+      ]
+    },
+    "shortCode": {
+      "type": "string",
+      "unique": true
+    },
+    "yearPublished": {
+      "type": "integer"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "isbn": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "en",
+      "maxLength": 10
+    },
+    "fileUrl": {
+      "type": "string"
+    },
+    "fileType": {
+      "type": "enumeration",
+      "enum": [
+        "pdf",
+        "epub",
+        "docx",
+        "md",
+        "html"
+      ]
+    },
+    "fileSizeBytes": {
+      "type": "biginteger"
+    },
+    "fileSha256": {
+      "type": "string",
+      "unique": true,
+      "maxLength": 64
+    },
+    "coverImageUrl": {
+      "type": "string"
+    },
+    "totalSections": {
+      "type": "integer",
+      "default": 0
+    },
+    "totalChunks": {
+      "type": "integer",
+      "default": 0
+    },
+    "ingestionStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "validated",
+        "approved"
+      ],
+      "default": "pending"
+    },
+    "ingestionProgress": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 100
+    },
+    "ingestionMetadata": {
+      "type": "json"
+    },
+    "sourceMetadata": {
+      "type": "json"
+    },
+    "licensePolicy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-license-policy.library-license-policy",
+      "inversedBy": "documents"
+    },
+    "sections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-section.library-section",
+      "mappedBy": "document"
+    },
+    "chunks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-chunk.library-chunk",
+      "mappedBy": "document"
+    },
+    "legacyScriptureWorkId": {
+      "type": "integer"
+    },
+    "legacyMinistryWorkId": {
+      "type": "integer"
+    }
+  }
+}

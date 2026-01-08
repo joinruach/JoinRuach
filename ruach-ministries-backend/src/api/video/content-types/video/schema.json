@@ -56,7 +56,7 @@
       "default": false
     },
     "uid": {
-      "type": "uid"
+      "type": "string"
     },
     "trending_video": {
       "type": "boolean",

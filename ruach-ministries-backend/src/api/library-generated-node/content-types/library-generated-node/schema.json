@@ -1,0 +1,110 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_generated_nodes",
+  "info": {
+    "singularName": "library-generated-node",
+    "pluralName": "library-generated-nodes",
+    "displayName": "Library Generated Node",
+    "description": "AI or human-authored teaching content with full citation tracking"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nodeId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "nodeType": {
+      "type": "enumeration",
+      "enum": [
+        "teaching",
+        "commentary",
+        "summary",
+        "answer",
+        "devotional",
+        "study_note"
+      ],
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    },
+    "generationMethod": {
+      "type": "enumeration",
+      "enum": [
+        "ai_generated",
+        "human_authored",
+        "ai_assisted",
+        "collaborative"
+      ],
+      "required": true
+    },
+    "aiModel": {
+      "type": "string"
+    },
+    "promptTemplate": {
+      "type": "text"
+    },
+    "citationCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "qualityScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1
+    },
+    "reviewStatus": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "pending_review",
+        "approved",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "nodeMetadata": {
+      "type": "json"
+    },
+    "citations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-citation.library-citation",
+      "mappedBy": "generatedNode"
+    },
+    "primaryDocument": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-document.library-document"
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tag.tag"
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "reviewedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

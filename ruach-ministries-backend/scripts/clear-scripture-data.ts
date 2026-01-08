@@ -1,15 +1,13 @@
+#!/usr/bin/env tsx
 /**
  * Clear all scripture data from production database
  * Uses Strapi API to safely delete all scripture-related content
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+const CLEAR_STRAPI_URL = process.env.STRAPI_URL || 'https://api.joinruach.org';
+const CLEAR_STRAPI_TOKEN = process.env.STRAPI_TOKEN;
 
-const STRAPI_URL = process.env.STRAPI_URL || 'https://api.joinruach.org';
-const STRAPI_TOKEN = process.env.STRAPI_TOKEN;
-
-if (!STRAPI_TOKEN) {
+if (!CLEAR_STRAPI_TOKEN) {
   console.error('❌ STRAPI_TOKEN environment variable required');
   process.exit(1);
 }
@@ -41,10 +39,10 @@ async function deleteAll(contentType: string): Promise<number> {
   while (true) {
     // Fetch a page
     const response = await fetch(
-      `${STRAPI_URL}/api/${contentType}?pagination[page]=${page}&pagination[pageSize]=${pageSize}`,
+      `${CLEAR_STRAPI_URL}/api/${contentType}?pagination[page]=${page}&pagination[pageSize]=${pageSize}`,
       {
         headers: {
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          Authorization: `Bearer ${CLEAR_STRAPI_TOKEN}`,
         },
       }
     );
@@ -57,7 +55,7 @@ async function deleteAll(contentType: string): Promise<number> {
       throw new Error(`Failed to fetch ${contentType}: ${response.statusText}`);
     }
 
-    const data: StrapiResponse = await response.json();
+    const data = (await response.json()) as StrapiResponse;
 
     if (!data.data || data.data.length === 0) {
       break;
@@ -65,10 +63,10 @@ async function deleteAll(contentType: string): Promise<number> {
 
     // Delete each entry
     for (const entry of data.data) {
-      const deleteResponse = await fetch(`${STRAPI_URL}/api/${contentType}/${entry.id}`, {
+      const deleteResponse = await fetch(`${CLEAR_STRAPI_URL}/api/${contentType}/${entry.id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          Authorization: `Bearer ${CLEAR_STRAPI_TOKEN}`,
         },
       });
 
@@ -99,10 +97,10 @@ async function deleteAll(contentType: string): Promise<number> {
 
 async function countEntries(contentType: string): Promise<number> {
   const response = await fetch(
-    `${STRAPI_URL}/api/${contentType}?pagination[page]=1&pagination[pageSize]=1`,
+    `${CLEAR_STRAPI_URL}/api/${contentType}?pagination[page]=1&pagination[pageSize]=1`,
     {
       headers: {
-        Authorization: `Bearer ${STRAPI_TOKEN}`,
+        Authorization: `Bearer ${CLEAR_STRAPI_TOKEN}`,
       },
     }
   );
@@ -114,15 +112,15 @@ async function countEntries(contentType: string): Promise<number> {
     throw new Error(`Failed to fetch ${contentType}: ${response.statusText}`);
   }
 
-  const data: StrapiResponse = await response.json();
+  const data = (await response.json()) as StrapiResponse;
   return data.meta?.pagination?.total || 0;
 }
 
-async function main() {
+async function clearScriptureDataMain() {
   const dryRun = process.argv.includes('--dry-run');
 
   console.log(`🗑️  ${dryRun ? 'DRY RUN:' : ''} Clearing scripture data from production...\n`);
-  console.log(`Target: ${STRAPI_URL}\n`);
+  console.log(`Target: ${CLEAR_STRAPI_URL}\n`);
 
   if (dryRun) {
     console.log('📊 Counting entries (no deletion)...\n');
@@ -153,7 +151,10 @@ async function main() {
   console.log(`\n✅ Complete! Deleted ${totalDeleted} total entries.`);
 }
 
-main().catch((error) => {
+clearScriptureDataMain().catch((error) => {
   console.error('❌ Error:', error.message);
   process.exit(1);
 });
+
+// Make this file a module
+export {};

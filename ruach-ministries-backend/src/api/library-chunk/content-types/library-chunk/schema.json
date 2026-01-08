@@ -1,0 +1,97 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_chunks",
+  "info": {
+    "singularName": "library-chunk",
+    "pluralName": "library-chunks",
+    "displayName": "Library Chunk",
+    "description": "RAG-optimized retrieval units (300-800 tokens)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "chunkKey": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "chunkIndex": {
+      "type": "integer",
+      "required": true
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "textHash": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "charCount": {
+      "type": "integer",
+      "required": true
+    },
+    "tokenCount": {
+      "type": "integer",
+      "required": true
+    },
+    "locatorStart": {
+      "type": "string",
+      "required": true
+    },
+    "locatorEnd": {
+      "type": "string",
+      "required": true
+    },
+    "pageStart": {
+      "type": "integer"
+    },
+    "pageEnd": {
+      "type": "integer"
+    },
+    "embeddingModel": {
+      "type": "string",
+      "default": "text-embedding-3-small"
+    },
+    "embeddingDimensions": {
+      "type": "integer",
+      "default": 512
+    },
+    "embeddingVector": {
+      "type": "json"
+    },
+    "embeddingStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "chunkMetadata": {
+      "type": "json"
+    },
+    "document": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-document.library-document",
+      "inversedBy": "chunks"
+    },
+    "sections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::library-section.library-section",
+      "inversedBy": "chunks"
+    },
+    "citations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-citation.library-citation",
+      "mappedBy": "chunk"
+    }
+  }
+}

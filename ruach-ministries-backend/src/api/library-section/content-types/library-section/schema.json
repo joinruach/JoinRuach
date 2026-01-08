@@ -1,0 +1,143 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_sections",
+  "info": {
+    "singularName": "library-section",
+    "pluralName": "library-sections",
+    "displayName": "Library Section",
+    "description": "Normalized units of content (verses, paragraphs, headings)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sectionKey": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "sectionType": {
+      "type": "enumeration",
+      "enum": [
+        "verse",
+        "paragraph",
+        "heading",
+        "blockquote",
+        "list_item",
+        "footnote"
+      ],
+      "required": true,
+      "default": "paragraph"
+    },
+    "locatorKey": {
+      "type": "string",
+      "required": true
+    },
+    "chapterNumber": {
+      "type": "integer"
+    },
+    "verseNumber": {
+      "type": "integer"
+    },
+    "paragraphNumber": {
+      "type": "integer"
+    },
+    "orderIndex": {
+      "type": "integer",
+      "required": true
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "textHash": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "heading": {
+      "type": "string"
+    },
+    "pageStart": {
+      "type": "integer"
+    },
+    "pageEnd": {
+      "type": "integer"
+    },
+    "osisRef": {
+      "type": "string"
+    },
+    "strongsNumbers": {
+      "type": "json"
+    },
+    "morphology": {
+      "type": "json"
+    },
+    "footnotes": {
+      "type": "json"
+    },
+    "crossReferences": {
+      "type": "json"
+    },
+    "detectedReferences": {
+      "type": "json"
+    },
+    "embedding": {
+      "type": "json"
+    },
+    "semanticSummary": {
+      "type": "text"
+    },
+    "aiMetadata": {
+      "type": "json"
+    },
+    "sourceMetadata": {
+      "type": "json"
+    },
+    "qualityScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1
+    },
+    "reviewStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved",
+        "flagged",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "document": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-document.library-document",
+      "inversedBy": "sections"
+    },
+    "parentSection": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-section.library-section",
+      "inversedBy": "childSections"
+    },
+    "childSections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-section.library-section",
+      "mappedBy": "parentSection"
+    },
+    "chunks": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::library-chunk.library-chunk",
+      "mappedBy": "sections"
+    },
+    "legacyScriptureVerseId": {
+      "type": "integer"
+    },
+    "legacyMinistryTextId": {
+      "type": "integer"
+    }
+  }
+}

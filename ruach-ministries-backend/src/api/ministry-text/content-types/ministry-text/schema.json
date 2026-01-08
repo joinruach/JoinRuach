@@ -1,0 +1,83 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ministry_texts",
+  "info": {
+    "singularName": "ministry-text",
+    "pluralName": "ministry-texts",
+    "displayName": "Ministry Text",
+    "description": "Individual paragraphs or sections from ministry books"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "textId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "chapterNumber": {
+      "type": "integer",
+      "required": true
+    },
+    "paragraphNumber": {
+      "type": "integer",
+      "required": true
+    },
+    "sectionId": {
+      "type": "string"
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "heading": {
+      "type": "string"
+    },
+    "textHash": {
+      "type": "string"
+    },
+    "detectedReferences": {
+      "type": "json"
+    },
+    "embedding": {
+      "type": "json"
+    },
+    "semanticSummary": {
+      "type": "text"
+    },
+    "aiMetadata": {
+      "type": "json"
+    },
+    "sourceMetadata": {
+      "type": "json"
+    },
+    "reviewStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "flagged", "rejected"],
+      "default": "pending"
+    },
+    "qualityScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1
+    },
+    "work": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ministry-work.ministry-work",
+      "inversedBy": "texts"
+    },
+    "scriptureReferences": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-verse.scripture-verse"
+    },
+    "themes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::scripture-theme.scripture-theme"
+    }
+  }
+}

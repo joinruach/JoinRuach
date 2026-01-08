@@ -271,3 +271,10 @@ export async function submitReview(ctx: any) {
     ctx.internalServerError('Failed to submit review');
   }
 }
+
+// Export as default object for Strapi controller
+export default {
+  enqueue,
+  listVersions,
+  submitReview,
+};

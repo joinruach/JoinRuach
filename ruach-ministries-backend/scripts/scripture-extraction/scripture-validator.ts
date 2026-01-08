@@ -215,7 +215,7 @@ export class ScriptureValidator {
 
       // Check for gaps
       const expectedRange = Array.from(
-        { length: expectedCount },
+        { length: expectedCount as number },
         (_, i) => i + 1
       );
       const actualSet = new Set(verseNumbers);
@@ -231,7 +231,7 @@ export class ScriptureValidator {
       }
 
       // Check for out-of-range verses
-      const outOfRange = verseNumbers.filter((v) => v > expectedCount || v < 1);
+      const outOfRange = verseNumbers.filter((v) => v > (expectedCount as number) || v < 1);
       if (outOfRange.length > 0) {
         errors.push({
           type: 'error',

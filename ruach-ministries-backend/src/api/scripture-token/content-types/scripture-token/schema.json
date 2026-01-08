@@ -19,8 +19,7 @@
     "verse": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::scripture-verse.scripture-verse",
-      "inversedBy": "tokens"
+      "target": "api::scripture-verse.scripture-verse"
     },
     "position": {
       "type": "integer",

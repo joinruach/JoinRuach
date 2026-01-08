@@ -13,7 +13,7 @@ import { readFile, readdir, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 
 // Content types
-type ContentType = "scripture" | "canon" | "library";
+type ContentType = "scripture" | "canon" | "library" | "ministry";
 
 // Base job interface
 interface BaseIngestionJob {
@@ -56,7 +56,20 @@ interface LibraryIngestionJob extends BaseIngestionJob {
   };
 }
 
-type UnifiedIngestionJob = ScriptureIngestionJob | CanonIngestionJob | LibraryIngestionJob;
+// Ministry-specific job
+interface MinistryIngestionJob extends BaseIngestionJob {
+  contentType: "ministry";
+  ministryParams: {
+    bookCode: string;
+    author: string;
+    bookTitle: string;
+    enableEmbeddings: boolean;
+    enableThemeTagging: boolean;
+    enableAiMetadata: boolean;
+  };
+}
+
+type UnifiedIngestionJob = ScriptureIngestionJob | CanonIngestionJob | LibraryIngestionJob | MinistryIngestionJob;
 
 let queue: Queue<UnifiedIngestionJob> | null = null;
 let worker: Worker<UnifiedIngestionJob> | null = null;
@@ -105,6 +118,9 @@ async function processUnifiedIngestion(
         break;
       case "library":
         result = await processLibraryIngestion(strapi, job as LibraryIngestionJob);
+        break;
+      case "ministry":
+        result = await processMinistryIngestion(strapi, job as MinistryIngestionJob);
         break;
       default:
         throw new Error(`Unknown content type: ${contentType}`);
@@ -290,6 +306,114 @@ async function processLibraryIngestion(
   });
 
   return { qaMetrics: result };
+}
+
+/**
+ * Process ministry text ingestion (EGW ministry books)
+ */
+async function processMinistryIngestion(
+  strapi: Core.Strapi,
+  job: MinistryIngestionJob
+): Promise<{ qaMetrics?: any }> {
+  const { versionId, fileUrl, ministryParams } = job;
+  const { bookCode, bookTitle, author, enableEmbeddings, enableThemeTagging, enableAiMetadata } = ministryParams;
+
+  strapi.log.info(`[ministry-ingestion] Processing ${bookCode} (${versionId})`);
+
+  const workingDir = `/tmp/ministry-extraction/${versionId}`;
+  await mkdir(workingDir, { recursive: true });
+
+  try {
+    // Step 1: PDF Extraction
+    strapi.log.info(`[ministry-ingestion] Step 1/5: Extracting from PDF`);
+    const extractorScript = path.join(__dirname, "../../scripts/ministry-extraction/pdf-extractor.py");
+
+    await runPythonScript(strapi, {
+      scriptPath: extractorScript,
+      args: [
+        "--pdf", fileUrl,
+        "--out", `${workingDir}/paragraphs.jsonl`,
+        "--book-code", bookCode
+      ],
+    });
+
+    // Step 2: AI Enrichment (if enabled)
+    let enrichedFile = `${workingDir}/paragraphs.jsonl`;
+    if (enableEmbeddings || enableThemeTagging || enableAiMetadata) {
+      strapi.log.info(`[ministry-ingestion] Step 2/5: AI enrichment`);
+      const enrichmentScript = path.join(__dirname, "../../scripts/ministry-extraction/ai-enrichment.ts");
+      const enrichmentArgs = [`${workingDir}/paragraphs.jsonl`, `${workingDir}/enriched.jsonl`];
+
+      if (enableEmbeddings) enrichmentArgs.push("--embeddings");
+      if (enableThemeTagging) enrichmentArgs.push("--themes");
+      if (enableAiMetadata) enrichmentArgs.push("--ai-metadata");
+
+      await runNodeScript(strapi, {
+        scriptPath: enrichmentScript,
+        args: enrichmentArgs,
+        env: {
+          OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+          ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+          STRAPI_URL: process.env.STRAPI_URL,
+          STRAPI_API_TOKEN: process.env.STRAPI_API_TOKEN,
+        },
+      });
+
+      enrichedFile = `${workingDir}/enriched.jsonl`;
+    } else {
+      strapi.log.info(`[ministry-ingestion] Step 2/5: Skipping AI enrichment (not enabled)`);
+    }
+
+    // Step 3: Convert to Strapi format
+    strapi.log.info(`[ministry-ingestion] Step 3/5: Converting to Strapi format`);
+    const converterScript = path.join(__dirname, "../../scripts/ministry-extraction/jsonl-to-strapi.py");
+
+    await runPythonScript(strapi, {
+      scriptPath: converterScript,
+      args: [
+        "--in", enrichedFile,
+        "--out", `${workingDir}/ingest`,
+        "--chunk", "500",
+      ],
+    });
+
+    // Step 4: Validation
+    strapi.log.info(`[ministry-ingestion] Step 4/5: Validating extraction`);
+    const validatorScript = path.join(__dirname, "../../scripts/ministry-extraction/validate-ministry-dump.py");
+
+    const validationResult = await runPythonScript(strapi, {
+      scriptPath: validatorScript,
+      args: [`${workingDir}/ingest`],
+    });
+
+    if (validationResult.exitCode !== 0) {
+      throw new Error(`Validation failed for ${bookCode}`);
+    }
+
+    // Step 5: Auto-import to Strapi (no manual review required)
+    strapi.log.info(`[ministry-ingestion] Step 5/5: Importing to Strapi`);
+    const importScript = path.join(__dirname, "../../scripts/ministry-extraction/import-to-strapi.ts");
+
+    await runNodeScript(strapi, {
+      scriptPath: importScript,
+      args: [`${workingDir}/ingest`],
+      env: {
+        STRAPI_URL: process.env.STRAPI_URL,
+        STRAPI_API_TOKEN: process.env.STRAPI_API_TOKEN,
+      },
+    });
+
+    // Load validation report for QA metrics
+    const reportPath = `${workingDir}/ingest/validation-report.json`;
+    const report = JSON.parse(await readFile(reportPath, "utf-8"));
+
+    strapi.log.info(`[ministry-ingestion] Completed ${bookCode}: ${report.stats.paragraphs} paragraphs`);
+
+    return { qaMetrics: report };
+  } catch (error) {
+    strapi.log.error(`[ministry-ingestion] Failed:`, error);
+    throw error;
+  }
 }
 
 /**

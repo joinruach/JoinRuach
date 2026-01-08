@@ -1,0 +1,79 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_citations",
+  "info": {
+    "singularName": "library-citation",
+    "pluralName": "library-citations",
+    "displayName": "Library Citation",
+    "description": "Receipts linking generated content to source chunks"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "citationId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "citationType": {
+      "type": "enumeration",
+      "enum": [
+        "direct_quote",
+        "paraphrase",
+        "reference",
+        "inspiration",
+        "semantic_match"
+      ],
+      "required": true
+    },
+    "relevanceScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "required": true
+    },
+    "retrievalMethod": {
+      "type": "enumeration",
+      "enum": [
+        "vector_search",
+        "full_text_search",
+        "keyword_match",
+        "manual_selection"
+      ],
+      "required": true
+    },
+    "retrievalRank": {
+      "type": "integer",
+      "min": 1
+    },
+    "attributionText": {
+      "type": "text",
+      "required": true
+    },
+    "contextWindow": {
+      "type": "text"
+    },
+    "citationMetadata": {
+      "type": "json"
+    },
+    "chunk": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-chunk.library-chunk",
+      "inversedBy": "citations"
+    },
+    "generatedNode": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-generated-node.library-generated-node",
+      "inversedBy": "citations"
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
