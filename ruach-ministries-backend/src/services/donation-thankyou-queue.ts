@@ -1,12 +1,21 @@
 import type { Core } from "@strapi/strapi";
 import { Queue, Worker, type Job } from "bullmq";
-import IORedis, { type RedisOptions } from "ioredis";
+import type { RedisOptions } from "ioredis";
 
 type ThankYouJob = {
   stripeSessionId: string;
 };
 
-let queue: Queue<ThankYouJob> | null = null;
+type ThankYouQueue = Queue<
+  ThankYouJob,
+  any,
+  string,
+  ThankYouJob,
+  any,
+  string
+>;
+
+let queue: ThankYouQueue | null = null;
 let worker: Worker<ThankYouJob> | null = null;
 
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
@@ -14,7 +23,7 @@ const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379", 10);
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || undefined;
 const REDIS_TLS = process.env.REDIS_TLS === "true";
 
-function createRedisConnection() {
+function createRedisConnection(): RedisOptions {
   const options: RedisOptions = {
     host: REDIS_HOST,
     port: REDIS_PORT,
@@ -24,7 +33,7 @@ function createRedisConnection() {
   if (REDIS_TLS) {
     options.tls = {};
   }
-  return new IORedis(options);
+  return options;
 }
 
 function formatMoney(cents: number, currency: string) {
@@ -71,7 +80,7 @@ export async function initializeDonationThankYouQueue({ strapi }: { strapi: Core
     const connection = createRedisConnection();
     const queueName = "donation-thankyou";
 
-    queue = new Queue<ThankYouJob>(queueName, {
+    queue = new Queue<ThankYouJob, any, string, ThankYouJob, any, string>(queueName, {
       connection,
       defaultJobOptions: {
         attempts: 3,

@@ -6,7 +6,7 @@
 
 import type { Core } from "@strapi/strapi";
 import { Queue, Worker, type Job } from "bullmq";
-import IORedis, { type RedisOptions } from "ioredis";
+import type { RedisOptions } from "ioredis";
 import { spawn } from "child_process";
 import path from "path";
 import { readFile, readdir, writeFile, mkdir } from "fs/promises";
@@ -71,7 +71,16 @@ interface MinistryIngestionJob extends BaseIngestionJob {
 
 type UnifiedIngestionJob = ScriptureIngestionJob | CanonIngestionJob | LibraryIngestionJob | MinistryIngestionJob;
 
-let queue: Queue<UnifiedIngestionJob> | null = null;
+type UnifiedQueue = Queue<
+  UnifiedIngestionJob,
+  any,
+  string,
+  UnifiedIngestionJob,
+  any,
+  string
+>;
+
+let queue: UnifiedQueue | null = null;
 let worker: Worker<UnifiedIngestionJob> | null = null;
 
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
@@ -79,7 +88,7 @@ const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379", 10);
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || undefined;
 const REDIS_TLS = process.env.REDIS_TLS === "true";
 
-function createRedisConnection() {
+function createRedisConnection(): RedisOptions {
   const options: RedisOptions = {
     host: REDIS_HOST,
     port: REDIS_PORT,
@@ -89,7 +98,7 @@ function createRedisConnection() {
   if (REDIS_TLS) {
     options.tls = {};
   }
-  return new IORedis(options);
+  return options;
 }
 
 /**
@@ -740,7 +749,14 @@ export async function initializeUnifiedIngestionQueue({
     const connection = createRedisConnection();
     const queueName = "unified-ingestion";
 
-    queue = new Queue<UnifiedIngestionJob>(queueName, {
+    queue = new Queue<
+      UnifiedIngestionJob,
+      any,
+      string,
+      UnifiedIngestionJob,
+      any,
+      string
+    >(queueName, {
       connection,
       defaultJobOptions: {
         attempts: 3,
@@ -756,7 +772,7 @@ export async function initializeUnifiedIngestionQueue({
         await processUnifiedIngestion(strapi, job.data);
       },
       {
-        connection: createRedisConnection(),
+        connection,
         concurrency: 2, // Process 2 jobs in parallel
       }
     );

@@ -1,6 +1,6 @@
 import type { Core } from "@strapi/strapi";
 import { Queue, Worker, type Job } from "bullmq";
-import IORedis, { type RedisOptions } from "ioredis";
+import type { RedisOptions } from "ioredis";
 import { spawn } from "child_process";
 import path from "path";
 
@@ -16,7 +16,16 @@ type LibraryIngestionJob = {
   };
 };
 
-let queue: Queue<LibraryIngestionJob> | null = null;
+type LibraryQueue = Queue<
+  LibraryIngestionJob,
+  any,
+  string,
+  LibraryIngestionJob,
+  any,
+  string
+>;
+
+let queue: LibraryQueue | null = null;
 let worker: Worker<LibraryIngestionJob> | null = null;
 
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
@@ -24,7 +33,7 @@ const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379", 10);
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || undefined;
 const REDIS_TLS = process.env.REDIS_TLS === "true";
 
-function createRedisConnection() {
+function createRedisConnection(): RedisOptions {
   const options: RedisOptions = {
     host: REDIS_HOST,
     port: REDIS_PORT,
@@ -34,7 +43,7 @@ function createRedisConnection() {
   if (REDIS_TLS) {
     options.tls = {};
   }
-  return new IORedis(options);
+  return options;
 }
 
 async function processLibraryIngestion(
@@ -185,7 +194,14 @@ export async function initializeLibraryIngestionQueue({ strapi }: { strapi: Core
     const connection = createRedisConnection();
     const queueName = "library-ingestion";
 
-    queue = new Queue<LibraryIngestionJob>(queueName, {
+    queue = new Queue<
+      LibraryIngestionJob,
+      any,
+      string,
+      LibraryIngestionJob,
+      any,
+      string
+    >(queueName, {
       connection,
       defaultJobOptions: {
         attempts: 3,
