@@ -74,7 +74,7 @@ importers:
         version: 8.50.1(eslint@8.57.1)(typescript@5.3.3)
       '@vitejs/plugin-react':
         specifier: ^5.1.0
-        version: 5.1.2(vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))
+        version: 5.1.2(vite@7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))
       '@vitest/coverage-v8':
         specifier: ^4.0.8
         version: 4.0.16(vitest@4.0.16)
@@ -119,7 +119,7 @@ importers:
         version: 1.0.7(tailwindcss@3.4.19(tsx@4.20.2)(yaml@2.8.2))
       tsup:
         specifier: ^8.1.0
-        version: 8.5.1(@swc/core@1.15.7)(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.2)(typescript@5.3.3)(yaml@2.8.2)
+        version: 8.5.1(@swc/core@1.15.7)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.2)(typescript@5.3.3)(yaml@2.8.2)
       tsx:
         specifier: 4.20.2
         version: 4.20.2
@@ -131,7 +131,7 @@ importers:
         version: 5.3.3
       vitest:
         specifier: ^4.0.8
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@1.21.7)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
 
   apps/ruach-next:
     dependencies:
@@ -141,6 +141,12 @@ importers:
       '@ai-sdk/react':
         specifier: ^2.0.26
         version: 2.0.118(react@18.3.1)(zod@3.25.76)
+      '@aws-sdk/client-s3':
+        specifier: ^3.758.0
+        version: 3.958.0
+      '@aws-sdk/s3-request-presigner':
+        specifier: ^3.758.0
+        version: 3.958.0
       '@ducanh2912/next-pwa':
         specifier: ^10.2.9
         version: 10.2.9(@types/babel__core@7.20.5)(next@16.1.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(webpack@5.104.1(@swc/core@1.15.7)(esbuild@0.27.2))
@@ -21192,7 +21198,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react@5.1.2(vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))':
+  '@vitejs/plugin-react@5.1.2(vite@7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -21200,7 +21206,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.53
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
+      vite: 7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -21217,7 +21223,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@1.21.7)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -21230,13 +21236,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.16(vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))':
+  '@vitest/mocker@4.0.16(vite@7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
+      vite: 7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -21264,7 +21270,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@1.21.7)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
 
   '@vitest/utils@4.0.16':
     dependencies:
@@ -28745,35 +28751,6 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  tsup@8.5.1(@swc/core@1.15.7)(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.2)(typescript@5.3.3)(yaml@2.8.2):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.27.2)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.1
-      esbuild: 0.27.2
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.2)(yaml@2.8.2)
-      resolve-from: 5.0.0
-      rollup: 4.49.0
-      source-map: 0.7.6
-      sucrase: 3.35.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.14
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.15.7
-      postcss: 8.5.6
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
-
   tsup@8.5.1(@swc/core@1.15.7)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.2)(typescript@5.3.3)(yaml@2.8.2):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.2)
@@ -29176,22 +29153,6 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2):
-    dependencies:
-      esbuild: 0.25.9
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.6
-      rollup: 4.49.0
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@types/node': 20.19.27
-      fsevents: 2.3.3
-      jiti: 1.21.7
-      terser: 5.44.1
-      tsx: 4.20.2
-      yaml: 2.8.2
-
   vite@7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2):
     dependencies:
       esbuild: 0.25.9
@@ -29208,51 +29169,10 @@ snapshots:
       tsx: 4.20.2
       yaml: 2.8.2
 
-  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@1.21.7)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2):
-    dependencies:
-      '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))
-      '@vitest/pretty-format': 4.0.16
-      '@vitest/runner': 4.0.16
-      '@vitest/snapshot': 4.0.16
-      '@vitest/spy': 4.0.16
-      '@vitest/utils': 4.0.16
-      es-module-lexer: 1.7.0
-      expect-type: 1.2.2
-      magic-string: 0.30.21
-      obug: 2.1.1
-      pathe: 2.0.3
-      picomatch: 4.0.3
-      std-env: 3.10.0
-      tinybench: 2.9.0
-      tinyexec: 1.0.2
-      tinyglobby: 0.2.15
-      tinyrainbow: 3.0.3
-      vite: 7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@opentelemetry/api': 1.9.0
-      '@types/node': 20.19.27
-      '@vitest/ui': 4.0.16(vitest@4.0.16)
-      happy-dom: 20.0.11
-      jsdom: 27.3.0(bufferutil@4.1.0)
-    transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
-
   vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@20.19.27)(@vitest/ui@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0(bufferutil@4.1.0))(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(vite@7.2.2(@types/node@20.19.27)(jiti@1.21.7)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))
+      '@vitest/mocker': 4.0.16(vite@7.2.2(@types/node@20.19.27)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.2)(yaml@2.8.2))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16

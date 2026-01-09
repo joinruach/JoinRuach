@@ -33,7 +33,7 @@ export default async function CoursesPage({
         .filter((slug): slug is string => typeof slug === "string")
     )
   );
-  const progressMap = await getCourseProgressMap(courseSlugs, jwt);
+  const progressMap = await getCourseProgressMap(courseSlugs, jwt ?? undefined);
 
   const courses: CourseCardType[] = (items || [])
     .map((course): CourseCardType | null => {
@@ -62,13 +62,7 @@ export default async function CoursesPage({
         ...(typeof attributes.unlockRequirements === "string" && attributes.unlockRequirements.trim()
           ? { unlockRequirements: attributes.unlockRequirements }
           : {}),
-        progress: progress
-          ? {
-              percentComplete: progress.percentComplete,
-              completedLessons: progress.completedLessons,
-              totalLessons: progress.totalLessons,
-            }
-          : undefined,
+        progress: progress ?? undefined,
         requiredAccessLevel: normalizeAccessLevel(attributes.requiredAccessLevel ?? null),
         viewer: viewer ?? null,
         ownsCourse: ownedCourseSlugs.includes(slug),

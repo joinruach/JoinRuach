@@ -1,4 +1,4 @@
-import type { AccessLevel as AccessLevelType } from "@ruach/components/components/ruach/CourseCard";
+import type { AccessLevel as AccessLevelType } from "@ruach/utils";
 
 export type CourseAccessLevel = AccessLevelType;
 
