@@ -59,6 +59,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.44",
     "ai": "^5.0.92",
+    "better-sqlite3": "^12.5.0",
     "bullmq": "^5.63.0",
     "ioredis": "^5.8.2",
     "openai": "^6.8.1",

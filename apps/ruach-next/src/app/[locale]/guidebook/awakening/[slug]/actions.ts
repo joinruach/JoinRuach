@@ -60,14 +60,45 @@ interface DwellSession {
   startedAt: number; // timestamp (ms)
 }
 
+type RedisClient = NonNullable<typeof redis>;
+let redisDisabledGlobally = false;
+
+function disableRedis(error?: unknown) {
+  if (redisDisabledGlobally) return;
+  redisDisabledGlobally = true;
+  console.warn("[Redis] Disabled due to error:", error);
+}
+
+async function safeRedisCall<T>(operation: (client: RedisClient) => Promise<T>): Promise<T | null> {
+  if (!redis || redisDisabledGlobally) return null;
+  try {
+    return await operation(redis);
+  } catch (error) {
+    disableRedis(error);
+    return null;
+  }
+}
+
+async function redisGetSafe(key: string) {
+  return safeRedisCall((client) => client.get(key));
+}
+
+async function redisSetSafe(key: string, value: string, opts?: Parameters<RedisClient["set"]>[2]) {
+  return safeRedisCall((client) => client.set(key, value, opts));
+}
+
+async function redisDelSafe(key: string) {
+  return safeRedisCall((client) => client.del(key));
+}
+
 /**
  * Get dwell session from Redis by attemptId
  */
 async function getDwellSession(attemptId: string): Promise<DwellSession | null> {
-  if (!redis) return null;
+  if (!redis || redisDisabledGlobally) return null;
 
   const key = `dwell:attempt:${attemptId}`;
-  const data = await redis.get(key);
+  const data = await redisGetSafe(key);
 
   if (!data) return null;
 
@@ -95,9 +126,9 @@ async function getOrCreateDwellSession(
     lastHeartbeatSeq: 0,
   };
 
-  if (redis) {
+  if (redis && !redisDisabledGlobally) {
     const key = `dwell:attempt:${attemptId}`;
-    await redis.set(key, JSON.stringify(session), { ex: 3600 }); // 1 hour TTL
+    await redisSetSafe(key, JSON.stringify(session), { ex: 3600 }); // 1 hour TTL
   }
 
   return session;
@@ -107,10 +138,10 @@ async function getOrCreateDwellSession(
  * Save dwell session with TTL refresh
  */
 async function saveDwellSession(attemptId: string, session: DwellSession, ttlSeconds: number): Promise<void> {
-  if (!redis) return;
+  if (!redis || redisDisabledGlobally) return;
 
   const key = `dwell:attempt:${attemptId}`;
-  await redis.set(key, JSON.stringify(session), { ex: ttlSeconds });
+  await redisSetSafe(key, JSON.stringify(session), { ex: ttlSeconds });
 }
 
 /**
@@ -162,13 +193,14 @@ export async function getUserId(): Promise<string> {
 export async function trackDwellHeartbeat(formData: FormData): Promise<{
   ok: boolean;
   accumulatedSeconds: number;
+  redisEnabled: boolean;
   rateLimited?: boolean;
   duplicate?: boolean;
 }> {
   try {
     // If Redis is not available, return 0 seconds (graceful degradation)
     if (!redis) {
-      return { ok: true, accumulatedSeconds: 0 };
+      return { ok: true, accumulatedSeconds: 0, redisEnabled: false };
     }
 
     const sectionId = formData.get('sectionId') as string;
@@ -182,11 +214,16 @@ export async function trackDwellHeartbeat(formData: FormData): Promise<{
     const lastPing = await redis.get(rateLimitKey);
 
     if (lastPing) {
-      const lastPingTime = typeof lastPing === 'string' ? parseInt(lastPing) : lastPing;
+      const lastPingTime = Number(lastPing);
       if (Date.now() - lastPingTime < 8000) {
         // Too frequent - return last known state
         const session = await getDwellSession(attemptId);
-        return { ok: true, accumulatedSeconds: session?.accumulatedSeconds || 0, rateLimited: true };
+        return {
+          ok: true,
+          accumulatedSeconds: session?.accumulatedSeconds || 0,
+          redisEnabled: true,
+          rateLimited: true,
+        };
       }
     }
 
@@ -203,7 +240,7 @@ export async function trackDwellHeartbeat(formData: FormData): Promise<{
     // Idempotency: check heartbeat sequence
     if (heartbeatSeq <= session.lastHeartbeatSeq) {
       // Duplicate or old heartbeat - ignore, return current state
-      return { ok: true, accumulatedSeconds: session.accumulatedSeconds, duplicate: true };
+      return { ok: true, accumulatedSeconds: session.accumulatedSeconds, redisEnabled: true, duplicate: true };
     }
 
     // Delta-based accumulation (not fixed +10)
@@ -223,10 +260,10 @@ export async function trackDwellHeartbeat(formData: FormData): Promise<{
     // Save with TTL refresh (1 hour, extends on each ping)
     await saveDwellSession(attemptId, session, 3600); // TTL 3600s
 
-    return { ok: true, accumulatedSeconds: session.accumulatedSeconds };
+    return { ok: true, accumulatedSeconds: session.accumulatedSeconds, redisEnabled: true };
   } catch (error) {
     console.error('[Dwell Heartbeat Error]', error);
-    return { ok: true, accumulatedSeconds: 0 }; // Graceful degradation
+    return { ok: true, accumulatedSeconds: 0, redisEnabled: false }; // Graceful degradation
   }
 }
 
@@ -249,6 +286,7 @@ export async function submitCheckpoint(
       phase: formData.get("phase"),
       dwellTimeSeconds: formData.get("dwellTimeSeconds"),
       reflection: formData.get("reflection"),
+      attemptId: formData.get("attemptId"),
     };
 
     const validation = CheckpointSubmissionSchema.safeParse(rawData);
@@ -274,9 +312,9 @@ export async function submitCheckpoint(
 
     // 3.5. Validate accumulated dwell time from server session (heartbeat-based)
     // Get the checkpoint to check minimumDwellSeconds
-    const currentCheckpoint = AwakeningPhase.sections
-      .find((s) => s.id === sectionId)
-      ?.checkpoints.find((c) => c.id === checkpointId);
+    const currentCheckpoint = AwakeningPhase.checkpoints.find(
+      (c) => c.id === checkpointId && c.sectionId === sectionId
+    );
 
     if (!currentCheckpoint) {
       return {
@@ -288,15 +326,30 @@ export async function submitCheckpoint(
     // Get accumulated dwell time from server session (by attemptId)
     const session = await getDwellSession(attemptId);
 
-    if (!session || session.accumulatedSeconds < currentCheckpoint.minimumDwellSeconds) {
-      return {
-        ok: false,
-        message: `Please spend at least ${currentCheckpoint.minimumDwellSeconds} seconds engaging with the content. (You've accumulated ${session?.accumulatedSeconds || 0} seconds.)`
-      };
+    if (!redis) {
+      if (process.env.NODE_ENV !== "development") {
+        return {
+          ok: false,
+          message: "Dwell tracking is temporarily unavailable. Please try again in a moment.",
+        };
+      }
+      if (dwellTimeSeconds < currentCheckpoint.minimumDwellSeconds) {
+        return {
+          ok: false,
+          message: `Please spend at least ${currentCheckpoint.minimumDwellSeconds} seconds engaging with the content. (You've accumulated ${dwellTimeSeconds} seconds.)`,
+        };
+      }
+    } else {
+      if (!session || session.accumulatedSeconds < currentCheckpoint.minimumDwellSeconds) {
+        return {
+          ok: false,
+          message: `Please spend at least ${currentCheckpoint.minimumDwellSeconds} seconds engaging with the content. (You've accumulated ${session?.accumulatedSeconds || 0} seconds.)`,
+        };
+      }
     }
 
     // Validate attemptId matches session metadata (prevent attempt swapping)
-    if (session.checkpointId !== checkpointId) {
+    if (session && session.checkpointId !== checkpointId) {
       return {
         ok: false,
         message: 'Invalid dwell session. Please reload and try again.'

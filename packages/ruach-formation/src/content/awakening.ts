@@ -46,7 +46,7 @@ This is not a question designed to unsettle you for its own sake. It is an invit
 
 The Bereans in Acts 17:11 were commended for this very practice:
 
-> *"Now these Jews were more noble than those in Thessalonica; they received the word with all eagerness, examining the Scriptures daily to see if these things were so."* (Acts 17:11, ESV)
+> {{scripture osis="Acts.17.11" translation="YAH"}}
 
 They did not accept Paul's teaching at face value, even though he was an apostle. They tested it against Scripture. This is the posture we are cultivating: **eager receptivity paired with discerning examination**.
 
@@ -78,7 +78,7 @@ This is not about rejecting all you've been taught. It is about taking responsib
       book: 'Acts',
       chapter: 17,
       verseStart: 11,
-      translation: 'ESV',
+      translation: 'YAH',
     },
     {
       book: '1 Thessalonians',

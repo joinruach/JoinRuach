@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { FormationSection, Checkpoint } from "@ruach/formation";
 import { submitCheckpoint, trackDwellHeartbeat, getUserId } from "./actions";
@@ -58,9 +58,14 @@ function getDraftKey(locale: string, sectionId: string, checkpointId: string): s
   return `draft:guidebook:${locale}:${sectionId}:${checkpointId}`;
 }
 
+function formatDurationSeconds(seconds: number): string {
+  const clampedSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(clampedSeconds / 60);
+  const remainingSeconds = clampedSeconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
 export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
-  const [dwellStartTime] = useState(() => Date.now());
-  const [showCheckpoint, setShowCheckpoint] = useState(false);
   const [state, action, pending] = useActionState(submitCheckpoint, initialState);
 
   // Word count state with draft restoration
@@ -88,6 +93,20 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   const [isTabVisible, setIsTabVisible] = useState(true);
   const [displaySeconds, setDisplaySeconds] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [heartbeatEnabled, setHeartbeatEnabled] = useState(true);
+
+  const serverAccumulatedSecondsRef = useRef(0);
+  const lastVisibleAtRef = useRef<number | null>(null);
+
+  const setServerAccumulatedSecondsSafe = (value: number) => {
+    serverAccumulatedSecondsRef.current = value;
+    setServerAccumulatedSeconds(value);
+  };
+
+  const setLastVisibleAtSafe = (value: number | null) => {
+    lastVisibleAtRef.current = value;
+    setLastVisibleAt(value);
+  };
 
   // Fetch userId on mount
   useEffect(() => {
@@ -139,13 +158,32 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   // Track tab visibility
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setIsTabVisible(document.visibilityState === 'visible');
+      const isVisible = document.visibilityState === "visible";
+      setIsTabVisible(isVisible);
+
+      if (isVisible) {
+        setLastVisibleAtSafe(performance.now());
+        return;
+      }
+
+      // If we're not server-backed, preserve local accumulated time when the tab hides.
+      if (!heartbeatEnabled) {
+        const last = lastVisibleAtRef.current;
+        if (last !== null) {
+          const localElapsed = Math.floor((performance.now() - last) / 1000);
+          setServerAccumulatedSecondsSafe(
+            serverAccumulatedSecondsRef.current + Math.max(0, localElapsed)
+          );
+        }
+      }
+
+      setLastVisibleAtSafe(null);
     };
 
     const handlePageHide = () => {
       // Safari/iOS: ensure cleanup on page hide
       setIsTabVisible(false);
-      setLastVisibleAt(null);
+      setLastVisibleAtSafe(null);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -153,8 +191,8 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
     window.addEventListener('beforeunload', handlePageHide);
 
     // Initialize on mount
-    if (document.visibilityState === 'visible') {
-      setLastVisibleAt(performance.now());
+    if (document.visibilityState === "visible") {
+      setLastVisibleAtSafe(performance.now());
     }
 
     return () => {
@@ -162,7 +200,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handlePageHide);
     };
-  }, []);
+  }, [heartbeatEnabled]);
 
   // Update display time every second (optimistic + server reconciliation)
   useEffect(() => {
@@ -182,7 +220,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
 
   // Send heartbeat ping every 10 seconds
   useEffect(() => {
-    if (!isTabVisible || !userId) return;
+    if (!heartbeatEnabled || !isTabVisible || !userId) return;
 
     const heartbeatInterval = setInterval(async () => {
       if (isTabVisible && userId) {
@@ -199,29 +237,32 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
 
         const response = await trackDwellHeartbeat(formData);
 
+        if (!response.redisEnabled) {
+          setHeartbeatEnabled(false);
+          return;
+        }
+
         // Reconcile with server truth
         if (response.ok) {
-          setServerAccumulatedSeconds(response.accumulatedSeconds);
+          setServerAccumulatedSecondsSafe(response.accumulatedSeconds);
           // Reset local tracking baseline
-          setLastVisibleAt(performance.now());
+          setLastVisibleAtSafe(performance.now());
         }
       }
     }, 10000); // 10 seconds
 
     return () => clearInterval(heartbeatInterval);
-  }, [isTabVisible, heartbeatSeq, section.id, checkpoint.id, userId, attemptId]);
+  }, [heartbeatEnabled, isTabVisible, heartbeatSeq, section.id, checkpoint.id, userId, attemptId]);
 
-  // Calculate minimum wait time for checkpoint
-  const minimumWaitMs = checkpoint.minimumDwellSeconds * 1000;
-
-  // Check if minimum dwell time has passed
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowCheckpoint(true);
-    }, minimumWaitMs);
-
-    return () => clearTimeout(timer);
-  }, [minimumWaitMs]);
+  const remainingDwellSeconds = Math.max(0, checkpoint.minimumDwellSeconds - displaySeconds);
+  const showCheckpoint = remainingDwellSeconds <= 0;
+  const dwellProgress =
+    checkpoint.minimumDwellSeconds > 0
+      ? Math.max(0, Math.min(1, displaySeconds / checkpoint.minimumDwellSeconds))
+      : 1;
+  const ringRadius = 16;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringDashOffset = ringCircumference * (1 - dwellProgress);
 
   // Calculate submit button state
   const dwellRequirementMet = displaySeconds >= checkpoint.minimumDwellSeconds;
@@ -272,27 +313,61 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
               <p className="mb-6 text-neutral-700 dark:text-neutral-300">
                 Please take time to read and reflect on this content before proceeding.
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                <svg
-                  className="h-5 w-5 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
+              <div className="flex flex-col items-center justify-center gap-3">
+                <div
+                  className="relative h-20 w-20"
+                  role="img"
+                  aria-label={`Reading time progress: ${displaySeconds} of ${checkpoint.minimumDwellSeconds} seconds`}
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span>Minimum dwell time: {checkpoint.minimumDwellSeconds} seconds</span>
+                  <svg className="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r={ringRadius}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      className="text-neutral-300/70 dark:text-neutral-700/70"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r={ringRadius}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      strokeDasharray={`${ringCircumference} ${ringCircumference}`}
+                      strokeDashoffset={ringDashOffset}
+                      className="text-amber-600 dark:text-amber-400"
+                      style={{ transition: "stroke-dashoffset 250ms linear" }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-base font-semibold text-neutral-900 dark:text-white tabular-nums">
+                      {formatDurationSeconds(remainingDwellSeconds)}
+                    </div>
+                    <div className="text-[11px] text-neutral-600 dark:text-neutral-400 tabular-nums">
+                      remaining
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400 tabular-nums">
+                  {displaySeconds}s / {checkpoint.minimumDwellSeconds}s
+                  {!isTabVisible && (
+                    <span className="ml-2 text-amber-600 dark:text-amber-400">
+                      (paused)
+                    </span>
+                  )}
+                </div>
+                <div className="w-full max-w-xs">
+                  <div className="h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800">
+                    <div
+                      className="h-2 rounded-full bg-amber-600 dark:bg-amber-400"
+                      style={{ width: `${Math.round(dwellProgress * 100)}%`, transition: "width 250ms linear" }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -316,7 +391,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                 <input
                   type="hidden"
                   name="dwellTimeSeconds"
-                  value={Math.floor((Date.now() - dwellStartTime) / 1000)}
+                  value={displaySeconds}
                 />
 
                 {/* Reflection Prompt */}
@@ -373,7 +448,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                 {/* Dwell Time Progress */}
                 <div className="flex items-center gap-2 text-sm">
                   <span className={dwellRequirementMet ? "text-green-600 dark:text-green-400 font-medium" : "text-neutral-600 dark:text-neutral-400"}>
-                    Time: {displaySeconds}s / {checkpoint.minimumDwellSeconds}s {dwellRequirementMet ? "✓" : ""}
+                    Time: {displaySeconds}s / {checkpoint.minimumDwellSeconds}s ({formatDurationSeconds(remainingDwellSeconds)} remaining) {dwellRequirementMet ? "✓" : ""}
                   </span>
                   {!isTabVisible && (
                     <span className="text-amber-600 dark:text-amber-400 text-xs">
