@@ -73,7 +73,7 @@ async function chooseVersionForDisplay(translationRequested) {
       const db = strapi.db.connection;
       strapi.log.debug('[YS Canon] Looking for YahScriptures document...');
       const ysDoc = await db('library_documents')
-        .where('document_id', 'doc:scripture:yahscriptures')
+        .where('document_key', 'doc:scripture:yahscriptures')
         .first();
 
       if (ysDoc) {

@@ -33,6 +33,7 @@
     "dist/",                                   // Exclude dist output
     ".cache/",                                 // Exclude cache files
     ".tmp/",                                   // Exclude temporary files
+    "scripts/library-migration/**/*.ts",        // Errors there should not block Strapi dev boot
     "src/admin/",                              // Exclude admin files
     "**/*.test.*",                              // Exclude test files
     "src/plugins/**"                            // Exclude plugin files

@@ -1,19 +1,16 @@
 #!/usr/bin/env tsx
 /**
- * Import YahScriptures via Strapi Entity Service
+ * Import YahScriptures via Direct Database Access
  *
- * This script properly imports data through Strapi's entity service,
- * ensuring schema compatibility and proper relations.
+ * This script imports data directly to PostgreSQL using the schema
+ * that Strapi created from the content types.
  *
  * Usage:
- *   npx tsx scripts/library-migration/import-yahscriptures-strapi.ts /path/to/YSpc1.04.bbli
+ *   npx tsx scripts/library-migration/import-yahscriptures-direct.ts /path/to/YSpc1.04.bbli
  */
 
 import Database from 'better-sqlite3';
-
-// ✅ Strapi v5 programmatic bootstrap
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { createStrapi } = require('@strapi/strapi');
+import { Pool } from 'pg';
 
 const BOOK_MAP: Record<number, { osis: string; name: string; testament: string; genre: string }> = {
   // Old Testament (1-39)
@@ -105,15 +102,19 @@ function cleanVerseText(text: string): string {
 async function importBBLI(bbliPath: string) {
   const bbliDb = new Database(bbliPath, { readonly: true });
 
-  // Bootstrap Strapi (requires running from backend directory)
-  const app = await createStrapi({
-    distDir: __dirname + '/../../dist',
-    appDir: __dirname + '/../..',
-  }).load();
-  const strapi = app;
+  // Connect to PostgreSQL
+  const pool = new Pool({
+    host: process.env.DATABASE_HOST || '127.0.0.1',
+    port: parseInt(process.env.DATABASE_PORT || '5432'),
+    database: process.env.DATABASE_NAME || 'strapi_db',
+    user: process.env.DATABASE_USERNAME || 'Strapi-Management-User',
+    password: process.env.DATABASE_PASSWORD || '+fB7XK%0',
+  });
+
+  const client = await pool.connect();
 
   try {
-    console.log('🚀 Starting YahScriptures import via Strapi Entity Service\n');
+    console.log('🚀 Starting YahScriptures import via Direct DB\n');
 
     // 1. Get BBLI metadata
     const details = bbliDb.prepare('SELECT * FROM Details').get() as any;
@@ -121,77 +122,98 @@ async function importBBLI(bbliPath: string) {
     console.log(`   Version: ${details.Version}\n`);
 
     // 2. Get or create public domain license
-    let licensePolicy = await strapi.entityService.findMany(
-      'api::library-license-policy.library-license-policy',
-      {
-        filters: { policyKey: 'lic:public-domain' },
-        limit: 1,
-      }
+    const licenseRes = await client.query(
+      `SELECT id FROM library_license_policies WHERE policy_id = $1 LIMIT 1`,
+      ['lic:public-domain']
     );
 
-    if (!licensePolicy || licensePolicy.length === 0) {
+    let licenseId: number;
+    if (licenseRes.rows.length === 0) {
       console.log('Creating public domain license policy...');
-      licensePolicy = [await strapi.entityService.create(
-        'api::library-license-policy.library-license-policy',
-        {
-          data: {
-            policyKey: 'lic:public-domain',
-            policyName: 'Public Domain',
-            allowsDistribution: true,
-            requiresAttribution: false,
-            allowsCommercialUse: true,
-            allowsModification: true,
-            policyMetadata: JSON.stringify({
-              description: 'Content in the public domain with no copyright restrictions'
-            }),
-          },
-        }
-      )];
+      const insertRes = await client.query(
+        `INSERT INTO library_license_policies
+         (policy_id, policy_name, allow_commercial, allow_derivatives,
+          require_attribution, policy_metadata,
+          published_at, created_at, updated_at, locale)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING id`,
+        [
+          'lic:public-domain',
+          'Public Domain',
+          true,
+          true,
+          false,
+          JSON.stringify({ description: 'Content in the public domain with no copyright restrictions' }),
+          new Date(),
+          new Date(),
+          new Date(),
+          'en',
+        ]
+      );
+      licenseId = insertRes.rows[0].id;
+    } else {
+      licenseId = licenseRes.rows[0].id;
     }
+    console.log(`✅ License ID: ${licenseId}\n`);
 
-    const license = Array.isArray(licensePolicy) ? licensePolicy[0] : licensePolicy;
-    console.log(`✅ License: ${license.policyName}\n`);
-
-    // 3. Create library document
+    // 3. Create or update library document
     const documentKey = 'doc:scripture:yahscriptures';
-    const existingDoc = await strapi.entityService.findMany(
-      'api::library-document.library-document',
-      {
-        filters: { documentKey },
-        limit: 1,
-      }
+    const docRes = await client.query(
+      `SELECT id FROM library_documents WHERE document_key = $1 LIMIT 1`,
+      [documentKey]
     );
 
-    let document;
-    if (existingDoc && existingDoc.length > 0) {
-      document = Array.isArray(existingDoc) ? existingDoc[0] : existingDoc;
-      console.log(`⏭️  Document already exists (id: ${document.id})\n`);
-    } else {
-      document = await strapi.entityService.create(
-        'api::library-document.library-document',
-        {
-          data: {
-            documentKey,
-            documentType: 'scripture',
-            title: 'YahScriptures',
-            slug: 'yahscriptures',
-            translationId: 'YS',
-            language: 'en',
-            yearPublished: 2020,
-            ingestionStatus: 'processing',
-            sourceMetadata: {
-              versionCode: 'YS',
-              versionName: details.Title,
-              bbliVersion: details.Version,
-              hasApocrypha: true,
-              totalBooks: 76,
-            },
-            licensePolicy: license.id,
-            publishedAt: new Date(),
-          },
-        }
+    let documentId: number;
+    if (docRes.rows.length > 0) {
+      documentId = docRes.rows[0].id;
+      console.log(`⏭️  Document already exists (id: ${documentId})\n`);
+
+      // Update to processing status
+      await client.query(
+        `UPDATE library_documents
+         SET ingestion_status = $1, updated_at = $2
+         WHERE id = $3`,
+        ['processing', new Date(), documentId]
       );
-      console.log(`✅ Created document (id: ${document.id})\n`);
+    } else {
+      const insertRes = await client.query(
+        `INSERT INTO library_documents
+         (document_key, document_type, title, slug, translation_id, language,
+          year_published, ingestion_status, source_metadata, published_at,
+          created_at, updated_at, locale)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         RETURNING id`,
+        [
+          documentKey,
+          'scripture',
+          'YahScriptures',
+          'yahscriptures',
+          'YS',
+          'en',
+          2020,
+          'processing',
+          JSON.stringify({
+            versionCode: 'YS',
+            versionName: details.Title,
+            bbliVersion: details.Version,
+            hasApocrypha: true,
+            totalBooks: 76,
+          }),
+          new Date(),
+          new Date(),
+          new Date(),
+          'en',
+        ]
+      );
+      documentId = insertRes.rows[0].id;
+      console.log(`✅ Created document (id: ${documentId})\n`);
+
+      // Create link table entry for license
+      await client.query(
+        `INSERT INTO library_documents_license_policy_lnk (library_document_id, library_license_policy_id)
+         VALUES ($1, $2)`,
+        [documentId, licenseId]
+      );
     }
 
     // 4. Load verses
@@ -199,13 +221,15 @@ async function importBBLI(bbliPath: string) {
     console.log(`📝 Found ${verses.length.toLocaleString()} verses\n`);
 
     // 5. Import verses as sections
-    console.log('💾 Importing verses via entity service...\n');
+    console.log('💾 Importing verses...\n');
 
     let sectionsCreated = 0;
-    const batchSize = 100; // Smaller batches for entity service
+    const batchSize = 500;
 
     for (let i = 0; i < verses.length; i += batchSize) {
       const batch = verses.slice(i, i + batchSize);
+
+      await client.query('BEGIN');
 
       for (const verse of batch) {
         const bookInfo = BOOK_MAP[verse.Book];
@@ -220,68 +244,84 @@ async function importBBLI(bbliPath: string) {
         const hasDivineNames = cleanText.includes('「') && cleanText.includes('」');
 
         // Check if section already exists
-        const existing = await strapi.entityService.findMany(
-          'api::library-section.library-section',
-          {
-            filters: { sectionKey },
-            limit: 1,
-          }
+        const existing = await client.query(
+          `SELECT id FROM library_sections WHERE section_key = $1 LIMIT 1`,
+          [sectionKey]
         );
 
-        if (!existing || existing.length === 0) {
-          await strapi.entityService.create(
-            'api::library-section.library-section',
-            {
-              data: {
-                sectionKey,
-                sectionType: 'verse',
-                sequenceNumber: verse.Book * 1000000 + verse.Chapter * 1000 + verse.Verse,
-                locator: osisRef,
-                text: cleanText,
-                sectionMetadata: {
-                  osisRef,
-                  bookName: bookInfo.name,
-                  testament: bookInfo.testament,
-                  bookNumber: verse.Book,
-                  hasDivineNames,
-                },
-                document: document.id,
-                publishedAt: new Date(),
-              },
-            }
+        if (existing.rows.length === 0) {
+          const sectionRes = await client.query(
+            `INSERT INTO library_sections
+             (section_key, section_type, order_index, locator_key, text,
+              osis_ref, chapter_number, verse_number, source_metadata,
+              published_at, created_at, updated_at, locale)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             RETURNING id`,
+            [
+              sectionKey,
+              'verse',
+              verse.Book * 1000000 + verse.Chapter * 1000 + verse.Verse,
+              osisRef,
+              cleanText,
+              osisRef,
+              verse.Chapter,
+              verse.Verse,
+              JSON.stringify({
+                bookName: bookInfo.name,
+                testament: bookInfo.testament,
+                bookNumber: verse.Book,
+                hasDivineNames,
+              }),
+              new Date(),
+              new Date(),
+              new Date(),
+              'en',
+            ]
           );
+
+          const sectionId = sectionRes.rows[0].id;
+
+          // Create link to document
+          await client.query(
+            `INSERT INTO library_sections_document_lnk (library_section_id, library_document_id)
+             VALUES ($1, $2)`,
+            [sectionId, documentId]
+          );
+
           sectionsCreated++;
         }
       }
+
+      await client.query('COMMIT');
 
       console.log(`   Progress: ${Math.min(i + batchSize, verses.length).toLocaleString()} / ${verses.length.toLocaleString()} verses`);
     }
 
     // 6. Update document with final counts
-    await strapi.entityService.update(
-      'api::library-document.library-document',
-      document.id,
-      {
-        data: {
-          totalSections: sectionsCreated,
-          ingestionStatus: 'completed',
-        },
-      }
+    await client.query(
+      `UPDATE library_documents
+       SET total_sections = $1, ingestion_status = $2, updated_at = $3
+       WHERE id = $4`,
+      [sectionsCreated, 'completed', new Date(), documentId]
     );
 
     console.log(`\n✅ Import complete!`);
     console.log(`   Sections created: ${sectionsCreated.toLocaleString()}`);
-    console.log(`   Document updated: ${document.documentKey}\n`);
+    console.log(`   Document ID: ${documentId}\n`);
 
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw error;
   } finally {
     bbliDb.close();
-    await strapi.destroy();
+    client.release();
+    await pool.end();
   }
 }
 
 const bbliPath = process.argv[2];
 if (!bbliPath) {
-  console.error('Usage: npx tsx import-yahscriptures-strapi.ts <path-to-bbli-file>');
+  console.error('Usage: npx tsx import-yahscriptures-direct.ts <path-to-bbli-file>');
   process.exit(1);
 }
 

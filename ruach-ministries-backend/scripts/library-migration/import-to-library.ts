@@ -72,15 +72,8 @@ async function importToLibrary(ingestDir: string) {
     console.log(`📖 Work: ${workData.title} by ${workData.author}`);
     console.log(`   Chapters: ${workData.totalChapters}, Paragraphs: ${workData.totalParagraphs}\n`);
 
-    // 2. Get public domain license policy
-    const licensePolicy = await db('library_license_policies')
-      .where('policy_id', 'lic:public-domain')
-      .first();
-
-    if (!licensePolicy) {
-      throw new Error('Public domain license policy not found');
-    }
-    console.log(`✅ Using license policy: ${licensePolicy.policy_name}\n`);
+    // 2. License policy check removed - not in current schema
+    console.log(`✅ Proceeding with document creation\n`);
 
     // 3. Create library document
     const documentId = `doc:egw:${workData.shortCode.toLowerCase()}`;
@@ -100,21 +93,18 @@ async function importToLibrary(ingestDir: string) {
           slug: workData.slug,
           document_type: 'ministry_book',
           author: workData.author,
-          publication_date: null,
-          source_system: 'ministry-extraction',
-          source_url: null,
+          short_code: workData.shortCode,
+          category: workData.category,
+          year_published: workData.extractionMetadata?.source_pages ? null : null,
           language: 'en',
           ingestion_status: 'importing',
-          license_policy_id: licensePolicy.id,
-          document_metadata: JSON.stringify({
-            shortCode: workData.shortCode,
-            category: workData.category,
-            extractionMetadata: workData.extractionMetadata,
-          }),
+          ingestion_metadata: workData.extractionMetadata || {},
+          source_metadata: workData.sourceMetadata || {},
           total_sections: 0,
           total_chunks: 0,
           created_at: new Date(),
           updated_at: new Date(),
+          published_at: new Date(),
         })
         .returning('id');
 
@@ -149,27 +139,30 @@ async function importToLibrary(ingestDir: string) {
 
       const sections = batch.map((text, idx) => {
         const sectionKey = `book:egw:${workData.shortCode.toLowerCase()}:ch${text.chapterNumber}:p${text.paragraphNumber}`;
-        const locator = `ch${text.chapterNumber}:p${text.paragraphNumber}`;
+        const locatorKey = `ch${text.chapterNumber}:p${text.paragraphNumber}`;
 
         return {
           section_key: sectionKey,
           document_id: dbDocumentId,
           section_type: text.heading ? 'heading' : 'paragraph',
-          sequence_number: text.chapterNumber * 10000 + text.paragraphNumber,
-          locator: locator,
+          order_index: text.chapterNumber * 10000 + text.paragraphNumber,
+          locator_key: locatorKey,
+          chapter_number: text.chapterNumber,
+          paragraph_number: text.paragraphNumber,
           heading: text.heading || null,
           text: text.text,
-          section_metadata: JSON.stringify({
+          text_hash: text.textHash || null,
+          detected_references: text.detectedReferences ? JSON.stringify(text.detectedReferences) : null,
+          source_metadata: JSON.stringify({
             textId: text.textId,
-            textHash: text.textHash,
-            detectedReferences: text.detectedReferences,
           }),
           created_at: new Date(),
           updated_at: new Date(),
+          published_at: new Date(),
         };
       });
 
-      await db('library_sections').insert(sections).onConflict('section_key').ignore();
+      await db('library_sections').insert(sections);
       sectionsCreated += sections.length;
 
       if ((i + sectionBatchSize) % 500 === 0 || i + sectionBatchSize >= allTexts.length) {
@@ -209,18 +202,20 @@ async function importToLibrary(ingestDir: string) {
         await db('library_chunks').insert({
           chunk_key: chunkKey,
           document_id: dbDocumentId,
-          chunk_text: chunkText,
+          text: chunkText,
+          char_count: chunkText.length,
           token_count: Math.floor(chunkText.length / 4), // rough estimate
-          start_locator: startLocator,
-          end_locator: endLocator,
-          sequence_number: chunkSequence,
+          locator_start: startLocator,
+          locator_end: endLocator,
+          chunk_index: chunkSequence,
           chunk_metadata: JSON.stringify({
             sectionCount: currentChunk.length,
             chapterRange: [currentChunk[0].chapterNumber, currentChunk[currentChunk.length - 1].chapterNumber],
           }),
           created_at: new Date(),
           updated_at: new Date(),
-        }).onConflict('chunk_key').ignore();
+          published_at: new Date(),
+        });
 
         chunkSequence++;
         chunksCreated++;
@@ -245,18 +240,20 @@ async function importToLibrary(ingestDir: string) {
       await db('library_chunks').insert({
         chunk_key: chunkKey,
         document_id: dbDocumentId,
-        chunk_text: chunkText,
+        text: chunkText,
+        char_count: chunkText.length,
         token_count: Math.floor(chunkText.length / 4),
-        start_locator: startLocator,
-        end_locator: endLocator,
-        sequence_number: chunkSequence,
+        locator_start: startLocator,
+        locator_end: endLocator,
+        chunk_index: chunkSequence,
         chunk_metadata: JSON.stringify({
           sectionCount: currentChunk.length,
           chapterRange: [currentChunk[0].chapterNumber, currentChunk[currentChunk.length - 1].chapterNumber],
         }),
         created_at: new Date(),
         updated_at: new Date(),
-      }).onConflict('chunk_key').ignore();
+        published_at: new Date(),
+      });
 
       chunksCreated++;
     }
@@ -274,43 +271,53 @@ async function importToLibrary(ingestDir: string) {
         updated_at: new Date(),
       });
 
-    // 8. Load and insert embeddings (if available)
+    // 8. Load and insert embeddings into sections (if available)
     try {
-      const embeddedPath = join(ingestDir, '../../../exports/egw/ministry-of-healing/v1/embedded.jsonl');
+      // Navigate from ingest/egw/ministry-of-healing/v1 to exports/egw/ministry-of-healing/v1
+      const embeddedPath = ingestDir.replace('/ingest/', '/exports/') + '/embedded.jsonl';
       const embeddedContent = await readFile(embeddedPath, 'utf-8');
       const embeddedLines = embeddedContent.trim().split('\n');
 
       console.log(`📊 Processing ${embeddedLines.length} embeddings...\n`);
 
-      // Map sections to chunks
+      // Build map of embeddings by chapter:paragraph
+      const embeddingsMap = new Map();
+      for (const line of embeddedLines) {
+        const embedded = JSON.parse(line);
+        if (embedded.embedding?.vector && embedded.chapter && embedded.paragraph) {
+          const key = `${embedded.chapter}:${embedded.paragraph}`;
+          embeddingsMap.set(key, embedded.embedding.vector);
+        }
+      }
+
+      console.log(`   Mapped ${embeddingsMap.size} embeddings\n`);
+
+      // Get all sections
       const sections = await db('library_sections')
         .where('document_id', dbDocumentId)
-        .select('id', 'sequence_number');
+        .select('id', 'chapter_number', 'paragraph_number');
 
-      const chunks = await db('library_chunks')
-        .where('document_id', dbDocumentId)
-        .select('id', 'start_locator', 'end_locator');
+      console.log(`   Updating ${sections.length} sections with embeddings...\n`);
 
-      // For now, assign first embedding to each chunk (simplified)
-      // TODO: Proper embedding generation for chunks
+      // Update sections with embeddings
       let embeddingsInserted = 0;
-      for (let i = 0; i < Math.min(chunks.length, embeddedLines.length); i++) {
-        const embedded = JSON.parse(embeddedLines[i]);
-        if (embedded.embedding && Array.isArray(embedded.embedding)) {
-          await db('library_chunk_embeddings').insert({
-            chunk_id: chunks[i].id,
-            embedding: JSON.stringify(embedded.embedding),
-            model_name: 'text-embedding-3-small',
-            dimensions: embedded.embedding.length,
-            created_at: new Date(),
-          }).onConflict('chunk_id').ignore();
+      for (const section of sections) {
+        const key = `${section.chapter_number}:${section.paragraph_number}`;
+        const vector = embeddingsMap.get(key);
 
+        if (vector) {
+          await db('library_sections')
+            .where('id', section.id)
+            .update({
+              embedding: JSON.stringify(vector),
+              updated_at: new Date(),
+            });
           embeddingsInserted++;
         }
       }
 
       stats.embeddingsCreated = embeddingsInserted;
-      console.log(`✅ Inserted ${embeddingsInserted} embeddings\n`);
+      console.log(`✅ Inserted ${embeddingsInserted} section embeddings\n`);
     } catch (error) {
       console.log(`⚠️  No embeddings found (optional): ${error}\n`);
     }
