@@ -44,3 +44,7 @@ Thumbs.db
 **/public/workbox-*.js.map
 **/public/worker-*.js.mapapps/ruach-next/.tsbuildinfo
 apps/ruach-next/.tsbuildinfo
+
+# Ministry pipeline content (deploy separately via database sync)
+ruach-ministries-backend/ministry-pipeline/*
+!ruach-ministries-backend/ministry-pipeline/.gitkeep

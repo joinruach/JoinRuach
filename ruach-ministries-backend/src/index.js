@@ -28,8 +28,14 @@ module.exports = {
 
     // Initialize Redis-backed services
     try {
+      const { redisClient } = require("./services/redis-client");
       const { tokenBlacklist } = require("./services/token-blacklist");
       const { refreshTokenStore } = require("./services/refresh-token-store");
+      const { rateLimiter } = require("./services/rate-limiter");
+
+      // Connect Redis client
+      await redisClient.connect();
+      strapi.log.info("✅ Redis client connected");
 
       // Initialize token blacklist with Redis
       if (typeof tokenBlacklist.init === "function") {
@@ -41,9 +47,14 @@ module.exports = {
         await refreshTokenStore.init();
       }
 
-      strapi.log.info("✅ Token services initialized");
+      // Initialize rate limiter with Redis
+      if (typeof rateLimiter.init === "function") {
+        await rateLimiter.init();
+      }
+
+      strapi.log.info("✅ Token storage services initialized");
     } catch (error) {
-      strapi.log.error("❌ Error initializing token services:", error);
+      strapi.log.error("❌ Error initializing Redis services:", error);
       // Don't fail startup - services will fall back to in-memory
     }
 
