@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface Version {
@@ -27,14 +27,7 @@ export default function IngestionInbox({ locale }: { locale: string }) {
     contentType: '',
   });
 
-  useEffect(() => {
-    fetchVersions();
-    // Poll for updates every 5 seconds
-    const interval = setInterval(fetchVersions, 5000);
-    return () => clearInterval(interval);
-  }, [filters]);
-
-  const fetchVersions = async () => {
+  const fetchVersions = useCallback(async () => {
     try {
       const queryParams = new URLSearchParams();
       if (filters.status) queryParams.set('status', filters.status);
@@ -50,7 +43,14 @@ export default function IngestionInbox({ locale }: { locale: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchVersions();
+    // Poll for updates every 5 seconds
+    const interval = setInterval(fetchVersions, 5000);
+    return () => clearInterval(interval);
+  }, [fetchVersions]);
 
   const getStatusBadge = (status: string) => {
     const styles = {

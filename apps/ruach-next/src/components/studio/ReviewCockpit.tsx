@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface ReviewData {
@@ -45,11 +45,7 @@ export default function ReviewCockpit({
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchReviewData();
-  }, [versionId]);
-
-  const fetchReviewData = async () => {
+  const fetchReviewData = useCallback(async () => {
     try {
       // In a real implementation, this would fetch from the review report API
       // For now, we'll simulate it
@@ -63,7 +59,11 @@ export default function ReviewCockpit({
     } finally {
       setLoading(false);
     }
-  };
+  }, [versionId]);
+
+  useEffect(() => {
+    fetchReviewData();
+  }, [fetchReviewData]);
 
   const handleApprove = async () => {
     await submitReview('approved');

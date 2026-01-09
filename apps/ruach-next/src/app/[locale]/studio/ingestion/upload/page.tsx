@@ -7,10 +7,7 @@ import { useSession } from 'next-auth/react';
 export default function UploadPage() {
   const router = useRouter();
   const params = useParams();
-  if (!params?.locale) {
-    return null;
-  }
-  const locale = params.locale;
+  const locale = params?.locale;
   const { data: session } = useSession();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -24,6 +21,10 @@ export default function UploadPage() {
     validateCanonical: true,
     file: null as File | null,
   });
+
+  if (!locale) {
+    return null;
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
