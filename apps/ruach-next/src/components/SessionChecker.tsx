@@ -15,7 +15,8 @@ function ExpiredMessageHandler() {
 
   useEffect(() => {
     // Show message if user was redirected after expiry
-    const expired = searchParams.get("expired");
+    const expired = searchParams?.get("expired");
+    if (!expired) return;
     if (expired === "idle") {
       toast({
         title: "Session Expired",

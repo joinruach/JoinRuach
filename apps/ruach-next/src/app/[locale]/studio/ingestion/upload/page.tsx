@@ -7,7 +7,10 @@ import { useSession } from 'next-auth/react';
 export default function UploadPage() {
   const router = useRouter();
   const params = useParams();
-  const locale = params.locale as string;
+  if (!params?.locale) {
+    return null;
+  }
+  const locale = params.locale;
   const { data: session } = useSession();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);

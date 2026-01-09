@@ -7,8 +7,21 @@ import ReviewCockpit from '@/components/studio/ReviewCockpit';
 export default function ReviewPage() {
   const params = useParams();
   const router = useRouter();
-  const versionId = params.versionId as string;
-  const locale = params.locale as string;
+  const versionIdParam = params?.versionId;
+  const localeParam = params?.locale;
+
+  if (!versionIdParam || !localeParam) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-center text-lg font-medium text-gray-600 dark:text-gray-300">
+          Loading review…
+        </p>
+      </div>
+    );
+  }
+
+  const versionId = typeof versionIdParam === "string" ? versionIdParam : versionIdParam[0];
+  const locale = typeof localeParam === "string" ? localeParam : localeParam[0];
 
   return (
     <div className="h-screen flex flex-col">

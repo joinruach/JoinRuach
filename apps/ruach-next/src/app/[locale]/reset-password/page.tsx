@@ -173,7 +173,7 @@ function ResetPasswordForm({ code }: { code: string }) {
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
-  const code = searchParams.get("code") || "";
+  const code = searchParams?.get("code") || "";
   return code ? <ResetPasswordForm code={code} /> : <ForgotPasswordForm />;
 }
 

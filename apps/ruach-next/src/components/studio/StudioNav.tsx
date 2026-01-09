@@ -7,6 +7,10 @@ import { signOut } from 'next-auth/react';
 export default function StudioNav() {
   const pathname = usePathname();
 
+  if (!pathname) {
+    return null;
+  }
+
   const navItems = [
     { name: 'Dashboard', href: '/studio', icon: '📊' },
     { name: 'Upload', href: '/studio/upload', icon: '📤' },
@@ -17,8 +21,8 @@ export default function StudioNav() {
   ];
 
   // Extract locale from pathname (e.g., /en/studio -> en)
-  const locale = pathname.split('/')[1];
-  const currentPath = pathname.replace(`/${locale}`, '');
+  const locale = pathname.split('/')[1] || 'en';
+  const currentPath = pathname.replace(`/${locale}`, '') || '/';
 
   return (
     <nav className="bg-ruachDark text-white h-screen w-64 flex flex-col">

@@ -21,18 +21,19 @@ export function MediaBrowser({
 }: MediaBrowserProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialParams = searchParams ?? new URLSearchParams();
 
   // State
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [searchQuery, setSearchQuery] = useState(initialParams.get("q") || "");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>(
-    (searchParams.get("sort") as SortOption) || "latest"
+    (initialParams.get("sort") as SortOption) || "latest"
   );
   const [filters, setFilters] = useState<MediaFilters>({
-    category: searchParams.get("category") || undefined,
-    speaker: searchParams.get("speaker") || undefined,
-    duration: (searchParams.get("duration") as MediaFilters["duration"]) || "any",
-    dateRange: (searchParams.get("range") as MediaFilters["dateRange"]) || "any",
+    category: initialParams.get("category") || undefined,
+    speaker: initialParams.get("speaker") || undefined,
+    duration: (initialParams.get("duration") as MediaFilters["duration"]) || "any",
+    dateRange: (initialParams.get("range") as MediaFilters["dateRange"]) || "any",
   });
 
   // Filter and sort items client-side

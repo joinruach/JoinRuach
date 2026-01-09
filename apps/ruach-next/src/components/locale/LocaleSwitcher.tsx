@@ -34,7 +34,8 @@ export default function LocaleSwitcher() {
 
     startTransition(() => {
       // Remove the current locale from the pathname
-      const pathWithoutLocale = pathname.replace(`/${locale}`, '');
+      const currentPath = pathname ?? `/${locale}`;
+      const pathWithoutLocale = currentPath.replace(`/${locale}`, '') || '/';
       // Navigate to the same path with the new locale
       router.push(`/${newLocale}${pathWithoutLocale}`);
     });

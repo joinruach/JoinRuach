@@ -1,9 +1,6 @@
 import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import crypto from 'crypto';
-
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 
 // Initialize S3 client for R2
@@ -39,8 +36,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate file hash for deduplication
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    const arrayBuffer = await file.arrayBuffer();
+    const fileBuffer = Buffer.from(arrayBuffer);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fileHash = hashArray.map((byte) => byte.toString(16).padStart(2, '0')).join('');
 
     // Generate version ID
     const timestamp = Date.now();

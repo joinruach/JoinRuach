@@ -28,11 +28,11 @@ function LoginForm() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showConfirmedMessage, setShowConfirmedMessage] = useState(false);
-  const authErrorMessage = getAuthErrorMessage(searchParams.get("error"));
+  const authErrorMessage = getAuthErrorMessage(searchParams?.get("error") ?? null);
 
   useEffect(() => {
     // Check if user was redirected after email confirmation
-    if (searchParams.get("confirmed") === "true") {
+    if (searchParams?.get("confirmed") === "true") {
       setShowConfirmedMessage(true);
       // Hide message after 10 seconds
       setTimeout(() => setShowConfirmedMessage(false), 10000);

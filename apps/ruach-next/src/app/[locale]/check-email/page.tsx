@@ -5,7 +5,7 @@ import ResendButton from "@/components/ruach/ResendButton";
 
 function CheckEmailContent(){
   const sp = useSearchParams();
-  const email = sp.get("email") || "";
+  const email = sp?.get("email") || "";
   return (
     <div className="max-w-md space-y-4">
       <h1 className="text-2xl font-bold">Check your email</h1>

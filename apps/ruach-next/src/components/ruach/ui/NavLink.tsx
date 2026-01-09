@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 export function NavLink({ href, children, className, ...props }:
   LinkProps & { children: React.ReactNode; className?: string }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const locale = useLocale();
   const normalizedHref =
     typeof href === "string" && href.startsWith("/")
@@ -15,7 +16,7 @@ export function NavLink({ href, children, className, ...props }:
       : href;
   const active =
     typeof normalizedHref === "string"
-      ? pathname === normalizedHref || pathname.startsWith(`${normalizedHref}/`)
+      ? currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`)
       : false;
   return (
     <Link href={href} {...props}>

@@ -6,11 +6,12 @@ import { cn } from "../../../lib/cn";
 export function NavLink({ href, children, className, ...props }:
   LinkProps & { children: React.ReactNode; className?: string }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const active = (() => {
     if (typeof href !== "string") return false;
-    if (href === "/") return pathname === "/";
+    if (href === "/") return currentPath === "/";
     const normalizedHref = href.endsWith("/") ? href.slice(0, -1) : href;
-    const normalizedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+    const normalizedPath = currentPath !== "/" && currentPath.endsWith("/") ? currentPath.slice(0, -1) : currentPath;
     return normalizedPath === normalizedHref || normalizedPath.startsWith(`${normalizedHref}/`);
   })();
   return (
