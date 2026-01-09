@@ -10,7 +10,7 @@ export default function GivePage({
 }: {
   searchParams?: { checkout?: string };
 }) {
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://ruachministries.org";
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
   const membershipPortalHref = "/members/account";
   const isCheckoutCancelled = searchParams?.checkout === "cancelled";
 
