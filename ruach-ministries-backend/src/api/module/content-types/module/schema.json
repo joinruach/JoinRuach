@@ -16,9 +16,16 @@
       "required": true,
       "unique": true
     },
+    "name": {
+      "type": "string",
+      "required": true
+    },
     "title": {
       "type": "string",
       "required": true
+    },
+    "description": {
+      "type": "richtext"
     },
     "slug": {
       "type": "uid",
@@ -69,7 +76,8 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::course.course",
-      "inversedBy": "modules"
+      "inversedBy": "modules",
+      "required": true
     },
     "lessons": {
       "type": "relation",

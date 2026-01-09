@@ -72,15 +72,15 @@
     "status": {
       "type": "enumeration",
       "enum": [
-        "draft",
-        "review",
-        "ready",
-        "synced",
-        "published",
-        "deprecated",
-        "needs_revision"
+        "Draft",
+        "Review",
+        "Ready",
+        "Synced",
+        "Published",
+        "Deprecated",
+        "Needs Revision"
       ],
-      "default": "draft"
+      "default": "Draft"
     },
     "level": {
       "type": "enumeration",
@@ -101,7 +101,8 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::formation-phase.formation-phase",
-      "inversedBy": "courses"
+      "inversedBy": "courses",
+      "required": true
     },
     "lessonCount": {
       "type": "integer",
