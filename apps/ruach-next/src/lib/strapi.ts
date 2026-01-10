@@ -1721,17 +1721,22 @@ function normalizeTestament(value: unknown): 'tanakh' | 'renewed_covenant' | 'ap
 
 export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
   const params = new URLSearchParams();
-  params.set("fields[0]", "workId");
-  params.set("fields[1]", "canonicalName");
-  params.set("fields[2]", "translatedTitle");
-  params.set("fields[3]", "shortCode");
-  params.set("fields[4]", "testament");
-  params.set("fields[5]", "canonicalOrder");
-  params.set("fields[6]", "totalChapters");
-  params.set("fields[7]", "totalVerses");
-  params.set("fields[8]", "summary");
-  params.set("fields[9]", "hebrewName");
-  params.set("fields[10]", "greekName");
+  const scalarFields = [
+    "workId",
+    "canonicalName",
+    "translatedTitle",
+    "shortCode",
+    "testament",
+    "canonicalOrder",
+    "totalChapters",
+    "totalVerses",
+    "summary",
+    "hebrewName",
+    "greekName",
+  ];
+  scalarFields.forEach((field, index) => {
+    params.set(`fields[${index}]`, field);
+  });
   params.set("sort[0]", "canonicalOrder:asc");
   params.set("pagination[pageSize]", "100");
   params.set("populate", "author,genre");

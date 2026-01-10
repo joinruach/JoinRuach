@@ -2,6 +2,8 @@ import { getScriptureWorks } from '@/lib/strapi';
 import { Metadata } from 'next';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'YahScriptures - Sacred Texts',
   description: 'Explore the complete biblical canon with original Hebrew divine names preserved.',
