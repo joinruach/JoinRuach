@@ -6,8 +6,10 @@ import SEOHead from "@/components/ruach/SEOHead";
 import DonateCheckoutButton from "@/components/ruach/DonateCheckoutButton";
 
 export default function GivePage({
+  params,
   searchParams = {},
 }: {
+  params?: Promise<{ locale: string }>;
   searchParams?: { checkout?: string };
 }) {
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
