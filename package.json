@@ -1,7 +1,7 @@
 {
   "name": "ruach-monorepo",
   "private": true,
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@10.28.0",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@ruach/guidebook-renderer": "workspace:*",
