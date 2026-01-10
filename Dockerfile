@@ -1,7 +1,6 @@
 # ---------- Builder ----------
 FROM node:20-bookworm-slim AS builder
-ENV NEXT_TELEMETRY_DISABLED=1 \
-    NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /repo
 
 # Force rebuild when needed (even if unused)
@@ -54,6 +53,9 @@ ENV NEXTAUTH_URL=${NEXTAUTH_URL} \
     NEXT_PUBLIC_STRAPI_URL=${NEXT_PUBLIC_STRAPI_URL} \
     STRAPI_REVALIDATE_SECRET=${STRAPI_REVALIDATE_SECRET} \
     STRAPI_API_TOKEN=${STRAPI_API_TOKEN}
+
+# Ensure prod env for build after dev deps are installed
+ENV NODE_ENV=production
 
 # Build shared packages and Next.js app
 RUN pnpm --filter @ruach/ai run build \

@@ -5,16 +5,17 @@ import TrackedLink from "@/components/ruach/TrackedLink";
 import SEOHead from "@/components/ruach/SEOHead";
 import DonateCheckoutButton from "@/components/ruach/DonateCheckoutButton";
 
-export default function GivePage({
-  params,
-  searchParams = {},
+type GivePageSearchParams = { checkout?: string };
+
+export default async function GivePage({
+  searchParams,
 }: {
-  params?: Promise<{ locale: string }>;
-  searchParams?: { checkout?: string };
+  searchParams?: GivePageSearchParams | Promise<GivePageSearchParams>;
 }) {
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
   const membershipPortalHref = "/members/account";
-  const isCheckoutCancelled = searchParams?.checkout === "cancelled";
+  const isCheckoutCancelled = resolvedSearchParams.checkout === "cancelled";
 
   const memberResources = [
     {
