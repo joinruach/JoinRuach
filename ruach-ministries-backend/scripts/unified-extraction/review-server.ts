@@ -84,7 +84,7 @@ app.get("/api/extractions", async (req: Request, res: Response) => {
 /**
  * Get extraction metadata
  */
-app.get("/api/extractions/:id/metadata", async (req: Request, res: Response) => {
+app.get("/api/extractions/:id/metadata", async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
     const metadataPath = join(
@@ -108,7 +108,7 @@ app.get("/api/extractions/:id/metadata", async (req: Request, res: Response) => 
 /**
  * Get scripture works for review
  */
-app.get("/api/extractions/:id/works", async (req: Request, res: Response) => {
+app.get("/api/extractions/:id/works", async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
     const worksPath = join(__dirname, "../../extractions", id, "works.json");
@@ -129,7 +129,7 @@ app.get("/api/extractions/:id/works", async (req: Request, res: Response) => {
  */
 app.get(
   "/api/extractions/:id/verses/:workId",
-  async (req: Request, res: Response) => {
+  async (req: Request<{ id: string; workId: string }>, res: Response) => {
     try {
       const { id, workId } = req.params;
       const { chapter } = req.query;
@@ -171,7 +171,7 @@ app.get(
 /**
  * Get validation report
  */
-app.get("/api/extractions/:id/validation", async (req: Request, res: Response) => {
+app.get("/api/extractions/:id/validation", async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
     const validationPath = join(
@@ -207,7 +207,7 @@ app.get("/api/review-status", async (req: Request, res: Response) => {
 /**
  * Get review status for specific book
  */
-app.get("/api/review-status/:bookId", async (req: Request, res: Response) => {
+app.get("/api/review-status/:bookId", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
     const { bookId } = req.params;
     const status = await loadReviewStatus();
@@ -220,7 +220,7 @@ app.get("/api/review-status/:bookId", async (req: Request, res: Response) => {
 /**
  * Approve book
  */
-app.post("/api/review/:bookId/approve", async (req: Request, res: Response) => {
+app.post("/api/review/:bookId/approve", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
     const { bookId } = req.params;
     const { reviewer, checklist, notes } = req.body;
@@ -248,7 +248,7 @@ app.post("/api/review/:bookId/approve", async (req: Request, res: Response) => {
 /**
  * Reject book
  */
-app.post("/api/review/:bookId/reject", async (req: Request, res: Response) => {
+app.post("/api/review/:bookId/reject", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
     const { bookId } = req.params;
     const { reviewer, reason, notes } = req.body;
@@ -276,7 +276,7 @@ app.post("/api/review/:bookId/reject", async (req: Request, res: Response) => {
 /**
  * Reset review status for a book
  */
-app.post("/api/review/:bookId/reset", async (req: Request, res: Response) => {
+app.post("/api/review/:bookId/reset", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
     const { bookId } = req.params;
     const status = await loadReviewStatus();
