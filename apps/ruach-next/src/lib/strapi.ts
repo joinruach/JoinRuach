@@ -1729,13 +1729,12 @@ export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
   params.set("fields[5]", "canonicalOrder");
   params.set("fields[6]", "totalChapters");
   params.set("fields[7]", "totalVerses");
-  params.set("fields[8]", "author");
-  params.set("fields[9]", "genre");
-  params.set("fields[10]", "summary");
-  params.set("fields[11]", "hebrewName");
-  params.set("fields[12]", "greekName");
+  params.set("fields[8]", "summary");
+  params.set("fields[9]", "hebrewName");
+  params.set("fields[10]", "greekName");
   params.set("sort[0]", "canonicalOrder:asc");
   params.set("pagination[pageSize]", "100");
+  params.set("populate", "author,genre");
 
   if (options.testament) {
     params.set("filters[testament][$eq]", options.testament);
@@ -1810,13 +1809,12 @@ export async function getScriptureWorkBySlug(slug: string) {
   params.set("fields[5]", "canonicalOrder");
   params.set("fields[6]", "totalChapters");
   params.set("fields[7]", "totalVerses");
-  params.set("fields[8]", "author");
-  params.set("fields[9]", "estimatedDate");
-  params.set("fields[10]", "genre");
-  params.set("fields[11]", "summary");
-  params.set("fields[12]", "hebrewName");
-  params.set("fields[13]", "greekName");
+  params.set("fields[8]", "estimatedDate");
+  params.set("fields[9]", "summary");
+  params.set("fields[10]", "hebrewName");
+  params.set("fields[11]", "greekName");
   params.set("pagination[pageSize]", "1");
+  params.set("populate", "author,genre");
 
   try {
     const j = await getJSON<{ data: ScriptureWorkEntity[] }>(

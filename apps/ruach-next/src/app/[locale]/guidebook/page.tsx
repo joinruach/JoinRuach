@@ -7,6 +7,9 @@ import { getCurrentFormationState } from "@/lib/formation/state";
 import { FormationPhase } from "@ruach/formation";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function GuidebookPage() {
   // Check if user has started formation journey
   const state = await getCurrentFormationState();

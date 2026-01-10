@@ -1,6 +1,7 @@
 # ---------- Builder ----------
 FROM node:20-bookworm-slim AS builder
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production
 WORKDIR /repo
 
 # Force rebuild when needed (even if unused)

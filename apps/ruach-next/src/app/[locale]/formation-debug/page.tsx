@@ -7,6 +7,9 @@ import { getCurrentFormationState } from "@/lib/formation/state";
 import type { FormationState } from "@ruach/formation";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function FormationDebugPage() {
   let state: FormationState | null = null;
   let error: string | null = null;

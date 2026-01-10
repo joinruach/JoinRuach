@@ -1,6 +1,6 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Testimonies of Freedom — Real Stories, Real Jesus | Ruach Ministries",

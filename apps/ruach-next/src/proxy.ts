@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 const locales = ["en", "es", "fr", "pt"];
 const defaultLocale = "en";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Skip middleware for Next.js internals, API routes, and static files

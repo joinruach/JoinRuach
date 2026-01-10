@@ -1,6 +1,7 @@
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = {
   title: "Deliverance Ministry — Find Freedom in Christ | Ruach Ministries",
