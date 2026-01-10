@@ -46,11 +46,13 @@ ARG NEXTAUTH_URL=http://localhost:3000
 ARG NEXTAUTH_SECRET=dev_dev_dev_dev_dev_dev_123456789012
 ARG NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
 ARG STRAPI_REVALIDATE_SECRET=dev-revalidate-secret
+ARG STRAPI_API_TOKEN=
 
 ENV NEXTAUTH_URL=${NEXTAUTH_URL} \
     NEXTAUTH_SECRET=${NEXTAUTH_SECRET} \
     NEXT_PUBLIC_STRAPI_URL=${NEXT_PUBLIC_STRAPI_URL} \
-    STRAPI_REVALIDATE_SECRET=${STRAPI_REVALIDATE_SECRET}
+    STRAPI_REVALIDATE_SECRET=${STRAPI_REVALIDATE_SECRET} \
+    STRAPI_API_TOKEN=${STRAPI_API_TOKEN}
 
 # Build shared packages and Next.js app
 RUN pnpm --filter @ruach/ai run build \
@@ -60,10 +62,12 @@ RUN pnpm --filter @ruach/ai run build \
 
 # ---------- Runner ----------
 FROM node:20-bookworm-slim AS runner
+ARG STRAPI_API_TOKEN
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
-    HOSTNAME=0.0.0.0
+    HOSTNAME=0.0.0.0 \
+    STRAPI_API_TOKEN=${STRAPI_API_TOKEN}
 WORKDIR /app
 
 # Install curl for healthcheck
