@@ -35,8 +35,8 @@ COPY ruach-ministries-backend/package.json ruach-ministries-backend/package.json
 COPY ruach-ministries-backend/scripts/link-dependencies.js ruach-ministries-backend/scripts/link-dependencies.js
 COPY ruach-ministries-backend/scripts/patch-review-workflows.js ruach-ministries-backend/scripts/patch-review-workflows.js
 
-# Install dependencies (need devDeps for build)
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies (need devDeps for build; some platforms set NODE_ENV=production during build)
+RUN pnpm install --no-frozen-lockfile --prod=false
 
 # Copy full repo contents
 COPY . .

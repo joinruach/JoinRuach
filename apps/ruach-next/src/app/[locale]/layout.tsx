@@ -77,7 +77,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <head>
         {/* Anti-flash script for theme */}
-        <Script id="theme-init" strategy="afterInteractive">
+        <Script id="theme-init" strategy="afterInteractive" key="theme-init">
           {`
             (function() {
               try {
@@ -91,19 +91,27 @@ export default async function LocaleLayout({
         </Script>
 
         {/* Favicons */}
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.svg" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link key="favicon-svg" rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link key="favicon" rel="icon" href="/favicon.svg" />
+        <link key="shortcut-icon" rel="shortcut icon" href="/favicon.svg" />
+        <link key="apple-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
         {/* PWA */}
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Ruach" />
-        <meta name="theme-color" content="#fbbf24" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+        <link key="manifest" rel="manifest" href="/manifest.json" />
+        <meta key="mobile-web-app-capable" name="mobile-web-app-capable" content="yes" />
+        <meta key="apple-mobile-web-app-capable" name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          key="apple-mobile-web-app-status-bar-style"
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <meta key="apple-mobile-web-app-title" name="apple-mobile-web-app-title" content="Ruach" />
+        <meta key="theme-color" name="theme-color" content="#fbbf24" />
+        <meta
+          key="viewport"
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+        />
       </head>
       <body className="isolate bg-background text-foreground antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {plausibleDomain ? (

@@ -111,11 +111,28 @@ function isNetworkError(error: unknown): boolean {
 }
 
 function isNotFoundOrNetwork(error: unknown): boolean {
-  return isNotFoundError(error) || isNetworkError(error);
+  if (isNotFoundError(error) || isNetworkError(error)) {
+    return true;
+  }
+
+  // During `next build`, deployments may not provide Strapi auth env vars at build-time.
+  // Treat auth/query failures as non-fatal so pages can be rendered dynamically at runtime.
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (!isBuildPhase) {
+    return false;
+  }
+
+  if (!error || typeof error !== "object" || !("status" in error)) {
+    return false;
+  }
+
+  const status = (error as StrapiRequestError).status;
+  return status === 400 || status === 401 || status === 403;
 }
 
 export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
+  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
 
   // Check if draft mode is enabled (for Next.js preview functionality)
   let isDraftMode = false;
@@ -133,7 +150,7 @@ export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T>
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       // Enable content source maps in preview mode for Live Preview
       ...(isDraftMode ? { "strapi-encode-source-maps": "true" } : {}),
       ...(opts.headers || {}),
@@ -150,11 +167,12 @@ export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T>
 
 export async function postJSON<T>(path: string, body: unknown, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
+  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...(opts.headers || {}),
     },
     body: JSON.stringify(body),
@@ -170,11 +188,12 @@ export async function postJSON<T>(path: string, body: unknown, opts: FetchOpts =
 
 export async function putJSON<T>(path: string, body: unknown, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
+  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
   const res = await fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...(opts.headers || {}),
     },
     body: JSON.stringify(body),
@@ -190,11 +209,12 @@ export async function putJSON<T>(path: string, body: unknown, opts: FetchOpts = 
 
 export async function deleteJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
+  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
   const res = await fetch(url, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      ...(opts.authToken ? { Authorization: `Bearer ${opts.authToken}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...(opts.headers || {}),
     },
     next: { tags: opts.tags, revalidate: opts.revalidate, ...opts.next },
@@ -1739,7 +1759,8 @@ export async function getScriptureWorks(options: ScriptureWorksOptions = {}) {
   });
   params.set("sort[0]", "canonicalOrder:asc");
   params.set("pagination[pageSize]", "100");
-  params.set("populate", "author,genre");
+  params.set("populate[author]", "true");
+  params.set("populate[genre]", "true");
 
   if (options.testament) {
     params.set("filters[testament][$eq]", options.testament);

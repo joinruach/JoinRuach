@@ -10,9 +10,9 @@ type GivePageSearchParams = { checkout?: string };
 export default async function GivePage({
   searchParams,
 }: {
-  searchParams?: GivePageSearchParams | Promise<GivePageSearchParams>;
+  searchParams?: Promise<GivePageSearchParams | undefined>;
 }) {
-  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const resolvedSearchParams = (await searchParams) ?? {};
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";
   const membershipPortalHref = "/members/account";
   const isCheckoutCancelled = resolvedSearchParams.checkout === "cancelled";

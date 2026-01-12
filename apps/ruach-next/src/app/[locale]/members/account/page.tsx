@@ -457,13 +457,14 @@ function AccessSummary({ features, hasActiveMembership }: AccessSummaryProps) {
 
 export default async function AccountPage({
   params,
-  searchParams = {},
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams?: { checkout?: string; billing?: string };
+  searchParams?: Promise<{ checkout?: string; billing?: string }>;
 }) {
   try {
-    return await renderAccountPage(params, searchParams);
+    const resolvedSearchParams = (await searchParams) ?? {};
+    return await renderAccountPage(params, resolvedSearchParams);
   } catch (error) {
     console.error("[MEMBER DASHBOARD RENDER ERROR]", error);
     return null;

@@ -13,6 +13,12 @@ import { existsSync } from "fs";
 const app = express();
 const PORT = process.env.REVIEW_PORT || 4000;
 
+function coerceRouteParam(value: unknown): string {
+  if (Array.isArray(value)) return value[0] ?? "";
+  if (typeof value === "string") return value;
+  return "";
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.static(join(__dirname, "public")));
@@ -86,7 +92,7 @@ app.get("/api/extractions", async (req: Request, res: Response) => {
  */
 app.get("/api/extractions/:id/metadata", async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = coerceRouteParam(req.params.id);
     const metadataPath = join(
       __dirname,
       "../../extractions",
@@ -110,7 +116,7 @@ app.get("/api/extractions/:id/metadata", async (req: Request<{ id: string }>, re
  */
 app.get("/api/extractions/:id/works", async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = coerceRouteParam(req.params.id);
     const worksPath = join(__dirname, "../../extractions", id, "works.json");
 
     if (!existsSync(worksPath)) {
@@ -131,7 +137,8 @@ app.get(
   "/api/extractions/:id/verses/:workId",
   async (req: Request<{ id: string; workId: string }>, res: Response) => {
     try {
-      const { id, workId } = req.params;
+      const id = coerceRouteParam(req.params.id);
+      const workId = coerceRouteParam(req.params.workId);
       const { chapter } = req.query;
 
       // Load all verse chunks
@@ -173,7 +180,7 @@ app.get(
  */
 app.get("/api/extractions/:id/validation", async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = coerceRouteParam(req.params.id);
     const validationPath = join(
       __dirname,
       "../../extractions",
@@ -209,7 +216,7 @@ app.get("/api/review-status", async (req: Request, res: Response) => {
  */
 app.get("/api/review-status/:bookId", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
-    const { bookId } = req.params;
+    const bookId = coerceRouteParam(req.params.bookId);
     const status = await loadReviewStatus();
     res.json(status[bookId] || { status: "pending" });
   } catch (error) {
@@ -222,7 +229,7 @@ app.get("/api/review-status/:bookId", async (req: Request<{ bookId: string }>, r
  */
 app.post("/api/review/:bookId/approve", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
-    const { bookId } = req.params;
+    const bookId = coerceRouteParam(req.params.bookId);
     const { reviewer, checklist, notes } = req.body;
 
     const status = await loadReviewStatus();
@@ -250,7 +257,7 @@ app.post("/api/review/:bookId/approve", async (req: Request<{ bookId: string }>,
  */
 app.post("/api/review/:bookId/reject", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
-    const { bookId } = req.params;
+    const bookId = coerceRouteParam(req.params.bookId);
     const { reviewer, reason, notes } = req.body;
 
     const status = await loadReviewStatus();
@@ -278,7 +285,7 @@ app.post("/api/review/:bookId/reject", async (req: Request<{ bookId: string }>, 
  */
 app.post("/api/review/:bookId/reset", async (req: Request<{ bookId: string }>, res: Response) => {
   try {
-    const { bookId } = req.params;
+    const bookId = coerceRouteParam(req.params.bookId);
     const status = await loadReviewStatus();
 
     if (status[bookId]) {
