@@ -30,6 +30,7 @@ type StrapiRequestError = Error & {
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 const MEDIA_CDN = process.env.NEXT_PUBLIC_MEDIA_CDN_URL || 'https://cdn.joinruach.org';
+const PUBLIC_REVALIDATE_SECONDS = 60;
 
 function resolveUrl(path: string) {
   return path.startsWith("http") ? path : `${STRAPI}${path}`;
@@ -132,7 +133,8 @@ function isNotFoundOrNetwork(error: unknown): boolean {
 
 export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
-  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
+  const envAuthToken = typeof window === "undefined" ? process.env.STRAPI_API_TOKEN : undefined;
+  const authToken = (opts.authToken ?? envAuthToken)?.trim() || undefined;
 
   // Check if draft mode is enabled (for Next.js preview functionality)
   let isDraftMode = false;
@@ -167,7 +169,8 @@ export async function getJSON<T>(path: string, opts: FetchOpts = {}): Promise<T>
 
 export async function postJSON<T>(path: string, body: unknown, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
-  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
+  const envAuthToken = typeof window === "undefined" ? process.env.STRAPI_API_TOKEN : undefined;
+  const authToken = (opts.authToken ?? envAuthToken)?.trim() || undefined;
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -188,7 +191,8 @@ export async function postJSON<T>(path: string, body: unknown, opts: FetchOpts =
 
 export async function putJSON<T>(path: string, body: unknown, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
-  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
+  const envAuthToken = typeof window === "undefined" ? process.env.STRAPI_API_TOKEN : undefined;
+  const authToken = (opts.authToken ?? envAuthToken)?.trim() || undefined;
   const res = await fetch(url, {
     method: "PUT",
     headers: {
@@ -209,7 +213,8 @@ export async function putJSON<T>(path: string, body: unknown, opts: FetchOpts = 
 
 export async function deleteJSON<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = resolveUrl(path);
-  const authToken = (opts.authToken ?? process.env.STRAPI_API_TOKEN)?.trim() || undefined;
+  const envAuthToken = typeof window === "undefined" ? process.env.STRAPI_API_TOKEN : undefined;
+  const authToken = (opts.authToken ?? envAuthToken)?.trim() || undefined;
   const res = await fetch(url, {
     method: "DELETE",
     headers: {
@@ -965,6 +970,27 @@ export async function getMediaItems(options: MediaListOptions = {}, authToken?: 
   }
 }
 
+type MediaLibraryResponse = {
+  collections: Array<Record<string, any>>;
+  standalone: MediaItemEntity[];
+};
+
+export async function getMediaLibrary(authToken?: string): Promise<MediaLibraryResponse> {
+  try {
+    return await getJSON<MediaLibraryResponse>("/api/media/library", {
+      tags: ["media-library"],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+      ...(authToken ? { authToken } : {}),
+    });
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return { collections: [], standalone: [] };
+    }
+
+    throw error;
+  }
+}
+
 async function fetchMediaBySlug(slug: string, authToken?: string) {
   const params = new URLSearchParams();
   params.set("filters[slug][$eq]", slug);
@@ -996,6 +1022,7 @@ async function fetchMediaBySlug(slug: string, authToken?: string) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${params.toString()}`, {
       tags: [`media:${slug}`],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
       ...(authToken ? { authToken } : {}),
     });
     return j.data?.[0];
@@ -1018,6 +1045,7 @@ async function fetchMediaBySlugLegacy(slug: string, authToken?: string) {
   try {
     const j = await getJSON<{ data: MediaItemEntity[] }>(`/api/media-items?${q}`, {
       tags: [`media:${slug}`],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
       ...(authToken ? { authToken } : {}),
     });
     return j.data?.[0];
@@ -1038,6 +1066,88 @@ export async function getMediaBySlug(slug: string, authToken?: string) {
       return fetchMediaBySlugLegacy(slug, authToken);
     }
 
+    throw error;
+  }
+}
+
+type CollectionDetail = {
+  collection?: SeriesEntity;
+  episodes: MediaItemEntity[];
+};
+
+export async function getCollectionBySlug(slug: string, authToken?: string): Promise<CollectionDetail> {
+  const params = new URLSearchParams();
+  params.set("filters[slug][$eq]", slug);
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "summary");
+  params.set("fields[3]", "description");
+  params.set("fields[4]", "kind");
+  params.set("fields[5]", "visibility");
+  params.set("fields[6]", "sortMode");
+  params.set("fields[7]", "featured");
+  params.set("populate[poster][fields][0]", "url");
+  params.set("populate[poster][fields][1]", "alternativeText");
+  params.set("populate[coverImage][fields][0]", "url");
+  params.set("populate[coverImage][fields][1]", "alternativeText");
+  params.set("populate[heroBackdrop][fields][0]", "url");
+  params.set("populate[heroBackdrop][fields][1]", "alternativeText");
+  params.set("populate[tags][fields][0]", "name");
+  params.set("populate[tags][fields][1]", "slug");
+  params.set("pagination[pageSize]", "1");
+
+  try {
+    const j = await getJSON<{ data: SeriesEntity[] }>(`/api/series?${params.toString()}`, {
+      tags: [`collection:${slug}`],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+      ...(authToken ? { authToken } : {}),
+    });
+    const collection = j.data?.[0];
+    const episodes = collection?.attributes ? await getCollectionEpisodes(collection.id, collection.attributes.sortMode ?? undefined) : [];
+    return { collection, episodes };
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return { collection: undefined, episodes: [] };
+    }
+    throw error;
+  }
+}
+
+async function getCollectionEpisodes(seriesId: number, sortMode?: string): Promise<MediaItemEntity[]> {
+  const params = new URLSearchParams();
+  params.set("filters[series][id][$eq]", String(seriesId));
+  params.set("filters[itemType][$eq]", "episode");
+  params.set("filters[visibility][$eq]", "public");
+  params.set("filters[publishedAt][$notNull]", "true");
+  params.set("fields[0]", "title");
+  params.set("fields[1]", "slug");
+  params.set("fields[2]", "excerpt");
+  params.set("fields[3]", "releasedAt");
+  params.set("fields[4]", "durationSec");
+  params.set("fields[5]", "episodeNumber");
+  params.set("fields[6]", "seasonNumber");
+  params.set("populate[thumbnail][fields][0]", "url");
+  params.set("populate[thumbnail][fields][1]", "alternativeText");
+  params.set("pagination[pageSize]", "2000");
+
+  if (sortMode === "newest_first") {
+    params.set("sort[0]", "releasedAt:desc");
+  } else {
+    params.set("sort[0]", "seasonNumber:asc");
+    params.set("sort[1]", "episodeNumber:asc");
+    params.set("sort[2]", "releasedAt:asc");
+  }
+
+  try {
+    const j = await getJSON<StrapiListResponse<MediaItemEntity>>(`/api/media-items?${params.toString()}`, {
+      tags: [`collection:${seriesId}:episodes`],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+    });
+    return j.data || [];
+  } catch (error) {
+    if (isNotFoundOrNetwork(error)) {
+      return [];
+    }
     throw error;
   }
 }
@@ -1626,6 +1736,7 @@ export type SeriesEntity = {
     title?: string;
     slug?: string;
     description?: string | null;
+    sortMode?: string | null;
     coverImage?: {
       data?: {
         attributes?: {

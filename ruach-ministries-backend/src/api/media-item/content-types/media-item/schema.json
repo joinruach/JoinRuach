@@ -26,6 +26,15 @@
       "default": "testimony",
       "required": true
     },
+    "itemType": {
+      "type": "enumeration",
+      "enum": [
+        "standalone",
+        "episode"
+      ],
+      "default": "standalone",
+      "required": true
+    },
     "requiredAccessLevel": {
       "type": "enumeration",
       "enum": ["basic", "full", "leader"],
@@ -73,6 +82,10 @@
       "target": "api::series.series",
       "inversedBy": "mediaItems"
     },
+    "seasonNumber": {
+      "type": "integer",
+      "min": 1
+    },
     "weekNumber": {
       "type": "integer",
       "min": 1
@@ -87,6 +100,16 @@
     },
     "releasedAt": {
       "type": "datetime",
+      "required": true
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "public",
+        "unlisted",
+        "private"
+      ],
+      "default": "public",
       "required": true
     },
     "featured": {

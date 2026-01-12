@@ -6,6 +6,13 @@ type LifecycleEvent = {
   params: Record<string, any>;
 };
 
+type BeforeLifecycleEvent = {
+  params: {
+    data: Record<string, any>;
+    where?: { id?: number };
+  };
+};
+
 type SlugLifecycle = ReturnType<typeof createSlugFreezeLifecycle> & {
   afterUpdate?: (event: LifecycleEvent) => Promise<void>;
   afterCreate?: (event: LifecycleEvent) => Promise<void>;
@@ -13,8 +20,85 @@ type SlugLifecycle = ReturnType<typeof createSlugFreezeLifecycle> & {
 
 const slugLifecycle = createSlugFreezeLifecycle('api::media-item.media-item') as SlugLifecycle;
 
+function getRelationId(value: unknown) {
+  if (!value) return undefined;
+  if (typeof value === "number" || typeof value === "string") return value;
+  if (typeof value === "object" && value && "data" in value) {
+    const dataValue = (value as { data?: unknown }).data;
+    if (typeof dataValue === "number" || typeof dataValue === "string") return dataValue;
+    if (typeof dataValue === "object" && dataValue && "id" in dataValue) {
+      const idValue = (dataValue as { id?: unknown }).id;
+      if (typeof idValue === "number" || typeof idValue === "string") return idValue;
+    }
+  }
+  if (typeof value === "object" && value && "connect" in value) {
+    const connectValue = (value as { connect?: unknown }).connect;
+    if (Array.isArray(connectValue) && connectValue.length > 0) {
+      const first = connectValue[0] as { id?: unknown };
+      if (typeof first?.id === "number" || typeof first?.id === "string") return first.id;
+    }
+  }
+  if (typeof value === "object" && value && "id" in value) {
+    const idValue = (value as { id?: unknown }).id;
+    if (typeof idValue === "number" || typeof idValue === "string") return idValue;
+  }
+  return undefined;
+}
+
+function validateEpisodeRules(data: Record<string, any>, existing?: Record<string, any>) {
+  const merged = { ...existing, ...data };
+  const itemType = merged.itemType ?? "standalone";
+  const seriesId = getRelationId(merged.series);
+
+  if (itemType === "episode") {
+    if (!seriesId) {
+      throw new Error("Episode media items must belong to a series.");
+    }
+    if (!merged.episodeNumber) {
+      throw new Error("Episode media items must include an episodeNumber.");
+    }
+  } else if (seriesId) {
+    throw new Error("Standalone media items cannot be assigned to a series.");
+  }
+}
+
+function buildRevalidationTags(result: Record<string, any>) {
+  const tags = ["media-items", "media-library"];
+  const category = result.category;
+  if (category) {
+    tags.push(`media-category:${category}`);
+  }
+
+  const itemType = result.itemType;
+  const seriesId = getRelationId(result.series);
+  if (itemType === "episode" && seriesId) {
+    tags.push(`collection:${seriesId}:episodes`);
+  }
+
+  return tags;
+}
+
 export default {
   ...slugLifecycle,
+
+  async beforeCreate(event: BeforeLifecycleEvent) {
+    validateEpisodeRules(event.params.data);
+  },
+
+  async beforeUpdate(event: BeforeLifecycleEvent) {
+    const id = event.params.where?.id;
+    if (!id) {
+      validateEpisodeRules(event.params.data);
+      return;
+    }
+
+    const existing = await strapi.entityService.findOne("api::media-item.media-item", id, {
+      fields: ["itemType", "episodeNumber"],
+      populate: { series: { fields: ["id"] } },
+    });
+
+    validateEpisodeRules(event.params.data, existing ?? undefined);
+  },
 
   /**
    * After Update Hook
@@ -30,10 +114,7 @@ export default {
 
     // Trigger cache revalidation if published
     if (result.publishedAt) {
-      const additionalTags = ['media-items'];
-      if (result.category) {
-        additionalTags.push(`media-category:${result.category}`);
-      }
+      const additionalTags = buildRevalidationTags(result);
       await revalidateContent('api::media-item.media-item', result, additionalTags);
     }
 
@@ -78,10 +159,7 @@ export default {
 
     // Trigger cache revalidation if published
     if (result.publishedAt) {
-      const additionalTags = ['media-items'];
-      if (result.category) {
-        additionalTags.push(`media-category:${result.category}`);
-      }
+      const additionalTags = buildRevalidationTags(result);
       await revalidateContent('api::media-item.media-item', result, additionalTags);
     }
 
@@ -114,10 +192,7 @@ export default {
   async afterDelete(event: LifecycleEvent) {
     const { result } = event;
     // Revalidate to remove from cache
-    const additionalTags = ['media-items'];
-    if (result.category) {
-      additionalTags.push(`media-category:${result.category}`);
-    }
+    const additionalTags = buildRevalidationTags(result);
     await revalidateContent('api::media-item.media-item', result, additionalTags);
   },
 };

@@ -10,7 +10,7 @@ type GivePageSearchParams = { checkout?: string };
 export default async function GivePage({
   searchParams,
 }: {
-  searchParams?: Promise<GivePageSearchParams | undefined>;
+  searchParams?: Promise<GivePageSearchParams>;
 }) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://joinruach.org";

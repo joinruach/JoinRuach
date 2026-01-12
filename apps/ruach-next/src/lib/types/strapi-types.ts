@@ -50,8 +50,16 @@ export interface SeriesEntity extends StrapiBase {
   attributes: {
     title: string;
     slug: string;
+    kind?: 'series' | 'course' | 'conference' | 'playlist';
+    summary?: string;
     description?: string;
+    poster?: { data?: { attributes?: Media } };
     coverImage?: { data?: { attributes?: Media } };
+    heroBackdrop?: { data?: { attributes?: Media } };
+    tags?: { data?: TagEntity[] };
+    visibility?: 'public' | 'unlisted' | 'private';
+    sortMode?: 'episode_order' | 'newest_first';
+    featured?: boolean;
     mediaItems?: { data?: MediaItemEntity[] };
   };
 }
@@ -72,6 +80,7 @@ export interface MediaItemEntity extends StrapiBase {
     description?: string;
     excerpt?: string;
     type?: 'testimony' | 'teaching' | 'worship' | 'podcast' | 'short';
+    itemType?: 'standalone' | 'episode';
     views?: number;
     likes?: number;
     durationSec?: number | null;
@@ -84,6 +93,7 @@ export interface MediaItemEntity extends StrapiBase {
     speakers?: { data?: SpeakerEntity[] };
     tags?: { data?: TagEntity[] };
     weekNumber?: number | null;
+    seasonNumber?: number | null;
     episodeNumber?: number | null;
     ctaLabel?: string;
     ctaUrl?: string;
@@ -98,6 +108,7 @@ export interface MediaItemEntity extends StrapiBase {
     seoDescription?: string;
     seoImage?: { data?: { attributes?: Media } };
     requiredAccessLevel?: CourseAccessLevel;
+    visibility?: 'public' | 'unlisted' | 'private';
   };
 }
 
