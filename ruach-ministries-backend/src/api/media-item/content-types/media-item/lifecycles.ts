@@ -62,6 +62,24 @@ function validateEpisodeRules(data: Record<string, any>, existing?: Record<strin
   }
 }
 
+function normalizePublishStatus(data: Record<string, any>) {
+  if (!("publishStatus" in data)) return;
+  const value = data.publishStatus;
+  if (value === null || value === undefined) return;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      data.publishStatus = null;
+      return;
+    }
+    try {
+      data.publishStatus = JSON.parse(trimmed);
+    } catch {
+      throw new Error("publishStatus must be valid JSON.");
+    }
+  }
+}
+
 function buildRevalidationTags(result: Record<string, any>) {
   const tags = ["media-items", "media-library"];
   const category = result.category;
@@ -82,10 +100,12 @@ export default {
   ...slugLifecycle,
 
   async beforeCreate(event: BeforeLifecycleEvent) {
+    normalizePublishStatus(event.params.data);
     validateEpisodeRules(event.params.data);
   },
 
   async beforeUpdate(event: BeforeLifecycleEvent) {
+    normalizePublishStatus(event.params.data);
     const id = event.params.where?.id;
     if (!id) {
       validateEpisodeRules(event.params.data);
