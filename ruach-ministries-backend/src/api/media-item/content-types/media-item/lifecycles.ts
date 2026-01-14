@@ -23,6 +23,11 @@ const slugLifecycle = createSlugFreezeLifecycle('api::media-item.media-item') as
 function getRelationId(value: unknown) {
   if (!value) return undefined;
   if (typeof value === "number" || typeof value === "string") return value;
+  if (Array.isArray(value) && value.length > 0) {
+    const first = value[0] as { id?: unknown; documentId?: unknown };
+    if (typeof first?.id === "number" || typeof first?.id === "string") return first.id;
+    if (typeof first?.documentId === "string") return first.documentId;
+  }
   if (typeof value === "object" && value && "data" in value) {
     const dataValue = (value as { data?: unknown }).data;
     if (typeof dataValue === "number" || typeof dataValue === "string") return dataValue;
@@ -30,17 +35,38 @@ function getRelationId(value: unknown) {
       const idValue = (dataValue as { id?: unknown }).id;
       if (typeof idValue === "number" || typeof idValue === "string") return idValue;
     }
+    if (typeof dataValue === "object" && dataValue && "documentId" in dataValue) {
+      const docValue = (dataValue as { documentId?: unknown }).documentId;
+      if (typeof docValue === "string") return docValue;
+    }
   }
   if (typeof value === "object" && value && "connect" in value) {
     const connectValue = (value as { connect?: unknown }).connect;
     if (Array.isArray(connectValue) && connectValue.length > 0) {
-      const first = connectValue[0] as { id?: unknown };
+      const first = connectValue[0] as { id?: unknown; documentId?: unknown };
       if (typeof first?.id === "number" || typeof first?.id === "string") return first.id;
+      if (typeof first?.documentId === "string") return first.documentId;
+    } else if (typeof connectValue === "number" || typeof connectValue === "string") {
+      return connectValue;
+    }
+  }
+  if (typeof value === "object" && value && "set" in value) {
+    const setValue = (value as { set?: unknown }).set;
+    if (Array.isArray(setValue) && setValue.length > 0) {
+      const first = setValue[0] as { id?: unknown; documentId?: unknown };
+      if (typeof first?.id === "number" || typeof first?.id === "string") return first.id;
+      if (typeof first?.documentId === "string") return first.documentId;
+    } else if (typeof setValue === "number" || typeof setValue === "string") {
+      return setValue;
     }
   }
   if (typeof value === "object" && value && "id" in value) {
     const idValue = (value as { id?: unknown }).id;
     if (typeof idValue === "number" || typeof idValue === "string") return idValue;
+  }
+  if (typeof value === "object" && value && "documentId" in value) {
+    const docValue = (value as { documentId?: unknown }).documentId;
+    if (typeof docValue === "string") return docValue;
   }
   return undefined;
 }
