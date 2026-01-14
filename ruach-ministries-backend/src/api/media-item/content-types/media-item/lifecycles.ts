@@ -78,6 +78,13 @@ function validateEpisodeRules(data: Record<string, any>, existing?: Record<strin
 
   if (itemType === "episode") {
     if (!seriesId) {
+      try {
+        strapi.log.warn(
+          `Episode missing series relation. series=${JSON.stringify(merged.series)}`
+        );
+      } catch {
+        strapi.log.warn("Episode missing series relation. series=<unserializable>");
+      }
       throw new Error("Episode media items must belong to a series.");
     }
     if (!merged.episodeNumber) {
