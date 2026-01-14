@@ -62,10 +62,16 @@ function validateEpisodeRules(data: Record<string, any>, existing?: Record<strin
   }
 }
 
-function normalizePublishStatus(data: Record<string, any>) {
-  if (!("publishStatus" in data)) return;
-  const value = data.publishStatus;
-  if (value === null || value === undefined) return;
+function normalizePublishStatus(data: Record<string, any>, options?: { setDefault?: boolean }) {
+  const hasField = "publishStatus" in data;
+  if (!hasField && !options?.setDefault) return;
+
+  const value = hasField ? data.publishStatus : undefined;
+  if (value === null || value === undefined) {
+    if (options?.setDefault) data.publishStatus = null;
+    return;
+  }
+
   if (typeof value === "string") {
     const trimmed = value.trim();
     if (!trimmed) {
@@ -75,7 +81,7 @@ function normalizePublishStatus(data: Record<string, any>) {
     try {
       data.publishStatus = JSON.parse(trimmed);
     } catch {
-      throw new Error("publishStatus must be valid JSON.");
+      data.publishStatus = null;
     }
   }
 }
@@ -100,7 +106,7 @@ export default {
   ...slugLifecycle,
 
   async beforeCreate(event: BeforeLifecycleEvent) {
-    normalizePublishStatus(event.params.data);
+    normalizePublishStatus(event.params.data, { setDefault: true });
     validateEpisodeRules(event.params.data);
   },
 
