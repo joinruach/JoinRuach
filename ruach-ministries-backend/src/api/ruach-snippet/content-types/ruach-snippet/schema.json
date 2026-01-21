@@ -70,6 +70,12 @@
     "capturedAt": {
       "type": "datetime"
     },
+    "media": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images", "files", "videos", "audios"]
+    },
     "refined_teachings": {
       "type": "relation",
       "relation": "oneToMany",

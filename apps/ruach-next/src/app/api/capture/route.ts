@@ -16,6 +16,7 @@ interface CaptureInput {
   type?: SnippetType;
   topics?: string[];
   source?: string;
+  mediaIds?: number[];
 }
 
 async function sha256(input: string): Promise<string> {
@@ -104,6 +105,7 @@ export async function POST(req: Request) {
         checksum,
         capturedAt: new Date().toISOString(),
         topics: topicIds,
+        ...(input.mediaIds && input.mediaIds.length > 0 ? { media: input.mediaIds } : {}),
       },
     };
 

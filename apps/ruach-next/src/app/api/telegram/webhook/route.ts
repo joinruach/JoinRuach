@@ -17,6 +17,52 @@ type TelegramChat = {
   type: string;
 };
 
+type TelegramPhotoSize = {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  file_size?: number;
+};
+
+type TelegramDocument = {
+  file_id: string;
+  file_unique_id: string;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+};
+
+type TelegramAudio = {
+  file_id: string;
+  file_unique_id: string;
+  duration: number;
+  title?: string;
+  performer?: string;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+};
+
+type TelegramVideo = {
+  file_id: string;
+  file_unique_id: string;
+  duration: number;
+  width: number;
+  height: number;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+};
+
+type TelegramVoice = {
+  file_id: string;
+  file_unique_id: string;
+  duration: number;
+  mime_type?: string;
+  file_size?: number;
+};
+
 type TelegramMessage = {
   message_id: number;
   date: number;
@@ -24,6 +70,18 @@ type TelegramMessage = {
   caption?: string;
   chat: TelegramChat;
   from?: TelegramUser;
+  photo?: TelegramPhotoSize[];
+  document?: TelegramDocument;
+  audio?: TelegramAudio;
+  video?: TelegramVideo;
+  voice?: TelegramVoice;
+  video_note?: {
+    file_id: string;
+    file_unique_id: string;
+    length: number;
+    duration: number;
+    file_size?: number;
+  };
 };
 
 type TelegramWebhookUpdate = {
@@ -119,6 +177,162 @@ if (REQUIRE_REDIS && !REDIS_ENABLED) {
     "⚠️  TELEGRAM_REQUIRE_REDIS=true but Redis not configured. " +
       "Bot will reject all requests."
   );
+}
+
+// ============================================================================
+// FILE HANDLING UTILITIES
+// ============================================================================
+
+/**
+ * Get file metadata from Telegram Bot API
+ */
+async function getTelegramFile(fileId: string): Promise<{ file_path: string } | null> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+    const data = await res.json();
+    return data.ok ? data.result : null;
+  } catch (error) {
+    safeLog("error", "Failed to get Telegram file", {
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+    return null;
+  }
+}
+
+/**
+ * Download file from Telegram and upload to Strapi
+ * Returns Strapi file ID if successful, null otherwise
+ */
+async function uploadTelegramFileToStrapi(
+  fileId: string,
+  fileName?: string,
+  mimeType?: string
+): Promise<number | null> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337";
+  const strapiToken = process.env.STRAPI_API_TOKEN;
+
+  if (!token || !strapiToken) return null;
+
+  try {
+    // Get file path from Telegram
+    const fileData = await getTelegramFile(fileId);
+    if (!fileData?.file_path) return null;
+
+    // Download file from Telegram
+    const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.file_path}`;
+    const fileRes = await fetch(fileUrl);
+    if (!fileRes.ok) return null;
+
+    // Get the file as a buffer
+    const fileBuffer = await fileRes.arrayBuffer();
+
+    // Determine filename
+    const finalFileName = fileName || fileData.file_path.split("/").pop() || "file";
+
+    // Create FormData for Strapi upload
+    const formData = new FormData();
+    formData.append("files", new Blob([fileBuffer], { type: mimeType || "application/octet-stream" }), finalFileName);
+
+    // Upload to Strapi
+    const uploadRes = await fetch(`${strapiUrl}/api/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${strapiToken}`,
+      },
+      body: formData,
+    });
+
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text();
+      safeLog("error", "Strapi upload failed", { errorPreview: errText.slice(0, 200) });
+      return null;
+    }
+
+    const uploadedFiles = await uploadRes.json();
+    return uploadedFiles?.[0]?.id || null;
+  } catch (error) {
+    safeLog("error", "Failed to upload file to Strapi", {
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+    return null;
+  }
+}
+
+/**
+ * Extract and upload all files from a Telegram message
+ * Returns array of Strapi file IDs
+ */
+async function processMessageFiles(message: TelegramMessage): Promise<number[]> {
+  const fileIds: number[] = [];
+
+  // Photo (array of sizes, take the largest)
+  if (message.photo && message.photo.length > 0) {
+    const largestPhoto = message.photo[message.photo.length - 1];
+    const id = await uploadTelegramFileToStrapi(
+      largestPhoto.file_id,
+      `photo_${Date.now()}.jpg`,
+      "image/jpeg"
+    );
+    if (id) fileIds.push(id);
+  }
+
+  // Document (PDFs, files, etc.)
+  if (message.document) {
+    const id = await uploadTelegramFileToStrapi(
+      message.document.file_id,
+      message.document.file_name,
+      message.document.mime_type
+    );
+    if (id) fileIds.push(id);
+  }
+
+  // Audio
+  if (message.audio) {
+    const fileName = message.audio.file_name || `audio_${Date.now()}.mp3`;
+    const id = await uploadTelegramFileToStrapi(
+      message.audio.file_id,
+      fileName,
+      message.audio.mime_type
+    );
+    if (id) fileIds.push(id);
+  }
+
+  // Video
+  if (message.video) {
+    const fileName = message.video.file_name || `video_${Date.now()}.mp4`;
+    const id = await uploadTelegramFileToStrapi(
+      message.video.file_id,
+      fileName,
+      message.video.mime_type
+    );
+    if (id) fileIds.push(id);
+  }
+
+  // Voice message
+  if (message.voice) {
+    const id = await uploadTelegramFileToStrapi(
+      message.voice.file_id,
+      `voice_${Date.now()}.ogg`,
+      message.voice.mime_type
+    );
+    if (id) fileIds.push(id);
+  }
+
+  // Video note (round videos)
+  if (message.video_note) {
+    const id = await uploadTelegramFileToStrapi(
+      message.video_note.file_id,
+      `videonote_${Date.now()}.mp4`,
+      "video/mp4"
+    );
+    if (id) fileIds.push(id);
+  }
+
+  return fileIds;
 }
 
 // ============================================================================
@@ -292,8 +506,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    if (!text) {
-      await sendReply(chatId, "📝 Send text (or a caption). I'll store it in the vault.");
+    // Process any file attachments first
+    const fileIds = await processMessageFiles(update.message);
+
+    // Require either text or files
+    if (!text && fileIds.length === 0) {
+      await sendReply(chatId, "📝 Send text, files, or both. I'll store them in the vault.");
       return NextResponse.json({ ok: true });
     }
 
@@ -309,11 +527,12 @@ export async function POST(req: Request) {
         "x-capture-secret": process.env.CAPTURE_SECRET || "",
       },
       body: JSON.stringify({
-        text: parsed.body,
+        text: parsed.body || "(Media attachment)",
         title: parsed.title,
         type: parsed.type,
         topics: parsed.topics,
         source: "Telegram",
+        mediaIds: fileIds.length > 0 ? fileIds : undefined,
       }),
     });
 
