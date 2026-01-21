@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_teachings",
+  "info": {
+    "singularName": "ruach-teaching",
+    "pluralName": "ruach-teachings",
+    "displayName": "Ruach Teaching",
+    "description": "Structured teaching output generated from raw snippets"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "hook": {
+      "type": "text"
+    },
+    "outline": {
+      "type": "richtext"
+    },
+    "key_points": {
+      "type": "json"
+    },
+    "scripture_refs": {
+      "type": "json"
+    },
+    "target_duration": {
+      "type": "enumeration",
+      "enum": [
+        "1m",
+        "3m",
+        "10m",
+        "20m"
+      ],
+      "default": "10m"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "ready",
+        "published"
+      ],
+      "default": "draft"
+    },
+    "source_snippet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ruach-snippet.ruach-snippet",
+      "inversedBy": "refined_teachings"
+    }
+  }
+}

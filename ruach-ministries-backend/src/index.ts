@@ -4,6 +4,7 @@ import { syncPublicPermissions } from './utils/sync-public-permissions';
 import { initializeDonationThankYouQueue } from "./services/donation-thankyou-queue";
 import { initializeLibraryIngestionQueue } from "./services/library-ingestion-queue";
 import { initializeUnifiedIngestionQueue } from "./services/unified-ingestion-queue";
+import seedPromptTemplates from "../database/seeds/ruach-prompt-templates";
 
 export default {
   /**
@@ -21,5 +22,14 @@ export default {
     await initializeDonationThankYouQueue({ strapi });
     await initializeLibraryIngestionQueue({ strapi });
     await initializeUnifiedIngestionQueue({ strapi });
+
+    // Initialize Ruach Generation system
+    await seedPromptTemplates(strapi);
+
+    // Initialize guardrails
+    const guardrailEngine = strapi.service('api::library.ruach-guardrail-engine');
+    if (guardrailEngine) {
+      await guardrailEngine.initializeStarterGuardrails();
+    }
   },
 };

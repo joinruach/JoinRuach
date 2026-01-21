@@ -1,0 +1,97 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_prompt_templates",
+  "info": {
+    "singularName": "ruach-prompt-template",
+    "pluralName": "ruach-prompt-templates",
+    "displayName": "Ruach Prompt Templates",
+    "description": "Structured prompts for each output type"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "templateId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "templateName": {
+      "type": "string",
+      "required": true
+    },
+    "outputType": {
+      "type": "enumeration",
+      "enum": [
+        "sermon",
+        "study",
+        "qa_answer",
+        "doctrine_page"
+      ],
+      "required": true
+    },
+    "generationMode": {
+      "type": "enumeration",
+      "enum": [
+        "scripture_library",
+        "scripture_only",
+        "teaching_voice"
+      ],
+      "required": true,
+      "default": "scripture_library"
+    },
+    "systemPrompt": {
+      "type": "text",
+      "required": true
+    },
+    "userPromptTemplate": {
+      "type": "text",
+      "required": true
+    },
+    "citationRequirements": {
+      "type": "json",
+      "required": true
+    },
+    "responseFormat": {
+      "type": "json",
+      "required": true
+    },
+    "maxTokens": {
+      "type": "integer",
+      "default": 4096
+    },
+    "temperature": {
+      "type": "decimal",
+      "min": 0,
+      "max": 2,
+      "default": 0.7
+    },
+    "guardrails": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::ruach-guardrail.ruach-guardrail"
+    },
+    "isDefault": {
+      "type": "boolean",
+      "default": false
+    },
+    "usageCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "metadata": {
+      "type": "json"
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "updatedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

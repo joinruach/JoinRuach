@@ -1,0 +1,92 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_snippets",
+  "info": {
+    "singularName": "ruach-snippet",
+    "pluralName": "ruach-snippets",
+    "displayName": "Ruach Snippet",
+    "description": "Raw vault entry capturing messy long-form ideas with AI metadata"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "richtext",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "parable",
+        "idea",
+        "teaching",
+        "quote",
+        "outline",
+        "prayer",
+        "script",
+        "dream",
+        "warning"
+      ],
+      "default": "idea",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "raw",
+        "refining",
+        "ready",
+        "published"
+      ],
+      "default": "raw",
+      "required": true
+    },
+    "source": {
+      "type": "string",
+      "default": "QuickCapture"
+    },
+    "summary": {
+      "type": "text"
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::ruach-topic.ruach-topic",
+      "inversedBy": "snippets"
+    },
+    "scripture_refs": {
+      "type": "json"
+    },
+    "checksum": {
+      "type": "string",
+      "unique": true
+    },
+    "capturedAt": {
+      "type": "datetime"
+    },
+    "refined_teachings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ruach-teaching.ruach-teaching",
+      "mappedBy": "source_snippet"
+    },
+    "refined_shorts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ruach-short.ruach-short",
+      "mappedBy": "source_snippet"
+    },
+    "refined_podcast_segments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ruach-podcast-segment.ruach-podcast-segment",
+      "mappedBy": "source_snippet"
+    }
+  }
+}

@@ -1415,7 +1415,8 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     phase: Schema.Attribute.Relation<
       'manyToOne',
       'api::formation-phase.formation-phase'
-    >;
+    > &
+      Schema.Attribute.Required;
     playerConfig: Schema.Attribute.Component<'course.player-config', false>;
     priceType: Schema.Attribute.Enumeration<
       ['free', 'paid_core', 'paid_flagship', 'paid_specialty']
@@ -1441,16 +1442,16 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
     startHere: Schema.Attribute.Component<'course.start-here', false>;
     status: Schema.Attribute.Enumeration<
       [
-        'draft',
-        'review',
-        'ready',
-        'synced',
-        'published',
-        'deprecated',
-        'needs_revision',
+        'Draft',
+        'Review',
+        'Ready',
+        'Synced',
+        'Published',
+        'Deprecated',
+        'Needs Revision',
       ]
     > &
-      Schema.Attribute.DefaultTo<'draft'>;
+      Schema.Attribute.DefaultTo<'Draft'>;
     strapiEntryId: Schema.Attribute.String & Schema.Attribute.Unique;
     syncedToStrapi: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
@@ -2584,6 +2585,15 @@ export interface ApiLibraryCitationLibraryCitation
       ]
     > &
       Schema.Attribute.Required;
+    citationWeight: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
     contextWindow: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2592,6 +2602,7 @@ export interface ApiLibraryCitationLibraryCitation
       'manyToOne',
       'api::library-generated-node.library-generated-node'
     >;
+    isScripture: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -2622,6 +2633,14 @@ export interface ApiLibraryCitationLibraryCitation
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    usageType: Schema.Attribute.Enumeration<
+      ['foundation', 'support', 'illustration']
+    > &
+      Schema.Attribute.DefaultTo<'support'>;
+    verificationStatus: Schema.Attribute.Enumeration<
+      ['pending', 'verified', 'flagged']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
   };
 }
 
@@ -2775,6 +2794,14 @@ export interface ApiLibraryGeneratedNodeLibraryGeneratedNode
   attributes: {
     aiModel: Schema.Attribute.String;
     citationCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    citationCoverage: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      >;
     citations: Schema.Attribute.Relation<
       'oneToMany',
       'api::library-citation.library-citation'
@@ -2787,6 +2814,9 @@ export interface ApiLibraryGeneratedNodeLibraryGeneratedNode
       ['ai_generated', 'human_authored', 'ai_assisted', 'collaborative']
     > &
       Schema.Attribute.Required;
+    guardrailViolations: Schema.Attribute.JSON;
+    libraryCitationCount: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<0>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -2830,12 +2860,16 @@ export interface ApiLibraryGeneratedNodeLibraryGeneratedNode
       ['draft', 'pending_review', 'approved', 'published', 'archived']
     > &
       Schema.Attribute.DefaultTo<'draft'>;
+    scriptureCitationCount: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<0>;
     slug: Schema.Attribute.UID<'title'>;
+    sourceQuery: Schema.Attribute.Text;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    verificationLog: Schema.Attribute.JSON;
   };
 }
 
@@ -3166,6 +3200,9 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     >;
     gallery: Schema.Attribute.Media<'images', true>;
     hashtags: Schema.Attribute.String;
+    itemType: Schema.Attribute.Enumeration<['standalone', 'episode']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'standalone'>;
     legacyCategory: Schema.Attribute.String & Schema.Attribute.Private;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -3198,6 +3235,13 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.DefaultTo<'basic'>;
     resources: Schema.Attribute.Component<'media.resource', true>;
+    seasonNumber: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     seoDescription: Schema.Attribute.Text;
     seoImage: Schema.Attribute.Media<'images'>;
     seoTitle: Schema.Attribute.String;
@@ -3233,6 +3277,11 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+    visibility: Schema.Attribute.Enumeration<
+      ['public', 'unlisted', 'private']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'public'>;
     weekNumber: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -3451,10 +3500,12 @@ export interface ApiModuleModule extends Struct.CollectionTypeSchema {
     closingPrayer: Schema.Attribute.RichText;
     confrontation: Schema.Attribute.Component<'module.confrontation', false>;
     coreScriptures: Schema.Attribute.Component<'module.core-scripture', true>;
-    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'>;
+    course: Schema.Attribute.Relation<'manyToOne', 'api::course.course'> &
+      Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
     estimatedMinutes: Schema.Attribute.Integer;
     focusQuestion: Schema.Attribute.Text & Schema.Attribute.Required;
     lastSyncedAt: Schema.Attribute.DateTime;
@@ -3469,6 +3520,7 @@ export interface ApiModuleModule extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     moduleNotes: Schema.Attribute.RichText;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
     notionPageId: Schema.Attribute.String & Schema.Attribute.Unique;
     oneObedienceStep: Schema.Attribute.Text & Schema.Attribute.Required;
     order: Schema.Attribute.Integer & Schema.Attribute.Required;
@@ -3983,6 +4035,118 @@ export interface ApiResourceResource extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiRuachGuardrailRuachGuardrail
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_guardrails';
+  info: {
+    description: 'Doctrinal boundaries for AI content validation';
+    displayName: 'Ruach Guardrails';
+    pluralName: 'ruach-guardrails';
+    singularName: 'ruach-guardrail';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['doctrine', 'interpretation', 'application']
+    > &
+      Schema.Attribute.Required;
+    correctionGuidance: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    detectionPatterns: Schema.Attribute.JSON & Schema.Attribute.Required;
+    enforcementLevel: Schema.Attribute.Enumeration<
+      ['blocking', 'warning', 'guidance']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'warning'>;
+    guardrailId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-guardrail.ruach-guardrail'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    priority: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<100>;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    violationCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiRuachPromptTemplateRuachPromptTemplate
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_prompt_templates';
+  info: {
+    description: 'Structured prompts for each output type';
+    displayName: 'Ruach Prompt Templates';
+    pluralName: 'ruach-prompt-templates';
+    singularName: 'ruach-prompt-template';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    citationRequirements: Schema.Attribute.JSON & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    generationMode: Schema.Attribute.Enumeration<
+      ['scripture_library', 'scripture_only', 'teaching_voice']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'scripture_library'>;
+    guardrails: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::ruach-guardrail.ruach-guardrail'
+    >;
+    isDefault: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-prompt-template.ruach-prompt-template'
+    > &
+      Schema.Attribute.Private;
+    maxTokens: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<4096>;
+    metadata: Schema.Attribute.JSON;
+    outputType: Schema.Attribute.Enumeration<
+      ['sermon', 'study', 'qa_answer', 'doctrine_page']
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    responseFormat: Schema.Attribute.JSON & Schema.Attribute.Required;
+    systemPrompt: Schema.Attribute.Text & Schema.Attribute.Required;
+    temperature: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 2;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0.7>;
+    templateId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    templateName: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    userPromptTemplate: Schema.Attribute.Text & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiScriptureAlignmentScriptureAlignment
   extends Struct.CollectionTypeSchema {
   collectionName: 'scripture_alignments';
@@ -4480,6 +4644,13 @@ export interface ApiSeriesSeries extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.RichText;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    heroBackdrop: Schema.Attribute.Media<'images'>;
+    kind: Schema.Attribute.Enumeration<
+      ['series', 'course', 'conference', 'playlist']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'series'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -4490,14 +4661,24 @@ export interface ApiSeriesSeries extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::media-item.media-item'
     >;
+    poster: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    sortMode: Schema.Attribute.Enumeration<['episode_order', 'newest_first']> &
+      Schema.Attribute.DefaultTo<'episode_order'>;
+    summary: Schema.Attribute.Text;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    visibility: Schema.Attribute.Enumeration<
+      ['public', 'unlisted', 'private']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'public'>;
   };
 }
 
@@ -4617,6 +4798,7 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::audio-file.audio-file'
     >;
+    collections: Schema.Attribute.Relation<'manyToMany', 'api::series.series'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -5605,6 +5787,8 @@ declare module '@strapi/strapi' {
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
       'api::resource.resource': ApiResourceResource;
+      'api::ruach-guardrail.ruach-guardrail': ApiRuachGuardrailRuachGuardrail;
+      'api::ruach-prompt-template.ruach-prompt-template': ApiRuachPromptTemplateRuachPromptTemplate;
       'api::scripture-alignment.scripture-alignment': ApiScriptureAlignmentScriptureAlignment;
       'api::scripture-book.scripture-book': ApiScriptureBookScriptureBook;
       'api::scripture-lemma.scripture-lemma': ApiScriptureLemmaScriptureLemma;

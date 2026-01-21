@@ -1,0 +1,81 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_guardrails",
+  "info": {
+    "singularName": "ruach-guardrail",
+    "pluralName": "ruach-guardrails",
+    "displayName": "Ruach Guardrails",
+    "description": "Doctrinal boundaries for AI content validation"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "guardrailId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "doctrine",
+        "interpretation",
+        "application"
+      ],
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "enforcementLevel": {
+      "type": "enumeration",
+      "enum": [
+        "blocking",
+        "warning",
+        "guidance"
+      ],
+      "required": true,
+      "default": "warning"
+    },
+    "detectionPatterns": {
+      "type": "json",
+      "required": true
+    },
+    "correctionGuidance": {
+      "type": "text",
+      "required": true
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "priority": {
+      "type": "integer",
+      "default": 100
+    },
+    "violationCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "metadata": {
+      "type": "json"
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "updatedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

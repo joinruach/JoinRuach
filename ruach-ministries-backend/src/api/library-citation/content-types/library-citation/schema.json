@@ -58,6 +58,34 @@
     "citationMetadata": {
       "type": "json"
     },
+    "isScripture": {
+      "type": "boolean",
+      "default": false
+    },
+    "usageType": {
+      "type": "enumeration",
+      "enum": [
+        "foundation",
+        "support",
+        "illustration"
+      ],
+      "default": "support"
+    },
+    "verificationStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "verified",
+        "flagged"
+      ],
+      "default": "pending"
+    },
+    "citationWeight": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "default": 1
+    },
     "chunk": {
       "type": "relation",
       "relation": "manyToOne",

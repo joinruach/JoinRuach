@@ -52,7 +52,6 @@
       "./node_modules/@types"
     ],
     "types": [
-      "jest",
       "node",
       "react",
       "react-dom"
@@ -90,6 +89,11 @@
   ],
   "exclude": [
     "node_modules",
-    "jest.config.ts"
+    "jest.config.ts",
+    "jest.setup.ts",
+    "vitest.config.ts",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

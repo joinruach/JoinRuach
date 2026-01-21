@@ -167,6 +167,9 @@ module.exports = [
     config: {},
   },
 
+  // NOTE: Rate limiting removed from global middleware (was blocking admin panel)
+  // Applied per-route in API endpoints that need it (see ruach-generation routes)
+
   'strapi::session',
   'strapi::favicon',
   'strapi::public',

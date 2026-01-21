@@ -3,8 +3,11 @@
  * Protects API endpoints from abuse
  */
 
-// In-memory rate limiting (for development)
-// In production, use Redis-backed rate limiting
+// In-memory rate limiting (for development). Use Redis-backed rate limiting in production.
+type MiddlewareFactory = (
+  config: any,
+  context: { strapi: any }
+) => (ctx: any, next: () => Promise<void>) => Promise<void>;
 
 interface RateLimitStore {
   [key: string]: {
@@ -14,6 +17,7 @@ interface RateLimitStore {
 }
 
 const store: RateLimitStore = {};
+const DEFAULT_MESSAGE = 'Too many requests, please try again later.';
 
 // Clean up old entries every 5 minutes
 setInterval(() => {
@@ -109,3 +113,74 @@ export const readRateLimit = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
   skipSuccessfulRequests: true, // Don't count successful reads
 });
+
+const getClientIp = (ctx: any) =>
+  ctx.request.ip || ctx.request.header['x-forwarded-for'] || 'unknown';
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Default export: allows using this middleware via config/middlewares.js
+const rateLimitMiddleware: MiddlewareFactory = (config = {}) => {
+  const {
+    interval = 60_000,
+    max = 100,
+    prefixKey = 'rl:',
+    delayAfter,
+    timeWait = 0,
+    whitelist = [],
+    message = DEFAULT_MESSAGE,
+  } = config as {
+    interval?: number;
+    max?: number;
+    prefixKey?: string;
+    delayAfter?: number;
+    timeWait?: number;
+    whitelist?: string[];
+    message?: string;
+  };
+
+  const whitelistSet = new Set(whitelist);
+
+  return async (ctx, next) => {
+    const ip = getClientIp(ctx);
+    if (whitelistSet.has(ip)) {
+      return next();
+    }
+
+    const now = Date.now();
+    const key = `${prefixKey}${ip}`;
+
+    if (!store[key] || store[key].resetAt < now) {
+      store[key] = {
+        count: 0,
+        resetAt: now + interval,
+      };
+    }
+
+    store[key].count++;
+
+    const remaining = Math.max(0, max - store[key].count);
+    const resetAt = new Date(store[key].resetAt);
+
+    ctx.set('X-RateLimit-Limit', String(max));
+    ctx.set('X-RateLimit-Remaining', String(remaining));
+    ctx.set('X-RateLimit-Reset', resetAt.toISOString());
+
+    if (delayAfter && store[key].count > delayAfter && timeWait > 0) {
+      await sleep(timeWait);
+    }
+
+    if (store[key].count > max) {
+      ctx.status = 429;
+      ctx.body = {
+        error: message,
+        retryAfter: Math.ceil((store[key].resetAt - now) / 1000),
+      };
+      return;
+    }
+
+    await next();
+  };
+};
+
+export default rateLimitMiddleware;

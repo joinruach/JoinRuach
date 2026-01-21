@@ -80,6 +80,28 @@
     "nodeMetadata": {
       "type": "json"
     },
+    "citationCoverage": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1
+    },
+    "scriptureCitationCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "libraryCitationCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "guardrailViolations": {
+      "type": "json"
+    },
+    "verificationLog": {
+      "type": "json"
+    },
+    "sourceQuery": {
+      "type": "text"
+    },
     "citations": {
       "type": "relation",
       "relation": "oneToMany",

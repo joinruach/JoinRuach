@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_shorts",
+  "info": {
+    "singularName": "ruach-short",
+    "pluralName": "ruach-shorts",
+    "displayName": "Ruach Short",
+    "description": "Short-form script output (Reels/Shorts/TikTok)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "hook": {
+      "type": "text"
+    },
+    "script": {
+      "type": "richtext"
+    },
+    "beats": {
+      "type": "json"
+    },
+    "cta": {
+      "type": "text"
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "default": 30
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "ready",
+        "published"
+      ],
+      "default": "draft"
+    },
+    "source_snippet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ruach-snippet.ruach-snippet",
+      "inversedBy": "refined_shorts"
+    }
+  }
+}

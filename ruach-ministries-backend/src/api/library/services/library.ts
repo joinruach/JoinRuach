@@ -260,9 +260,162 @@ export async function listSources(
   return results;
 }
 
+/**
+ * Scripture-specific search with semantic matching
+ * Searches scripture-verse table using embeddings + full-text search
+ */
+export async function searchScripture(
+  strapi: Core.Strapi,
+  query: string,
+  limit: number = 10
+): Promise<ChunkResult[]> {
+  const db = strapi.db.connection;
+
+  // Generate query embedding
+  const queryEmbedding = await generateQueryEmbedding(query);
+
+  // Search scripture verses with hybrid approach
+  const sql = `
+    WITH text_results AS (
+      SELECT
+        sv.id,
+        sv.verse_id,
+        sv.text AS verse_text,
+        sv.chapter,
+        sv.verse_number,
+        sw.title AS book_title,
+        sw.abbrev AS book_abbrev,
+        ts_rank(sv.text_search_vector, plainto_tsquery('english', $1)) AS text_score,
+        ROW_NUMBER() OVER (ORDER BY ts_rank(sv.text_search_vector, plainto_tsquery('english', $1)) DESC) AS text_rank
+      FROM scripture_verses sv
+      JOIN scripture_works sw ON sv.work_id = sw.id
+      WHERE sv.text_search_vector @@ plainto_tsquery('english', $1)
+      LIMIT 50
+    ),
+    vector_results AS (
+      SELECT
+        sv.id,
+        sv.verse_id,
+        sv.text AS verse_text,
+        sv.chapter,
+        sv.verse_number,
+        sw.title AS book_title,
+        sw.abbrev AS book_abbrev,
+        1 - (se.embedding <=> $2::vector) AS vector_score,
+        ROW_NUMBER() OVER (ORDER BY se.embedding <=> $2::vector) AS vector_rank
+      FROM scripture_verses sv
+      JOIN scripture_works sw ON sv.work_id = sw.id
+      LEFT JOIN scripture_embeddings se ON sv.id = se.verse_id
+      WHERE se.embedding IS NOT NULL
+      ORDER BY se.embedding <=> $2::vector
+      LIMIT 50
+    ),
+    fused_results AS (
+      SELECT
+        COALESCE(tr.id, vr.id) AS id,
+        COALESCE(tr.verse_id, vr.verse_id) AS verse_id,
+        COALESCE(tr.verse_text, vr.verse_text) AS verse_text,
+        COALESCE(tr.chapter, vr.chapter) AS chapter,
+        COALESCE(tr.verse_number, vr.verse_number) AS verse_number,
+        COALESCE(tr.book_title, vr.book_title) AS book_title,
+        COALESCE(tr.book_abbrev, vr.book_abbrev) AS book_abbrev,
+        (COALESCE(1.0 / (60 + tr.text_rank), 0) + COALESCE(1.0 / (60 + vr.vector_rank), 0)) AS rrf_score
+      FROM text_results tr
+      FULL OUTER JOIN vector_results vr ON tr.id = vr.id
+    )
+    SELECT *
+    FROM fused_results
+    ORDER BY rrf_score DESC
+    LIMIT $3
+  `;
+
+  const results = await db.raw(sql, [query, queryEmbedding, limit]);
+
+  // Format as ChunkResult for consistency
+  const formattedResults: ChunkResult[] = results.rows.map((row: any) => ({
+    chunkId: row.verse_id,
+    score: parseFloat(row.rrf_score),
+    textContent: row.verse_text,
+    citation: {
+      sourceTitle: `${row.book_title} ${row.chapter}:${row.verse_number}`,
+      author: null,
+      chapter: `Chapter ${row.chapter}`,
+      pageRange: null,
+    },
+    context: {
+      anchorTitle: `${row.book_title} ${row.chapter}`,
+    },
+  }));
+
+  return formattedResults;
+}
+
+/**
+ * Parse scripture reference and retrieve specific verses
+ * Format: "Matthew 6:25-34" or "John 3:16"
+ */
+export async function getScriptureByReference(
+  strapi: Core.Strapi,
+  reference: string
+): Promise<ChunkResult[]> {
+  const db = strapi.db.connection;
+
+  // Parse reference
+  const match = reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+  if (!match) {
+    return [];
+  }
+
+  const book = match[1].trim();
+  const chapter = parseInt(match[2], 10);
+  const verseStart = parseInt(match[3], 10);
+  const verseEnd = match[4] ? parseInt(match[4], 10) : verseStart;
+
+  // Query scripture verses
+  const sql = `
+    SELECT
+      sv.id,
+      sv.verse_id,
+      sv.text AS verse_text,
+      sv.chapter,
+      sv.verse_number,
+      sw.title AS book_title,
+      sw.abbrev AS book_abbrev
+    FROM scripture_verses sv
+    JOIN scripture_works sw ON sv.work_id = sw.id
+    WHERE sw.title ILIKE $1
+      AND sv.chapter = $2
+      AND sv.verse_number >= $3
+      AND sv.verse_number <= $4
+    ORDER BY sv.verse_number
+  `;
+
+  const results = await db.raw(sql, [book, chapter, verseStart, verseEnd]);
+
+  // Format as ChunkResult
+  const formattedResults: ChunkResult[] = results.rows.map((row: any) => ({
+    chunkId: row.verse_id,
+    score: 1.0, // Exact match gets max score
+    textContent: row.verse_text,
+    citation: {
+      sourceTitle: `${row.book_title} ${row.chapter}:${row.verse_number}`,
+      author: null,
+      chapter: `Chapter ${row.chapter}`,
+      pageRange: null,
+    },
+    context: {
+      anchorTitle: `${row.book_title} ${row.chapter}`,
+    },
+  }));
+
+  return formattedResults;
+}
+
 export default {
   hybridSearch,
   getSource,
   getVersionStatus,
   listSources,
+  searchScripture,
+  getScriptureByReference,
 };

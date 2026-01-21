@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ruach_podcast_segments",
+  "info": {
+    "singularName": "ruach-podcast-segment",
+    "pluralName": "ruach-podcast-segments",
+    "displayName": "Ruach Podcast Segment",
+    "description": "Podcast segment derived from a raw snippet"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "premise": {
+      "type": "text"
+    },
+    "talking_points": {
+      "type": "json"
+    },
+    "segment_script": {
+      "type": "richtext"
+    },
+    "estimated_minutes": {
+      "type": "integer",
+      "default": 8
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "ready",
+        "published"
+      ],
+      "default": "draft"
+    },
+    "source_snippet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ruach-snippet.ruach-snippet",
+      "inversedBy": "refined_podcast_segments"
+    }
+  }
+}
