@@ -31,12 +31,12 @@
     "target_duration": {
       "type": "enumeration",
       "enum": [
-        "1m",
-        "3m",
-        "10m",
-        "20m"
+        "min1",
+        "min3",
+        "min10",
+        "min20"
       ],
-      "default": "10m"
+      "default": "min10"
     },
     "status": {
       "type": "enumeration",
