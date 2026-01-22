@@ -98,6 +98,7 @@ module.exports = [
             'https://cdn.joinruach.org',
             'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
             'https://386e3b06c98f5a09da2029423a4d47b6.r2.cloudflarestorage.com',
+            'https://ruachmedia.s3.us-east-2.amazonaws.com',
           ],
           'media-src': [
             "'self'",
@@ -106,6 +107,7 @@ module.exports = [
             'https://cdn.joinruach.org',
             'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
             'https://386e3b06c98f5a09da2029423a4d47b6.r2.cloudflarestorage.com',
+            'https://ruachmedia.s3.us-east-2.amazonaws.com',
             'https://www.youtube.com',
             'https://player.vimeo.com',
           ],
