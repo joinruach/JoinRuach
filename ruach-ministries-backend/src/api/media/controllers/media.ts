@@ -30,15 +30,6 @@ function getDateValue(value?: string) {
 
 export default {
   async library(ctx: any) {
-    // Debug: Direct DB query to see raw data - get ALL fields
-    const allMediaItems = await strapi.db.query("api::media-item.media-item").findMany({
-      limit: 3,  // Just get 3 to see structure
-    });
-
-    const allSeries = await strapi.db.query("api::series.series").findMany({
-      limit: 3,
-    });
-
     const collections = await strapi.entityService.findMany("api::series.series", {
       fields: ["title", "slug", "summary", "description", "kind", "visibility", "sortMode", "featured", "publishedAt"],
       populate: {
@@ -49,9 +40,10 @@ export default {
       },
       filters: {
         visibility: "public",
-        publishedAt: { $notNull: true },
+        // TEMP: Removed publishedAt filter due to draft/publish system issue
+        // publishedAt: { $notNull: true },
       },
-      sort: ["publishedAt:desc"],
+      sort: ["id:desc"],  // TEMP: Sort by ID since publishedAt is null
       pagination: { pageSize: 500 },
     });
 
@@ -64,9 +56,10 @@ export default {
       filters: {
         itemType: "episode",
         visibility: "public",
-        publishedAt: { $notNull: true },
+        // TEMP: Removed publishedAt filter
+        // publishedAt: { $notNull: true },
       },
-      sort: ["publishedAt:desc"],
+      sort: ["releasedAt:desc"],  // TEMP: Sort by releasedAt
       pagination: { pageSize: 2000 },
     });
 
@@ -80,7 +73,8 @@ export default {
       filters: {
         itemType: "standalone",
         visibility: "public",
-        publishedAt: { $notNull: true },
+        // TEMP: Removed publishedAt filter
+        // publishedAt: { $notNull: true },
       },
       sort: ["releasedAt:desc"],
       pagination: { pageSize: 2000 },
@@ -118,15 +112,6 @@ export default {
     ctx.body = {
       collections: collectionsWithMeta,
       standalone,
-      debug: {
-        allMediaItemsCount: allMediaItems?.length || 0,
-        allSeriesCount: allSeries?.length || 0,
-        episodesRawCount: episodesRaw?.length || 0,
-        standaloneRawCount: standaloneRaw?.length || 0,
-        collectionsCount: collections?.length || 0,
-        sampleMediaItem: allMediaItems?.[0] || null,
-        sampleSeries: allSeries?.[0] || null,
-      },
     };
   },
 };
