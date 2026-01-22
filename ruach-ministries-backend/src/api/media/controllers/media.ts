@@ -30,15 +30,13 @@ function getDateValue(value?: string) {
 
 export default {
   async library(ctx: any) {
-    // Debug: Direct DB query to see raw data
+    // Debug: Direct DB query to see raw data - get ALL fields
     const allMediaItems = await strapi.db.query("api::media-item.media-item").findMany({
-      select: ["id", "title", "itemType", "visibility", "publishedAt", "published_at"],
-      limit: 100,
+      limit: 3,  // Just get 3 to see structure
     });
 
     const allSeries = await strapi.db.query("api::series.series").findMany({
-      select: ["id", "title", "visibility", "publishedAt", "published_at"],
-      limit: 100,
+      limit: 3,
     });
 
     const collections = await strapi.entityService.findMany("api::series.series", {
