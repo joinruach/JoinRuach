@@ -16,5 +16,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: "GET",
+      path: "/media/test",
+      handler: "test-simple.test",
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
