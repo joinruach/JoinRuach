@@ -30,6 +30,18 @@ function getDateValue(value?: string) {
 
 export default {
   async library(ctx: any) {
+    // Debug: Get all media items without filters
+    const allMediaItems = await strapi.entityService.findMany("api::media-item.media-item", {
+      fields: ["title", "itemType", "visibility", "publishedAt"],
+      pagination: { pageSize: 100 },
+    });
+
+    // Debug: Get all series without filters
+    const allSeries = await strapi.entityService.findMany("api::series.series", {
+      fields: ["title", "visibility", "publishedAt"],
+      pagination: { pageSize: 100 },
+    });
+
     const collections = await strapi.entityService.findMany("api::series.series", {
       fields: ["title", "slug", "summary", "description", "kind", "visibility", "sortMode", "featured", "publishedAt"],
       populate: {
@@ -109,6 +121,15 @@ export default {
     ctx.body = {
       collections: collectionsWithMeta,
       standalone,
+      debug: {
+        allMediaItemsCount: allMediaItems?.length || 0,
+        allSeriesCount: allSeries?.length || 0,
+        episodesRawCount: episodesRaw?.length || 0,
+        standaloneRawCount: standaloneRaw?.length || 0,
+        collectionsCount: collections?.length || 0,
+        sampleMediaItem: allMediaItems?.[0] || null,
+        sampleSeries: allSeries?.[0] || null,
+      },
     };
   },
 };
