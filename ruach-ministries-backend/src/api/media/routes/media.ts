@@ -8,5 +8,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: "GET",
+      path: "/media/debug",
+      handler: "debug.debug",
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

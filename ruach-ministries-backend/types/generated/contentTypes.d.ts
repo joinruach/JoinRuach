@@ -4084,6 +4084,46 @@ export interface ApiRuachGuardrailRuachGuardrail
   };
 }
 
+export interface ApiRuachPodcastSegmentRuachPodcastSegment
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_podcast_segments';
+  info: {
+    description: 'Podcast segment derived from a raw snippet';
+    displayName: 'Ruach Podcast Segment';
+    pluralName: 'ruach-podcast-segments';
+    singularName: 'ruach-podcast-segment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estimated_minutes: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<8>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-podcast-segment.ruach-podcast-segment'
+    > &
+      Schema.Attribute.Private;
+    premise: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    segment_script: Schema.Attribute.RichText;
+    source_snippet: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::ruach-snippet.ruach-snippet'
+    >;
+    status: Schema.Attribute.Enumeration<['draft', 'ready', 'published']> &
+      Schema.Attribute.DefaultTo<'draft'>;
+    talking_points: Schema.Attribute.JSON;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiRuachPromptTemplateRuachPromptTemplate
   extends Struct.CollectionTypeSchema {
   collectionName: 'ruach_prompt_templates';
@@ -4144,6 +4184,203 @@ export interface ApiRuachPromptTemplateRuachPromptTemplate
       Schema.Attribute.Private;
     usageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     userPromptTemplate: Schema.Attribute.Text & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiRuachShortRuachShort extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_shorts';
+  info: {
+    description: 'Short-form script output (Reels/Shorts/TikTok)';
+    displayName: 'Ruach Short';
+    pluralName: 'ruach-shorts';
+    singularName: 'ruach-short';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    beats: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cta: Schema.Attribute.Text;
+    duration_seconds: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<30>;
+    hook: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-short.ruach-short'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    script: Schema.Attribute.RichText;
+    source_snippet: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::ruach-snippet.ruach-snippet'
+    >;
+    status: Schema.Attribute.Enumeration<['draft', 'ready', 'published']> &
+      Schema.Attribute.DefaultTo<'draft'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRuachSnippetRuachSnippet
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_snippets';
+  info: {
+    description: 'Raw vault entry capturing messy long-form ideas with AI metadata';
+    displayName: 'Ruach Snippet';
+    pluralName: 'ruach-snippets';
+    singularName: 'ruach-snippet';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    body: Schema.Attribute.RichText & Schema.Attribute.Required;
+    capturedAt: Schema.Attribute.DateTime;
+    checksum: Schema.Attribute.String & Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-snippet.ruach-snippet'
+    > &
+      Schema.Attribute.Private;
+    media: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    refined_podcast_segments: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-podcast-segment.ruach-podcast-segment'
+    >;
+    refined_shorts: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-short.ruach-short'
+    >;
+    refined_teachings: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-teaching.ruach-teaching'
+    >;
+    scripture_refs: Schema.Attribute.JSON;
+    source: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'QuickCapture'>;
+    status: Schema.Attribute.Enumeration<
+      ['raw', 'refining', 'ready', 'published']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'raw'>;
+    summary: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    topics: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::ruach-topic.ruach-topic'
+    >;
+    type: Schema.Attribute.Enumeration<
+      [
+        'parable',
+        'idea',
+        'teaching',
+        'quote',
+        'outline',
+        'prayer',
+        'script',
+        'dream',
+        'warning',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'idea'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRuachTeachingRuachTeaching
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_teachings';
+  info: {
+    description: 'Structured teaching output generated from raw snippets';
+    displayName: 'Ruach Teaching';
+    pluralName: 'ruach-teachings';
+    singularName: 'ruach-teaching';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    hook: Schema.Attribute.Text;
+    key_points: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-teaching.ruach-teaching'
+    > &
+      Schema.Attribute.Private;
+    outline: Schema.Attribute.RichText;
+    publishedAt: Schema.Attribute.DateTime;
+    scripture_refs: Schema.Attribute.JSON;
+    source_snippet: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::ruach-snippet.ruach-snippet'
+    >;
+    status: Schema.Attribute.Enumeration<['draft', 'ready', 'published']> &
+      Schema.Attribute.DefaultTo<'draft'>;
+    target_duration: Schema.Attribute.Enumeration<
+      ['min1', 'min3', 'min10', 'min20']
+    > &
+      Schema.Attribute.DefaultTo<'min10'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRuachTopicRuachTopic extends Struct.CollectionTypeSchema {
+  collectionName: 'ruach_topics';
+  info: {
+    description: 'Reusable topic tags for snippets and refined content';
+    displayName: 'Ruach Topic';
+    pluralName: 'ruach-topics';
+    singularName: 'ruach-topic';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ruach-topic.ruach-topic'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    snippets: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::ruach-snippet.ruach-snippet'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -5788,7 +6025,12 @@ declare module '@strapi/strapi' {
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
       'api::resource.resource': ApiResourceResource;
       'api::ruach-guardrail.ruach-guardrail': ApiRuachGuardrailRuachGuardrail;
+      'api::ruach-podcast-segment.ruach-podcast-segment': ApiRuachPodcastSegmentRuachPodcastSegment;
       'api::ruach-prompt-template.ruach-prompt-template': ApiRuachPromptTemplateRuachPromptTemplate;
+      'api::ruach-short.ruach-short': ApiRuachShortRuachShort;
+      'api::ruach-snippet.ruach-snippet': ApiRuachSnippetRuachSnippet;
+      'api::ruach-teaching.ruach-teaching': ApiRuachTeachingRuachTeaching;
+      'api::ruach-topic.ruach-topic': ApiRuachTopicRuachTopic;
       'api::scripture-alignment.scripture-alignment': ApiScriptureAlignmentScriptureAlignment;
       'api::scripture-book.scripture-book': ApiScriptureBookScriptureBook;
       'api::scripture-lemma.scripture-lemma': ApiScriptureLemmaScriptureLemma;
