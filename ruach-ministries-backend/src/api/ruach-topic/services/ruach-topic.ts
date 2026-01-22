@@ -4,4 +4,4 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreService('api::ruach-topic.ruach-topic');
+export default factories.createCoreService('api::ruach-topic.ruach-topic' as any);

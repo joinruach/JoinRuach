@@ -4,4 +4,4 @@
 
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreService('api::ruach-snippet.ruach-snippet');
+export default factories.createCoreService('api::ruach-snippet.ruach-snippet' as any);
