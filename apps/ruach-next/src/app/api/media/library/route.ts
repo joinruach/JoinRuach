@@ -25,7 +25,7 @@ export async function GET() {
     });
 
     const collectionsRes = await fetch(
-      `${STRAPI_URL}/api/series?${collectionsParams.toString()}`,
+      `${STRAPI_URL}/api/series-collection?${collectionsParams.toString()}`,
       {
         headers: {
           "Content-Type": "application/json",

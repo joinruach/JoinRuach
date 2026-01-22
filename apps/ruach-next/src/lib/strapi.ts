@@ -1097,7 +1097,7 @@ export async function getCollectionBySlug(slug: string, authToken?: string): Pro
   params.set("pagination[pageSize]", "1");
 
   try {
-    const j = await getJSON<{ data: SeriesEntity[] }>(`/api/series?${params.toString()}`, {
+    const j = await getJSON<{ data: SeriesEntity[] }>(`/api/series-collection?${params.toString()}`, {
       tags: [`collection:${slug}`],
       revalidate: PUBLIC_REVALIDATE_SECONDS,
       ...(authToken ? { authToken } : {}),
