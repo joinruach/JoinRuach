@@ -70,19 +70,27 @@ export async function GET() {
       }
     );
 
-    if (!collectionsRes.ok || !standaloneRes.ok) {
-      console.error("Failed to fetch media library:", {
-        collectionsStatus: collectionsRes.status,
-        standaloneStatus: standaloneRes.status,
+    // Handle responses gracefully - one can fail without breaking the other
+    let collections = { data: [] };
+    let standalone = { data: [] };
+
+    if (collectionsRes.ok) {
+      collections = await collectionsRes.json();
+    } else {
+      console.warn("Collections fetch failed:", {
+        status: collectionsRes.status,
+        statusText: collectionsRes.statusText,
       });
-      return NextResponse.json(
-        { collections: [], standalone: [] },
-        { status: collectionsRes.ok ? standaloneRes.status : collectionsRes.status }
-      );
     }
 
-    const collections = await collectionsRes.json();
-    const standalone = await standaloneRes.json();
+    if (standaloneRes.ok) {
+      standalone = await standaloneRes.json();
+    } else {
+      console.warn("Standalone fetch failed:", {
+        status: standaloneRes.status,
+        statusText: standaloneRes.statusText,
+      });
+    }
 
     return NextResponse.json({
       collections: collections.data || [],
