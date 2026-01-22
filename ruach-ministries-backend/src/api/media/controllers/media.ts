@@ -30,16 +30,15 @@ function getDateValue(value?: string) {
 
 export default {
   async library(ctx: any) {
-    // Debug: Get all media items without filters
-    const allMediaItems = await strapi.entityService.findMany("api::media-item.media-item", {
-      fields: ["title", "itemType", "visibility", "publishedAt"],
-      pagination: { pageSize: 100 },
+    // Debug: Direct DB query to see raw data
+    const allMediaItems = await strapi.db.query("api::media-item.media-item").findMany({
+      select: ["id", "title", "itemType", "visibility", "publishedAt", "published_at"],
+      limit: 100,
     });
 
-    // Debug: Get all series without filters
-    const allSeries = await strapi.entityService.findMany("api::series.series", {
-      fields: ["title", "visibility", "publishedAt"],
-      pagination: { pageSize: 100 },
+    const allSeries = await strapi.db.query("api::series.series").findMany({
+      select: ["id", "title", "visibility", "publishedAt", "published_at"],
+      limit: 100,
     });
 
     const collections = await strapi.entityService.findMany("api::series.series", {
