@@ -103,7 +103,8 @@ export default async function MediaPage({ params }: Props) {
     });
 
   const featuredCollections = collectionCards.filter((card) => card.featured);
-  const standardCollections = collectionCards.filter((card) => !card.featured);
+  // Show all collections in the Collections section (not just non-featured)
+  const standardCollections = collectionCards;
 
   const mediaItems: MediaCardProps[] = [];
   type MediaAttributes = MediaItemEntity["attributes"];
