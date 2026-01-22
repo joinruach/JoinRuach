@@ -1118,7 +1118,6 @@ async function getCollectionEpisodes(seriesId: number, sortMode?: string): Promi
   params.set("filters[series][id][$eq]", String(seriesId));
   params.set("filters[itemType][$eq]", "episode");
   params.set("filters[visibility][$eq]", "public");
-  params.set("filters[publishedAt][$notNull]", "true");
   params.set("fields[0]", "title");
   params.set("fields[1]", "slug");
   params.set("fields[2]", "excerpt");

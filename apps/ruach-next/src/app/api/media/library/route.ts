@@ -11,7 +11,6 @@ export async function GET() {
   try {
     // Fetch collections (series with published episodes)
     const collectionsParams = new URLSearchParams({
-      "filters[publishedAt][$notNull]": "true",
       "filters[visibility][$eq]": "public",
       "populate[poster][fields][0]": "url",
       "populate[poster][fields][1]": "alternativeText",
@@ -39,7 +38,6 @@ export async function GET() {
 
     // Fetch standalone media items (not part of a series)
     const standaloneParams = new URLSearchParams({
-      "filters[publishedAt][$notNull]": "true",
       "filters[visibility][$eq]": "public",
       "filters[itemType][$eq]": "standalone",
       "populate[thumbnail][fields][0]": "url",
