@@ -68,11 +68,40 @@ function getRelationId(value: unknown) {
     const docValue = (value as { documentId?: unknown }).documentId;
     if (typeof docValue === "string") return docValue;
   }
+
+  // Special case: Empty connect/disconnect means "don't change relation"
+  // Return undefined to signal "no change", which should be handled by using existing value
   return undefined;
 }
 
+function isEmptyRelationUpdate(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const obj = value as { connect?: unknown; disconnect?: unknown };
+
+  // Check if it's {"connect":[],"disconnect":[]} format (means "no change")
+  if ("connect" in obj && "disconnect" in obj) {
+    const connect = obj.connect;
+    const disconnect = obj.disconnect;
+    if (Array.isArray(connect) && Array.isArray(disconnect) &&
+        connect.length === 0 && disconnect.length === 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function validateEpisodeRules(data: Record<string, any>, existing?: Record<string, any>) {
-  const merged = { ...existing, ...data };
+  // Build merged data, but exclude empty relation updates
+  const merged = { ...existing };
+  for (const [key, value] of Object.entries(data)) {
+    // Skip series field if it's an empty relation update
+    if (key === "series" && isEmptyRelationUpdate(value)) {
+      continue;
+    }
+    merged[key] = value;
+  }
+
   const itemType = merged.itemType ?? "standalone";
   const seriesId = getRelationId(merged.series);
 
