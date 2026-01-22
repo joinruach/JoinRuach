@@ -184,6 +184,64 @@ if (REQUIRE_REDIS && !REDIS_ENABLED) {
 // ============================================================================
 
 /**
+ * Get MIME type from file extension
+ */
+function getMimeTypeFromExtension(filename: string): string {
+  const ext = filename.toLowerCase().split('.').pop();
+
+  const mimeTypes: Record<string, string> = {
+    // Images
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    'bmp': 'image/bmp',
+    'ico': 'image/x-icon',
+
+    // Documents
+    'pdf': 'application/pdf',
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls': 'application/vnd.ms-excel',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'ppt': 'application/vnd.ms-powerpoint',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'txt': 'text/plain',
+    'csv': 'text/csv',
+    'json': 'application/json',
+    'xml': 'application/xml',
+
+    // Audio
+    'mp3': 'audio/mpeg',
+    'wav': 'audio/wav',
+    'ogg': 'audio/ogg',
+    'oga': 'audio/ogg',
+    'm4a': 'audio/mp4',
+    'aac': 'audio/aac',
+    'flac': 'audio/flac',
+
+    // Video
+    'mp4': 'video/mp4',
+    'avi': 'video/x-msvideo',
+    'mov': 'video/quicktime',
+    'wmv': 'video/x-ms-wmv',
+    'webm': 'video/webm',
+    'mkv': 'video/x-matroska',
+
+    // Archives
+    'zip': 'application/zip',
+    'rar': 'application/x-rar-compressed',
+    '7z': 'application/x-7z-compressed',
+    'tar': 'application/x-tar',
+    'gz': 'application/gzip',
+  };
+
+  return mimeTypes[ext || ''] || 'application/octet-stream';
+}
+
+/**
  * Get file metadata from Telegram Bot API
  */
 async function getTelegramFile(fileId: string): Promise<{ file_path: string } | null> {
@@ -233,9 +291,30 @@ async function uploadTelegramFileToStrapi(
     // Determine filename
     const finalFileName = fileName || fileData.file_path.split("/").pop() || "file";
 
+    // Determine MIME type (priority: provided > from filename > from response > default)
+    let finalMimeType = mimeType;
+
+    if (!finalMimeType) {
+      // Try to get from filename extension
+      finalMimeType = getMimeTypeFromExtension(finalFileName);
+    }
+
+    if (!finalMimeType || finalMimeType === 'application/octet-stream') {
+      // Try to get from response Content-Type header
+      const contentType = fileRes.headers.get('content-type');
+      if (contentType && contentType !== 'application/octet-stream') {
+        finalMimeType = contentType;
+      }
+    }
+
+    // Default fallback (only if nothing else worked)
+    if (!finalMimeType) {
+      finalMimeType = 'application/octet-stream';
+    }
+
     // Create FormData for Strapi upload
     const formData = new FormData();
-    formData.append("files", new Blob([fileBuffer], { type: mimeType || "application/octet-stream" }), finalFileName);
+    formData.append("files", new Blob([fileBuffer], { type: finalMimeType }), finalFileName);
 
     // Upload to Strapi
     const uploadRes = await fetch(`${strapiUrl}/api/upload`, {
