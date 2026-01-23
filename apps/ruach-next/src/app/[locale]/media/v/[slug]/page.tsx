@@ -179,12 +179,19 @@ export async function generateMetadata({ params }: Props){
 
 export default async function MediaDetail({ params }: Props){
   const { slug } = await params;
-  const data = await getMediaBySlug(slug);
+
+  let data: MediaItemEntity | undefined;
+  try {
+    data = await getMediaBySlug(slug);
+  } catch (error) {
+    console.error(`Media detail fetch failed for slug="${slug}"`, error);
+  }
+
   const a = extractAttributes<MediaAttributes>(data);
   if (!data || !a) {
     return (
       <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 text-zinc-700 dark:text-white/80">
-        Media not found.
+        Media not found or temporarily unavailable.
       </div>
     );
   }

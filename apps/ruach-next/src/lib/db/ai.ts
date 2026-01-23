@@ -1,4 +1,5 @@
 import { Pool, type QueryResultRow } from 'pg';
+import crypto from 'crypto';
 
 /**
  * Database utilities for AI features
@@ -116,6 +117,136 @@ type ContentMetadata =
   | CourseMetadata
   | BlogMetadata
   | SeriesMetadata;
+
+// Chunked embedding metadata (more detailed per-segment)
+export interface ChunkMetadata extends Record<string, any> {
+  title?: string;
+  url?: string;
+  speaker?: string;
+  tags?: string[];
+  contentType?: string;
+  contentId?: number;
+  chunkIndex?: number;
+  timestampStart?: number;
+  timestampEnd?: number;
+}
+
+export interface ChunkEmbeddingRow {
+  id: number;
+  content_type: string;
+  content_id: number;
+  chunk_index: number;
+  text: string;
+  metadata: ChunkMetadata;
+  hash: string;
+  similarity?: number;
+}
+
+export function sha256Hex(input: string): string {
+  return crypto.createHash('sha256').update(input).digest('hex');
+}
+
+/**
+ * Upsert a chunk-level embedding row
+ */
+export async function upsertChunkEmbedding(params: {
+  contentType: string;
+  contentId: number;
+  chunkIndex: number;
+  text: string;
+  embedding: number[];
+  metadata?: ChunkMetadata;
+}) {
+  const { contentType, contentId, chunkIndex, text, embedding } = params;
+  const metadata = params.metadata || {};
+
+  if (!Array.isArray(embedding) || embedding.length === 0) {
+    throw new Error('Embedding must be a non-empty array');
+  }
+  if (!text?.trim()) {
+    throw new Error('Chunk text must be non-empty');
+  }
+
+  const hash = sha256Hex(
+    JSON.stringify({
+      contentType,
+      contentId,
+      chunkIndex,
+      text,
+      metadata,
+    })
+  );
+
+  const sql = `
+    INSERT INTO content_embedding_chunks
+      (content_type, content_id, chunk_index, text, embedding, metadata, hash, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5::vector, $6, $7, NOW(), NOW())
+    ON CONFLICT (content_type, content_id, chunk_index)
+    DO UPDATE SET
+      text = EXCLUDED.text,
+      embedding = EXCLUDED.embedding,
+      metadata = EXCLUDED.metadata,
+      hash = EXCLUDED.hash,
+      updated_at = NOW()
+    RETURNING id, hash
+  `;
+
+  const result = await query<{ id: number; hash: string }>(sql, [
+    contentType,
+    contentId,
+    chunkIndex,
+    text,
+    JSON.stringify(embedding),
+    JSON.stringify(metadata),
+    hash,
+  ]);
+
+  return result.rows[0];
+}
+
+/**
+ * Semantic search over chunk embeddings
+ */
+export async function semanticSearchChunks(params: {
+  queryEmbedding: number[];
+  limit?: number;
+  contentTypes?: string[];
+  similarityThreshold?: number;
+}): Promise<ChunkEmbeddingRow[]> {
+  const { queryEmbedding, limit = 20, contentTypes, similarityThreshold = 0.0 } = params;
+
+  const sql = `
+    SELECT
+      id,
+      content_type,
+      content_id,
+      chunk_index,
+      text,
+      metadata,
+      hash,
+      1 - (embedding <=> $1::vector) AS similarity
+    FROM content_embedding_chunks
+    WHERE ($2::text[] IS NULL OR content_type = ANY($2))
+      AND 1 - (embedding <=> $1::vector) > $3
+    ORDER BY similarity DESC
+    LIMIT $4
+  `;
+
+  const result = await query<ChunkEmbeddingRow>(sql, [
+    JSON.stringify(queryEmbedding),
+    contentTypes && contentTypes.length ? contentTypes : null,
+    similarityThreshold,
+    limit,
+  ]);
+
+  return result.rows.map((row) => ({
+    ...row,
+    metadata:
+      typeof row.metadata === 'string'
+        ? (JSON.parse(row.metadata) as ChunkMetadata)
+        : (row.metadata as ChunkMetadata),
+  }));
+}
 
 interface SaveEmbeddingParams {
   contentType: ContentMetadata['contentType'];

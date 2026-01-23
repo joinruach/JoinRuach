@@ -101,24 +101,28 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // RAG: Get relevant context from knowledge base
     let context = '';
+    let sources: Array<{ title: string; url: string }> = [];
     try {
       const useSemanticSearch =
-        process.env.NEXT_PUBLIC_SEMANTIC_SEARCH_ENABLED === 'true' &&
+        (process.env.SEMANTIC_SEARCH_ENABLED === 'true' ||
+          process.env.NEXT_PUBLIC_SEMANTIC_SEARCH_ENABLED === 'true') &&
         !!process.env.OPENAI_API_KEY;
 
-      const { searchResults, userHistory } = await getRelevantContext(query, {
+      const rag = await getRelevantContext(query, {
         userId,
         limit: 5,
         useSemanticSearch,
       });
 
-      context = formatContextForPrompt(searchResults, userHistory);
+      context = rag.contextText || formatContextForPrompt(rag.searchResults, rag.userHistory);
+      sources = rag.sources;
     } catch (error) {
       console.error('RAG context error:', error);
       // Continue without context
     }
 
-    const systemPrompt = SYSTEM_PROMPT + (context ? '\n\n' + context : '');
+    const citeNote = context ? '\n\nUse the provided SOURCE blocks for facts and include brief citations like [S1].' : '';
+    const systemPrompt = SYSTEM_PROMPT + citeNote + (context ? '\n\n' + context : '');
 
     // Stream response using Anthropic Claude
     const result = await streamText({

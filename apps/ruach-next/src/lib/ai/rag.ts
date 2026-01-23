@@ -1,5 +1,5 @@
 import { generateQueryEmbedding } from '@ruach/ai/embeddings';
-import { semanticSearch } from '@/lib/db/ai';
+import { semanticSearchChunks } from '@/lib/db/ai';
 import { getJSON } from '@/lib/strapi';
 
 /**
@@ -57,12 +57,16 @@ export async function getRelevantContext(
     useSemanticSearch?: boolean;
   } = {}
 ): Promise<{
+  contextText: string;
+  sources: Array<{ title: string; url: string }>;
   searchResults: SearchResult[];
   userHistory: Array<{ title: string; contentType: string; watchedAt: Date }>;
 }> {
   const { userId, limit = 5, useSemanticSearch = false } = options;
 
   let searchResults: SearchResult[] = [];
+  let contextText = '';
+  const sources: Array<{ title: string; url: string }> = [];
 
   try {
     if (useSemanticSearch && process.env.OPENAI_API_KEY) {
@@ -71,32 +75,54 @@ export async function getRelevantContext(
         apiKey: process.env.OPENAI_API_KEY,
       });
 
-      const results = await semanticSearch({
+      const results = await semanticSearchChunks({
         queryEmbedding,
-        limit,
-        similarityThreshold: 0.7,
+        limit: limit * 4, // get more chunks then trim
+        similarityThreshold: 0.4,
       });
 
-      // Enrich with Strapi data
+      // Enrich with Strapi data and assemble context
+      const topChunks = results.slice(0, limit * 2);
+      contextText = topChunks
+        .map((chunk, idx) => {
+          const meta = (chunk.metadata || {}) as any;
+          const title = meta.title || `${chunk.content_type} #${chunk.content_id}`;
+          const url = meta.url || buildContentUrl(chunk.content_type, chunk.content_id);
+          return `SOURCE ${idx + 1}: ${title}\nURL: ${url}\n${chunk.text}`;
+        })
+        .join('\n\n---\n\n');
+
       searchResults = await Promise.all(
-        results.map(async (result) => {
+        topChunks.map(async (chunk) => {
           const strapiData = await fetchStrapiContent(
-            result.content_type,
-            result.content_id
+            chunk.content_type,
+            chunk.content_id
           );
-          const metadata = result.metadata;
+          const meta = chunk.metadata as any;
+          const title = strapiData?.title || meta?.title || 'Untitled';
+          const url = meta?.url || buildContentUrl(chunk.content_type, strapiData?.slug || chunk.content_id);
           return {
-            contentType: result.content_type,
-            contentId: result.content_id,
-            title: strapiData?.title || metadata.title || 'Untitled',
-            description: strapiData?.description || ('description' in metadata ? metadata.description : undefined),
-            url: buildContentUrl(result.content_type, strapiData?.slug || result.content_id),
-            speakers: ('speakers' in metadata ? metadata.speakers : undefined) || [],
-            tags: ('tags' in metadata ? metadata.tags : undefined) || [],
-            similarity: result.similarity,
+            contentType: chunk.content_type,
+            contentId: chunk.content_id,
+            title,
+            description: meta?.description || chunk.text?.slice(0, 300),
+            url,
+            speakers: meta?.speakers || [],
+            tags: meta?.tags || [],
+            similarity: chunk.similarity,
           };
         })
       );
+
+      // unique sources
+      const seen = new Set<string>();
+      for (const s of searchResults) {
+        const key = `${s.contentType}:${s.contentId}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          sources.push({ title: s.title, url: s.url });
+        }
+      }
     } else {
       // Fallback to keyword search
       searchResults = await keywordSearch(userQuery, limit);
@@ -113,7 +139,7 @@ export async function getRelevantContext(
   //   userHistory = await getUserRecentViews(userId, 3);
   // }
 
-  return { searchResults, userHistory };
+  return { contextText, sources, searchResults, userHistory };
 }
 
 /**
