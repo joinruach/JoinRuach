@@ -1086,6 +1086,19 @@ export async function getCollectionBySlug(slug: string, authToken?: string): Pro
   params.set("fields[5]", "visibility");
   params.set("fields[6]", "sortMode");
   params.set("fields[7]", "featured");
+  params.set("populate[mediaItems][fields][0]", "title");
+  params.set("populate[mediaItems][fields][1]", "slug");
+  params.set("populate[mediaItems][fields][2]", "excerpt");
+  params.set("populate[mediaItems][fields][3]", "releasedAt");
+  params.set("populate[mediaItems][fields][4]", "durationSec");
+  params.set("populate[mediaItems][fields][5]", "episodeNumber");
+  params.set("populate[mediaItems][fields][6]", "seasonNumber");
+  params.set("populate[mediaItems][filters][itemType][$eq]", "episode");
+  params.set("populate[mediaItems][filters][visibility][$eq]", "public");
+  params.set("populate[mediaItems][sort][0]", "seasonNumber:asc");
+  params.set("populate[mediaItems][sort][1]", "episodeNumber:asc");
+  params.set("populate[mediaItems][sort][2]", "releasedAt:asc");
+  params.set("populate[mediaItems][pagination][pageSize]", "2000");
   params.set("populate[poster][fields][0]", "url");
   params.set("populate[poster][fields][1]", "alternativeText");
   params.set("populate[coverImage][fields][0]", "url");
@@ -1103,7 +1116,19 @@ export async function getCollectionBySlug(slug: string, authToken?: string): Pro
       ...(authToken ? { authToken } : {}),
     });
     const collection = j.data?.[0];
-    const episodes = collection?.attributes ? await getCollectionEpisodes(collection.id, collection.attributes.sortMode ?? undefined) : [];
+
+    const populatedEpisodes =
+      collection?.attributes?.mediaItems?.data && Array.isArray(collection.attributes.mediaItems.data)
+        ? (collection.attributes.mediaItems.data as MediaItemEntity[])
+        : undefined;
+
+    const episodes =
+      populatedEpisodes && populatedEpisodes.length
+        ? populatedEpisodes
+        : collection?.attributes
+          ? await getCollectionEpisodes(collection.id, collection.attributes.sortMode ?? undefined)
+          : [];
+
     return { collection, episodes };
   } catch (error) {
     if (isNotFoundOrNetwork(error)) {
@@ -1125,6 +1150,7 @@ async function getCollectionEpisodes(seriesId: number, sortMode?: string): Promi
   params.set("fields[4]", "durationSec");
   params.set("fields[5]", "episodeNumber");
   params.set("fields[6]", "seasonNumber");
+  params.set("populate[series][fields][0]", "slug");
   params.set("populate[thumbnail][fields][0]", "url");
   params.set("populate[thumbnail][fields][1]", "alternativeText");
   params.set("pagination[pageSize]", "2000");
