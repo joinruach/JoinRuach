@@ -45,6 +45,28 @@ interface SearchResult {
   similarity?: number;
 }
 
+type FallbackReason = 'none' | 'keyword' | 'disabled' | 'empty' | 'error';
+type RetrievalMode = 'semantic' | 'keyword' | 'hybrid' | 'none';
+
+interface RAGMetrics {
+  mode: RetrievalMode;
+  fallbackUsed: FallbackReason;
+  semantic: {
+    enabled: boolean;
+    attempted: boolean;
+    chunks: number;
+    empty: boolean;
+    error: boolean;
+  };
+  keyword: {
+    attempted: boolean;
+    hits: number;
+  };
+  effective: {
+    chunks: number;
+  };
+}
+
 /**
  * Get relevant context for a user query
  * Uses semantic search to find related content
@@ -59,6 +81,11 @@ export async function getRelevantContext(
 ): Promise<{
   contextText: string;
   sources: Array<{ title: string; url: string }>;
+  semanticChunksReturned: number;
+  keywordHits: number;
+  effectiveChunksReturned: number;
+  fallbackNoChunks: boolean;
+  metrics: RAGMetrics;
   searchResults: SearchResult[];
   userHistory: Array<{ title: string; contentType: string; watchedAt: Date }>;
 }> {
@@ -67,12 +94,37 @@ export async function getRelevantContext(
   let searchResults: SearchResult[] = [];
   let contextText = '';
   const sources: Array<{ title: string; url: string }> = [];
+  let semanticChunksReturned = 0;
+  let keywordHits = 0;
+  let effectiveChunksReturned = 0;
+  let fallbackNoChunks = false;
+
+  const metrics: RAGMetrics = {
+    mode: 'none',
+    fallbackUsed: 'none',
+    semantic: {
+      enabled: useSemanticSearch && !!process.env.OPENAI_API_KEY,
+      attempted: false,
+      chunks: 0,
+      empty: false,
+      error: false,
+    },
+    keyword: {
+      attempted: false,
+      hits: 0,
+    },
+    effective: {
+      chunks: 0,
+    },
+  };
 
   try {
-    if (useSemanticSearch && process.env.OPENAI_API_KEY) {
+    if (metrics.semantic.enabled) {
+      metrics.semantic.attempted = true;
       // Use semantic search with embeddings
+      const apiKey = process.env.OPENAI_API_KEY as string;
       const queryEmbedding = await generateQueryEmbedding(userQuery, {
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey,
       });
 
       const results = await semanticSearchChunks({
@@ -80,6 +132,9 @@ export async function getRelevantContext(
         limit: limit * 4, // get more chunks then trim
         similarityThreshold: 0.4,
       });
+
+      semanticChunksReturned = results.length;
+      metrics.semantic.chunks = semanticChunksReturned;
 
       // Enrich with Strapi data and assemble context
       const topChunks = results.slice(0, limit * 2);
@@ -123,14 +178,54 @@ export async function getRelevantContext(
           sources.push({ title: s.title, url: s.url });
         }
       }
+
+      if (semanticChunksReturned === 0) {
+        metrics.semantic.empty = true;
+        metrics.fallbackUsed = 'empty';
+      }
     } else {
       // Fallback to keyword search
-      searchResults = await keywordSearch(userQuery, limit);
+      metrics.fallbackUsed = 'disabled';
     }
   } catch (error) {
     console.error('Error getting relevant context:', error);
-    // Return empty results on error
+    metrics.semantic.error = metrics.semantic.attempted;
+    metrics.fallbackUsed = 'error';
   }
+
+  // Fallback keyword search if needed or if semantic disabled
+  if (
+    metrics.fallbackUsed === 'disabled' ||
+    metrics.semantic.empty ||
+    metrics.semantic.error
+  ) {
+    metrics.keyword.attempted = true;
+    searchResults = await keywordSearch(userQuery, limit);
+    keywordHits = searchResults.length;
+    metrics.keyword.hits = keywordHits;
+    effectiveChunksReturned = keywordHits > effectiveChunksReturned ? keywordHits : effectiveChunksReturned;
+  }
+
+  // Determine retrieval mode and effective chunk count
+  if (semanticChunksReturned > 0 && keywordHits > 0) {
+    metrics.mode = 'hybrid';
+    effectiveChunksReturned = semanticChunksReturned + keywordHits;
+    metrics.fallbackUsed = 'none';
+  } else if (semanticChunksReturned > 0) {
+    metrics.mode = 'semantic';
+    effectiveChunksReturned = semanticChunksReturned;
+    metrics.fallbackUsed = 'none';
+  } else if (keywordHits > 0) {
+    metrics.mode = 'keyword';
+    effectiveChunksReturned = keywordHits;
+  } else {
+    metrics.mode = 'none';
+  }
+
+  metrics.effective.chunks = effectiveChunksReturned;
+
+  // Redefined: only true when semantic was attempted and empty or error
+  fallbackNoChunks = metrics.semantic.attempted && (metrics.semantic.empty || metrics.semantic.error);
 
   // Get user history if userId provided
   let userHistory: Array<{ title: string; contentType: string; watchedAt: Date }> = [];
@@ -139,7 +234,17 @@ export async function getRelevantContext(
   //   userHistory = await getUserRecentViews(userId, 3);
   // }
 
-  return { contextText, sources, searchResults, userHistory };
+  return {
+    contextText,
+    sources,
+    semanticChunksReturned,
+    keywordHits,
+    effectiveChunksReturned,
+    fallbackNoChunks,
+    metrics,
+    searchResults,
+    userHistory,
+  };
 }
 
 /**

@@ -116,6 +116,30 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       context = rag.contextText || formatContextForPrompt(rag.searchResults, rag.userHistory);
       sources = rag.sources;
+
+      const contextChars = context?.length || 0;
+
+      // structured observability
+      console.info(
+        JSON.stringify({
+          event: 'rag.context',
+          mode: rag.metrics.mode,
+          fallbackUsed: rag.metrics.fallbackUsed,
+          semanticEnabled: rag.metrics.semantic.enabled,
+          semanticAttempted: rag.metrics.semantic.attempted,
+          semanticChunks: rag.metrics.semantic.chunks,
+          semanticEmpty: rag.metrics.semantic.empty,
+          semanticError: rag.metrics.semantic.error,
+          keywordAttempted: rag.metrics.keyword.attempted,
+          keywordHits: rag.metrics.keyword.hits,
+          chunksReturned: rag.effectiveChunksReturned,
+          semanticChunksReturned: rag.semanticChunksReturned,
+          keywordChunksReturned: rag.keywordHits,
+          contextChars,
+          retrievalOk: contextChars > 0,
+          useSemanticSearch,
+        })
+      );
     } catch (error) {
       console.error('RAG context error:', error);
       // Continue without context

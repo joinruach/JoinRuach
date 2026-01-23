@@ -21,6 +21,12 @@ export default function InstallPrompt() {
 
     // Listen for the beforeinstallprompt event
     const handler = (e: Event) => {
+      // If the user already dismissed the banner this session, let the browser handle it
+      if (sessionStorage.getItem("install-prompt-dismissed")) {
+        return;
+      }
+
+      // Only intercept the event when we actually plan to show our own UI
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
 
@@ -33,14 +39,17 @@ export default function InstallPrompt() {
     window.addEventListener("beforeinstallprompt", handler);
 
     // Listen for app installed event
-    window.addEventListener("appinstalled", () => {
+    const handleInstalled = () => {
       setIsInstalled(true);
       setShowBanner(false);
       setInstallPrompt(null);
-    });
+    };
+
+    window.addEventListener("appinstalled", handleInstalled);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", handleInstalled);
     };
   }, []);
 

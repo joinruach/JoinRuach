@@ -708,6 +708,32 @@ ssh production "cd /app/ruach && docker-compose up -d"
 - 5+ 500 errors in 1 min → P1
 - Database connection lost → P0
 
+### RAG Retrieval Observability
+
+**Event**: `rag.context` (JSON log from chat API)
+
+**Fields to index**:
+- `mode` (`semantic` | `keyword` | `hybrid` | `none`)
+- `fallbackUsed` (`none` | `keyword` | `disabled` | `empty` | `error`)
+- `semanticEnabled`, `semanticAttempted`, `semanticChunks`, `semanticEmpty`, `semanticError`
+- `keywordAttempted`, `keywordHits`
+- `chunksReturned` (effective total), `semanticChunksReturned`, `keywordChunksReturned`
+- `contextChars`, `retrievalOk`
+
+**Primary SLI**: `retrievalOk` (or `chunksReturned > 0`) — alert if <95% over 15m.
+
+**Semantic health alerts**:
+- `semanticError` rate >0.5% over 15m → P1
+- `semanticEmpty` rate >20% when `semanticEnabled=true` over 30m → P2 (possible embedding drift or index stale)
+
+**Dashboards (suggested panels)**:
+- Time series: `chunksReturned` split by `mode`
+- Stacked bars: `fallbackUsed`
+- Rates: `semanticError`, `semanticEmpty` (filter `semanticEnabled=true`)
+- Distribution: `contextChars` p50/p90 to catch thin or runaway contexts
+
+**Runbook check**: After deploys that touch RAG, verify dashboard shows `retrievalOk` ~100%, low `semanticEmpty`, and expected `fallbackUsed` mix.
+
 ---
 
 ## Troubleshooting

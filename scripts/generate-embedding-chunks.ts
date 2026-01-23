@@ -12,6 +12,9 @@ import { chunkText } from '../apps/ruach-next/src/lib/ai/chunking';
 import { upsertChunkEmbedding } from '../apps/ruach-next/src/lib/db/ai';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || process.env.STRAPI_URL || 'http://localhost:1337';
+const STRAPI_TOKEN = process.env.STRAPI_TOKEN || process.env.STRAPI_API_TOKEN;
+const STRAPI_STATUS = process.env.STRAPI_STATUS || 'published';
+const STRAPI_BLOG_ENDPOINT = process.env.STRAPI_BLOG_ENDPOINT || 'blog-posts';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const args = process.argv.slice(2);
@@ -48,15 +51,21 @@ async function fetchCollection(contentType: string, limit: number): Promise<Stra
   const endpoints: Record<string, string> = {
     media: 'media-items',
     lesson: 'lessons',
-    blog: 'blogs',
+    blog: STRAPI_BLOG_ENDPOINT,
     course: 'courses',
     series: 'series-collection',
   };
   const collection = endpoints[contentType];
   if (!collection) throw new Error(`Unknown content type: ${contentType}`);
 
-  const url = `${STRAPI_URL}/api/${collection}?pagination[pageSize]=${limit}&populate=*`;
-  const res = await fetch(url);
+  const url = new URL(`${STRAPI_URL}/api/${collection}`);
+  url.searchParams.set('pagination[pageSize]', limit.toString());
+  url.searchParams.set('populate', '*');
+  url.searchParams.set('status', STRAPI_STATUS);
+
+  const res = await fetch(url.toString(), {
+    headers: STRAPI_TOKEN ? { Authorization: `Bearer ${STRAPI_TOKEN}` } : undefined,
+  });
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
   const json = await res.json();
   return json?.data ?? [];
@@ -83,14 +92,36 @@ async function embed(texts: string[]): Promise<number[][]> {
 }
 
 function bestText(attrs: Record<string, any>): string {
-  return (
+  const primary =
     attrs.transcript ||
     attrs.content ||
     attrs.body ||
     attrs.description ||
     attrs.excerpt ||
-    ''
-  ).toString();
+    attrs.summary ||
+    attrs.seo?.description;
+
+  if (primary && primary.toString().length > 0) {
+    return primary.toString();
+  }
+
+  // Fallback: shallow scan for the longest string value (depth-limited)
+  let longest = '';
+  const stack: Array<any> = [attrs];
+  let depth = 0;
+  while (stack.length && depth < 200) {
+    const node = stack.pop();
+    if (typeof node === 'string' && node.length > longest.length) {
+      longest = node;
+    } else if (Array.isArray(node)) {
+      stack.push(...node);
+    } else if (node && typeof node === 'object') {
+      stack.push(...Object.values(node));
+    }
+    depth++;
+  }
+
+  return longest || '';
 }
 
 async function processType(contentType: string, limit: number) {
@@ -98,8 +129,12 @@ async function processType(contentType: string, limit: number) {
   const items = await fetchCollection(contentType, limit);
   let embedded = 0;
 
+  if (!items.length) {
+    console.warn(`⚠️  No items returned for ${contentType}. Check status=${STRAPI_STATUS}, token permissions, and endpoint.`);
+  }
+
   for (const item of items) {
-    const attrs = item.attributes || {};
+    const attrs = (item as any)?.attributes ? (item as any).attributes : (item as any);
     const sourceText = bestText(attrs);
     if (!sourceText || sourceText.length < 80) continue;
 
@@ -133,6 +168,11 @@ async function processType(contentType: string, limit: number) {
         }
       }
     }
+  }
+
+  if (embedded === 0 && items.length > 0) {
+    console.warn(`⚠️  Embedded 0 chunks for ${contentType}. Sample record:`);
+    console.warn(JSON.stringify(items[0], null, 2));
   }
 
   console.log(`✅ Done ${contentType}. Chunks embedded: ${embedded}`);
