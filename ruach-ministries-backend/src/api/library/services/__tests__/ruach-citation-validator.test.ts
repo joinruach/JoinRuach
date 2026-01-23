@@ -1,22 +1,21 @@
+// @ts-nocheck
 /**
  * Unit Tests for Ruach Citation Validator
  * Tests citation coverage calculation, quality metrics, and validation
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-
 // Mock Strapi
 const mockStrapi = {
   db: {
     connection: {
-      raw: vi.fn(),
+      raw: jest.fn(),
     },
   },
   log: {
-    warn: vi.fn(),
-    error: vi.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
   },
-  service: vi.fn(),
+  service: jest.fn(),
 };
 
 // Import service factory
@@ -44,7 +43,7 @@ describe('Citation Coverage Calculation', () => {
 
   beforeEach(() => {
     // Reset mocks
-    vi.clearAllMocks();
+    jest.clearAllMocks();
 
     // This would normally import the actual service
     // For now, we'll define expected behavior

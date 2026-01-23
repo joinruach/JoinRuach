@@ -1,9 +1,4 @@
-/**
- * Tests for Environment Variable Validation
- *
- * Ensures that insecure secrets are detected and proper validation occurs.
- */
-
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateEnvironment } from '../validate-env';
 
 type NodeEnvironment = 'development' | 'production' | 'test';
@@ -20,7 +15,7 @@ describe('validateEnvironment', () => {
 
   beforeEach(() => {
     // Reset environment before each test
-    jest.resetModules();
+    vi.resetModules();
     process.env = { ...originalEnv };
     // Set to development to avoid strict production checks
     setNodeEnv('development');
