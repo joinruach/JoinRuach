@@ -1104,10 +1104,10 @@ export async function getCollectionBySlug(slug: string, authToken?: string): Pro
     });
     const collection = j.data?.[0];
 
-    const episodes =
-      collection?.attributes && collection.id
-        ? await getCollectionEpisodes(collection.id, collection.attributes.sortMode ?? undefined)
-        : [];
+    const collectionId = typeof collection?.id === "number" ? collection.id : undefined;
+    const sortMode = (collection as any)?.attributes?.sortMode ?? (collection as any)?.sortMode;
+
+    const episodes = collectionId ? await getCollectionEpisodes(collectionId, sortMode ?? undefined) : [];
 
     return { collection, episodes };
   } catch (error) {
