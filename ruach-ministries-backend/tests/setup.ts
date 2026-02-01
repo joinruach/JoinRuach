@@ -5,7 +5,7 @@
  */
 
 // Set test environment variables
-process.env.NODE_ENV = 'test';
+(process.env as NodeJS.ProcessEnv & { NODE_ENV: string }).NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-jwt-secret-min-32-characters-long';
 process.env.ADMIN_JWT_SECRET = 'test-admin-jwt-secret-min-32-characters';
 process.env.API_TOKEN_SALT = 'test-api-token-salt';
