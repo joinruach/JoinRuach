@@ -62,6 +62,17 @@ export interface Reflection {
   // AI analysis results (optional, added later)
   depthScore?: number; // 0-1, computed by AI
   indicators?: ReflectionIndicators;
+  analysisScores?: {
+    depth: number; // 0-1
+    specificity: number; // 0-1
+    honesty: number; // 0-1
+    alignment: number; // 0-1
+  };
+  analysisSummary?: string; // Feedback from AI analysis
+  sharpeningQuestions?: Array<{
+    question: string;
+    context: string;
+  }>;
 }
 
 /**
@@ -81,4 +92,41 @@ export enum ReflectionAction {
   SuggestResource = 'suggest_resource', // Recommend additional content first
   RecommendRevisit = 'recommend_revisit', // Suggest returning to foundation
   GateAdvanced = 'gate_advanced', // Lock advanced content until maturity improves
+}
+
+/**
+ * Routing decision based on depth score.
+ * Determines where the reflection goes next.
+ */
+export enum ReflectionRouting {
+  Publish = 'publish', // depth >= 0.8, share publicly
+  Journal = 'journal', // 0.6 <= depth < 0.8, private
+  Thread = 'thread', // 0.4 <= depth < 0.6, continue with prompts
+  Review = 'review', // depth < 0.4, needs revision
+}
+
+/**
+ * Formation event for reflection routing decision.
+ * Persists the AI analysis and routing outcome.
+ */
+export interface ReflectionRoutingEvent {
+  type: 'reflection_routed';
+  reflectionId: string;
+  checkpointId: string;
+  sectionId: string;
+  phase: string;
+  depthScore: number;
+  routing: ReflectionRouting;
+  scores: {
+    depth: number;
+    specificity: number;
+    honesty: number;
+    alignment: number;
+  };
+  summary: string;
+  sharpeningQuestions?: Array<{
+    question: string;
+    context: string;
+  }>;
+  timestamp: string;
 }

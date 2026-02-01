@@ -1,0 +1,84 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teaching_voices",
+  "info": {
+    "singularName": "teaching-voice",
+    "pluralName": "teaching-voices",
+    "displayName": "Teaching Voice",
+    "description": "AI-powered voice profiles that mirror specific teachers/authors"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "voiceId": {
+      "type": "uid",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "sourceAuthor": {
+      "type": "string",
+      "required": true
+    },
+    "sourceWorks": {
+      "type": "json",
+      "required": false
+    },
+    "styleCharacteristics": {
+      "type": "json",
+      "required": true
+    },
+    "vocabularyPatterns": {
+      "type": "json",
+      "required": false
+    },
+    "rhetoricalDevices": {
+      "type": "json",
+      "required": false
+    },
+    "commonPhrases": {
+      "type": "json",
+      "required": false
+    },
+    "toneDescriptors": {
+      "type": "json",
+      "required": false
+    },
+    "promptModifiers": {
+      "type": "richtext",
+      "required": true
+    },
+    "exampleOutputs": {
+      "type": "json",
+      "required": false
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "usageCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "averageQualityScore": {
+      "type": "decimal",
+      "default": 0
+    },
+    "associatedSpeaker": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::speaker.speaker"
+    },
+    "approvedOutputTypes": {
+      "type": "json",
+      "default": ["sermon", "study", "qa_answer", "doctrine_page"]
+    }
+  }
+}

@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ScriptureQuote } from "@/components/ScriptureQuote";
+import { sanitizeForReact } from "@/utils/sanitize";
 
 interface ProseProps {
   content: string;
@@ -185,7 +186,7 @@ export function Prose({ content, className = "" }: ProseProps) {
         const html = markdownBlockToHtml(block);
         if (!html) return null;
 
-        return <div key={`md-${index}`} dangerouslySetInnerHTML={{ __html: html }} />;
+        return <div key={`md-${index}`} dangerouslySetInnerHTML={sanitizeForReact(html)} />;
       })}
     </div>
   );

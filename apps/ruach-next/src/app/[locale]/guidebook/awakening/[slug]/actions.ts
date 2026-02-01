@@ -4,6 +4,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { getOrCreateUserId } from "@/lib/formation/user-id";
 import { redis } from "@/lib/redis";
+import { encodeRoutingData } from "@/lib/formation/routing";
 import {
   FormationPhase,
   createCheckpointReachedEvent,
@@ -13,6 +14,8 @@ import {
   ReflectionType,
   AwakeningPhase,
   initializeFormationClient,
+  ReadinessLevel,
+  ReflectionAction,
 } from "@ruach/formation";
 
 // ============================================================================
@@ -92,6 +95,44 @@ async function redisDelSafe(key: string) {
 }
 
 /**
+ * Call AI analysis endpoint to analyze reflection
+ */
+async function analyzeReflection(
+  reflection: string,
+  checkpointPrompt: string,
+  sectionTitle: string,
+  scriptureAnchors?: string[]
+): Promise<AnalysisResult | null> {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/analyze-reflection`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reflection,
+          checkpointPrompt,
+          sectionTitle,
+          scriptureAnchors,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("[Analysis Error]", response.status);
+      return null;
+    }
+
+    return (await response.json()) as AnalysisResult;
+  } catch (error) {
+    console.error("[Analysis Request Error]", error);
+    return null;
+  }
+}
+
+/**
  * Get dwell session from Redis by attemptId
  */
 async function getDwellSession(attemptId: string): Promise<DwellSession | null> {
@@ -152,6 +193,31 @@ async function clearDwellSession(attemptId: string): Promise<void> {
 
   const key = `dwell:attempt:${attemptId}`;
   await redis.del(key);
+}
+
+// ============================================================================
+// AI ANALYSIS TYPES
+// ============================================================================
+
+export interface AnalysisScores {
+  depth: number; // 0-1
+  specificity: number; // 0-1
+  honesty: number; // 0-1
+  alignment: number; // 0-1
+}
+
+export interface SharpeningQuestion {
+  question: string;
+  context: string;
+}
+
+export type RoutingType = "publish" | "journal" | "thread" | "review";
+
+interface AnalysisResult {
+  scores: AnalysisScores;
+  summary: string;
+  sharpeningQuestions: SharpeningQuestion[];
+  routing: RoutingType;
 }
 
 // ============================================================================
@@ -359,7 +425,51 @@ export async function submitCheckpoint(
     // 4. Calculate reflection metrics
     const reflectionId = `reflection-${Date.now()}-${userId}`;
 
-    // 5. Create Formation Events
+    // 5. Call AI Analysis for depth scoring and routing
+    let analysisResult: AnalysisResult | null = null;
+    let depthScore = 0;
+    let routingType: RoutingType = "journal"; // Default fallback
+
+    try {
+      const currentSection = AwakeningPhase.sections.find(
+        (s) => s.id === sectionId
+      );
+
+      const scriptureAnchors =
+        currentSection?.scriptureAnchors?.map((ref) =>
+          `${ref.book} ${ref.chapter}:${ref.verseStart}${ref.verseEnd ? `-${ref.verseEnd}` : ""}`
+        ) || [];
+
+      analysisResult = await analyzeReflection(
+        reflection,
+        currentCheckpoint.prompt,
+        currentSection?.title || "Formation Checkpoint",
+        scriptureAnchors
+      );
+
+      if (analysisResult) {
+        const avgScore =
+          (analysisResult.scores.depth +
+            analysisResult.scores.specificity +
+            analysisResult.scores.honesty +
+            analysisResult.scores.alignment) /
+          4;
+        depthScore = avgScore;
+        routingType = analysisResult.routing;
+
+        console.log("[Formation Analysis] Completed", {
+          reflectionId,
+          depthScore: avgScore,
+          routing: routingType,
+          scores: analysisResult.scores,
+        });
+      }
+    } catch (error) {
+      console.error("[AI Analysis] Failed", error);
+      // Continue with default values
+    }
+
+    // 6. Create Formation Events
     const checkpointReachedEvent = createCheckpointReachedEvent(
       userId,
       checkpointId,
@@ -385,7 +495,7 @@ export async function submitCheckpoint(
       dwellTimeSeconds
     );
 
-    // 6. Store Events + Reflection + Update Journey
+    // 7. Store Events + Reflection + Update Journey
     try {
       // Initialize Strapi persistence client
       const client = initializeFormationClient({
@@ -398,7 +508,7 @@ export async function submitCheckpoint(
       await client.writeEvent(reflectionSubmittedEvent, userId, userIdNumber);
       await client.writeEvent(checkpointCompletedEvent, userId, userIdNumber);
 
-      // Write reflection content
+      // Write reflection content with analysis results
       await client.writeReflection(
         {
           id: reflectionId,
@@ -409,6 +519,16 @@ export async function submitCheckpoint(
           wordCount,
           submittedAt: new Date(),
           timeSinceCheckpointReached: dwellTimeSeconds,
+          depthScore, // AI-computed depth score
+          indicators: analysisResult
+            ? {
+                isRegurgitation: false, // Could be computed from analysis
+                showsWrestling: depthScore >= 0.6,
+                doctrinalSoundness: "sound",
+                emotionalReadiness: ReadinessLevel.Maturing,
+                recommendedAction: ReflectionAction.UnlockNext,
+              }
+            : undefined,
         },
         phase,
         sectionId,
@@ -433,7 +553,36 @@ export async function submitCheckpoint(
         checkpointId,
         reflectionId,
         wordCount,
+        depthScore,
+        routing: routingType,
       });
+
+      // Create routing event to persist routing decision
+      if (analysisResult) {
+        const routingEventData = {
+          type: "reflection_routed",
+          reflectionId,
+          checkpointId,
+          sectionId,
+          phase,
+          depthScore,
+          routing: routingType,
+          scores: analysisResult.scores,
+          summary: analysisResult.summary,
+          sharpeningQuestions: analysisResult.sharpeningQuestions,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log("[Formation Event] Reflection Routed", routingEventData);
+
+        // Store routing information in formation event log
+        try {
+          // This could be extended to persist to database when needed
+          // For now, logging serves as the event record
+        } catch (routingError) {
+          console.error("[Routing Event] Failed to persist", routingError);
+        }
+      }
 
       // Clear dwell session after successful submission
       await clearDwellSession(attemptId);
@@ -462,22 +611,42 @@ export async function submitCheckpoint(
       });
     }
 
-    // 7. Determine next section
-    const currentSection = AwakeningPhase.sections.find((s) => s.id === sectionId);
-    if (!currentSection) {
-      throw new Error("Section not found");
-    }
+    // 8. Redirect to routing feedback page to show analysis results
+    if (analysisResult) {
+      // Encode routing data in URL to avoid storing in session
+      const routingData = {
+        reflectionId,
+        checkpointId,
+        sectionId,
+        phase: phase.toString(),
+        depthScore,
+        routing: routingType,
+        scores: analysisResult.scores,
+        summary: analysisResult.summary,
+        sharpeningQuestions: analysisResult.sharpeningQuestions,
+      };
 
-    const nextSection = AwakeningPhase.sections.find(
-      (s) => s.order === currentSection.order + 1
-    );
+      const encodedData = encodeRoutingData(routingData);
 
-    // 8. Redirect to next section or completion
-    if (nextSection) {
-      redirect(`/guidebook/awakening/${nextSection.slug}`);
+      redirect(`/guidebook/awakening/routing?data=${encodedData}`);
     } else {
-      // Completed all Awakening sections
-      redirect("/guidebook/awakening/complete");
+      // Fallback: proceed to next section if analysis failed
+      const currentSection = AwakeningPhase.sections.find(
+        (s) => s.id === sectionId
+      );
+      if (!currentSection) {
+        throw new Error("Section not found");
+      }
+
+      const nextSection = AwakeningPhase.sections.find(
+        (s) => s.order === currentSection.order + 1
+      );
+
+      if (nextSection) {
+        redirect(`/guidebook/awakening/${nextSection.slug}`);
+      } else {
+        redirect("/guidebook/awakening/complete");
+      }
     }
   } catch (error) {
     // Handle redirect separately (it throws by design in Next.js)

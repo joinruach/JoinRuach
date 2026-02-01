@@ -6,6 +6,7 @@ import type { MediaCardProps } from "@ruach/components/components/ruach/MediaCar
 import { getOutreachStoryBySlug, getOutreachStorySlugs, getOutreachStories, imgUrl } from "@/lib/strapi";
 import type { OutreachStoryEntity } from "@/lib/types/strapi-types";
 import { formatStoryDate, getPrimaryStoryMedia, mapStoryToMediaCard } from "../../story-helpers";
+import { sanitizeForReact } from "@/utils/sanitize";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -112,7 +113,7 @@ export default async function OutreachStoryPage({ params }: Props) {
       <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white p-8 text-neutral-900">
         <div
           className="prose prose-neutral max-w-none"
-          dangerouslySetInnerHTML={{ __html: attributes.body ?? "" }}
+          dangerouslySetInnerHTML={sanitizeForReact(attributes.body ?? "")}
         />
         {tags.length > 0 ? (
           <div className="mt-8 flex flex-wrap gap-2">

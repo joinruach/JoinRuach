@@ -1,0 +1,91 @@
+{
+  "kind": "collectionType",
+  "collectionName": "discernment_analyses",
+  "info": {
+    "singularName": "discernment-analysis",
+    "pluralName": "discernment-analyses",
+    "displayName": "Discernment Analysis",
+    "description": "Biblical analysis of AI/cultural trends with concern scoring and theological review"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "analysisId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "sourceUrl": {
+      "type": "string",
+      "required": false
+    },
+    "sourceTitle": {
+      "type": "string",
+      "required": true
+    },
+    "sourceContent": {
+      "type": "richtext",
+      "required": true
+    },
+    "analysisDate": {
+      "type": "datetime",
+      "required": true
+    },
+    "concernScore": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "required": true
+    },
+    "categories": {
+      "type": "json",
+      "required": true
+    },
+    "issues": {
+      "type": "json",
+      "required": true
+    },
+    "biblicalResponse": {
+      "type": "richtext",
+      "required": true
+    },
+    "scriptureReferences": {
+      "type": "json"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "analyzed",
+        "reviewed",
+        "published"
+      ],
+      "default": "pending",
+      "required": true
+    },
+    "reviewNotes": {
+      "type": "richtext"
+    },
+    "trendPatterns": {
+      "type": "json"
+    },
+    "confidenceLevel": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "default": 0.8
+    },
+    "reviewedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

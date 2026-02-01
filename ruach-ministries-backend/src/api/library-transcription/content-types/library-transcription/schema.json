@@ -1,0 +1,85 @@
+{
+  "kind": "collectionType",
+  "collectionName": "library_transcriptions",
+  "info": {
+    "singularName": "library-transcription",
+    "pluralName": "library-transcriptions",
+    "displayName": "Library Transcription",
+    "description": "Transcription records for audio/video media with Whisper API integration, subtitles, and AI-generated summaries"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "transcriptionId": {
+      "type": "uid",
+      "required": true,
+      "unique": true,
+      "targetField": "transcriptionId"
+    },
+    "sourceMediaId": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::media-item.media-item",
+      "inversedBy": "transcriptions",
+      "required": true,
+      "index": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "required": true,
+      "index": true
+    },
+    "transcriptText": {
+      "type": "text",
+      "description": "Full transcribed text from audio/video"
+    },
+    "transcriptVTT": {
+      "type": "text",
+      "description": "Transcript in WebVTT subtitle format with timestamps"
+    },
+    "transcriptSRT": {
+      "type": "text",
+      "description": "Transcript in SRT subtitle format with timestamps"
+    },
+    "summary": {
+      "type": "text",
+      "description": "AI-generated summary of the transcript"
+    },
+    "keyMoments": {
+      "type": "json",
+      "description": "Array of key moments with timestamps and descriptions",
+      "default": []
+    },
+    "durationSeconds": {
+      "type": "integer",
+      "min": 0,
+      "required": true,
+      "description": "Total duration of the media in seconds"
+    },
+    "language": {
+      "type": "string",
+      "default": "en",
+      "required": true,
+      "description": "Language code detected by Whisper (e.g., en, es, fr)"
+    },
+    "confidence": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "default": 0.95,
+      "description": "Confidence score of the transcription accuracy"
+    },
+    "metadata": {
+      "type": "json",
+      "description": "Additional metadata including error information if status is failed"
+    }
+  }
+}

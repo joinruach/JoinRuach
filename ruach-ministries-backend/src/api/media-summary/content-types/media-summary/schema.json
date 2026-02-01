@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "media_summaries",
+  "info": {
+    "singularName": "media-summary",
+    "pluralName": "media-summaries",
+    "displayName": "Media Summary",
+    "description": "AI-generated video/audio summaries with timestamps"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "summaryId": {
+      "type": "uid",
+      "required": true
+    },
+    "mediaId": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "overallSummary": {
+      "type": "richtext",
+      "required": true
+    },
+    "keyTakeaways": {
+      "type": "json",
+      "required": false
+    },
+    "segments": {
+      "type": "json",
+      "required": false
+    },
+    "scriptureReferences": {
+      "type": "json",
+      "required": false
+    },
+    "duration": {
+      "type": "string",
+      "required": false
+    },
+    "sourceMedia": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::media-item.media-item"
+    },
+    "generationModel": {
+      "type": "string",
+      "default": "claude-sonnet-4-20250514"
+    },
+    "metadata": {
+      "type": "json",
+      "required": false
+    }
+  }
+}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ruach/ui/Button";
 import { cn } from "@/lib/cn";
+import { sanitizeForReact } from "@/utils/sanitize";
 
 type Props = {
   html?: string;
@@ -33,7 +34,7 @@ export default function LessonTranscript({ html, downloadHref }: Props){
       </div>
       {open && html ? (
         <div className={cn("prose prose-neutral mt-6 max-w-none text-white", "prose-headings:text-white prose-p:text-white/80 prose-strong:text-white", "prose-a:text-amber-300 hover:prose-a:text-amber-200")}
-          dangerouslySetInnerHTML={{__html:html}}
+          dangerouslySetInnerHTML={sanitizeForReact(html)}
         />
       ) : null}
     </div>

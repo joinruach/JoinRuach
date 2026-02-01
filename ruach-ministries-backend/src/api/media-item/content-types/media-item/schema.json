@@ -256,6 +256,32 @@
       "repeatable": true,
       "component": "media.reflection-prompt",
       "description": "Formation-focused reflection questions for spiritual growth"
+    },
+    "transcriptions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::library-transcription.library-transcription",
+      "mappedBy": "sourceMediaId"
+    },
+    "transcodingResults": {
+      "type": "json",
+      "description": "Transcoding results with URLs and metadata for all generated outputs (transcodes, thumbnails, audio)"
+    },
+    "transcodingStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "not_started"
+      ],
+      "default": "not_started",
+      "description": "Current status of media transcoding pipeline"
+    },
+    "transcodingError": {
+      "type": "text",
+      "description": "Last error message if transcoding failed"
     }
   }
 }

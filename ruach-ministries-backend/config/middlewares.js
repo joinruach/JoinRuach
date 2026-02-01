@@ -54,18 +54,42 @@ if (isProduction && (corsOrigins.includes('*') || corsOrigins.length === 0)) {
   throw new Error('Production CORS must have explicit origins');
 }
 
+// Content Security Policy - connect-src allowlist
+// This includes all external APIs and services the backend communicates with
 const connectSrc = [
   "'self'",
+  // WebSocket connections
   'wss://joinruach.org',
+  'wss://*.upstash.io',  // Upstash Redis WebSockets
+  // CDN and storage
   'https://cdn.joinruach.org',
   'https://de7ae97c4bd0ce41a374a2020a210a82.r2.cloudflarestorage.com',
+  'https://386e3b06c98f5a09da2029423a4d47b6.r2.cloudflarestorage.com',
+  'https://*.cloudflare.com',  // Cloudflare R2 and other services
+  'https://ruachmedia.s3.us-east-2.amazonaws.com',
+  // API endpoints
   'https://api.joinruach.org',
+  'https://api.anthropic.com',  // Claude API
+  'https://api.openai.com',     // OpenAI API
   'https://api.github.com',
+  // Analytics and monitoring
   'https://analytics.strapi.io',
+  // Font and CDN services
+  'https://fonts.googleapis.com',
+  'https://fonts.gstatic.com',
+  'https://cdn.jsdelivr.net',
+  // Payment processing
+  'https://*.stripe.com',
 ];
 
 if (!isProduction) {
-  connectSrc.push(...developmentOrigins, 'ws://localhost:1337', 'ws://localhost:3000');
+  connectSrc.push(
+    ...developmentOrigins,
+    'ws://localhost:1337',
+    'ws://localhost:3000',
+    'ws://127.0.0.1:1337',
+    'ws://127.0.0.1:3000'
+  );
 }
 
 module.exports = [
@@ -118,12 +142,28 @@ module.exports = [
           ],
           'script-src': [
             "'self'",
-            "'unsafe-inline'",
             'https://cdn.joinruach.org',
+            'https://cdn.jsdelivr.net',
+          ],
+          'style-src': [
+            "'self'",
+            'https://fonts.googleapis.com',
+            'https://cdn.joinruach.org',
+            'https://cdn.jsdelivr.net',
           ],
           'font-src': [
             "'self'",
             'https://fonts.gstatic.com',
+            'https://fonts.googleapis.com',
+          ],
+          'object-src': [
+            "'none'",
+          ],
+          'base-uri': [
+            "'self'",
+          ],
+          'form-action': [
+            "'self'",
           ],
         },
       },

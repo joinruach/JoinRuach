@@ -1,0 +1,101 @@
+{
+  "kind": "collectionType",
+  "collectionName": "video_renders",
+  "info": {
+    "singularName": "video-render",
+    "pluralName": "video-renders",
+    "displayName": "Video Render",
+    "description": "Remotion video render jobs"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "renderId": {
+      "type": "uid",
+      "required": true
+    },
+    "compositionId": {
+      "type": "enumeration",
+      "enum": [
+        "ScriptureOverlay",
+        "TestimonyClip",
+        "QuoteReel",
+        "TeachingVideo",
+        "PodcastEnhanced",
+        "DeclarationVideo",
+        "DailyScripture",
+        "ScriptureThumbnail",
+        "QuoteThumbnail"
+      ],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["queued", "rendering", "completed", "failed"],
+      "default": "queued",
+      "required": true
+    },
+    "progress": {
+      "type": "decimal",
+      "default": 0,
+      "min": 0,
+      "max": 100
+    },
+    "inputProps": {
+      "type": "json",
+      "required": true
+    },
+    "outputFormat": {
+      "type": "enumeration",
+      "enum": ["mp4", "webm", "gif"],
+      "default": "mp4"
+    },
+    "quality": {
+      "type": "enumeration",
+      "enum": ["draft", "standard", "high"],
+      "default": "standard"
+    },
+    "outputUrl": {
+      "type": "string"
+    },
+    "thumbnailUrl": {
+      "type": "string"
+    },
+    "fileSize": {
+      "type": "biginteger"
+    },
+    "durationMs": {
+      "type": "integer"
+    },
+    "renderTimeMs": {
+      "type": "integer"
+    },
+    "error": {
+      "type": "text"
+    },
+    "lambdaBucketName": {
+      "type": "string"
+    },
+    "lambdaRenderId": {
+      "type": "string"
+    },
+    "estimatedCost": {
+      "type": "decimal"
+    },
+    "requestedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "sourceContent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::library-node.library-node"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

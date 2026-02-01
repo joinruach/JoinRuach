@@ -34,6 +34,7 @@ import {
 import { getCourseProgressMap } from "@/lib/api/courseProgress";
 import { getViewerAccessContext, ViewerAccessContext } from "@/lib/access-context";
 import { normalizeAccessLevel } from "@ruach/utils";
+import { sanitizeForReact } from "@/utils/sanitize";
 
 export const metadata = {
   title: "Resource Hub — Media, Courses, and Ministry Tools | Ruach Ministries",
@@ -389,7 +390,7 @@ export default async function ResourcesPage({
         <h1 className="mt-4 text-3xl font-semibold text-zinc-900 dark:text-white sm:text-4xl">{heroTitle}</h1>
         <div
           className="mt-3 max-w-3xl text-sm text-zinc-700 dark:text-white/80 space-y-3 [&>p]:m-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mt-1"
-          dangerouslySetInnerHTML={{ __html: heroCopyHtml }}
+          dangerouslySetInnerHTML={sanitizeForReact(heroCopyHtml)}
         />
         <div className="mt-6 flex flex-wrap gap-3">
           <LocalizedLink href="/media">

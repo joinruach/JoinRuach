@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { FormationSection, Checkpoint } from "@ruach/formation";
 import { submitCheckpoint, trackDwellHeartbeat, getUserId } from "./actions";
 import { Prose } from "@/components/Prose";
+import { VoiceRecorder } from "@/components/formation/VoiceRecorder";
 
 interface SectionViewProps {
   locale: string;
@@ -94,6 +95,7 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
   const [displaySeconds, setDisplaySeconds] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [heartbeatEnabled, setHeartbeatEnabled] = useState(true);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
   const serverAccumulatedSecondsRef = useRef(0);
   const lastVisibleAtRef = useRef<number | null>(null);
@@ -402,6 +404,54 @@ export function SectionView({ locale, section, checkpoint }: SectionViewProps) {
                   >
                     {checkpoint.prompt}
                   </label>
+
+                  {/* Voice Recording Option */}
+                  {!showVoiceRecorder && (
+                    <div className="mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-900 dark:text-blue-100 mb-3">
+                        💭 Prefer to speak your reflection instead of typing?
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowVoiceRecorder(true)}
+                        className="text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Try Voice Recording
+                      </button>
+                    </div>
+                  )}
+
+                  {showVoiceRecorder && (
+                    <div className="mb-4 p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-purple-900 dark:text-purple-100">
+                          Voice Recording
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowVoiceRecorder(false)}
+                          className="text-sm text-purple-600 dark:text-purple-400 hover:underline"
+                        >
+                          Type instead
+                        </button>
+                      </div>
+                      <VoiceRecorder
+                        disabled={pending}
+                        onTranscriptionStart={() => {
+                          // Show loading state
+                        }}
+                        onTranscriptionComplete={(text) => {
+                          setReflection(text);
+                          setWordCount(countWords(text));
+                          setShowVoiceRecorder(false);
+                        }}
+                        onTranscriptionError={(error) => {
+                          console.error("Transcription error:", error);
+                        }}
+                      />
+                    </div>
+                  )}
+
                   <textarea
                     id="reflection"
                     name="reflection"

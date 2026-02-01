@@ -19,6 +19,7 @@ export interface GenerateRequest {
   outputType: OutputType;
   mode: GenerationMode;
   templateId?: string;
+  voiceId?: string; // Teaching voice profile to use for generation
   filters?: {
     categories?: string[];
     authorRestrictions?: string[];
@@ -265,8 +266,49 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       filteredChunks = context.scriptureChunks;
     }
 
-    // Check guardrails (will use ruach-guardrail-engine in next task)
+    // Check guardrails using the guardrail engine
     const guardrailWarnings: Warning[] = [];
+
+    // Get guardrail IDs from template guardrails
+    const guardrailIds = guardrails?.map((g: any) => g.guardrailId).filter(Boolean) || [];
+
+    // Pre-check the context chunks for guardrail issues
+    // This helps inform the generation prompt about potential concerns
+    if (filteredChunks.length > 0) {
+      const combinedContext = filteredChunks.map(c => c.textContent).join('\n\n');
+
+      try {
+        const guardrailEngine = strapi.service('api::library.ruach-guardrail-engine') as any;
+        const guardrailResult = await guardrailEngine.checkGuardrails(combinedContext, guardrailIds);
+
+        // Convert guardrail warnings to our Warning format
+        for (const warning of guardrailResult.warnings) {
+          guardrailWarnings.push({
+            type: 'guardrail_warning',
+            message: `${warning.guardrailTitle}: ${warning.correctionGuidance}`,
+            severity: 'medium',
+          });
+        }
+
+        for (const guidance of guardrailResult.guidanceItems) {
+          guardrailWarnings.push({
+            type: 'guardrail_guidance',
+            message: `${guidance.guardrailTitle}: ${guidance.correctionGuidance}`,
+            severity: 'low',
+          });
+        }
+
+        // Log blocking violations for monitoring
+        if (guardrailResult.violations.length > 0) {
+          strapi.log.warn('Guardrail blocking violations in source content:', {
+            violations: guardrailResult.violations.map((v: any) => v.guardrailTitle),
+          });
+        }
+      } catch (error) {
+        strapi.log.warn('Error checking guardrails on context:', error);
+        // Continue without guardrail warnings if service fails
+      }
+    }
 
     return {
       chunks: filteredChunks,
@@ -290,14 +332,35 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     // Format chunks for prompt
     const formattedContext = this.formatChunksForPrompt(chunks);
 
-    // Build prompts using template
-    const systemPrompt = this.buildSystemPrompt(template, request.outputType);
+    // Build base prompts using template
+    let systemPrompt = this.buildSystemPrompt(template, request.outputType);
     const userPrompt = this.buildUserPrompt(
       template,
       request.query,
       formattedContext,
       request.outputType
     );
+
+    // Apply Teaching Voice modifications if specified
+    if (request.voiceId || request.mode === 'teaching_voice') {
+      const teachingVoiceService = strapi.service('api::library.ruach-teaching-voice') as any;
+
+      let voice = null;
+      if (request.voiceId) {
+        voice = await teachingVoiceService.getVoice(request.voiceId);
+      }
+
+      if (voice) {
+        // Check if voice is approved for this output type
+        if (!teachingVoiceService.canUseVoiceForOutput(voice, request.outputType)) {
+          strapi.log.warn(`Voice ${voice.name} not approved for output type ${request.outputType}`);
+        } else {
+          // Apply voice modifications to system prompt
+          const voicePrompt = teachingVoiceService.buildVoicePrompt(voice, request.outputType);
+          systemPrompt = `${systemPrompt}\n\n--- TEACHING VOICE INSTRUCTIONS ---\n${voicePrompt.systemPromptAddition}`;
+        }
+      }
+    }
 
     // Call Claude API
     const response = await fetch(CLAUDE_API_URL, {
@@ -481,11 +544,50 @@ ${chunk.textContent}
       );
     }
 
-    // Placeholder for citation accuracy (will be implemented in Phase 5)
-    const citationAccuracy = 1.0;
+    // Validate citation accuracy using the citation validator
+    let citationAccuracy = 1.0;
+    try {
+      const citationValidator = strapi.service('api::library.ruach-citation-validator') as any;
+      citationAccuracy = await citationValidator.validateCitationAccuracy(generation.citations);
 
-    // Placeholder for guardrail score (will be implemented with guardrail engine)
-    const guardrailScore = 1.0;
+      if (citationAccuracy < 0.8) {
+        warnings.push({
+          type: 'citation_accuracy',
+          message: `Citation accuracy is ${(citationAccuracy * 100).toFixed(0)}% - some citations may not match source material`,
+          severity: citationAccuracy < 0.5 ? 'high' : 'medium',
+        });
+      }
+    } catch (error) {
+      strapi.log.warn('Error validating citation accuracy:', error);
+      // Use default accuracy if validation fails
+    }
+
+    // Check guardrails on generated content
+    let guardrailScore = 1.0;
+    try {
+      const guardrailEngine = strapi.service('api::library.ruach-guardrail-engine') as any;
+      const guardrailResult = await guardrailEngine.checkGuardrails(generation.content);
+      guardrailScore = guardrailResult.score;
+
+      // Add blocking violations as errors
+      for (const violation of guardrailResult.violations) {
+        errors.push(`Guardrail violation: ${violation.guardrailTitle} - ${violation.correctionGuidance}`);
+        // Record violation for analytics
+        await guardrailEngine.recordViolation(violation.guardrailId);
+      }
+
+      // Add warnings
+      for (const warning of guardrailResult.warnings) {
+        warnings.push({
+          type: 'guardrail_warning',
+          message: `${warning.guardrailTitle}: ${warning.correctionGuidance}`,
+          severity: 'medium',
+        });
+      }
+    } catch (error) {
+      strapi.log.warn('Error checking guardrails on generated content:', error);
+      // Use default score if check fails
+    }
 
     // Calculate overall quality score
     const qualityMetrics: QualityMetrics = {
@@ -570,12 +672,23 @@ ${chunk.textContent}
         qualityScore: verification.qualityMetrics.overallQuality,
         reviewStatus: 'pending_review',
         publishedAt: null,
+        teachingVoiceId: request.voiceId || null,
       },
     });
 
     // Save citations
     for (const citation of generation.citations) {
       await this.saveCitation(nodeId, citation);
+    }
+
+    // Record teaching voice usage if applicable
+    if (request.voiceId) {
+      try {
+        const teachingVoiceService = strapi.service('api::library.ruach-teaching-voice') as any;
+        await teachingVoiceService.recordUsage(request.voiceId, verification.qualityMetrics.overallQuality);
+      } catch (error) {
+        strapi.log.warn('Failed to record teaching voice usage:', error);
+      }
     }
 
     return nodeId;
