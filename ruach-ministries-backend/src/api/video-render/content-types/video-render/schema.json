@@ -92,7 +92,7 @@
     "sourceContent": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::library-node.library-node"
+      "target": "api::library-generated-node.library-generated-node"
     },
     "metadata": {
       "type": "json"
