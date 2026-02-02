@@ -28,7 +28,8 @@ type StrapiRequestError = Error & {
   url?: string;
 };
 
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
+// Always fall back to the public API so builds don't hit localhost when env files are missing.
+const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL || "https://api.joinruach.org";
 const MEDIA_CDN = process.env.NEXT_PUBLIC_MEDIA_CDN_URL || 'https://cdn.joinruach.org';
 const PUBLIC_REVALIDATE_SECONDS = 60;
 
