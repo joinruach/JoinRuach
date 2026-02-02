@@ -58,6 +58,7 @@ if (isProduction && (corsOrigins.includes('*') || corsOrigins.length === 0)) {
 // This includes all external APIs and services the backend communicates with
 const connectSrc = [
   "'self'",
+  'https:',
   // WebSocket connections
   'wss://joinruach.org',
   'wss://*.upstash.io',  // Upstash Redis WebSockets
@@ -150,6 +151,7 @@ module.exports = [
           'style-src': [
             "'self'",
             "'unsafe-inline'",  // Required for Strapi admin panel
+            "'unsafe-hashes'", // Allow CSS rules injected via insertRule
             'https://fonts.googleapis.com',
             'https://cdn.joinruach.org',
             'https://cdn.jsdelivr.net',
