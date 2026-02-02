@@ -4,7 +4,7 @@
  * Tests for axiom unlocking, progress tracking, and error handling
  */
 
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   AxiomUnlockService,
   CanonAxiom,
@@ -278,7 +278,7 @@ describe("Phase 7: Error Handling & Polish", () => {
   describe("FormationValidation", () => {
     it("should validate reflection content", () => {
       const validReflection =
-        "This is a thoughtful reflection about the formation content I just read. It addresses the core concepts and applies them to my life.";
+        "This reflection traces how the formation content landed in my life, highlighting specific convictions, scripture resonances, and action steps. It explains how the insights shifted my perspective, names the emotions stirred, and describes a concrete habit I intend to follow in the next week because of what God taught me.";
 
       const { valid, errors } = FormationValidation.validateReflection(
         validReflection,
@@ -441,7 +441,7 @@ describe("Integration: Complete Formation Flow", () => {
   it("should handle complete checkpoint submission flow", async () => {
     const checkpointId = "checkpoint-awakening-1";
     const reflection =
-      "This is my thoughtful reflection on the formation content. I've considered how it applies to my life and relationships.";
+      "I am grateful for the formation content and the way it reframed my priorities; I described the scenes in my relationships where the teaching matters, noted the compassion that arose, mapped a clear next step for accountability, and committed to checking in with my coach so we can keep building on this in the coming days.";
 
     // 1. Validate reflection
     const validation = FormationValidation.validateReflection(reflection);
