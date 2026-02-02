@@ -66,6 +66,9 @@ importers:
         specifier: 3.22.3
         version: 3.22.3
     devDependencies:
+      '@jest/globals':
+        specifier: ^29.7.0
+        version: 29.7.0
       '@playwright/test':
         specifier: ^1.56.1
         version: 1.57.0
