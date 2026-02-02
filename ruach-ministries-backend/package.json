@@ -11,6 +11,7 @@
     "strapi": "node scripts/run-strapi.js",
     "postinstall": "node scripts/link-dependencies.js || true && node scripts/patch-review-workflows.js",
     "test": "jest --forceExit",
+    "test:citation-validator": "jest --forceExit src/api/library/services/__tests__/ruach-citation-validator.test.ts",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
