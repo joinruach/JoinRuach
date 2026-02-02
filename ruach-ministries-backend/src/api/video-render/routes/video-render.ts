@@ -10,8 +10,8 @@ export default {
       path: "/video-renders",
       handler: "video-render.find",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     // Queue new render
@@ -20,8 +20,8 @@ export default {
       path: "/video-renders",
       handler: "video-render.create",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     // Get render status
@@ -30,8 +30,8 @@ export default {
       path: "/video-renders/:renderId/status",
       handler: "video-render.status",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     // Cancel render
@@ -40,8 +40,8 @@ export default {
       path: "/video-renders/:renderId/cancel",
       handler: "video-render.cancel",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     // Queue stats (admin)
@@ -61,8 +61,8 @@ export default {
       path: "/video-renders/scripture",
       handler: "video-render.scripture",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     {
@@ -70,8 +70,8 @@ export default {
       path: "/video-renders/quote",
       handler: "video-render.quote",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     {
@@ -79,8 +79,8 @@ export default {
       path: "/video-renders/daily",
       handler: "video-render.daily",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
     {
@@ -88,8 +88,8 @@ export default {
       path: "/video-renders/declaration",
       handler: "video-render.declaration",
       config: {
-        policies: [],
-        middlewares: [],
+        policies: ["global::is-authenticated-or-admin"],
+        middlewares: ["global::video-render-rate-limit"],
       },
     },
   ],

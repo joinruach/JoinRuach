@@ -92,7 +92,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     inputProps: Record<string, unknown>;
     outputFormat?: "mp4" | "webm" | "gif";
     quality?: "draft" | "standard" | "high";
-    userId?: number;
+    userId: number;
     sourceContentId?: number;
   }): Promise<{ renderId: string; jobId: string }> {
     const entityService = strapi.entityService as any;
@@ -271,7 +271,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Get render status
    */
-  async getRenderStatus(renderId: string): Promise<{
+  async getRenderStatus(
+    renderId: string,
+    userId: number
+  ): Promise<{
     status: string;
     progress: number;
     outputUrl?: string;
@@ -280,7 +283,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const entityService = strapi.entityService as any;
 
     const renders = await entityService.findMany("api::video-render.video-render", {
-      filters: { renderId },
+      filters: {
+        renderId,
+        requestedBy: userId,
+      },
       limit: 1,
     });
 
@@ -341,10 +347,19 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Cancel a render
    */
-  async cancelRender(renderId: string): Promise<boolean> {
+  async cancelRender(renderId: string, userId: number): Promise<boolean> {
     const entityService = strapi.entityService as any;
-    const recordId = await this.getRecordId(renderId);
 
+    // Find render with ownership check
+    const renders = await entityService.findMany("api::video-render.video-render", {
+      filters: {
+        renderId,
+        requestedBy: userId,
+      },
+      limit: 1,
+    });
+
+    const recordId = renders?.[0]?.id;
     if (!recordId) return false;
 
     // Update status

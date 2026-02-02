@@ -10,7 +10,7 @@
     "render": "remotion render src/entry.ts",
     "render:all": "remotion render src/entry.ts --all",
     "lambda:deploy": "remotion lambda functions deploy",
-    "lambda:sites": "remotion lambda sites create",
+    "lambda:sites": "remotion lambda sites create src/entry.ts",
     "lambda:render": "remotion lambda render",
     "typecheck": "tsc --noEmit"
   },

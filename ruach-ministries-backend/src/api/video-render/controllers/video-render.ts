@@ -11,6 +11,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders
    */
   async create(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { compositionId, inputProps, outputFormat, quality } = ctx.request.body;
 
     if (!compositionId || !inputProps) {
@@ -36,7 +42,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const userId = ctx.state.user?.id;
 
       const result = await videoRenderService.queueRender({
         compositionId,
@@ -65,11 +70,17 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * GET /api/video-renders/:renderId/status
    */
   async status(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { renderId } = ctx.params;
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const status = await videoRenderService.getRenderStatus(renderId);
+      const status = await videoRenderService.getRenderStatus(renderId, userId);
 
       if (!status) {
         return ctx.notFound("Render not found");
@@ -128,11 +139,17 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders/:renderId/cancel
    */
   async cancel(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { renderId } = ctx.params;
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const cancelled = await videoRenderService.cancelRender(renderId);
+      const cancelled = await videoRenderService.cancelRender(renderId, userId);
 
       if (!cancelled) {
         return ctx.notFound("Render not found");
@@ -176,6 +193,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders/scripture
    */
   async scripture(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { reference, text, translation, theme, animationStyle, backgroundUrl, musicUrl } =
       ctx.request.body;
 
@@ -185,7 +208,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const userId = ctx.state.user?.id;
 
       const result = await videoRenderService.queueRender({
         compositionId: "ScriptureOverlay",
@@ -221,6 +243,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders/quote
    */
   async quote(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { quote, author, source, backgroundUrl, theme } = ctx.request.body;
 
     if (!quote || !author) {
@@ -229,7 +257,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const userId = ctx.state.user?.id;
 
       const result = await videoRenderService.queueRender({
         compositionId: "QuoteReel",
@@ -263,6 +290,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders/daily
    */
   async daily(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { reference, text, reflection, theme, backgroundUrl } = ctx.request.body;
 
     if (!reference || !text) {
@@ -271,7 +304,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const userId = ctx.state.user?.id;
 
       const result = await videoRenderService.queueRender({
         compositionId: "DailyScripture",
@@ -305,6 +337,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * POST /api/video-renders/declaration
    */
   async declaration(ctx: any) {
+    const userId = ctx.state.user?.id;
+
+    if (!userId) {
+      return ctx.unauthorized("Authentication required");
+    }
+
     const { declarations, style, typography, audioUrl } = ctx.request.body;
 
     if (!declarations || !Array.isArray(declarations) || declarations.length === 0) {
@@ -313,7 +351,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     try {
       const videoRenderService = strapi.service("api::video-render.video-render") as any;
-      const userId = ctx.state.user?.id;
 
       const result = await videoRenderService.queueRender({
         compositionId: "DeclarationVideo",

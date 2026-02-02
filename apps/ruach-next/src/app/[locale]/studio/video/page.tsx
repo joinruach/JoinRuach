@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from "react";
 import { Player } from "@remotion/player";
+import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
 
 // Video template types
 type TemplateType = "scripture" | "quote" | "testimony" | "declaration" | "daily";
@@ -14,6 +16,10 @@ interface RenderJob {
 }
 
 export default function VideoStudioPage() {
+  const { data: session } = useSession();
+  const params = useParams();
+  const locale = params?.locale as string;
+
   const [activeTemplate, setActiveTemplate] = useState<TemplateType>("scripture");
   const [renderJob, setRenderJob] = useState<RenderJob | null>(null);
   const [isRendering, setIsRendering] = useState(false);
@@ -84,6 +90,13 @@ export default function VideoStudioPage() {
   const handleRender = useCallback(async () => {
     setIsRendering(true);
 
+    // Check authentication
+    if (!session?.strapiJwt) {
+      alert("Authentication required. Please log in.");
+      setIsRendering(false);
+      return;
+    }
+
     try {
       let endpoint = "/api/video-renders";
       let body: Record<string, unknown> = {};
@@ -109,9 +122,25 @@ export default function VideoStudioPage() {
 
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.strapiJwt}`,
+        },
         body: JSON.stringify(body),
       });
+
+      if (response.status === 401) {
+        alert("Session expired. Please log in again.");
+        window.location.href = `/${locale}/login?callbackUrl=${window.location.pathname}`;
+        return;
+      }
+
+      if (response.status === 429) {
+        const data = await response.json();
+        alert(`Rate limit exceeded. ${data.error || "Please try again later."}`);
+        setIsRendering(false);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to queue render");
@@ -130,12 +159,27 @@ export default function VideoStudioPage() {
       console.error("Render error:", error);
       setIsRendering(false);
     }
-  }, [activeTemplate, scriptureForm, quoteForm, declarationForm, dailyForm]);
+  }, [activeTemplate, scriptureForm, quoteForm, declarationForm, dailyForm, session, locale]);
 
   const pollRenderStatus = async (renderId: string) => {
     const poll = async () => {
+      if (!session?.strapiJwt) {
+        setIsRendering(false);
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/video-renders/${renderId}/status`);
+        const response = await fetch(`/api/video-renders/${renderId}/status`, {
+          headers: {
+            "Authorization": `Bearer ${session.strapiJwt}`,
+          },
+        });
+
+        if (response.status === 401 || response.status === 404) {
+          setIsRendering(false);
+          return;
+        }
+
         const data = await response.json();
 
         setRenderJob({
