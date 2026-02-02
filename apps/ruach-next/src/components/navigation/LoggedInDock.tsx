@@ -3,17 +3,24 @@
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import type { IconType } from "react-icons";
-import { VscAccount, VscArchive, VscHome, VscSettingsGear } from "react-icons/vsc";
+import type { ComponentType } from "react";
+import {
+  HomeIcon,
+  WatchIcon,
+  GrowIcon,
+  AccountIcon
+} from "@/components/icons/DockIcons";
 
 import Dock, { type DockItemData } from "./Dock";
 import dockStyles from "./Dock.module.css";
 
-const ROUTES: Array<{ label: string; path: string; icon: IconType }> = [
-  { label: "Home", path: "/", icon: VscHome },
-  { label: "Media", path: "/media", icon: VscArchive },
-  { label: "Profile", path: "/members/account", icon: VscAccount },
-  { label: "Settings", path: "/members/account", icon: VscSettingsGear }
+type IconComponent = ComponentType<{ className?: string }>;
+
+const ROUTES: Array<{ label: string; path: string; icon: IconComponent }> = [
+  { label: "Home", path: "/", icon: HomeIcon },
+  { label: "Watch", path: "/media", icon: WatchIcon },
+  { label: "Grow", path: "/guidebook", icon: GrowIcon },
+  { label: "Account", path: "/members/account", icon: AccountIcon }
 ];
 
 export default function LoggedInDock() {
@@ -35,7 +42,7 @@ export default function LoggedInDock() {
 
       return {
         label: route.label,
-        icon: <Icon size={18} />,
+        icon: <Icon className="h-5 w-5" />,
         onClick: () => router.push(resolvePath(route.path)),
         className: isActive ? dockStyles.isActive : undefined
       };
