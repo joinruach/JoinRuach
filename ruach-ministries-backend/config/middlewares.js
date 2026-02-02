@@ -142,11 +142,14 @@ module.exports = [
           ],
           'script-src': [
             "'self'",
+            "'unsafe-inline'",  // Required for Strapi admin panel
+            "'unsafe-eval'",   // Required for Strapi admin panel
             'https://cdn.joinruach.org',
             'https://cdn.jsdelivr.net',
           ],
           'style-src': [
             "'self'",
+            "'unsafe-inline'",  // Required for Strapi admin panel
             'https://fonts.googleapis.com',
             'https://cdn.joinruach.org',
             'https://cdn.jsdelivr.net',

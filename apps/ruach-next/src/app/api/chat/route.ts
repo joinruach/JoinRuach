@@ -1,6 +1,6 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { SYSTEM_PROMPT, formatContextForPrompt } from '@ruach/ai/chat';
 import { getRelevantContext } from '@/lib/ai/rag';
@@ -16,6 +16,94 @@ interface ChatMessage {
 interface ChatRequestBody {
   messages: ChatMessage[];
   conversationId?: number;
+  mode?: 'pastoral' | 'study' | 'creative' | 'ops';
+}
+
+// Pre-built signup prompts for unauthenticated users (no AI usage)
+const SIGNUP_PROMPTS: Record<string, string[]> = {
+  en: [
+    "Welcome to Ruach! 🌟 I'd love to help you on your spiritual journey. To get personalized guidance and access our AI assistant, please create a free account or sign in.\n\n[Create Account](/en/signup) | [Sign In](/en/login)",
+    "Great question! Our AI assistant can provide in-depth biblical insights and personalized spiritual guidance. Sign up for free to unlock this feature.\n\n[Get Started Free](/en/signup)",
+  ],
+  es: [
+    "¡Bienvenido a Ruach! 🌟 Me encantaría ayudarte en tu camino espiritual. Para obtener orientación personalizada, crea una cuenta gratuita o inicia sesión.\n\n[Crear Cuenta](/es/signup) | [Iniciar Sesión](/es/login)",
+  ],
+  fr: [
+    "Bienvenue chez Ruach! 🌟 J'aimerais vous aider dans votre cheminement spirituel. Créez un compte gratuit ou connectez-vous.\n\n[Créer un Compte](/fr/signup) | [Se Connecter](/fr/login)",
+  ],
+  pt: [
+    "Bem-vindo ao Ruach! 🌟 Adoraria ajudá-lo em sua jornada espiritual. Crie uma conta gratuita ou faça login.\n\n[Criar Conta](/pt/signup) | [Entrar](/pt/login)",
+  ],
+};
+
+function getSignupPrompt(locale: string): string {
+  const prompts = SIGNUP_PROMPTS[locale] || SIGNUP_PROMPTS.en;
+  return prompts[Math.floor(Math.random() * prompts.length)]!;
+}
+
+// Create signup stream response (no AI usage)
+function createSignupStream(locale: string): Response {
+  const message = getSignupPrompt(locale);
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    start(controller) {
+      const words = message.split(' ');
+      let index = 0;
+
+      const sendWord = () => {
+        if (index < words.length) {
+          const chunk = (index === 0 ? '' : ' ') + words[index];
+          controller.enqueue(encoder.encode(`0:"${chunk.replace(/"/g, '\\"')}"\n`));
+          index++;
+          setTimeout(sendWord, 30 + Math.random() * 20);
+        } else {
+          controller.enqueue(encoder.encode(`d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":0}}\n`));
+          controller.close();
+        }
+      };
+      sendWord();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Auth-Required': 'true',
+    },
+  });
+}
+
+// Proxy to AI Gateway
+async function proxyToGateway(
+  body: string,
+  userId: string,
+  tier: string,
+  locale: string
+): Promise<Response> {
+  const gatewayUrl = process.env.AI_GATEWAY_URL;
+  if (!gatewayUrl) throw new Error('AI_GATEWAY_URL not configured');
+
+  const response = await fetch(`${gatewayUrl}/v1/chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-auth': process.env.AI_GATEWAY_SHARED_SECRET!,
+      'x-user-id': userId,
+      'x-user-tier': tier,
+      'x-user-locale': locale,
+    },
+    body,
+  });
+
+  return new Response(response.body, {
+    status: response.status,
+    headers: {
+      'Content-Type': response.headers.get('Content-Type') || 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+    },
+  });
 }
 
 // Type guards
@@ -54,13 +142,31 @@ function assertChatRequestBody(body: unknown): asserts body is ChatRequestBody {
  * AI Chat Endpoint
  * Provides streaming responses from the Ruach AI Assistant
  *
+ * - Unauthenticated users: Returns signup prompt (no AI usage)
+ * - Authenticated users: Uses AI Gateway if configured, else direct Anthropic
+ *
  * POST /api/chat
- * Body: { messages: Message[], conversationId?: number }
+ * Body: { messages: Message[], conversationId?: number, mode?: string }
  */
 export async function POST(req: NextRequest): Promise<Response> {
+  // Get locale from URL or header
+  const locale = req.headers.get('x-locale') ||
+    req.nextUrl.pathname.split('/')[1] ||
+    'en';
+
+  // Check authentication FIRST
+  const session = await auth();
+
+  // Unauthenticated users get signup prompt (NO AI USAGE)
+  if (!session?.user?.email) {
+    return createSignupStream(locale);
+  }
+
   let body: unknown;
+  let rawBody: string;
   try {
-    body = await req.json();
+    rawBody = await req.text();
+    body = JSON.parse(rawBody);
   } catch (error) {
     return Response.json(
       { error: 'Invalid JSON in request body' },
@@ -79,8 +185,22 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const { messages, conversationId } = body;
 
+  // Check if AI Gateway is configured
+  const useGateway = !!process.env.AI_GATEWAY_URL && !!process.env.AI_GATEWAY_SHARED_SECRET;
+
+  if (useGateway) {
+    try {
+      const userId = session.user.id || session.user.email;
+      const tier = (session.user as { tier?: string }).tier || 'free';
+      return await proxyToGateway(rawBody, userId, tier, locale);
+    } catch (error) {
+      console.error('[Chat] Gateway error, falling back to direct:', error);
+      // Fall through to direct implementation
+    }
+  }
+
   try {
-    // Check for API key
+    // Check for API key (direct mode)
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       console.error('ANTHROPIC_API_KEY not configured');
@@ -91,8 +211,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     // Get user session for personalization
-    const session = await auth();
-    const userEmail = session?.user?.email;
+    const userEmail = session.user.email;
     const userId = userEmail ? hashEmail(userEmail) : undefined;
 
     // Get last user message for context

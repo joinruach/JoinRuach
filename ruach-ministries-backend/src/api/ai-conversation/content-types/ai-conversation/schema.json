@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ai_conversations",
+  "info": {
+    "singularName": "ai-conversation",
+    "pluralName": "ai-conversations",
+    "displayName": "AI Conversation",
+    "description": "Stores AI chat conversations and messages"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "default": "New Conversation"
+    },
+    "mode": {
+      "type": "enumeration",
+      "enum": ["pastoral", "study", "creative", "ops"],
+      "default": "pastoral"
+    },
+    "locale": {
+      "type": "string",
+      "default": "en"
+    },
+    "messages": {
+      "type": "json",
+      "default": []
+    },
+    "messageCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "lastMessageAt": {
+      "type": "datetime"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

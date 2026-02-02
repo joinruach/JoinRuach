@@ -1,0 +1,24 @@
+{
+  "name": "ruach-ai-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/worker.ts",
+    "build": "tsup src/worker.ts --format esm --dts --clean",
+    "start": "node dist/worker.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.3",
+    "bullmq": "^5.34.8",
+    "openai": "^4.77.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "~5.7.3"
+  }
+}

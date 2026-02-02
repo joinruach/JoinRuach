@@ -1,0 +1,74 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ai_usages",
+  "info": {
+    "singularName": "ai-usage",
+    "pluralName": "ai-usages",
+    "displayName": "AI Usage",
+    "description": "Tracks AI token usage and costs per user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "sessionId": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "enumeration",
+      "enum": ["anthropic", "openai"],
+      "required": true
+    },
+    "model": {
+      "type": "string",
+      "required": true
+    },
+    "promptTokens": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "completionTokens": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "totalTokens": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "estimatedCostUsd": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
+    },
+    "latencyMs": {
+      "type": "integer",
+      "default": 0
+    },
+    "mode": {
+      "type": "enumeration",
+      "enum": ["pastoral", "study", "creative", "ops"],
+      "default": "pastoral"
+    },
+    "locale": {
+      "type": "string",
+      "default": "en"
+    },
+    "userTier": {
+      "type": "enumeration",
+      "enum": ["free", "supporter", "partner", "builder", "admin"],
+      "default": "free"
+    },
+    "requestDate": {
+      "type": "date",
+      "required": true
+    }
+  }
+}
