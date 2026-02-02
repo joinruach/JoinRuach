@@ -264,9 +264,9 @@ Today we will explore what the Bible says about belief.`;
       const minutes = wordCount / 150; // 150 words per minute
       const durationSeconds = Math.ceil(minutes * 60);
 
-      // 150 repetitions * ~9 words = ~1350 words / 150 wpm = 9 minutes = 540 seconds
-      expect(durationSeconds).toBeGreaterThan(500);
-      expect(durationSeconds).toBeLessThan(600);
+      // 150 repetitions * 8 words = 1200 words / 150 wpm = 8 minutes = 480 seconds
+      expect(durationSeconds).toBeGreaterThanOrEqual(480);
+      expect(durationSeconds).toBeLessThan(520);
     });
   });
 
