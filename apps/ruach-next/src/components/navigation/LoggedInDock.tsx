@@ -17,7 +17,7 @@ import dockStyles from "./Dock.module.css";
 type IconComponent = ComponentType<{ className?: string }>;
 
 const ROUTES: Array<{ label: string; path: string; icon: IconComponent }> = [
-  { label: "Home", path: "/", icon: HomeIcon },
+  { label: "Home", path: "/members", icon: HomeIcon },
   { label: "Watch", path: "/media", icon: WatchIcon },
   { label: "Grow", path: "/guidebook", icon: GrowIcon },
   { label: "Account", path: "/members/account", icon: AccountIcon }
@@ -29,16 +29,13 @@ export default function LoggedInDock() {
   const pathname = usePathname();
 
   const items: DockItemData[] = useMemo(() => {
-    const resolvePath = (path: string) => (path === "/" ? `/${locale}` : `/${locale}${path}`);
+    const resolvePath = (path: string) => `/${locale}${path}`;
     const unlocalizedPathname =
       pathname === `/${locale}` ? "/" : pathname?.startsWith(`/${locale}/`) ? pathname.slice(locale.length + 1) : pathname;
 
     return ROUTES.map((route) => {
       const Icon = route.icon;
-      const isActive =
-        route.path === "/"
-          ? unlocalizedPathname === "/" || unlocalizedPathname === ""
-          : unlocalizedPathname?.startsWith(route.path);
+      const isActive = unlocalizedPathname?.startsWith(route.path);
 
       return {
         label: route.label,

@@ -6,11 +6,33 @@
 import { getCurrentFormationState } from "@/lib/formation/state";
 import { FormationPhase } from "@ruach/formation";
 import Link from "next/link";
+import { Suspense } from "react";
+import ResumeJourneyCard from "@/components/guidebook/ResumeJourneyCard";
+import RelatedCoursesSection from "@/components/guidebook/RelatedCoursesSection";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function GuidebookPage() {
+function CoursesSkeleton() {
+  return (
+    <section className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-6">
+      <div className="h-6 w-32 animate-pulse rounded bg-zinc-200 dark:bg-white/10 mb-4" />
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 animate-pulse rounded-xl bg-zinc-200 dark:bg-white/10" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function GuidebookPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
   // Check if user has started formation journey
   const state = await getCurrentFormationState();
 
@@ -93,7 +115,7 @@ export default async function GuidebookPage() {
   // Existing user - show progress and continue button
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-black">
-      <div className="container mx-auto px-4 py-16 max-w-4xl">
+      <div className="container mx-auto px-4 py-16 max-w-6xl">
         {/* Welcome Back */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2">Welcome Back</h1>
@@ -102,66 +124,21 @@ export default async function GuidebookPage() {
           </p>
         </div>
 
-        {/* Current Progress */}
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Your Progress</h2>
-            <Link
-              href="/formation-debug"
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
-            >
-              View Details →
-            </Link>
+        {/* Two Column Layout */}
+        <div className="grid gap-6 lg:grid-cols-3 mb-12">
+          {/* Left: Resume Journey (2 cols) */}
+          <div className="lg:col-span-2">
+            <ResumeJourneyCard state={state} locale={locale} />
           </div>
 
-          {/* Progress Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                {state.checkpointsCompleted.length}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                Checkpoints
-              </div>
-            </div>
-            <div className="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {state.reflectionsSubmitted}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                Reflections
-              </div>
-            </div>
-            <div className="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-              <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                {state.daysInPhase}
-              </div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                Days Active
-              </div>
-            </div>
-          </div>
-
-          {/* Current Phase */}
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                  Current Phase
-                </div>
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 capitalize">
-                  {state.currentPhase}
-                </div>
-              </div>
-              <Link
-                href={getContinueUrl(state.currentPhase)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
-              >
-                Continue →
-              </Link>
-            </div>
+          {/* Right: Related Courses */}
+          <div>
+            <Suspense fallback={<CoursesSkeleton />}>
+              <RelatedCoursesSection currentPhase={state.currentPhase} locale={locale} />
+            </Suspense>
           </div>
         </div>
+
 
         {/* Available Phases */}
         <div>
