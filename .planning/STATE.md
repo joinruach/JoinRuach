@@ -1,28 +1,30 @@
 # Project State
 
-**Last Updated:** 2026-01-08
-**Current Phase:** 1 - Checkpoint Submission Enhancement (COMPLETE)
+**Last Updated:** 2026-02-03
+**Current Phase:** 8 - Recording Session Data Model (v2.0)
 **Project Health:** 🟢 Green
 
 ---
 
 ## Current Position
 
-**Active Work:** Phase 1 Complete - Ready for Phase 2
-**Next Milestone:** Phase 2 - Voice Input & Transcription
-**Blockers:** None
+**Active Work:** Milestone v2.0 - Multi-Camera Video Production
+**Phase:** 8 of 15 (Recording Session Data Model)
+**Plan:** Not started
+**Status:** Ready to plan
+**Last activity:** 2026-02-03 - Milestone v2.0 created
 
-**Progress:**
-- ✅ Project initialized (PROJECT.md, config.json)
-- ✅ Codebase mapped (7 documents in .planning/codebase/)
-- ✅ Roadmap created (7 phases planned)
-- ✅ Phase 1 complete (word count + heartbeat dwell + draft persistence)
+**Progress:** ░░░░░░░░░░ 0%
+
+**Blockers:** None
 
 ---
 
-## Accumulated Decisions
+## Accumulated Context
 
-**Technical:**
+### Milestone v1.0: Formation Guidebook UI (Phases 1-7)
+
+**Technical Decisions:**
 - Use existing Next.js 16 App Router patterns (Server Components default)
 - Leverage existing Formation Engine API (event sourcing backend)
 - Integrate OpenAI Whisper for voice transcription (Phase 2)
@@ -32,7 +34,7 @@
 - **Phase 1:** Timestamp-based timer using performance.now() (no drift)
 - **Phase 1:** Checkpoint-specific localStorage keys for draft isolation
 
-**Scope:**
+**Scope Decisions:**
 - Focus ONLY on Formation Guidebook UI (not LSS, Iron Chamber, or Ministry Works)
 - Exclude gamification features (badges, leaderboards, streaks)
 - Exclude community features (cohorts, mentorship, messaging)
@@ -44,17 +46,47 @@
 - Call Formation Engine API via server actions
 - Store reflections in formation-reflection content type (Strapi)
 
+### Milestone v2.0: Multi-Camera Video Production (Phases 8-15)
+
+**Core Paradigm:**
+- Content compilation, not destructive editing
+- Transcript = truth backbone
+- EDL = intent (reproducible, auditable)
+- Remotion = faithful executor
+- All renders deterministic and scripture-safe
+
+**Key Architecture Principles:**
+- Separate normalization from sync (independent re-processing)
+- Versioned EDLs (v1 AI, v2 human-edited, v3 final)
+- Deterministic renders from (EDL + assets + version hash)
+- Scripture overlays as first-class timeline events
+- Full audit trail and reproducibility
+
+**Stack Integration:**
+- Strapi content modeling (recording-session, media-asset, edl, render-job)
+- BullMQ async jobs (existing pattern)
+- Whisper + Claude (existing services)
+- Remotion for deterministic rendering
+- R2 storage (existing integration)
+- ruach-citation-validator (existing guardrails)
+
 ---
 
 ## Deferred Issues
 
-None yet - project just initialized.
+**From v1.0:**
+- Voice transcription quality depends on OpenAI Whisper reliability (Phase 2)
+- AI routing logic complexity could cause edge cases (Phase 4)
+- Cross-session persistence needs careful state management (all phases)
+
+**From v2.0:**
+- None yet - milestone just created
 
 ---
 
 ## Concerns & Risks
 
-**From CONCERNS.md:**
+**From v1.0 CONCERNS.md:**
 1. **XSS vulnerabilities** - 7 instances of dangerouslySetInnerHTML without sanitization
    - Status: Known, will fix during implementation
    - Mitigation: Add DOMPurify sanitization when touching affected files
@@ -67,38 +99,59 @@ None yet - project just initialized.
    - Status: Known, will add tests as we build new features
    - Mitigation: Target 80% coverage on new business logic
 
-**New Risks:**
-- Voice transcription quality depends on OpenAI Whisper reliability (Phase 2)
-- AI routing logic complexity could cause edge cases (Phase 4)
-- Cross-session persistence needs careful state management (all phases)
+**New Risks for v2.0:**
+- FFmpeg audio correlation accuracy (Phase 9) - mitigate with manual nudge UI
+- AI EDL quality (Phase 11) - mitigate with versioned EDL workflow
+- Remotion render performance (Phase 12) - mitigate with BullMQ worker scaling
+- Scripture overlay timing accuracy (Phase 14) - mitigate with existing citation validator
 
 ---
 
 ## Alignment Status
 
 **Project Goals:** ✅ Aligned
-- PROJECT.md defines Formation Guidebook as core value proposition
-- Roadmap covers all requirements from PROJECT.md Active section
-- Out-of-scope items properly excluded
+- v1.0: Formation Guidebook as core spiritual formation experience
+- v2.0: Multi-camera production pipeline for Ruach Studios content
+- Both milestones independent, composable, and aligned with overall platform vision
 
 **User Expectations:** ✅ Aligned
-- User explicitly requested "all of this" (voice, routing, unlocking)
-- Success criteria match user's definition of "working correctly"
-- No scope creep into other platform components
+- v1.0: Voice, routing, unlocking all included
+- v2.0: 3-camera sync → AI EDL → human refinement → render → publish
+- Clear separation between Formation (user journey) and Production (content creation)
 
 **Technical Feasibility:** ✅ Aligned
-- Backend infrastructure exists (Formation Engine, Strapi, event sourcing)
-- Frontend foundation exists (Next.js, guidebook pages, basic checkpoint form)
-- External dependencies available (OpenAI API for transcription)
+- Backend infrastructure exists (Strapi, Formation Engine, BullMQ, event sourcing)
+- Frontend foundation exists (Next.js, guidebook pages, Studio patterns)
+- External dependencies available (OpenAI, Claude, Remotion, R2)
+- Existing transcription and citation systems ready for reuse
 
 ---
 
-## Next Steps
+## Roadmap Evolution
 
-1. Create Phase 1 execution plan (checkpoint validation enhancement)
-2. Execute Phase 1 (2-3 tasks)
-3. Create Phase 2 plan (voice input integration)
-4. Proceed through roadmap phases sequentially
+**Milestones Created:**
+- v1.0 Formation Guidebook UI: 7 phases (Phases 1-7), Phase 1 complete
+- v2.0 Multi-Camera Video Production: 8 phases (Phases 8-15), created 2026-02-03
+
+**Continuous Phase Numbering:**
+- Phases 1-7: Formation Guidebook (v1.0)
+- Phases 8-15: Multi-Camera Production (v2.0)
+- Future milestones will continue from Phase 16+
+
+---
+
+## Session Continuity
+
+**Last session:** 2026-02-03 12:41 PST
+**Stopped at:** Milestone v2.0 initialization complete
+**Resume file:** None
+
+**Next up:** Phase 8 planning
+- Option 1: `/gsd:discuss-phase 8` - gather context first
+- Option 2: `/gsd:research-phase 8` - investigate Strapi schema patterns (unlikely needed)
+- Option 3: `/gsd:plan-phase 8` - create execution plan directly
+
+**Recommended:** `/gsd:plan-phase 8` (standard Strapi patterns, no research needed)
 
 ---
 
