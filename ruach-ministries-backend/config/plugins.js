@@ -64,5 +64,8 @@ module.exports = ({ env }) => {
         jwtSecret: env('JWT_SECRET'),
       },
     },
+    'ai-assistant': {
+      enabled: false,
+    },
   };
 };
