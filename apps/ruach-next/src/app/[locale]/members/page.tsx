@@ -14,10 +14,11 @@ export const revalidate = 0;
 export default async function MembersDashboard({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  const { locale } = await params;
+  const { locale } = params;
   const { viewer, jwt } = await getViewerAccessContext();
+  const jwtOrUndefined = jwt ?? undefined;
 
   // Redirect to login if not authenticated
   if (!viewer) {
@@ -26,7 +27,7 @@ export default async function MembersDashboard({
 
   // Fetch membership and events data
   const [membership, events] = await Promise.all([
-    fetchStrapiMembership(jwt),
+    fetchStrapiMembership(jwtOrUndefined),
     getEvents(3),
   ]);
 
@@ -52,7 +53,7 @@ export default async function MembersDashboard({
         <div className="space-y-6 lg:col-span-2">
           {/* Continue Watching */}
           <Suspense fallback={<ContinueWatchingSkeleton />}>
-            <ContinueWatchingSection jwt={jwt} locale={locale} />
+            <ContinueWatchingSection jwt={jwtOrUndefined} locale={locale} />
           </Suspense>
 
           {/* Upcoming Events */}

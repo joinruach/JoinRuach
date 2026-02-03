@@ -33,7 +33,8 @@ export default function ReflectionTextarea({
   const [wordCount, setWordCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  // use generic timeout type that works in browser and node
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     setWordCount(countWords(value));

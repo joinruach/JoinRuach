@@ -30,8 +30,11 @@ export default async function RelatedCoursesSection({ currentPhase, locale }: Pr
   // Filter courses by relevance to phase keywords
   const relevantCourses = courses
     .map((course) => {
-      const attributes = extractAttributes(course);
-      if (!attributes?.slug) return null;
+      const attributes = extractAttributes<CourseEntity["attributes"]>(course);
+      if (!attributes) return null;
+
+      const slug = typeof attributes.slug === "string" ? attributes.slug : null;
+      if (!slug) return null;
 
       const name = String(attributes.name || "");
       const description = String(attributes.description || "");
@@ -47,7 +50,7 @@ export default async function RelatedCoursesSection({ currentPhase, locale }: Pr
       const coverMedia = extractSingleRelation<{ url?: string }>(attributes.cover);
 
       return {
-        slug: attributes.slug,
+        slug,
         name,
         description,
         coverUrl: coverMedia?.url ? imgUrl(coverMedia.url) : null,
@@ -82,7 +85,7 @@ export default async function RelatedCoursesSection({ currentPhase, locale }: Pr
       <div className="space-y-4">
         {relevantCourses.map((course) => (
           <Link
-            key={course.slug}
+            key={course.slug ?? course.name}
             href={`/${locale}/courses/${course.slug}`}
             className="group flex gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 transition hover:border-amber-400"
           >

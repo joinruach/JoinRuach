@@ -49,6 +49,12 @@ export default function ResumeJourneyCard({ state, locale }: Props) {
   const progressPercent = Math.round(
     (state.checkpointsCompleted.length / (state.checkpointsCompleted.length + 10)) * 100
   );
+  const dwellTimeMinutes =
+    (state as { dwellTimeMinutes?: number }).dwellTimeMinutes ??
+    Math.round(((state as { dwellTimeSeconds?: number }).dwellTimeSeconds ?? 0) / 60);
+
+  // Derived minutes from seconds when not provided by formation state
+  const dwellMinutes = Math.round((state as any).dwellTimeSeconds ? (state as any).dwellTimeSeconds / 60 : 0);
 
   return (
     <section className="rounded-3xl border border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-white/5 p-8 shadow-lg">
@@ -126,7 +132,7 @@ export default function ResumeJourneyCard({ state, locale }: Props) {
         </div>
         <div className="rounded-lg bg-white dark:bg-white/5 p-3 border border-amber-100 dark:border-amber-900/30">
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {state.dwellTimeMinutes}m
+            {dwellTimeMinutes}m
           </div>
           <div className="text-xs text-zinc-600 dark:text-white/60">
             Time Invested

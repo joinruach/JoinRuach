@@ -3,6 +3,7 @@ import Image from "next/image";
 import { imgUrl } from "@/lib/strapi";
 import { extractAttributes, extractSingleRelation } from "@/lib/strapi-normalize";
 import type { EventEntity } from "@/lib/types/strapi-types";
+import type { Key } from "react";
 
 type Props = {
   events: EventEntity[];
@@ -27,13 +28,24 @@ export default function UpcomingEventsSection({ events, locale }: Props) {
       </div>
 
       <div className="mt-4 space-y-4">
-        {events.map((event) => {
-          const attributes = extractAttributes(event);
+        {events.map((event, idx) => {
+          const attributes = extractAttributes<EventEntity["attributes"]>(event);
           if (!attributes) return null;
+
+          const slug = typeof attributes.slug === "string" ? attributes.slug : null;
+          if (!slug) return null;
+
+          const title = typeof attributes.title === "string" ? attributes.title : "Event";
+          const location = typeof attributes.location === "string" ? attributes.location : null;
 
           const coverMedia = extractSingleRelation<{ url?: string }>(attributes.cover);
           const coverUrl = coverMedia?.url ? imgUrl(coverMedia.url) : null;
-          const date = attributes.date || attributes.startDate;
+          const date = typeof attributes.date === "string" && attributes.date
+            ? attributes.date
+            : typeof attributes.startDate === "string"
+              ? attributes.startDate
+              : null;
+
           const formattedDate = date
             ? new Date(date).toLocaleDateString("en-US", {
                 month: "short",
@@ -42,17 +54,19 @@ export default function UpcomingEventsSection({ events, locale }: Props) {
               })
             : "TBA";
 
+          const key: Key | null | undefined = slug ?? event.id ?? idx;
+
           return (
             <Link
-              key={attributes.slug || event.id}
-              href={`/${locale}/events/${attributes.slug}`}
+              key={key}
+              href={`/${locale}/events/${slug}`}
               className="group flex gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-3 transition hover:border-amber-400"
             >
               {coverUrl && (
                 <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-white/10">
                   <Image
                     src={coverUrl}
-                    alt={attributes.title || "Event"}
+                    alt={title}
                     fill
                     className="object-cover"
                   />
@@ -64,11 +78,11 @@ export default function UpcomingEventsSection({ events, locale }: Props) {
                   {formattedDate}
                 </p>
                 <h3 className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400">
-                  {attributes.title}
+                  {title}
                 </h3>
-                {attributes.location && (
+                {location && (
                   <p className="mt-1 text-xs text-zinc-600 dark:text-white/60">
-                    {attributes.location}
+                    {location}
                   </p>
                 )}
               </div>
