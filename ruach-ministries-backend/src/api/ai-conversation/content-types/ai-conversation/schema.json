@@ -13,7 +13,7 @@
   "pluginOptions": {},
   "attributes": {
     "userId": {
-      "type": "string",
+      "type": "integer",
       "required": true
     },
     "title": {
