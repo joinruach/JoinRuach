@@ -1,0 +1,115 @@
+{
+  "kind": "collectionType",
+  "collectionName": "edit_decision_lists",
+  "info": {
+    "singularName": "edit-decision-list",
+    "pluralName": "edit-decision-lists",
+    "displayName": "Edit Decision List",
+    "description": "Versioned EDL storage with cuts, overlays, chapters, and shorts for deterministic rendering"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "edlId": {
+      "type": "uid",
+      "required": true,
+      "unique": true,
+      "targetField": "edlId"
+    },
+    "recordingSession": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::recording-session.recording-session",
+      "required": true,
+      "index": true
+    },
+    "version": {
+      "type": "integer",
+      "min": 1,
+      "required": true,
+      "default": 1,
+      "description": "v1 AI, v2 human-edited, v3 final, etc."
+    },
+    "versionLabel": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "AI Generated, Human Refined, Final, etc."
+    },
+    "createdBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "User who created/edited this version"
+    },
+    "edlData": {
+      "type": "json",
+      "required": true,
+      "description": "Full EDL structure with cuts, overlays, chapters, shorts"
+    },
+    "cuts": {
+      "type": "json",
+      "description": "Camera angle switches with timestamps",
+      "default": []
+    },
+    "overlays": {
+      "type": "json",
+      "description": "Lower thirds, scripture cards, titles with timing",
+      "default": []
+    },
+    "chapters": {
+      "type": "json",
+      "description": "Chapter markers with timestamps and titles",
+      "default": []
+    },
+    "shorts": {
+      "type": "json",
+      "description": "Short-form segment definitions with start/end/format",
+      "default": []
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "review",
+        "approved",
+        "superseded",
+        "archived"
+      ],
+      "default": "draft",
+      "required": true,
+      "index": true
+    },
+    "approvedAt": {
+      "type": "datetime",
+      "description": "When this version was approved for rendering"
+    },
+    "approvedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "versionHash": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "SHA256 hash of edlData for deterministic rendering"
+    },
+    "parentVersion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::edit-decision-list.edit-decision-list",
+      "inversedBy": "childVersions",
+      "description": "Previous EDL version this was based on"
+    },
+    "childVersions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::edit-decision-list.edit-decision-list",
+      "inversedBy": "parentVersion"
+    },
+    "metadata": {
+      "type": "json",
+      "description": "AI model used, generation params, edit notes, etc."
+    }
+  }
+}

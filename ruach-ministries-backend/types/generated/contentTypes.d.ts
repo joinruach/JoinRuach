@@ -1670,6 +1670,84 @@ export interface ApiDonationDonation extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiEditDecisionListEditDecisionList
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'edit_decision_lists';
+  info: {
+    description: 'Versioned EDL storage with cuts, overlays, chapters, and shorts for deterministic rendering';
+    displayName: 'Edit Decision List';
+    pluralName: 'edit-decision-lists';
+    singularName: 'edit-decision-list';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    approvedAt: Schema.Attribute.DateTime;
+    approvedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    chapters: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    childVersions: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::edit-decision-list.edit-decision-list'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cuts: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    edlData: Schema.Attribute.JSON & Schema.Attribute.Required;
+    edlId: Schema.Attribute.UID<'edlId'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::edit-decision-list.edit-decision-list'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    overlays: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    parentVersion: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::edit-decision-list.edit-decision-list'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    recordingSession: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::recording-session.recording-session'
+    > &
+      Schema.Attribute.Required;
+    shorts: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'review', 'approved', 'superseded', 'archived']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'draft'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    version: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    versionHash: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    versionLabel: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
+  };
+}
+
 export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   collectionName: 'events';
   info: {
@@ -4308,6 +4386,115 @@ export interface ApiRecordingSessionRecordingSession
   };
 }
 
+export interface ApiRenderJobRenderJob extends Struct.CollectionTypeSchema {
+  collectionName: 'render_jobs';
+  info: {
+    description: 'Render job tracking with BullMQ integration for video production pipeline';
+    displayName: 'Render Job';
+    pluralName: 'render-jobs';
+    singularName: 'render-job';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    bullmq_job_id: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    duration_ms: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    edl: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::edit-decision-list.edit-decision-list'
+    > &
+      Schema.Attribute.Required;
+    errorMessage: Schema.Attribute.Text;
+    fileSize_bytes: Schema.Attribute.BigInteger &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    format: Schema.Attribute.Enumeration<
+      ['full_16_9', 'short_9_16', 'clip_1_1', 'thumbnail']
+    > &
+      Schema.Attribute.Required;
+    fps: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 240;
+          min: 0;
+        },
+        number
+      >;
+    jobId: Schema.Attribute.UID<'jobId'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::render-job.render-job'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    output_chapters_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    output_r2_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    output_subtitles_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    output_thumbnail_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    progress: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    recordingSession: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::recording-session.recording-session'
+    > &
+      Schema.Attribute.Required;
+    renderCompletedAt: Schema.Attribute.DateTime;
+    renderStartedAt: Schema.Attribute.DateTime;
+    resolution: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 20;
+      }>;
+    status: Schema.Attribute.Enumeration<
+      ['queued', 'processing', 'completed', 'failed', 'cancelled']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'queued'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiReplyReply extends Struct.CollectionTypeSchema {
   collectionName: 'replies';
   info: {
@@ -6588,6 +6775,7 @@ declare module '@strapi/strapi' {
       'api::course.course': ApiCourseCourse;
       'api::discernment-analysis.discernment-analysis': ApiDiscernmentAnalysisDiscernmentAnalysis;
       'api::donation.donation': ApiDonationDonation;
+      'api::edit-decision-list.edit-decision-list': ApiEditDecisionListEditDecisionList;
       'api::event.event': ApiEventEvent;
       'api::faq.faq': ApiFaqFaq;
       'api::formation-event.formation-event': ApiFormationEventFormationEvent;
@@ -6630,6 +6818,7 @@ declare module '@strapi/strapi' {
       'api::protocol-diagnostic.protocol-diagnostic': ApiProtocolDiagnosticProtocolDiagnostic;
       'api::protocol-phase.protocol-phase': ApiProtocolPhaseProtocolPhase;
       'api::recording-session.recording-session': ApiRecordingSessionRecordingSession;
+      'api::render-job.render-job': ApiRenderJobRenderJob;
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
       'api::resource.resource': ApiResourceResource;

@@ -1,0 +1,127 @@
+{
+  "kind": "collectionType",
+  "collectionName": "render_jobs",
+  "info": {
+    "singularName": "render-job",
+    "pluralName": "render-jobs",
+    "displayName": "Render Job",
+    "description": "Render job tracking with BullMQ integration for video production pipeline"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "jobId": {
+      "type": "uid",
+      "required": true,
+      "unique": true,
+      "targetField": "jobId"
+    },
+    "recordingSession": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::recording-session.recording-session",
+      "required": true,
+      "index": true
+    },
+    "edl": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::edit-decision-list.edit-decision-list",
+      "required": true,
+      "index": true
+    },
+    "format": {
+      "type": "enumeration",
+      "enum": [
+        "full_16_9",
+        "short_9_16",
+        "clip_1_1",
+        "thumbnail"
+      ],
+      "required": true,
+      "index": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "queued",
+        "processing",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "default": "queued",
+      "required": true,
+      "index": true
+    },
+    "progress": {
+      "type": "decimal",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "description": "Render progress 0.0 to 1.0"
+    },
+    "output_r2_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Final rendered video URL"
+    },
+    "output_thumbnail_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Video thumbnail URL"
+    },
+    "output_chapters_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Chapter markers JSON file URL"
+    },
+    "output_subtitles_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Subtitles VTT file URL"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "min": 0,
+      "description": "Rendered video duration"
+    },
+    "fileSize_bytes": {
+      "type": "biginteger",
+      "min": 0,
+      "description": "Output file size"
+    },
+    "resolution": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Output resolution, e.g., 1920x1080"
+    },
+    "fps": {
+      "type": "decimal",
+      "min": 0,
+      "max": 240,
+      "description": "Output frames per second"
+    },
+    "bullmq_job_id": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "BullMQ job ID for tracking",
+      "index": true
+    },
+    "renderStartedAt": {
+      "type": "datetime"
+    },
+    "renderCompletedAt": {
+      "type": "datetime"
+    },
+    "errorMessage": {
+      "type": "text",
+      "description": "Error details if status is failed"
+    },
+    "metadata": {
+      "type": "json",
+      "description": "Remotion version, render logs, performance metrics, etc."
+    }
+  }
+}
