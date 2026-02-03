@@ -1,0 +1,95 @@
+{
+  "kind": "collectionType",
+  "collectionName": "recording_sessions",
+  "info": {
+    "singularName": "recording-session",
+    "pluralName": "recording-sessions",
+    "displayName": "Recording Session",
+    "description": "Multi-camera recording session grouping 3+ angles with sync offsets and workflow state"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "sessionId": {
+      "type": "uid",
+      "required": true,
+      "unique": true,
+      "targetField": "sessionId"
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "description": {
+      "type": "text"
+    },
+    "recordingDate": {
+      "type": "date"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "min": 0,
+      "description": "Total duration in milliseconds"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "syncing",
+        "synced",
+        "editing",
+        "rendering",
+        "published",
+        "archived"
+      ],
+      "default": "draft",
+      "required": true,
+      "index": true
+    },
+    "speakers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::author.author",
+      "inversedBy": "recordingSessions"
+    },
+    "assets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::media-asset.media-asset",
+      "inversedBy": "recordingSession"
+    },
+    "transcript": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::library-transcription.library-transcription"
+    },
+    "summary": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::media-summary.media-summary"
+    },
+    "syncOffsets_ms": {
+      "type": "json",
+      "description": "Sync offsets for each angle {A: 0, B: 1830, C: -420}",
+      "default": {}
+    },
+    "syncConfidence": {
+      "type": "json",
+      "description": "Auto-sync confidence scores {B: 0.92, C: 0.81}",
+      "default": {}
+    },
+    "anchorAngle": {
+      "type": "string",
+      "maxLength": 10,
+      "default": "A",
+      "description": "Which angle is time=0"
+    },
+    "metadata": {
+      "type": "json",
+      "description": "Episode number, event type, technical notes, etc."
+    }
+  }
+}

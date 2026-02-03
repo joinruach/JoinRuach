@@ -1,0 +1,110 @@
+{
+  "kind": "collectionType",
+  "collectionName": "media_assets",
+  "info": {
+    "singularName": "media-asset",
+    "pluralName": "media-assets",
+    "displayName": "Media Asset",
+    "description": "Individual media files (camera, audio, screen) with original/proxy/mezzanine URLs and technical metadata"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "assetId": {
+      "type": "uid",
+      "required": true,
+      "unique": true,
+      "targetField": "assetId"
+    },
+    "recordingSession": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::recording-session.recording-session",
+      "inversedBy": "assets",
+      "required": true,
+      "index": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "camera",
+        "audio",
+        "screen"
+      ],
+      "required": true,
+      "index": true
+    },
+    "angle": {
+      "type": "string",
+      "maxLength": 20,
+      "required": true,
+      "description": "A|B|C|AUDIO|SCREEN"
+    },
+    "r2_original_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "required": true,
+      "description": "Raw upload URL"
+    },
+    "r2_proxy_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Low-res preview URL for Studio UI"
+    },
+    "r2_mezzanine_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Normalized intermediate for rendering"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "min": 0,
+      "required": true
+    },
+    "fps": {
+      "type": "decimal",
+      "min": 0,
+      "max": 240,
+      "description": "Frames per second"
+    },
+    "resolution": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "1920x1080, 3840x2160, etc."
+    },
+    "audioChannels": {
+      "type": "integer",
+      "min": 0,
+      "max": 32,
+      "description": "Number of audio channels"
+    },
+    "audioSampleRate": {
+      "type": "integer",
+      "min": 0,
+      "description": "Sample rate in Hz, e.g., 48000"
+    },
+    "audioFingerprint": {
+      "type": "text",
+      "description": "Audio waveform signature for sync correlation"
+    },
+    "waveformPeaks": {
+      "type": "json",
+      "description": "Simplified waveform data for UI visualization",
+      "default": []
+    },
+    "fileSize_bytes": {
+      "type": "biginteger",
+      "min": 0,
+      "description": "Original file size"
+    },
+    "uploadedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "metadata": {
+      "type": "json",
+      "description": "Codec, bitrate, camera model, etc."
+    }
+  }
+}

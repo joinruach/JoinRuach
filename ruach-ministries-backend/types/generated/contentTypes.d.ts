@@ -457,6 +457,101 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiAiConversationAiConversation
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ai_conversations';
+  info: {
+    description: 'Stores AI chat conversations and messages';
+    displayName: 'AI Conversation';
+    pluralName: 'ai-conversations';
+    singularName: 'ai-conversation';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    archived: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    lastMessageAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ai-conversation.ai-conversation'
+    > &
+      Schema.Attribute.Private;
+    messageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    messages: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    mode: Schema.Attribute.Enumeration<
+      ['pastoral', 'study', 'creative', 'ops']
+    > &
+      Schema.Attribute.DefaultTo<'pastoral'>;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'New Conversation'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.Integer & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiAiUsageAiUsage extends Struct.CollectionTypeSchema {
+  collectionName: 'ai_usages';
+  info: {
+    description: 'Tracks AI token usage and costs per user';
+    displayName: 'AI Usage';
+    pluralName: 'ai-usages';
+    singularName: 'ai-usage';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    completionTokens: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    estimatedCostUsd: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    latencyMs: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ai-usage.ai-usage'
+    > &
+      Schema.Attribute.Private;
+    mode: Schema.Attribute.Enumeration<
+      ['pastoral', 'study', 'creative', 'ops']
+    > &
+      Schema.Attribute.DefaultTo<'pastoral'>;
+    model: Schema.Attribute.String & Schema.Attribute.Required;
+    promptTokens: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    provider: Schema.Attribute.Enumeration<['anthropic', 'openai']> &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    requestDate: Schema.Attribute.Date & Schema.Attribute.Required;
+    sessionId: Schema.Attribute.String;
+    totalTokens: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.String & Schema.Attribute.Required;
+    userTier: Schema.Attribute.Enumeration<
+      ['free', 'supporter', 'partner', 'builder', 'admin']
+    > &
+      Schema.Attribute.DefaultTo<'free'>;
+  };
+}
+
 export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
   collectionName: 'articles';
   info: {
@@ -1465,6 +1560,75 @@ export interface ApiCourseCourse extends Struct.CollectionTypeSchema {
       ['public', 'gated', 'cohort_only', 'private']
     > &
       Schema.Attribute.DefaultTo<'public'>;
+  };
+}
+
+export interface ApiDiscernmentAnalysisDiscernmentAnalysis
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'discernment_analyses';
+  info: {
+    description: 'Biblical analysis of AI/cultural trends with concern scoring and theological review';
+    displayName: 'Discernment Analysis';
+    pluralName: 'discernment-analyses';
+    singularName: 'discernment-analysis';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    analysisDate: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    analysisId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    biblicalResponse: Schema.Attribute.RichText & Schema.Attribute.Required;
+    categories: Schema.Attribute.JSON & Schema.Attribute.Required;
+    concernScore: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      >;
+    confidenceLevel: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0.8>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    issues: Schema.Attribute.JSON & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::discernment-analysis.discernment-analysis'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    reviewedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    reviewNotes: Schema.Attribute.RichText;
+    scriptureReferences: Schema.Attribute.JSON;
+    sourceContent: Schema.Attribute.RichText & Schema.Attribute.Required;
+    sourceTitle: Schema.Attribute.String & Schema.Attribute.Required;
+    sourceUrl: Schema.Attribute.String;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'analyzed', 'reviewed', 'published']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    trendPatterns: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -3037,6 +3201,74 @@ export interface ApiLibrarySectionLibrarySection
   };
 }
 
+export interface ApiLibraryTranscriptionLibraryTranscription
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'library_transcriptions';
+  info: {
+    description: 'Transcription records for audio/video media with Whisper API integration, subtitles, and AI-generated summaries';
+    displayName: 'Library Transcription';
+    pluralName: 'library-transcriptions';
+    singularName: 'library-transcription';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    confidence: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 1;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0.95>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    durationSeconds: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    keyMoments: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    language: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'en'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::library-transcription.library-transcription'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    sourceMediaId: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::media-item.media-item'
+    > &
+      Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'completed', 'failed']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    summary: Schema.Attribute.Text;
+    transcriptionId: Schema.Attribute.UID<'transcriptionId'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    transcriptSRT: Schema.Attribute.Text;
+    transcriptText: Schema.Attribute.Text;
+    transcriptVTT: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLivingCommentaryLivingCommentary
   extends Struct.CollectionTypeSchema {
   collectionName: 'living_commentaries';
@@ -3158,6 +3390,108 @@ export interface ApiMarginReflectionMarginReflection
   };
 }
 
+export interface ApiMediaAssetMediaAsset extends Struct.CollectionTypeSchema {
+  collectionName: 'media_assets';
+  info: {
+    description: 'Individual media files (camera, audio, screen) with original/proxy/mezzanine URLs and technical metadata';
+    displayName: 'Media Asset';
+    pluralName: 'media-assets';
+    singularName: 'media-asset';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    angle: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 20;
+      }>;
+    assetId: Schema.Attribute.UID<'assetId'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    audioChannels: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 32;
+          min: 0;
+        },
+        number
+      >;
+    audioFingerprint: Schema.Attribute.Text;
+    audioSampleRate: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    duration_ms: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    fileSize_bytes: Schema.Attribute.BigInteger &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    fps: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 240;
+          min: 0;
+        },
+        number
+      >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::media-asset.media-asset'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    r2_mezzanine_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    r2_original_url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    r2_proxy_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1024;
+      }>;
+    recordingSession: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::recording-session.recording-session'
+    > &
+      Schema.Attribute.Required;
+    resolution: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 20;
+      }>;
+    type: Schema.Attribute.Enumeration<['camera', 'audio', 'screen']> &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    uploadedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    waveformPeaks: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+  };
+}
+
 export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
   collectionName: 'media_items';
   info: {
@@ -3259,7 +3593,17 @@ export interface ApiMediaItemMediaItem extends Struct.CollectionTypeSchema {
     tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     thumbnail: Schema.Attribute.Media<'images'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    transcodingError: Schema.Attribute.Text;
+    transcodingResults: Schema.Attribute.JSON;
+    transcodingStatus: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'completed', 'failed', 'not_started']
+    > &
+      Schema.Attribute.DefaultTo<'not_started'>;
     transcript: Schema.Attribute.RichText;
+    transcriptions: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::library-transcription.library-transcription'
+    >;
     type: Schema.Attribute.Enumeration<
       ['testimony', 'teaching', 'worship', 'podcast', 'short']
     > &
@@ -3347,6 +3691,50 @@ export interface ApiMediaProgressMediaProgress
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Required;
+  };
+}
+
+export interface ApiMediaSummaryMediaSummary
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'media_summaries';
+  info: {
+    description: 'AI-generated video/audio summaries with timestamps';
+    displayName: 'Media Summary';
+    pluralName: 'media-summaries';
+    singularName: 'media-summary';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    duration: Schema.Attribute.String;
+    generationModel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'claude-sonnet-4-20250514'>;
+    keyTakeaways: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::media-summary.media-summary'
+    > &
+      Schema.Attribute.Private;
+    mediaId: Schema.Attribute.String & Schema.Attribute.Required;
+    metadata: Schema.Attribute.JSON;
+    overallSummary: Schema.Attribute.RichText & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    scriptureReferences: Schema.Attribute.JSON;
+    segments: Schema.Attribute.JSON;
+    sourceMedia: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::media-item.media-item'
+    >;
+    summaryId: Schema.Attribute.UID & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -3833,6 +4221,87 @@ export interface ApiProtocolPhaseProtocolPhase
       Schema.Attribute.Unique;
     summaryMd: Schema.Attribute.RichText;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRecordingSessionRecordingSession
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'recording_sessions';
+  info: {
+    description: 'Multi-camera recording session grouping 3+ angles with sync offsets and workflow state';
+    displayName: 'Recording Session';
+    pluralName: 'recording-sessions';
+    singularName: 'recording-session';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anchorAngle: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 10;
+      }> &
+      Schema.Attribute.DefaultTo<'A'>;
+    assets: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::media-asset.media-asset'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    duration_ms: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::recording-session.recording-session'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    recordingDate: Schema.Attribute.Date;
+    sessionId: Schema.Attribute.UID<'sessionId'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    speakers: Schema.Attribute.Relation<'oneToMany', 'api::author.author'>;
+    status: Schema.Attribute.Enumeration<
+      [
+        'draft',
+        'syncing',
+        'synced',
+        'editing',
+        'rendering',
+        'published',
+        'archived',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'draft'>;
+    summary: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::media-summary.media-summary'
+    >;
+    syncConfidence: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
+    syncOffsets_ms: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
+    transcript: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::library-transcription.library-transcription'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -5076,6 +5545,59 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiTeachingVoiceTeachingVoice
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'teaching_voices';
+  info: {
+    description: 'AI-powered voice profiles that mirror specific teachers/authors';
+    displayName: 'Teaching Voice';
+    pluralName: 'teaching-voices';
+    singularName: 'teaching-voice';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    approvedOutputTypes: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<
+        ['sermon', 'study', 'qa_answer', 'doctrine_page']
+      >;
+    associatedSpeaker: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::speaker.speaker'
+    >;
+    averageQualityScore: Schema.Attribute.Decimal &
+      Schema.Attribute.DefaultTo<0>;
+    commonPhrases: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    exampleOutputs: Schema.Attribute.JSON;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::teaching-voice.teaching-voice'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    promptModifiers: Schema.Attribute.RichText & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    rhetoricalDevices: Schema.Attribute.JSON;
+    sourceAuthor: Schema.Attribute.String & Schema.Attribute.Required;
+    sourceWorks: Schema.Attribute.JSON;
+    styleCharacteristics: Schema.Attribute.JSON & Schema.Attribute.Required;
+    toneDescriptors: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    vocabularyPatterns: Schema.Attribute.JSON;
+    voiceId: Schema.Attribute.UID & Schema.Attribute.Required;
+  };
+}
+
 export interface ApiTeamMemberTeamMember extends Struct.CollectionTypeSchema {
   collectionName: 'team_members';
   info: {
@@ -5309,6 +5831,86 @@ export interface ApiVideoHeroVideoHero extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiVideoRenderVideoRender extends Struct.CollectionTypeSchema {
+  collectionName: 'video_renders';
+  info: {
+    description: 'Remotion video render jobs';
+    displayName: 'Video Render';
+    pluralName: 'video-renders';
+    singularName: 'video-render';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    compositionId: Schema.Attribute.Enumeration<
+      [
+        'ScriptureOverlay',
+        'TestimonyClip',
+        'QuoteReel',
+        'TeachingVideo',
+        'PodcastEnhanced',
+        'DeclarationVideo',
+        'DailyScripture',
+        'ScriptureThumbnail',
+        'QuoteThumbnail',
+      ]
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    durationMs: Schema.Attribute.Integer;
+    error: Schema.Attribute.Text;
+    estimatedCost: Schema.Attribute.Decimal;
+    fileSize: Schema.Attribute.BigInteger;
+    inputProps: Schema.Attribute.JSON & Schema.Attribute.Required;
+    lambdaBucketName: Schema.Attribute.String;
+    lambdaRenderId: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::video-render.video-render'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    outputFormat: Schema.Attribute.Enumeration<['mp4', 'webm', 'gif']> &
+      Schema.Attribute.DefaultTo<'mp4'>;
+    outputUrl: Schema.Attribute.String;
+    progress: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    quality: Schema.Attribute.Enumeration<['draft', 'standard', 'high']> &
+      Schema.Attribute.DefaultTo<'standard'>;
+    renderId: Schema.Attribute.UID & Schema.Attribute.Required;
+    renderTimeMs: Schema.Attribute.Integer;
+    requestedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    sourceContent: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::library-generated-node.library-generated-node'
+    >;
+    status: Schema.Attribute.Enumeration<
+      ['queued', 'rendering', 'completed', 'failed']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'queued'>;
+    thumbnailUrl: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -5963,6 +6565,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::about.about': ApiAboutAbout;
+      'api::ai-conversation.ai-conversation': ApiAiConversationAiConversation;
+      'api::ai-usage.ai-usage': ApiAiUsageAiUsage;
       'api::article.article': ApiArticleArticle;
       'api::assignment.assignment': ApiAssignmentAssignment;
       'api::audio-file.audio-file': ApiAudioFileAudioFile;
@@ -5982,6 +6586,7 @@ declare module '@strapi/strapi' {
       'api::course-profile.course-profile': ApiCourseProfileCourseProfile;
       'api::course-seat.course-seat': ApiCourseSeatCourseSeat;
       'api::course.course': ApiCourseCourse;
+      'api::discernment-analysis.discernment-analysis': ApiDiscernmentAnalysisDiscernmentAnalysis;
       'api::donation.donation': ApiDonationDonation;
       'api::event.event': ApiEventEvent;
       'api::faq.faq': ApiFaqFaq;
@@ -6007,10 +6612,13 @@ declare module '@strapi/strapi' {
       'api::library-generated-node.library-generated-node': ApiLibraryGeneratedNodeLibraryGeneratedNode;
       'api::library-license-policy.library-license-policy': ApiLibraryLicensePolicyLibraryLicensePolicy;
       'api::library-section.library-section': ApiLibrarySectionLibrarySection;
+      'api::library-transcription.library-transcription': ApiLibraryTranscriptionLibraryTranscription;
       'api::living-commentary.living-commentary': ApiLivingCommentaryLivingCommentary;
       'api::margin-reflection.margin-reflection': ApiMarginReflectionMarginReflection;
+      'api::media-asset.media-asset': ApiMediaAssetMediaAsset;
       'api::media-item.media-item': ApiMediaItemMediaItem;
       'api::media-progress.media-progress': ApiMediaProgressMediaProgress;
+      'api::media-summary.media-summary': ApiMediaSummaryMediaSummary;
       'api::ministry-text.ministry-text': ApiMinistryTextMinistryText;
       'api::ministry-work.ministry-work': ApiMinistryWorkMinistryWork;
       'api::module.module': ApiModuleModule;
@@ -6021,6 +6629,7 @@ declare module '@strapi/strapi' {
       'api::project.project': ApiProjectProject;
       'api::protocol-diagnostic.protocol-diagnostic': ApiProtocolDiagnosticProtocolDiagnostic;
       'api::protocol-phase.protocol-phase': ApiProtocolPhaseProtocolPhase;
+      'api::recording-session.recording-session': ApiRecordingSessionRecordingSession;
       'api::reply.reply': ApiReplyReply;
       'api::resource-directory.resource-directory': ApiResourceDirectoryResourceDirectory;
       'api::resource.resource': ApiResourceResource;
@@ -6045,12 +6654,14 @@ declare module '@strapi/strapi' {
       'api::speaker.speaker': ApiSpeakerSpeaker;
       'api::stat.stat': ApiStatStat;
       'api::tag.tag': ApiTagTag;
+      'api::teaching-voice.teaching-voice': ApiTeachingVoiceTeachingVoice;
       'api::team-member.team-member': ApiTeamMemberTeamMember;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
       'api::testimony.testimony': ApiTestimonyTestimony;
       'api::trending-video.trending-video': ApiTrendingVideoTrendingVideo;
       'api::user-profile.user-profile': ApiUserProfileUserProfile;
       'api::video-hero.video-hero': ApiVideoHeroVideoHero;
+      'api::video-render.video-render': ApiVideoRenderVideoRender;
       'api::video.video': ApiVideoVideo;
       'api::volunteer-signup.volunteer-signup': ApiVolunteerSignupVolunteerSignup;
       'plugin::content-releases.release': PluginContentReleasesRelease;
