@@ -5,7 +5,7 @@
     "singularName": "edit-decision-list",
     "pluralName": "edit-decision-lists",
     "displayName": "Edit Decision List",
-    "description": "Versioned EDL storage with cuts, overlays, chapters, and shorts for deterministic rendering"
+    "description": "AI-generated multi-camera edit plans with camera switches, chapters, and operator review workflow"
   },
   "options": {
     "draftAndPublish": false
@@ -17,99 +17,75 @@
       "unique": true,
       "targetField": "edlId"
     },
-    "recordingSession": {
+    "session": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "oneToOne",
       "target": "api::recording-session.recording-session",
-      "required": true,
-      "index": true
+      "inversedBy": "edl"
     },
     "version": {
       "type": "integer",
+      "default": 1,
       "min": 1,
       "required": true,
-      "default": 1,
-      "description": "v1 AI, v2 human-edited, v3 final, etc."
-    },
-    "versionLabel": {
-      "type": "string",
-      "maxLength": 50,
-      "description": "AI Generated, Human Refined, Final, etc."
-    },
-    "createdBy": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "description": "User who created/edited this version"
-    },
-    "edlData": {
-      "type": "json",
-      "required": true,
-      "description": "Full EDL structure with cuts, overlays, chapters, shorts"
-    },
-    "cuts": {
-      "type": "json",
-      "description": "Camera angle switches with timestamps",
-      "default": []
-    },
-    "overlays": {
-      "type": "json",
-      "description": "Lower thirds, scripture cards, titles with timing",
-      "default": []
-    },
-    "chapters": {
-      "type": "json",
-      "description": "Chapter markers with timestamps and titles",
-      "default": []
-    },
-    "shorts": {
-      "type": "json",
-      "description": "Short-form segment definitions with start/end/format",
-      "default": []
+      "description": "EDL version number for tracking iterations"
     },
     "status": {
       "type": "enumeration",
       "enum": [
         "draft",
-        "review",
+        "reviewing",
         "approved",
-        "superseded",
-        "archived"
+        "locked"
       ],
       "default": "draft",
       "required": true,
-      "index": true
+      "index": true,
+      "description": "Workflow status: draft → reviewing → approved → locked (ready for render)"
     },
-    "approvedAt": {
-      "type": "datetime",
-      "description": "When this version was approved for rendering"
+    "source": {
+      "type": "enumeration",
+      "enum": [
+        "ai",
+        "operator",
+        "hybrid"
+      ],
+      "default": "ai",
+      "required": true,
+      "description": "How the EDL was generated: AI rules, manual operator edits, or combination"
     },
-    "approvedBy": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
-    },
-    "versionHash": {
+    "timebase": {
       "type": "string",
-      "maxLength": 64,
-      "description": "SHA256 hash of edlData for deterministic rendering"
+      "default": "ms",
+      "required": true,
+      "maxLength": 10,
+      "description": "Time unit for all timestamps (milliseconds)"
     },
-    "parentVersion": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::edit-decision-list.edit-decision-list",
-      "inversedBy": "childVersions",
-      "description": "Previous EDL version this was based on"
+    "fps": {
+      "type": "integer",
+      "min": 1,
+      "max": 120,
+      "description": "Frames per second if frame-based timing is needed"
     },
-    "childVersions": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::edit-decision-list.edit-decision-list",
-      "inversedBy": "parentVersion"
+    "canonicalEdl": {
+      "type": "json",
+      "required": true,
+      "description": "The canonical EDL JSON - single source of truth for all edit decisions"
+    },
+    "exports": {
+      "type": "json",
+      "default": {},
+      "description": "Generated export file URLs and metadata (fcpxml, premiere, resolve, json)"
+    },
+    "audit": {
+      "type": "json",
+      "default": {},
+      "description": "Generation metadata: prompt, model, temperature, tool versions, transcript hash, assets hash"
     },
     "metadata": {
       "type": "json",
-      "description": "AI model used, generation params, edit notes, etc."
+      "default": {},
+      "description": "Additional metadata including review notes, operator comments, generation timestamp"
     }
   }
 }
