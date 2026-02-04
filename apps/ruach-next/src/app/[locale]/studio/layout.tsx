@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import StudioNav from '@/components/studio/StudioNav';
+import { hasStudioAccess } from '@/lib/authorization';
 
 export const metadata = {
   title: 'Ruach Studio',
@@ -22,6 +23,11 @@ export default async function StudioLayout({
 
   if (!session) {
     redirect(`/${locale}/login?callbackUrl=/${locale}/studio`);
+  }
+
+  // Check studio access - only 'studio' and 'admin' roles allowed
+  if (!hasStudioAccess(session.role)) {
+    redirect(`/${locale}/unauthorized?reason=studio_access`);
   }
 
   return (

@@ -6,10 +6,14 @@ declare module "next-auth" {
     strapiJwt?: string;
     error?: string; // Error from token refresh
     lastActivity?: number; // Timestamp of last user activity
+    role?: string; // User role from Strapi
+    userId?: string; // Strapi user ID
   }
 
   interface User {
     strapiJwt?: string;
+    role?: string; // User role from Strapi
+    userId?: string; // Strapi user ID
   }
 }
 
@@ -19,5 +23,7 @@ declare module "next-auth/jwt" {
     accessTokenExpires?: number; // Timestamp when access token expires
     error?: string; // Error from token refresh
     lastActivity?: number; // Timestamp of last user activity
+    role?: string; // User role from Strapi
+    userId?: string; // Strapi user ID
   }
 }

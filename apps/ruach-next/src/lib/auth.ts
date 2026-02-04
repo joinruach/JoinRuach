@@ -1,6 +1,7 @@
 import NextAuth, { type User, type Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
+import { fetchUserRole } from './authorization';
 
 const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL!;
 const CONFIRM_REDIRECT = process.env.STRAPI_EMAIL_CONFIRM_REDIRECT || (process.env.NEXTAUTH_URL + "/confirmed");
@@ -16,6 +17,8 @@ interface JWTToken extends JWT {
   accessTokenExpires?: number;
   lastActivity?: number;
   error?: 'RefreshAccessTokenError' | 'IdleTimeout';
+  role?: string;
+  userId?: string;
 }
 
 // Strapi API response types
@@ -50,6 +53,8 @@ interface RefreshedToken {
 
 interface ExtendedUser extends User {
   strapiJwt?: string;
+  role?: string;
+  userId?: string;
 }
 
 function isStrapiError(response: StrapiResponse): response is StrapiErrorResponse {
@@ -75,7 +80,10 @@ async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
       ...token,
       strapiJwt: refreshedTokens.jwt,
       accessTokenExpires: Date.now() + JWT_MAX_AGE * 1000,
-      error: undefined
+      error: undefined,
+      // Preserve role and userId during token refresh
+      role: token.role,
+      userId: token.userId,
     };
   } catch (error) {
     console.error("Error refreshing access token:", error);
@@ -164,6 +172,15 @@ const nextAuth = NextAuth({
 
           console.log("[Auth] Login successful for user:", loginResponse.user.id);
 
+          // Fetch user role from Strapi
+          const userRole = await fetchUserRole(
+            STRAPI,
+            loginResponse.jwt,
+            String(loginResponse.user.id)
+          );
+
+          console.log("[Auth] User role determined:", userRole);
+
           // Expect Strapi returns { jwt, user }
           // Refresh token is set in httpOnly cookie by backend
           return {
@@ -171,6 +188,8 @@ const nextAuth = NextAuth({
             name: loginResponse.user.username || loginResponse.user.email,
             email: loginResponse.user.email,
             strapiJwt: loginResponse.jwt,
+            role: userRole,
+            userId: String(loginResponse.user.id),
           } as ExtendedUser;
         } catch (error) {
           console.error("[Auth] Login error:", error);
@@ -196,7 +215,9 @@ const nextAuth = NextAuth({
           strapiJwt: extendedUser.strapiJwt,
           accessTokenExpires: Date.now() + JWT_MAX_AGE * 1000,
           lastActivity: Date.now(),
-          error: undefined
+          error: undefined,
+          role: extendedUser.role,
+          userId: extendedUser.userId,
         };
       }
 
@@ -239,7 +260,9 @@ const nextAuth = NextAuth({
         strapiJwt: typedToken.strapiJwt,
         error: typedToken.error,
         lastActivity: typedToken.lastActivity,
-      } as Session & { strapiJwt?: string; error?: string; lastActivity?: number };
+        role: typedToken.role,
+        userId: typedToken.userId,
+      } as Session & { strapiJwt?: string; error?: string; lastActivity?: number; role?: string; userId?: string };
     }
   },
   pages: {
