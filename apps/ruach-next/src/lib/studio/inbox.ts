@@ -27,7 +27,12 @@ const PRIORITY_ORDER: Record<WorkflowPriority, number> = {
 async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/ingestion/versions`);
+    const response = await fetch(`${baseUrl}/api/ingestion/versions`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+      cache: 'no-store',
+    });
 
     if (!response.ok) {
       console.error('[Inbox] Failed to fetch ingestion versions:', response.status);

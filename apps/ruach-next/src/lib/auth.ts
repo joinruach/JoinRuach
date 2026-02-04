@@ -96,6 +96,18 @@ async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
 
 const nextAuth = NextAuth({
   trustHost: true, // Trust the host header in production (required for proxied environments)
+  useSecureCookies: process.env.NODE_ENV === 'production', // Use secure cookies in production
+  cookies: {
+    csrfToken: {
+      name: '__Host-next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   providers: [
     Credentials({
       name: "Email & Password",
