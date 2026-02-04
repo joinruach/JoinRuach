@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { randomUUID } from 'crypto';
 import RenderStateMachine, { type RenderStatus } from '../../../services/render-state-machine';
+import RenderQueue from '../../../services/render-queue';
 
 /**
  * Phase 13: Render Job Service
@@ -51,7 +52,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Fetch EDL separately
     const edls = await strapi.entityService.findMany('api::edit-decision-list.edit-decision-list', {
-      filters: { session: sessionId },
+      filters: { session: sessionId } as any,
       limit: 1,
     }) as any[];
 
@@ -104,6 +105,36 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }) as any;
 
     strapi.log.info(`[render-job-service] Created job ${jobId} for session ${sessionId}`);
+
+    // Enqueue job for processing
+    try {
+      const bullmqJobId = await RenderQueue.addJob({
+        renderJobId: job.jobId,
+        sessionId: sessionId,
+        format: format,
+      });
+
+      // Update job with BullMQ job ID
+      await strapi.entityService.update(
+        'api::render-job.render-job',
+        job.id,
+        {
+          data: {
+            bullmq_job_id: bullmqJobId,
+          } as any,
+        }
+      );
+
+      strapi.log.info(
+        `[render-job-service] Job ${job.jobId} enqueued as BullMQ job ${bullmqJobId}`
+      );
+    } catch (error) {
+      strapi.log.error(
+        `[render-job-service] Failed to enqueue job ${job.jobId}:`,
+        error
+      );
+      // Don't throw - job still created, can be retried
+    }
 
     return job;
   },

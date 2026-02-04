@@ -5,6 +5,7 @@ import { initializeDonationThankYouQueue } from "./services/donation-thankyou-qu
 import { initializeLibraryIngestionQueue } from "./services/library-ingestion-queue";
 import { initializeUnifiedIngestionQueue } from "./services/unified-ingestion-queue";
 import { initializeMediaTranscodingQueue, shutdownMediaTranscodingQueue } from "./services/media-transcoding-queue";
+import RenderWorker from './services/render-worker';
 import seedPromptTemplates from "../database/seeds/ruach-prompt-templates";
 
 // Import security services for initialization
@@ -68,6 +69,16 @@ export default {
       strapi.log.info('[Bootstrap] ✅ Video render queue initialized');
     }
 
+    // Start render worker (Phase 13)
+    if (process.env.ENABLE_RENDER_WORKER !== 'false') {
+      try {
+        await RenderWorker.start(strapi);
+        strapi.log.info('[Bootstrap] ✅ Render worker started');
+      } catch (error) {
+        strapi.log.error('[Bootstrap] Failed to start render worker:', error);
+      }
+    }
+
     // ========================================
     // 5. Initialize Ruach AI System
     // ========================================
@@ -119,6 +130,9 @@ export default {
 
     // Shutdown media transcoding queue
     await shutdownMediaTranscodingQueue();
+
+    // Stop render worker
+    await RenderWorker.stop();
 
     // Disconnect Redis
     await redisClient.disconnect();
