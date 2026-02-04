@@ -25,6 +25,7 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.24.1",
     "@notionhq/client": "^5.6.0",
+    "@remotion/lambda": "4.0.415",
     "@strapi/design-system": "^2.0.2",
     "@strapi/icons": "^2.0.2",
     "@strapi/plugin-cloud": "5.30.1",
@@ -34,8 +35,8 @@
     "@strapi/strapi": "5.30.1",
     "@strapi/utils": "5.30.1",
     "@types/pg": "^8.15.6",
-    "@remotion/lambda": "4.0.415",
     "@vercel/postgres": "^0.10.0",
+    "assemblyai": "^4.23.0",
     "bullmq": "^5.63.0",
     "codemirror": "^6.0.1",
     "dotenv": "^16.4.7",
@@ -52,10 +53,11 @@
     "resend": "^3.5.0",
     "strapi-provider-upload-cloudflare-r2": "^1.0.2",
     "stripe": "^16.9.0",
-    "zod": "^4.3.6",
     "styled-components": "^6.1.15",
+    "subtitle": "^4.2.2",
     "uuid": "^9.0.1",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
