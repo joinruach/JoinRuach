@@ -29,6 +29,27 @@ interface TranscodeResult {
     fileSize: number;
     duration: number;
   };
+  proxy?: {
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    resolution: string;
+  };
+  mezzanine?: {
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    codec: string;
+  };
+  audioWav?: {
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    sampleRate: number;
+    channels: number;
+  };
+  vfrDetected?: boolean;
+  vfrConverted?: boolean;
 }
 
 export default {
@@ -62,9 +83,20 @@ export default {
       // Process based on job type
       const results: TranscodeResult = {};
 
+      // Detect VFR and convert to CFR if needed (Phase 9)
+      const isVFR = await this._detectVFR(sourceFile);
+      results.vfrDetected = isVFR;
+
+      let processFile = sourceFile;
+      if (isVFR && (data.type === "proxy" || data.type === "mezzanine" || data.type === "extract-audio-wav")) {
+        await updateProgress(18, "Converting VFR to CFR for sync compatibility");
+        processFile = await this._convertToCFR(sourceFile, tempDir, updateProgress);
+        results.vfrConverted = true;
+      }
+
       if (data.type === "transcode" && data.resolutions) {
         results.transcodes = await this._processTranscodes(
-          sourceFile,
+          processFile,
           data,
           metadata,
           tempDir,
@@ -72,7 +104,7 @@ export default {
         );
       } else if (data.type === "thumbnail" && data.thumbnailTimestamps) {
         results.thumbnails = await this._processThumbnails(
-          sourceFile,
+          processFile,
           data,
           metadata,
           tempDir,
@@ -80,11 +112,41 @@ export default {
         );
       } else if (data.type === "extract-audio") {
         results.audio = await this._processAudioExtraction(
-          sourceFile,
+          processFile,
           data,
           metadata,
           tempDir,
           updateProgress
+        );
+      } else if (data.type === "proxy") {
+        // Phase 9: Generate proxy optimized for web scrubbing
+        results.proxy = await this._processProxy(
+          processFile,
+          data,
+          metadata,
+          tempDir,
+          updateProgress,
+          strapi
+        );
+      } else if (data.type === "mezzanine") {
+        // Phase 9: Generate ProRes mezzanine for Remotion rendering
+        results.mezzanine = await this._processMezzanine(
+          processFile,
+          data,
+          metadata,
+          tempDir,
+          updateProgress,
+          strapi
+        );
+      } else if (data.type === "extract-audio-wav") {
+        // Phase 9: Extract uncompressed WAV for audio-offset-finder
+        results.audioWav = await this._extractAudioForSync(
+          processFile,
+          data,
+          metadata,
+          tempDir,
+          updateProgress,
+          strapi
         );
       }
 
@@ -407,6 +469,7 @@ export default {
       ".mp4": "video/mp4",
       ".webm": "video/webm",
       ".mkv": "video/x-matroska",
+      ".mov": "video/quicktime",
       ".jpg": "image/jpeg",
       ".jpeg": "image/jpeg",
       ".png": "image/png",
@@ -415,7 +478,243 @@ export default {
       ".aac": "audio/aac",
       ".m4a": "audio/mp4",
       ".ogg": "audio/ogg",
+      ".wav": "audio/wav",
     };
     return mimeTypes[ext] || "application/octet-stream";
+  },
+
+  // ========================================
+  // Phase 9: Media Ingestion & Sync Methods
+  // ========================================
+
+  /**
+   * Detect if video has variable frame rate (VFR)
+   * VFR causes audio drift over time, must convert to CFR before sync
+   * Source: Phase 9 RESEARCH.md - Pitfall #6
+   */
+  async _detectVFR(this: any, filePath: string): Promise<boolean> {
+    try {
+      const cmd = `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate,avg_frame_rate -of json "${filePath}"`;
+      const { stdout } = await execAsync(cmd);
+      const data = JSON.parse(stdout);
+
+      if (!data.streams || data.streams.length === 0) {
+        return false; // No video stream, not VFR
+      }
+
+      const stream = data.streams[0];
+      const rFrameRate = stream.r_frame_rate; // Declared frame rate
+      const avgFrameRate = stream.avg_frame_rate; // Actual average
+
+      // VFR if declared != actual
+      return rFrameRate !== avgFrameRate;
+    } catch (error) {
+      // If detection fails, assume CFR to avoid unnecessary conversion
+      return false;
+    }
+  },
+
+  /**
+   * Convert variable frame rate (VFR) to constant frame rate (CFR)
+   * Prevents audio drift during sync analysis
+   * Source: Phase 9 DECISIONS.md - D-09-005
+   */
+  async _convertToCFR(
+    this: any,
+    sourceFile: string,
+    tempDir: string,
+    updateProgress: (progress: number, task: string) => Promise<void>
+  ): Promise<string> {
+    const outputFile = path.join(tempDir, "cfr-converted.mp4");
+
+    try {
+      // Convert to 30fps CFR with high quality (-crf 18)
+      const cmd = `ffmpeg -i "${sourceFile}" -vsync cfr -r 30 -c:v libx264 -crf 18 -c:a copy "${outputFile}" -y`;
+
+      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 100 });
+
+      return outputFile;
+    } catch (error) {
+      throw new Error(
+        `Failed to convert VFR to CFR: ${error instanceof Error ? error.message : error}`
+      );
+    }
+  },
+
+  /**
+   * Generate proxy optimized for smooth web scrubbing
+   * Key: -g 2 (keyframe every 2 frames) balances scrubbing smoothness vs file size
+   * Source: Phase 9 RESEARCH.md - Proxy Generation Pattern, DECISIONS.md - D-09-004
+   */
+  async _processProxy(
+    this: any,
+    sourceFile: string,
+    data: TranscodingJobData,
+    metadata: { duration: number; width: number; height: number },
+    tempDir: string,
+    updateProgress: (progress: number, task: string) => Promise<void>,
+    strapi?: Core.Strapi
+  ): Promise<{
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    resolution: string;
+  }> {
+    await updateProgress(30, "Generating proxy for web scrubbing");
+
+    const outputFile = path.join(tempDir, "proxy-720p.mp4");
+
+    try {
+      // FFmpeg command from Phase 9 RESEARCH.md - Code Examples
+      const cmd = `ffmpeg -i "${sourceFile}" \\
+        -vcodec libx264 \\
+        -pix_fmt yuv420p \\
+        -profile:v baseline \\
+        -level 3.0 \\
+        -g 2 \\
+        -preset fast \\
+        -crf 23 \\
+        -vf "scale=-2:720" \\
+        -movflags +faststart \\
+        -an \\
+        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
+
+      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 100 });
+
+      // Upload to R2
+      const uploadResult = await this._uploadToR2(
+        outputFile,
+        `${data.r2OutputPath}/proxies`,
+        data.r2BucketName,
+        strapi
+      );
+
+      return {
+        outputUrl: uploadResult.url,
+        fileSize: uploadResult.fileSize,
+        duration: metadata.duration,
+        resolution: "1280x720",
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to generate proxy: ${error instanceof Error ? error.message : error}`
+      );
+    }
+  },
+
+  /**
+   * Generate ProRes mezzanine for Remotion rendering
+   * ProRes Standard (profile 2) sufficient for web workflows
+   * Source: Phase 9 RESEARCH.md - Mezzanine Generation Pattern, DECISIONS.md - D-09-002
+   */
+  async _processMezzanine(
+    this: any,
+    sourceFile: string,
+    data: TranscodingJobData,
+    metadata: { duration: number; width: number; height: number },
+    tempDir: string,
+    updateProgress: (progress: number, task: string) => Promise<void>,
+    strapi?: Core.Strapi
+  ): Promise<{
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    codec: string;
+  }> {
+    await updateProgress(40, "Generating ProRes mezzanine");
+
+    const outputFile = path.join(tempDir, "mezzanine.mov");
+
+    try {
+      // FFmpeg command from Phase 9 RESEARCH.md - Code Examples
+      const cmd = `ffmpeg -i "${sourceFile}" \\
+        -c:v prores_ks \\
+        -profile:v 2 \\
+        -vendor apl0 \\
+        -pix_fmt yuv422p10le \\
+        -r 30 \\
+        -c:a pcm_s24le \\
+        -ar 48000 \\
+        -ac 2 \\
+        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
+
+      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 200 }); // Larger buffer for ProRes
+
+      // Upload to R2
+      const uploadResult = await this._uploadToR2(
+        outputFile,
+        `${data.r2OutputPath}/mezzanines`,
+        data.r2BucketName,
+        strapi
+      );
+
+      return {
+        outputUrl: uploadResult.url,
+        fileSize: uploadResult.fileSize,
+        duration: metadata.duration,
+        codec: "ProRes Standard (profile 2)",
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to generate mezzanine: ${error instanceof Error ? error.message : error}`
+      );
+    }
+  },
+
+  /**
+   * Extract uncompressed WAV audio for audio-offset-finder sync analysis
+   * CRITICAL: Must be uncompressed PCM WAV at consistent sample rate
+   * Source: Phase 9 RESEARCH.md - Audio Extraction Pattern, Common Pitfalls #5
+   */
+  async _extractAudioForSync(
+    this: any,
+    sourceFile: string,
+    data: TranscodingJobData,
+    metadata: { duration: number; width: number; height: number },
+    tempDir: string,
+    updateProgress: (progress: number, task: string) => Promise<void>,
+    strapi?: Core.Strapi
+  ): Promise<{
+    outputUrl: string;
+    fileSize: number;
+    duration: number;
+    sampleRate: number;
+    channels: number;
+  }> {
+    await updateProgress(50, "Extracting audio for sync analysis");
+
+    const outputFile = path.join(tempDir, "audio-sync.wav");
+
+    try {
+      // Uncompressed PCM WAV from Phase 9 RESEARCH.md - Code Examples
+      const cmd = `ffmpeg -i "${sourceFile}" \\
+        -vn \\
+        -acodec pcm_s16le \\
+        -ar 48000 \\
+        -ac 2 \\
+        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
+
+      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 150 }); // WAV files are large
+
+      // Upload to R2
+      const uploadResult = await this._uploadToR2(
+        outputFile,
+        `${data.r2OutputPath}/audio-wav`,
+        data.r2BucketName,
+        strapi
+      );
+
+      return {
+        outputUrl: uploadResult.url,
+        fileSize: uploadResult.fileSize,
+        duration: metadata.duration,
+        sampleRate: 48000,
+        channels: 2,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to extract audio for sync: ${error instanceof Error ? error.message : error}`
+      );
+    }
   },
 };

@@ -6,8 +6,15 @@ import * as path from "path";
 
 /**
  * Transcoding job types and their payloads
+ * Phase 9 additions: proxy, mezzanine, extract-audio-wav
  */
-export type TranscodingJobType = "transcode" | "thumbnail" | "extract-audio";
+export type TranscodingJobType =
+  | "transcode"
+  | "thumbnail"
+  | "extract-audio"
+  | "proxy"           // Phase 9: Web scrubbing proxy with -g 2
+  | "mezzanine"       // Phase 9: ProRes mezzanine for Remotion
+  | "extract-audio-wav"; // Phase 9: Uncompressed WAV for audio-offset-finder
 
 export interface TranscodingJobData {
   type: TranscodingJobType;
@@ -58,6 +65,28 @@ export interface TranscodingJobProgress {
       fileSize: number;
       duration: number;
     };
+    // Phase 9: New result types
+    proxy?: {
+      outputUrl: string;
+      fileSize: number;
+      duration: number;
+      resolution: string;
+    };
+    mezzanine?: {
+      outputUrl: string;
+      fileSize: number;
+      duration: number;
+      codec: string;
+    };
+    audioWav?: {
+      outputUrl: string;
+      fileSize: number;
+      duration: number;
+      sampleRate: number;
+      channels: number;
+    };
+    vfrDetected?: boolean;
+    vfrConverted?: boolean;
   };
   startedAt?: Date;
   completedAt?: Date;
@@ -232,9 +261,13 @@ export async function enqueueTranscodingJob(
       priority:
         jobData.type === "transcode"
           ? 10
-          : jobData.type === "thumbnail"
-            ? 5
-            : 1,
+          : jobData.type === "proxy" || jobData.type === "mezzanine"
+            ? 8  // Phase 9: High priority for proxies/mezzanines
+            : jobData.type === "extract-audio-wav"
+              ? 7  // Phase 9: High priority for sync audio
+              : jobData.type === "thumbnail"
+                ? 5
+                : 1,
     });
 
     strapi.log.info(
