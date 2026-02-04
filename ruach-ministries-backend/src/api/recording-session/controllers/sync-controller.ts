@@ -1,4 +1,10 @@
 import type { Core } from "@strapi/strapi";
+import {
+  ComputeSyncRequestSchema,
+  ApproveSyncRequestSchema,
+  CorrectSyncRequestSchema,
+  validateRequest,
+} from "../validators/sync-validators";
 
 /**
  * Phase 9: Sync Controller
@@ -14,7 +20,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async compute(ctx: any) {
     const { id } = ctx.params;
-    const { masterCamera } = ctx.request.body || {};
+
+    // Validate request body
+    const validation = validateRequest(ComputeSyncRequestSchema, ctx.request.body || {});
+    if (!validation.success) {
+      return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
+    }
+
+    const { masterCamera } = validation.data;
 
     try {
       const syncService = strapi.service(
@@ -71,7 +84,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async approve(ctx: any) {
     const { id } = ctx.params;
-    const { approvedBy, notes } = ctx.request.body || {};
+
+    // Validate request body
+    const validation = validateRequest(ApproveSyncRequestSchema, ctx.request.body || {});
+    if (!validation.success) {
+      return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
+    }
+
+    const { approvedBy, notes } = validation.data;
 
     try {
       const syncService = strapi.service(
@@ -99,11 +119,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async correct(ctx: any) {
     const { id } = ctx.params;
-    const { offsets, correctedBy, notes } = ctx.request.body || {};
 
-    if (!offsets) {
-      return ctx.badRequest('Missing required field: offsets');
+    // Validate request body
+    const validation = validateRequest(CorrectSyncRequestSchema, ctx.request.body || {});
+    if (!validation.success) {
+      return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
     }
+
+    const { offsets, correctedBy, notes } = validation.data;
 
     try {
       const syncService = strapi.service(
