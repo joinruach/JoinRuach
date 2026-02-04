@@ -83,6 +83,12 @@
       "relation": "oneToOne",
       "target": "api::media-summary.media-summary"
     },
+    "edl": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::edit-decision-list.edit-decision-list",
+      "inversedBy": "session"
+    },
     "syncOffsets_ms": {
       "type": "json",
       "description": "Sync offsets for each angle {A: 0, B: 1830, C: -420}",
