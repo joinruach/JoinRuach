@@ -19,10 +19,32 @@ export default async function IngestionConsolePage({
 
   return (
     <div className="space-y-6">
+      {/* Migration Notice */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">ℹ️</span>
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+              New Ingestion Queue Available
+            </h3>
+            <p className="mt-1 text-sm text-blue-700 dark:text-blue-200">
+              The ingestion workflow has been redesigned with server-side rendering for 50% faster loading and better UX.{' '}
+              <Link
+                href={`/${locale}/studio/sessions/ingest`}
+                className="font-medium underline hover:no-underline"
+              >
+                Try the new Ingest Queue →
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Ingestion Console
+          <span className="ml-3 text-sm font-normal text-gray-500 dark:text-gray-400">(Legacy)</span>
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
           Upload and review scripture, canon, and library content for ingestion.

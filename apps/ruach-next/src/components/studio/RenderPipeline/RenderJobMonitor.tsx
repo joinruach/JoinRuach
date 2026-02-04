@@ -23,7 +23,7 @@ export function RenderJobMonitor({ jobId, onComplete }: RenderJobMonitorProps) {
     if (job && ['completed', 'failed', 'cancelled'].includes(job.status)) {
       onComplete?.();
     }
-  }, [job?.status, onComplete]);
+  }, [job, onComplete]);
 
   if (loading && !job) {
     return (

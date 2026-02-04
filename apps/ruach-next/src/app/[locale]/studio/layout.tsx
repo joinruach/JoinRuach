@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import StudioNav from '@/components/studio/StudioNav';
 import { hasStudioAccess } from '@/lib/authorization';
+import { fetchInboxItems, calculateQueueStats } from '@/lib/studio';
 
 export const metadata = {
   title: 'Ruach Studio',
@@ -41,10 +42,30 @@ export default async function StudioLayout({
 
   console.log('[Studio Layout] Access granted, rendering studio');
 
+  // Fetch inbox items to get badge counts for navigation
+  let urgentCount = 0;
+  let failedCount = 0;
+
+  try {
+    if (session.strapiJwt) {
+      const inboxItems = await fetchInboxItems(session.strapiJwt);
+      const stats = calculateQueueStats(inboxItems);
+      urgentCount = stats.urgent;
+      failedCount = stats.failed;
+    }
+  } catch (error) {
+    console.error('[Studio Layout] Failed to fetch inbox stats:', error);
+    // Continue rendering without counts
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Navigation Sidebar */}
-      <StudioNav />
+      <StudioNav
+        userRole={session.role}
+        urgentCount={urgentCount}
+        failedCount={failedCount}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">

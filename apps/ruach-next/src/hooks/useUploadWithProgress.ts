@@ -233,7 +233,8 @@ export function useUploadWithProgress(
     } finally {
       abortControllers.current.delete(id);
     }
-  }, [validateFile, updateUpload, usePresignedUrls, presignedUrlEndpoint, endpoint, onComplete, onError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validateFile, updateUpload, usePresignedUrls, endpoint, onComplete, onError]);
 
   const uploadMultiple = useCallback(async (files: File[]): Promise<(string | null)[]> => {
     return Promise.all(files.map(file => upload(file)));

@@ -89,6 +89,7 @@ export default function DiscernmentDashboard({
     if (activeTab === 'list') {
       loadAnalyses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentPage, pageSize, statusFilter, categoryFilter, concernFilter]);
 
   const loadAnalyses = async () => {

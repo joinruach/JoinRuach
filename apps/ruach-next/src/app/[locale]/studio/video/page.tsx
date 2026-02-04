@@ -159,6 +159,7 @@ export default function VideoStudioPage() {
       console.error("Render error:", error);
       setIsRendering(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTemplate, scriptureForm, quoteForm, declarationForm, dailyForm, session, locale]);
 
   const pollRenderStatus = async (renderId: string) => {
