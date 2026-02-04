@@ -27,6 +27,9 @@ export const RemotionRoot: React.FC = () => {
             C: "https://example.com/mezzanine/camC.mov",
           },
           debug: true,
+          showCaptions: true,
+          showChapters: true,
+          showSpeakerLabels: true,
         }}
       />
     </>

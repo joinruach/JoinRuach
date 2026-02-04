@@ -5,6 +5,7 @@ import {
   Video,
   staticFile,
   useVideoConfig,
+  useCurrentFrame,
 } from "remotion";
 
 import type { CanonicalEDL, Cut } from "../types/edl";
@@ -12,9 +13,14 @@ import {
   fetchEDL,
   getCutAtTime,
   msToFrames,
+  framesToMs,
   calculateCameraTime,
   validateEDL,
+  getCameraAtTime,
+  getChapterAtTime,
 } from "../utils/edl-loader";
+import { CaptionsLayer } from "../components/CaptionsLayer";
+import { ChapterMarker } from "../components/ChapterMarker";
 
 /**
  * Phase 12: Multi-Camera Composition
@@ -32,6 +38,18 @@ export type MultiCamCompositionProps = {
    * Optional debug overlay
    */
   debug?: boolean;
+  /**
+   * Show captions overlay (default: true)
+   */
+  showCaptions?: boolean;
+  /**
+   * Show chapter markers (default: true)
+   */
+  showChapters?: boolean;
+  /**
+   * Show speaker labels in captions (default: true)
+   */
+  showSpeakerLabels?: boolean;
 };
 
 type LoadState =
@@ -62,8 +80,12 @@ export const MultiCamComposition: React.FC<MultiCamCompositionProps> = ({
   sessionId,
   cameraSources,
   debug = false,
+  showCaptions = true,
+  showChapters = true,
+  showSpeakerLabels = true,
 }) => {
   const { fps } = useVideoConfig();
+  const frame = useCurrentFrame();
 
   const [state, setState] = useState<LoadState>({ status: "loading" });
 
@@ -179,6 +201,7 @@ export const MultiCamComposition: React.FC<MultiCamCompositionProps> = ({
               src={resolveVideoSrc(src)}
               startFrom={startFrom}
               endAt={startFrom + durationFrames}
+              volume={cameraId === edl.masterCamera ? 1 : 0}
             />
 
             {debug ? (
@@ -228,8 +251,14 @@ export const MultiCamComposition: React.FC<MultiCamCompositionProps> = ({
     );
   }
 
+  // Calculate current time for overlays
+  const currentTimeMs = framesToMs(frame, fps);
+  const currentCamera = getCameraAtTime(edl, currentTimeMs);
+  const currentChapter = getChapterAtTime(edl, currentTimeMs);
+
   return (
     <AbsoluteFill style={{ backgroundColor: "black" }}>
+      {/* Video sequences (camera cuts) */}
       {sequences.map((s) => (
         <Sequence
           key={s.key}
@@ -239,6 +268,25 @@ export const MultiCamComposition: React.FC<MultiCamCompositionProps> = ({
           {s.node}
         </Sequence>
       ))}
+
+      {/* Caption overlay */}
+      {showCaptions && (
+        <CaptionsLayer
+          sessionId={sessionId}
+          currentCamera={currentCamera}
+          currentTimeMs={currentTimeMs}
+          showSpeaker={showSpeakerLabels}
+        />
+      )}
+
+      {/* Chapter markers */}
+      {showChapters && currentChapter && (
+        <ChapterMarker
+          chapter={currentChapter}
+          currentTimeMs={currentTimeMs}
+          displayDurationMs={3000}
+        />
+      )}
     </AbsoluteFill>
   );
 };
