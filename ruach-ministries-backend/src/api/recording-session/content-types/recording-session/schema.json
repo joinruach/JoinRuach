@@ -38,6 +38,8 @@
       "type": "enumeration",
       "enum": [
         "draft",
+        "ingesting",
+        "needs-review",
         "syncing",
         "synced",
         "editing",
@@ -48,6 +50,16 @@
       "default": "draft",
       "required": true,
       "index": true
+    },
+    "operatorStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved",
+        "corrected"
+      ],
+      "default": "pending",
+      "description": "Phase 9: Operator approval status for sync offsets"
     },
     "speakers": {
       "type": "relation",
