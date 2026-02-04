@@ -50,6 +50,8 @@ export function getRoleName(role?: string): string {
 /**
  * Fetch user role from Strapi using JWT token
  * This is used during login to get the user's role
+ *
+ * Uses /api/users/me for better security (user can only access their own data)
  */
 export async function fetchUserRole(
   strapiUrl: string,
@@ -57,11 +59,22 @@ export async function fetchUserRole(
   userId: string
 ): Promise<string> {
   try {
-    const response = await fetch(`${strapiUrl}/api/users/${userId}?populate=role`, {
+    // Try /api/users/me first (more secure, commonly available)
+    let response = await fetch(`${strapiUrl}/api/users/me?populate=role`, {
       headers: {
         Authorization: `Bearer ${jwt}`,
       },
     });
+
+    // Fallback to /api/users/:id if /me is not available
+    if (!response.ok && response.status === 404) {
+      console.log('[Authorization] /api/users/me not available, trying /api/users/:id');
+      response = await fetch(`${strapiUrl}/api/users/${userId}?populate=role`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+    }
 
     if (!response.ok) {
       console.error('[Authorization] Failed to fetch user role:', response.status);
@@ -70,10 +83,14 @@ export async function fetchUserRole(
 
     const data = await response.json();
 
-    // Strapi returns role in the format: { role: { type: 'studio' } }
+    // Strapi can return role in different formats:
+    // - role.type (sometimes used for custom roles)
+    // - role.name (common for custom roles, as shown in admin UI)
+    // We check both and log what we found for debugging
     const roleName = data.role?.type || data.role?.name || 'authenticated';
 
     console.log('[Authorization] User role fetched:', roleName);
+    console.log('[Authorization] Full role object:', JSON.stringify(data.role, null, 2));
 
     return roleName;
   } catch (error) {

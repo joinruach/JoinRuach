@@ -209,6 +209,72 @@ Multiple layers ensure security even if one layer fails:
 - Missing role defaults to no access
 - API failures default to 'authenticated' role
 
+## Verifying Strapi Role Response
+
+**IMPORTANT:** Before testing, verify what Strapi actually returns for the role field.
+
+### Step 1: Log In and Check Console
+
+1. Open browser DevTools → Console
+2. Log in as a user with studio role
+3. Look for these log messages:
+   ```
+   [Auth] Login successful for user: 1
+   [Auth] User role determined: studio
+   [Authorization] User role fetched: studio
+   [Authorization] Full role object: {
+     "id": 3,
+     "name": "studio",
+     "description": "Studio Staff"
+   }
+   ```
+
+4. **Key Question:** Is the role in `role.name` or `role.type`?
+   - If you see `"name": "studio"` → Strapi uses `role.name` ✅
+   - If you see `"type": "studio"` → Strapi uses `role.type` ✅
+   - Our code checks both, so either works!
+
+### Step 2: Test the API Directly
+
+```bash
+# Get a JWT token from login
+JWT="your-jwt-token-here"
+
+# Test /api/users/me (preferred)
+curl "http://localhost:1337/api/users/me?populate=role" \
+  -H "Authorization: Bearer $JWT" | jq .
+
+# Check the output - look for the role field
+```
+
+**Expected Response:**
+```json
+{
+  "id": 1,
+  "username": "staff",
+  "email": "staff@joinruach.org",
+  "role": {
+    "id": 3,
+    "name": "studio",
+    "description": "Studio Staff",
+    "type": null
+  }
+}
+```
+
+### Step 3: Verify Field Mapping
+
+Based on the screenshot provided, Strapi admin shows:
+- **Name:** studio ← This is the `role.name` field
+- **Description:** Studio Staff
+
+So the authorization code should check `data.role?.name === "studio"`, which it does via:
+```typescript
+const roleName = data.role?.type || data.role?.name || 'authenticated';
+```
+
+This checks `type` first (for legacy/some setups), then `name` (most common), then defaults to 'authenticated'.
+
 ## Testing
 
 ### Test Different User Roles
@@ -243,6 +309,69 @@ curl -L http://localhost:3000/en/studio \
 
 ## Troubleshooting
 
+### Common Gotchas ⚠️
+
+#### 1. Role Field Mismatch: `name` vs `type`
+
+**Problem:** Code checks `role.type` but Strapi returns `role.name` (or vice versa)
+
+**Symptoms:**
+- User has correct role in Strapi admin
+- Still redirected to unauthorized page
+- Console shows role as 'authenticated' instead of 'studio'
+
+**Solution:**
+Our code handles both! It checks: `data.role?.type || data.role?.name`
+- If neither exists, defaults to 'authenticated'
+- Check console logs to see what Strapi returns
+
+**Debug:**
+```typescript
+// In console, you should see:
+[Authorization] Full role object: { "name": "studio" }
+// or
+[Authorization] Full role object: { "type": "studio" }
+```
+
+If you see `null` or `undefined` for both, the role isn't being populated correctly.
+
+#### 2. API Endpoint Permissions
+
+**Problem:** `/api/users/:id` requires special permissions
+
+**Symptoms:**
+- 403 Forbidden when fetching role
+- Console shows: `[Authorization] Failed to fetch user role: 403`
+
+**Solution:**
+Our code now tries `/api/users/me` first (more permissive), then falls back to `/api/users/:id`
+
+**If still failing:**
+1. Check Strapi → Settings → Users & Permissions → Roles → Authenticated
+2. Ensure "find" and "findOne" are enabled for Users
+3. Or grant "Users" permission to authenticated role
+
+#### 3. Role Not Populated
+
+**Problem:** API call succeeds but `role` field is null/undefined
+
+**Symptoms:**
+- Console shows: `[Authorization] Full role object: null`
+- All users defaulting to 'authenticated' role
+
+**Solution:**
+1. Verify `?populate=role` is in the URL
+2. Check Strapi permissions allow role population
+3. Ensure user actually has a role assigned in Strapi admin
+
+**Test manually:**
+```bash
+curl "http://localhost:1337/api/users/me?populate=role" \
+  -H "Authorization: Bearer $JWT"
+```
+
+If `role` is null in response, check Strapi user assignment.
+
 ### User Can't Access Studio
 
 1. **Check user role in Strapi:**
@@ -255,9 +384,30 @@ curl -L http://localhost:3000/en/studio \
 
 3. **Verify Strapi API:**
    ```bash
+   # Preferred: Use /api/users/me (more secure)
+   curl http://localhost:1337/api/users/me?populate=role \
+     -H "Authorization: Bearer <jwt>"
+
+   # Or fallback: /api/users/:id
    curl http://localhost:1337/api/users/:id?populate=role \
      -H "Authorization: Bearer <jwt>"
    ```
+
+   **Check the response structure** - it should include role information:
+   ```json
+   {
+     "id": 1,
+     "email": "staff@joinruach.org",
+     "role": {
+       "id": 3,
+       "name": "studio",
+       "description": "Studio Staff"
+     }
+   }
+   ```
+
+   **Note:** The role field can be `role.name` or `role.type` depending on your Strapi setup.
+   Our code checks both: `data.role?.type || data.role?.name`
 
 ### Middleware Not Working
 
