@@ -8,12 +8,18 @@ export type UserRole = 'public' | 'authenticated' | 'partner' | 'studio' | 'admi
 
 /**
  * Check if a user has studio access
- * Studio access is granted to: studio role, admin role
+ *
+ * TEMPORARY: Currently allows all authenticated users
+ * TODO: Configure proper 'studio' and 'admin' roles in Strapi
+ *
+ * Studio access should be granted to: studio role, admin role
+ * But for now we allow: authenticated, partner, studio, admin
  */
 export function hasStudioAccess(role?: string): boolean {
   if (!role) return false;
 
-  const studioRoles: UserRole[] = ['studio', 'admin'];
+  // TEMPORARY: Allow all authenticated users until roles are configured in Strapi
+  const studioRoles: UserRole[] = ['authenticated', 'partner', 'studio', 'admin'];
   return studioRoles.includes(role as UserRole);
 }
 
