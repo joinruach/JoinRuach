@@ -20,22 +20,33 @@ export async function middleware(request: NextRequest) {
   const isStudioRoute = pathname.includes('/studio');
 
   if (isStudioRoute) {
+    console.log('[Middleware] Studio route accessed:', pathname);
+
     // Get current session
     const session = await auth();
+    console.log('[Middleware] Session exists:', !!session);
+    console.log('[Middleware] User role:', session?.role);
 
     // If not authenticated, redirect to login
     if (!session) {
+      console.log('[Middleware] No session, redirecting to login');
       const loginUrl = new URL(`/${locale}/login`, request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     // If authenticated but doesn't have studio access, redirect to unauthorized
-    if (!hasStudioAccess(session.role)) {
+    const hasAccess = hasStudioAccess(session.role);
+    console.log('[Middleware] Has studio access:', hasAccess);
+
+    if (!hasAccess) {
+      console.log('[Middleware] Access denied, redirecting to unauthorized');
       const unauthorizedUrl = new URL(`/${locale}/unauthorized`, request.url);
       unauthorizedUrl.searchParams.set('reason', 'studio_access');
       return NextResponse.redirect(unauthorizedUrl);
     }
+
+    console.log('[Middleware] Access granted, proceeding');
   }
 
   // Allow request to proceed
