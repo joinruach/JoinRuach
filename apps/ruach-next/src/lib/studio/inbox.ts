@@ -27,11 +27,11 @@ const PRIORITY_ORDER: Record<WorkflowPriority, number> = {
 async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Note: /api/ingestion/versions uses NextAuth session cookies for auth,
+    // so no Authorization header is needed
     const response = await fetch(`${baseUrl}/api/ingestion/versions`, {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
       cache: 'no-store',
+      credentials: 'include', // Include cookies for session auth
     });
 
     if (!response.ok) {
