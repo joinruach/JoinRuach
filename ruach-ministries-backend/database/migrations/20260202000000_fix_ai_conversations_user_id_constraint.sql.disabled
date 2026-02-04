@@ -1,0 +1,51 @@
+-- Fix ai_conversations.user_id foreign key constraint
+-- Run this SQL directly if you prefer manual execution
+
+BEGIN;
+
+-- Step 1: Drop existing foreign key constraints on user_id
+DO $$
+DECLARE
+    constraint_name text;
+BEGIN
+    FOR constraint_name IN
+        SELECT conname
+        FROM pg_constraint
+        WHERE conrelid = 'ai_conversations'::regclass
+          AND contype = 'f'
+          AND conkey @> ARRAY[(
+            SELECT attnum
+            FROM pg_attribute
+            WHERE attrelid = 'ai_conversations'::regclass
+              AND attname = 'user_id'
+          )]
+    LOOP
+        EXECUTE format('ALTER TABLE ai_conversations DROP CONSTRAINT IF EXISTS %I', constraint_name);
+        RAISE NOTICE 'Dropped constraint: %', constraint_name;
+    END LOOP;
+END $$;
+
+-- Step 2: Ensure column type is integer (matching up_users.id)
+ALTER TABLE ai_conversations
+ALTER COLUMN user_id TYPE integer USING user_id::integer;
+
+-- Step 3: Re-create foreign key constraint
+ALTER TABLE ai_conversations
+ADD CONSTRAINT ai_conversations_user_id_fk
+FOREIGN KEY (user_id)
+REFERENCES up_users(id)
+ON DELETE CASCADE;
+
+-- Step 4: Create index for performance
+CREATE INDEX IF NOT EXISTS ai_conversations_user_id_idx ON ai_conversations(user_id);
+
+COMMIT;
+
+-- Verify the constraint was created
+SELECT
+    conname AS constraint_name,
+    contype AS constraint_type,
+    pg_get_constraintdef(oid) AS constraint_definition
+FROM pg_constraint
+WHERE conrelid = 'ai_conversations'::regclass
+  AND conname = 'ai_conversations_user_id_fk';

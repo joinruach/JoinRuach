@@ -1,4 +1,3 @@
-import { stringify } from 'subtitle';
 import type { TranscriptSegment } from './transcription-service';
 
 /**
@@ -8,6 +7,17 @@ import type { TranscriptSegment } from './transcription-service';
  */
 
 export default class SubtitleGenerator {
+  private static formatTime(ms: number, forVtt = false): string {
+    const totalMs = Math.max(0, Math.floor(ms));
+    const hours = Math.floor(totalMs / 3_600_000);
+    const minutes = Math.floor((totalMs % 3_600_000) / 60_000);
+    const seconds = Math.floor((totalMs % 60_000) / 1_000);
+    const millis = totalMs % 1_000;
+    const sep = forVtt ? '.' : ',';
+    const pad = (n: number, len = 2) => n.toString().padStart(len, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}${sep}${pad(millis, 3)}`;
+  }
+
   /**
    * Generate SRT subtitle file from transcript segments
    *
@@ -15,16 +25,14 @@ export default class SubtitleGenerator {
    * @returns SRT formatted subtitle string
    */
   static generateSRT(segments: TranscriptSegment[]): string {
-    const cues = segments.map(segment => ({
-      type: 'cue' as const,
-      data: {
-        start: segment.start,
-        end: segment.end,
-        text: `[${segment.speaker}] ${segment.text}`
-      }
-    }));
-
-    return stringify(cues, { format: 'SRT' });
+    return segments
+      .map((segment, index) => {
+        const start = this.formatTime(segment.start);
+        const end = this.formatTime(segment.end);
+        const text = `[${segment.speaker}] ${segment.text}`;
+        return `${index + 1}\n${start} --> ${end}\n${text}`;
+      })
+      .join('\n\n');
   }
 
   /**
@@ -34,15 +42,15 @@ export default class SubtitleGenerator {
    * @returns WebVTT formatted subtitle string
    */
   static generateVTT(segments: TranscriptSegment[]): string {
-    const cues = segments.map(segment => ({
-      type: 'cue' as const,
-      data: {
-        start: segment.start,
-        end: segment.end,
-        text: `<v ${segment.speaker}>${segment.text}</v>`
-      }
-    }));
+    const body = segments
+      .map(segment => {
+        const start = this.formatTime(segment.start, true);
+        const end = this.formatTime(segment.end, true);
+        const text = `<v ${segment.speaker}>${segment.text}</v>`;
+        return `${start} --> ${end}\n${text}`;
+      })
+      .join('\n\n');
 
-    return stringify(cues, { format: 'WebVTT' });
+    return `WEBVTT\n\n${body}`;
   }
 }

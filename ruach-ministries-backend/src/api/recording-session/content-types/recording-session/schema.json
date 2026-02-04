@@ -64,14 +64,12 @@
     "speakers": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::author.author",
-      "inversedBy": "recordingSessions"
+      "target": "api::author.author"
     },
     "assets": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::media-asset.media-asset",
-      "inversedBy": "recordingSession"
+      "target": "api::media-asset.media-asset"
     },
     "transcript": {
       "type": "relation",

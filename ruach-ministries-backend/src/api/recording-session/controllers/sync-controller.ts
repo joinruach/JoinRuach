@@ -23,7 +23,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Validate request body
     const validation = validateRequest(ComputeSyncRequestSchema, ctx.request.body || {});
-    if (!validation.success) {
+    if (validation.success === false) {
+      const { errors } = validation;
       return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
     }
 
@@ -87,7 +88,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Validate request body
     const validation = validateRequest(ApproveSyncRequestSchema, ctx.request.body || {});
-    if (!validation.success) {
+    if (validation.success === false) {
+      const { errors } = validation;
       return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
     }
 
@@ -122,7 +124,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Validate request body
     const validation = validateRequest(CorrectSyncRequestSchema, ctx.request.body || {});
-    if (!validation.success) {
+    if (validation.success === false) {
+      const { errors } = validation;
       return ctx.badRequest('Invalid request', { errors: validation.errors.format() });
     }
 

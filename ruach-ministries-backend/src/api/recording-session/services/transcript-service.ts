@@ -56,6 +56,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         transcriptionResult.segments,
         session.syncOffsets_ms
       );
+      const alignedTranscriptsJson = alignedTranscripts as unknown as any;
 
       // Create or update library-transcription entity
       let transcriptEntity;
@@ -69,7 +70,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               status: 'completed',
               confidence: transcriptionResult.averageConfidence,
               metadata: {
-                masterTranscript: alignedTranscripts,
+                masterTranscript: alignedTranscriptsJson,
                 speakerCount: transcriptionResult.speakerCount,
                 lowConfidenceSegments: transcriptionResult.lowConfidenceSegments,
                 masterCamera: session.anchorAngle,
@@ -93,7 +94,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               confidence: transcriptionResult.averageConfidence,
               transcriptText: transcriptionResult.segments.map(s => s.text).join(' '),
               metadata: {
-                masterTranscript: alignedTranscripts,
+                masterTranscript: alignedTranscriptsJson,
                 speakerCount: transcriptionResult.speakerCount,
                 lowConfidenceSegments: transcriptionResult.lowConfidenceSegments,
                 masterCamera: session.anchorAngle,

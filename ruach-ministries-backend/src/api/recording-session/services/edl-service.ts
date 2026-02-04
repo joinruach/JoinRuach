@@ -44,6 +44,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       // Generate EDL
       const generator = new EDLGenerator();
       const canonicalEdl = await generator.generateEDL(sessionId, strapi, options);
+      // Strapi JSON fields expect plain objects; cast to JSON-serialisable shape
+      const canonicalEdlJson = canonicalEdl as unknown as any;
 
       // Calculate hashes for audit
       const transcriptHash = this.calculateHash(
@@ -65,7 +67,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               version: session.edl.version + 1,
               status: 'draft',
               source: 'ai',
-              canonicalEdl,
+              canonicalEdl: canonicalEdlJson,
               audit: {
                 generatedAt: new Date().toISOString(),
                 options,
@@ -92,7 +94,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               status: 'draft',
               source: 'ai',
               timebase: 'ms',
-              canonicalEdl,
+              canonicalEdl: canonicalEdlJson,
               audit: {
                 generatedAt: new Date().toISOString(),
                 options,

@@ -61,9 +61,17 @@ module.exports = {
 
     // 2. AI Conversations Table
     // Stores conversation sessions with the AI assistant
+    // Check if up_users table exists before adding foreign key
+    const hasUpUsers = await knex.schema.hasTable('up_users');
+
     await knex.schema.createTable('ai_conversations', (table) => {
       table.increments('id').primary();
-      table.integer('user_id').references('id').inTable('up_users').onDelete('CASCADE');
+      if (hasUpUsers) {
+        table.integer('user_id').references('id').inTable('up_users').onDelete('CASCADE');
+      } else {
+        table.integer('user_id').nullable();
+        console.warn('⚠️  up_users table not found - creating user_id without foreign key');
+      }
       table.text('title'); // Auto-generated from first message
       table.timestamps(true, true);
 
@@ -91,7 +99,11 @@ module.exports = {
     // Tracks user behavior for recommendations
     await knex.schema.createTable('user_interactions', (table) => {
       table.increments('id').primary();
-      table.integer('user_id').references('id').inTable('up_users').onDelete('CASCADE');
+      if (hasUpUsers) {
+        table.integer('user_id').references('id').inTable('up_users').onDelete('CASCADE');
+      } else {
+        table.integer('user_id').nullable();
+      }
       table.string('content_type', 50).notNullable();
       table.integer('content_id').notNullable();
       table.string('interaction_type', 20).notNullable(); // 'view', 'complete', 'like', 'bookmark'

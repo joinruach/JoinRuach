@@ -1674,7 +1674,7 @@ export interface ApiEditDecisionListEditDecisionList
   extends Struct.CollectionTypeSchema {
   collectionName: 'edit_decision_lists';
   info: {
-    description: 'Versioned EDL storage with cuts, overlays, chapters, and shorts for deterministic rendering';
+    description: 'AI-generated multi-camera edit plans with camera switches, chapters, and operator review workflow';
     displayName: 'Edit Decision List';
     pluralName: 'edit-decision-lists';
     singularName: 'edit-decision-list';
@@ -1683,48 +1683,49 @@ export interface ApiEditDecisionListEditDecisionList
     draftAndPublish: false;
   };
   attributes: {
-    approvedAt: Schema.Attribute.DateTime;
-    approvedBy: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    chapters: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    childVersions: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::edit-decision-list.edit-decision-list'
-    >;
+    audit: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
+    canonicalEdl: Schema.Attribute.JSON & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    cuts: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    edlData: Schema.Attribute.JSON & Schema.Attribute.Required;
     edlId: Schema.Attribute.UID<'edlId'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    exports: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
+    fps: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 120;
+          min: 1;
+        },
+        number
+      >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::edit-decision-list.edit-decision-list'
     > &
       Schema.Attribute.Private;
-    metadata: Schema.Attribute.JSON;
-    overlays: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    parentVersion: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::edit-decision-list.edit-decision-list'
-    >;
+    metadata: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
     publishedAt: Schema.Attribute.DateTime;
-    recordingSession: Schema.Attribute.Relation<
-      'manyToOne',
+    session: Schema.Attribute.Relation<
+      'oneToOne',
       'api::recording-session.recording-session'
-    > &
-      Schema.Attribute.Required;
-    shorts: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    >;
+    source: Schema.Attribute.Enumeration<['ai', 'operator', 'hybrid']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'ai'>;
     status: Schema.Attribute.Enumeration<
-      ['draft', 'review', 'approved', 'superseded', 'archived']
+      ['draft', 'reviewing', 'approved', 'locked']
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'draft'>;
+    timebase: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 10;
+      }> &
+      Schema.Attribute.DefaultTo<'ms'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1737,14 +1738,6 @@ export interface ApiEditDecisionListEditDecisionList
         number
       > &
       Schema.Attribute.DefaultTo<1>;
-    versionHash: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 64;
-      }>;
-    versionLabel: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 50;
-      }>;
   };
 }
 
@@ -4338,6 +4331,10 @@ export interface ApiRecordingSessionRecordingSession
         },
         number
       >;
+    edl: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::edit-decision-list.edit-decision-list'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -4345,6 +4342,10 @@ export interface ApiRecordingSessionRecordingSession
     > &
       Schema.Attribute.Private;
     metadata: Schema.Attribute.JSON;
+    operatorStatus: Schema.Attribute.Enumeration<
+      ['pending', 'approved', 'corrected']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     publishedAt: Schema.Attribute.DateTime;
     recordingDate: Schema.Attribute.Date;
     sessionId: Schema.Attribute.UID<'sessionId'> &
@@ -4354,6 +4355,8 @@ export interface ApiRecordingSessionRecordingSession
     status: Schema.Attribute.Enumeration<
       [
         'draft',
+        'ingesting',
+        'needs-review',
         'syncing',
         'synced',
         'editing',
