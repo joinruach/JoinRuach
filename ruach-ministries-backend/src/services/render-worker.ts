@@ -10,8 +10,11 @@ import type { Core } from '@strapi/strapi';
 import type { RenderJobPayload } from './render-queue';
 import RenderPreflight from './render-preflight';
 import RemotionRunner from './remotion-runner';
+import R2Upload from './r2-upload';
+import ThumbnailGenerator from './thumbnail-generator';
 import * as path from 'path';
 import * as os from 'os';
+import * as fs from 'fs/promises';
 
 export default class RenderWorker {
   private static worker: Worker<RenderJobPayload> | null = null;
@@ -138,17 +141,79 @@ export default class RenderWorker {
         throw new Error(renderResult.error || 'Render failed');
       }
 
+      console.log(`[render-worker] Render completed, uploading artifacts for ${renderJobId}`);
+
+      // Update progress
+      await renderJobService.transitionStatus(renderJobId, 'processing', {
+        progress: 0.85,
+      });
+
+      // Generate thumbnail
+      const thumbnailResult = await ThumbnailGenerator.generateThumbnail(
+        outputPath,
+        undefined, // Auto-generate path
+        3 // Extract frame at 3 seconds
+      );
+
       // Update progress
       await renderJobService.transitionStatus(renderJobId, 'processing', {
         progress: 0.9,
       });
 
-      // TODO Plan 3: Upload to R2
-      // For now, just mark complete with local path
-      await renderJobService.completeJob(renderJobId, {
-        outputVideoUrl: outputPath, // Will be R2 URL in Plan 3
-        durationMs: renderResult.durationMs,
+      // Upload artifacts to R2
+      const uploadResult = await R2Upload.uploadRenderArtifacts(
+        renderJobId,
+        sessionId,
+        outputPath
+      );
+
+      if (uploadResult.error) {
+        throw new Error(`Artifact upload failed: ${uploadResult.error}`);
+      }
+
+      // Upload thumbnail if generated
+      let thumbnailUrl: string | undefined;
+      if (thumbnailResult.success && thumbnailResult.thumbnailPath) {
+        const thumbnailKey = `renders/${sessionId}/${renderJobId}-thumb.jpg`;
+        const thumbnailUpload = await R2Upload.uploadFile(
+          thumbnailResult.thumbnailPath,
+          thumbnailKey,
+          'image/jpeg'
+        );
+
+        if (thumbnailUpload.success) {
+          thumbnailUrl = thumbnailUpload.url;
+        }
+      }
+
+      // Update progress
+      await renderJobService.transitionStatus(renderJobId, 'processing', {
+        progress: 0.95,
       });
+
+      // Get video metadata (duration, size, resolution)
+      const stats = await fs.stat(outputPath);
+      const fileSizeBytes = stats.size;
+
+      // Complete job with R2 URLs
+      await renderJobService.completeJob(renderJobId, {
+        outputVideoUrl: uploadResult.videoUrl!,
+        outputThumbnailUrl: thumbnailUrl,
+        durationMs: renderResult.durationMs,
+        fileSizeBytes,
+      });
+
+      // Cleanup local files
+      try {
+        await fs.unlink(outputPath);
+        if (thumbnailResult.thumbnailPath) {
+          await fs.unlink(thumbnailResult.thumbnailPath);
+        }
+        console.log(`[render-worker] Cleaned up local files for ${renderJobId}`);
+      } catch (cleanupError) {
+        console.warn(`[render-worker] Failed to cleanup local files:`, cleanupError);
+        // Don't fail job if cleanup fails
+      }
 
       console.log(`[render-worker] Job ${renderJobId} completed successfully`);
     } catch (error: any) {
