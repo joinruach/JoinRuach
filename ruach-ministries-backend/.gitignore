@@ -276,3 +276,4 @@ uploads/
 .build/
 .cache/
 
+backup_strapi_db_*.dump
