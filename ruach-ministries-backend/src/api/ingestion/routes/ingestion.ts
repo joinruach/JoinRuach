@@ -14,7 +14,7 @@ export default {
       path: '/ingestion/versions',
       handler: 'ingestion.listVersions',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
