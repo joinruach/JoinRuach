@@ -22,16 +22,16 @@ const PRIORITY_ORDER: Record<WorkflowPriority, number> = {
 
 /**
  * Fetch ingestion inbox items
- * Fetches from /api/ingestion/versions and converts to InboxItems
+ * Calls Strapi directly with JWT (more efficient than HTTP hop through /api)
  */
 async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    // Note: /api/ingestion/versions uses NextAuth session cookies for auth,
-    // so no Authorization header is needed
-    const response = await fetch(`${baseUrl}/api/ingestion/versions`, {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const response = await fetch(`${strapiUrl}/api/ingestion/versions`, {
       cache: 'no-store',
-      credentials: 'include', // Include cookies for session auth
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
     });
 
     if (!response.ok) {
