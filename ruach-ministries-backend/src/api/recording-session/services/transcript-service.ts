@@ -1,234 +1,183 @@
 import type { Core } from '@strapi/strapi';
-import TranscriptionService from '../../../services/transcription-service';
-import TranscriptAlignmentService from '../../../services/transcript-alignment-service';
-import SubtitleGenerator from '../../../services/subtitle-generator';
-
-/**
- * Phase 10: Recording Session Transcript Service
- *
- * Strapi service wrapper for transcription workflow
- * Orchestrates transcription, alignment, and subtitle generation
- */
+import { v4 as uuidv4 } from 'uuid';
+import { mockProvider } from '../../../services/transcription/providers/mock-provider';
+import { transcriptAlignmentService } from '../../../services/transcription/transcript-alignment-service';
+import { subtitleGenerator } from '../../../services/transcription/subtitle-generator';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
-  /**
-   * Trigger transcription for a recording session
-   *
-   * @param sessionId - Recording session ID
-   * @returns Transcription metadata
-   */
-  async transcribeSession(sessionId: string) {
-    try {
-      strapi.log.info(`[transcript-service] Starting transcription for session ${sessionId}`);
+  async transcribeSession(sessionId: string, options: any = {}) {
+    const session = await strapi.entityService.findOne(
+      'api::recording-session.recording-session',
+      sessionId,
+      { populate: ['assets', 'transcript'] }
+    );
 
-      // Load session with assets and sync data
-      const session = await strapi.entityService.findOne(
-        'api::recording-session.recording-session',
-        sessionId,
-        {
-          populate: ['assets', 'transcript']
-        }
-      ) as any;
-
-      if (!session) {
-        throw new Error(`Session ${sessionId} not found`);
-      }
-
-      if (!session.syncOffsets_ms || Object.keys(session.syncOffsets_ms).length === 0) {
-        throw new Error(`Session ${sessionId} has no sync offsets. Run sync first.`);
-      }
-
-      // Update status to processing
-      await strapi.entityService.update(
-        'api::recording-session.recording-session',
-        sessionId,
-        {
-          data: { status: 'synced' } // Keep as synced during transcription
-        }
-      );
-
-      // Transcribe master camera
-      const transcriptionService = new TranscriptionService(process.env.ASSEMBLYAI_API_KEY);
-      const transcriptionResult = await transcriptionService.transcribeSession(sessionId, strapi);
-
-      // Apply sync offsets to generate aligned transcripts for all cameras
-      const alignedTranscripts = TranscriptAlignmentService.alignTranscripts(
-        transcriptionResult.segments,
-        session.syncOffsets_ms
-      );
-      const alignedTranscriptsJson = alignedTranscripts as unknown as any;
-
-      // Create or update library-transcription entity
-      let transcriptEntity;
-      if (session.transcript) {
-        // Update existing transcript
-        transcriptEntity = await strapi.entityService.update(
-          'api::library-transcription.library-transcription',
-          session.transcript.id,
-          {
-            data: {
-              status: 'completed',
-              confidence: transcriptionResult.averageConfidence,
-              metadata: {
-                masterTranscript: alignedTranscriptsJson,
-                speakerCount: transcriptionResult.speakerCount,
-                lowConfidenceSegments: transcriptionResult.lowConfidenceSegments,
-                masterCamera: session.anchorAngle,
-                cameras: Object.keys(alignedTranscripts),
-                transcribedAt: new Date().toISOString()
-              }
-            }
-          }
-        );
-      } else {
-        // Create new transcript entity
-        transcriptEntity = await strapi.entityService.create(
-          'api::library-transcription.library-transcription',
-          {
-            data: {
-              transcriptionId: `transcript-${sessionId}`,
-              sourceMediaId: session.assets[0]?.id, // Link to first asset as reference
-              status: 'completed',
-              durationSeconds: Math.floor(session.duration_ms / 1000),
-              language: 'en',
-              confidence: transcriptionResult.averageConfidence,
-              transcriptText: transcriptionResult.segments.map(s => s.text).join(' '),
-              metadata: {
-                masterTranscript: alignedTranscriptsJson,
-                speakerCount: transcriptionResult.speakerCount,
-                lowConfidenceSegments: transcriptionResult.lowConfidenceSegments,
-                masterCamera: session.anchorAngle,
-                cameras: Object.keys(alignedTranscripts),
-                transcribedAt: new Date().toISOString()
-              }
-            }
-          }
-        ) as any;
-
-        // Link transcript to session
-        await strapi.entityService.update(
-          'api::recording-session.recording-session',
-          sessionId,
-          {
-            data: { transcript: transcriptEntity.id }
-          }
-        );
-      }
-
-      strapi.log.info(
-        `[transcript-service] Transcription complete for session ${sessionId}: ` +
-        `${transcriptionResult.speakerCount} speakers, ${Object.keys(alignedTranscripts).length} cameras`
-      );
-
-      return {
-        sessionId,
-        speakerCount: transcriptionResult.speakerCount,
-        confidence: transcriptionResult.averageConfidence,
-        cameras: Object.keys(alignedTranscripts),
-        lowConfidenceSegments: transcriptionResult.lowConfidenceSegments
-      };
-    } catch (error) {
-      strapi.log.error(
-        `[transcript-service] Transcription failed for session ${sessionId}:`,
-        error instanceof Error ? error.message : error
-      );
-
-      // Update session status to indicate failure
-      await strapi.entityService.update(
-        'api::recording-session.recording-session',
-        sessionId,
-        {
-          data: {
-            status: 'synced', // Revert to synced so user can retry
-            metadata: {
-              transcriptionError: error instanceof Error ? error.message : 'Unknown error',
-              transcriptionFailedAt: new Date().toISOString()
-            }
-          }
-        }
-      );
-
-      throw error;
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+    if (session.transcript) throw new Error('Transcript already exists');
+    if (session.status !== 'synced' && session.status !== 'editing') {
+      throw new Error('Session must be synced before transcription');
     }
+
+    const masterAsset = session.assets?.find((a: any) => a.angle === session.anchorAngle);
+    if (!masterAsset) throw new Error(`Master asset not found`);
+
+    const audioUrl = masterAsset.r2_mezzanine_url || masterAsset.r2_original_url;
+    const provider = options.provider || 'mock';
+    const { providerJobId } = await mockProvider.startJob({
+      mediaUrl: audioUrl,
+      diarization: options.diarization !== false,
+      language: options.language || 'en',
+    });
+
+    const transcript = await strapi.entityService.create(
+      'api::library-transcription.library-transcription',
+      {
+        data: {
+          transcriptionId: uuidv4(),
+          status: 'QUEUED',
+          provider,
+          providerJobId,
+          hasDiarization: true,
+          language: 'en',
+          sourceAssetId: masterAsset.id,
+          syncOffsets_ms: session.syncOffsets_ms || {},
+          segments: [],
+          durationSeconds: Math.floor((masterAsset.duration_ms || 0) / 1000),
+        },
+      }
+    );
+
+    await strapi.entityService.update(
+      'api::recording-session.recording-session',
+      sessionId,
+      { data: { transcript: transcript.id } }
+    );
+
+    // Process synchronously in development
+    if (process.env.NODE_ENV === 'development') {
+      await this.processTranscriptJob(transcript.id, providerJobId);
+    }
+
+    return { transcriptId: transcript.id, status: 'QUEUED' };
   },
 
-  /**
-   * Get transcript data for a session
-   *
-   * @param sessionId - Recording session ID
-   * @returns Transcript data with aligned segments per camera
-   */
   async getTranscript(sessionId: string) {
     const session = await strapi.entityService.findOne(
       'api::recording-session.recording-session',
       sessionId,
-      {
-        populate: ['transcript']
-      }
-    ) as any;
+      { populate: ['transcript'] }
+    );
 
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
+    if (!session?.transcript) return null;
 
-    if (!session.transcript) {
-      throw new Error(`Session ${sessionId} has no transcript. Run transcription first.`);
-    }
-
-    const transcript = session.transcript;
-
-    return {
-      sessionId,
-      transcriptId: transcript.transcriptionId,
-      status: transcript.status,
-      speakerCount: transcript.metadata?.speakerCount || 0,
-      confidence: transcript.confidence,
-      cameras: transcript.metadata?.cameras || [],
-      transcripts: transcript.metadata?.masterTranscript || {},
-      lowConfidenceSegments: transcript.metadata?.lowConfidenceSegments || 0,
-      transcribedAt: transcript.metadata?.transcribedAt
-    };
+    return await strapi.entityService.findOne(
+      'api::library-transcription.library-transcription',
+      session.transcript.id
+    );
   },
 
-  /**
-   * Get subtitle file (SRT or VTT) for a specific camera
-   *
-   * @param sessionId - Recording session ID
-   * @param camera - Camera angle (e.g., 'A', 'B', 'C')
-   * @param format - 'SRT' or 'VTT'
-   * @returns Subtitle file content as string
-   */
-  async getSubtitle(sessionId: string, camera: string, format: 'SRT' | 'VTT'): Promise<string> {
-    const session = await strapi.entityService.findOne(
-      'api::recording-session.recording-session',
-      sessionId,
-      {
-        populate: ['transcript']
+  async getSubtitle(sessionId: string, camera: string, format: 'SRT' | 'VTT') {
+    const transcript = await this.getTranscript(sessionId);
+    if (!transcript) throw new Error('Transcript not found');
+    if (transcript.status !== 'ALIGNED') throw new Error('Transcript not aligned yet');
+
+    return subtitleGenerator.generate({
+      segments: transcript.segments,
+      format: format.toLowerCase() as 'srt' | 'vtt',
+    });
+  },
+
+  async processTranscriptJob(transcriptId: string, providerJobId: string) {
+    try {
+      await strapi.entityService.update(
+        'api::library-transcription.library-transcription',
+        transcriptId,
+        { data: { status: 'PROCESSING' } }
+      );
+
+      // Poll provider
+      for (let i = 0; i < 30; i++) {
+        const { status } = await mockProvider.getJobStatus({ providerJobId });
+        if (status === 'COMPLETED') break;
+        if (status === 'FAILED') throw new Error('Provider job failed');
+        await new Promise((r) => setTimeout(r, 2000));
       }
-    ) as any;
 
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
+      const result = await mockProvider.fetchResult({ providerJobId });
 
-    if (!session.transcript) {
-      throw new Error(`Session ${sessionId} has no transcript. Run transcription first.`);
-    }
+      await strapi.entityService.update(
+        'api::library-transcription.library-transcription',
+        transcriptId,
+        {
+          data: {
+            status: 'RAW_READY',
+            segments: result.segments,
+            words: result.words,
+            language: result.language,
+          },
+        }
+      );
 
-    const alignedTranscripts = session.transcript.metadata?.masterTranscript;
-    if (!alignedTranscripts) {
-      throw new Error(`Session ${sessionId} transcript has no aligned data`);
-    }
+      const transcript = await strapi.entityService.findOne(
+        'api::library-transcription.library-transcription',
+        transcriptId
+      );
 
-    const cameraSegments = alignedTranscripts[camera];
-    if (!cameraSegments) {
-      throw new Error(`Camera ${camera} not found in session ${sessionId} transcripts`);
-    }
+      // Fetch source asset to get its angle (A/B/C) for offset lookup
+      const sourceAsset = await strapi.entityService.findOne(
+        'api::media-asset.media-asset',
+        transcript.sourceAssetId,
+        { fields: ['id', 'angle'] }
+      );
 
-    if (format === 'SRT') {
-      return SubtitleGenerator.generateSRT(cameraSegments);
-    } else {
-      return SubtitleGenerator.generateVTT(cameraSegments);
+      const angleKey = (sourceAsset as any)?.angle;
+      const masterOffset = (angleKey && transcript.syncOffsets_ms?.[angleKey])
+        ? transcript.syncOffsets_ms[angleKey]
+        : 0;
+
+      strapi.log.info(
+        `[transcript-service] Applying alignment: angle=${angleKey}, offset=${masterOffset}ms`
+      );
+
+      const aligned = transcriptAlignmentService.alignTranscript({
+        transcript: { segments: result.segments, words: result.words },
+        offsetMs: masterOffset,
+      });
+
+      const transcriptText = aligned.segments.map((s) => s.text).join(' ');
+
+      await strapi.entityService.update(
+        'api::library-transcription.library-transcription',
+        transcriptId,
+        {
+          data: {
+            status: 'ALIGNED',
+            segments: aligned.segments,
+            words: aligned.words,
+            transcriptText,
+          },
+        }
+      );
+
+      strapi.log.info(`[transcript-service] Job ${providerJobId} completed`);
+    } catch (error) {
+      strapi.log.error('[transcript-service] Job failed:', error);
+      await strapi.entityService.update(
+        'api::library-transcription.library-transcription',
+        transcriptId,
+        {
+          data: {
+            status: 'FAILED',
+            metadata: {
+              error: {
+                code: 'PROCESSING_FAILED',
+                message: error instanceof Error ? error.message : 'Unknown',
+              },
+            },
+          },
+        }
+      );
+      throw error;
     }
-  }
+  },
 });

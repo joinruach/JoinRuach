@@ -31,11 +31,17 @@
         "pending",
         "processing",
         "completed",
-        "failed"
+        "failed",
+        "QUEUED",
+        "PROCESSING",
+        "RAW_READY",
+        "ALIGNED",
+        "FAILED"
       ],
       "default": "pending",
       "required": true,
-      "index": true
+      "index": true,
+      "description": "Legacy: pending/processing/completed/failed; Phase 10: QUEUED/PROCESSING/RAW_READY/ALIGNED/FAILED"
     },
     "transcriptText": {
       "type": "text",
@@ -80,6 +86,47 @@
     "metadata": {
       "type": "json",
       "description": "Additional metadata including error information if status is failed"
+    },
+    "provider": {
+      "type": "enumeration",
+      "enum": [
+        "assemblyai",
+        "mock",
+        "whisper"
+      ],
+      "default": "whisper",
+      "description": "Transcription provider used (Phase 10)"
+    },
+    "providerJobId": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "External provider's job ID for polling (Phase 10)"
+    },
+    "hasDiarization": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether speaker diarization was enabled (Phase 10)"
+    },
+    "sourceAssetId": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::media-asset.media-asset",
+      "description": "Which media-asset's audio was transcribed (Phase 10)"
+    },
+    "syncOffsets_ms": {
+      "type": "json",
+      "default": {},
+      "description": "Sync offsets applied during alignment {asset_id: offset_ms} (Phase 10)"
+    },
+    "segments": {
+      "type": "json",
+      "default": [],
+      "description": "Array of TranscriptSegment objects with speaker, timestamps, text (Phase 10)"
+    },
+    "words": {
+      "type": "json",
+      "default": [],
+      "description": "Optional word-level timestamps for future features (Phase 10)"
     }
   }
 }

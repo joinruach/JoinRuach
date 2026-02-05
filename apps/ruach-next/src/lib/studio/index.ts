@@ -77,14 +77,20 @@ export {
 
 export {
   // Transcript operations (Phase 10)
-  generateTranscript,
+  startTranscription,
   getTranscript,
-  updateTranscript,
-  updateSpeakerMapping,
-  generateSubtitles,
+  updateTranscriptSegments,
+  getSubtitleFile,
+  formatTimestamp,
+  parseTimestamp,
+  generateSRT,
+  generateVTT,
+  getConfidenceColor,
+  getConfidenceLabel,
   type Transcript,
   type TranscriptSegment,
-  type WordTimestamp,
+  type TranscriptWord,
+  type StartTranscriptionOptions,
 } from './transcript';
 
 export {

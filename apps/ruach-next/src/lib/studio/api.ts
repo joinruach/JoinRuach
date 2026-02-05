@@ -110,6 +110,7 @@ export async function apiFetch<T>(
   try {
     const response = await fetch(url, {
       ...fetchOptions,
+      cache: fetchOptions.cache || 'no-store', // Disable caching by default, allow override
       headers: {
         Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',
