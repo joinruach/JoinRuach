@@ -53,6 +53,9 @@ export default function MultiCamUploader({
     },
   });
 
+  // Shared upload hook instance; must live at the top level to satisfy hook rules
+  const upload = usePresignedUpload();
+
   // Update camera state
   const updateCameraState = (
     camera: CameraAngle,
@@ -78,7 +81,6 @@ export default function MultiCamUploader({
 
     try {
       // Upload to R2
-      const upload = usePresignedUpload();
       const result = await upload.upload({
         file: state.file,
         onProgress: (progress) => {
