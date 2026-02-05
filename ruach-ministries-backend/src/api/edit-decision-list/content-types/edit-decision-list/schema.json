@@ -21,7 +21,7 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::recording-session.recording-session",
-      "inversedBy": "edl"
+      "mappedBy": "edl"
     },
     "version": {
       "type": "integer",

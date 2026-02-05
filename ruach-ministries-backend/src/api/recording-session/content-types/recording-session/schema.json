@@ -85,7 +85,7 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::edit-decision-list.edit-decision-list",
-      "inversedBy": "session"
+      "mappedBy": "session"
     },
     "syncOffsets_ms": {
       "type": "json",
