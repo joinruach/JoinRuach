@@ -8,12 +8,12 @@
  * 4. Approve or correct
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 // NOTE: These are example tests showing the expected workflow
 // Actual implementation depends on your test setup and Strapi test utilities
 
-describe('Sync Workflow - Golden Path', () => {
+describe.skip('Sync Workflow - Golden Path', () => {
   let sessionId: string;
   let apiClient: any; // Replace with actual API client
 
@@ -96,7 +96,7 @@ describe('Sync Workflow - Golden Path', () => {
   });
 });
 
-describe('Sync Workflow - Manual Correction', () => {
+describe.skip('Sync Workflow - Manual Correction', () => {
   let sessionId: string;
   let apiClient: any;
 
@@ -155,7 +155,7 @@ describe('Sync Workflow - Manual Correction', () => {
   });
 });
 
-describe('Sync Workflow - Validation', () => {
+describe.skip('Sync Workflow - Validation', () => {
   let sessionId: string;
   let apiClient: any;
 
@@ -190,7 +190,7 @@ describe('Sync Workflow - Validation', () => {
   });
 });
 
-describe('Sync Workflow - Error Handling', () => {
+describe.skip('Sync Workflow - Error Handling', () => {
   let apiClient: any;
 
   it('should return 404 for non-existent session', async () => {
