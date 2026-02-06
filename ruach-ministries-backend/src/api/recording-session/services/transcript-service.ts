@@ -10,7 +10,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       'api::recording-session.recording-session',
       sessionId,
       { populate: ['assets', 'transcript'] }
-    );
+    ) as any;
 
     if (!session) throw new Error(`Session not found: ${sessionId}`);
     if (session.transcript) throw new Error('Transcript already exists');
@@ -34,7 +34,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       {
         data: {
           transcriptionId: uuidv4(),
-          status: 'QUEUED',
+          status: 'QUEUED' as any,
           provider,
           providerJobId,
           hasDiarization: true,
@@ -43,9 +43,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           syncOffsets_ms: session.syncOffsets_ms || {},
           segments: [],
           durationSeconds: Math.floor((masterAsset.duration_ms || 0) / 1000),
-        },
+        } as any,
       }
-    );
+    ) as any;
 
     await strapi.entityService.update(
       'api::recording-session.recording-session',
@@ -55,7 +55,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Process synchronously in development
     if (process.env.NODE_ENV === 'development') {
-      await this.processTranscriptJob(transcript.id, providerJobId);
+      await this.processTranscriptJob(String(transcript.id), providerJobId);
     }
 
     return { transcriptId: transcript.id, status: 'QUEUED' };
@@ -66,18 +66,18 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       'api::recording-session.recording-session',
       sessionId,
       { populate: ['transcript'] }
-    );
+    ) as any;
 
     if (!session?.transcript) return null;
 
     return await strapi.entityService.findOne(
       'api::library-transcription.library-transcription',
       session.transcript.id
-    );
+    ) as any;
   },
 
   async getSubtitle(sessionId: string, camera: string, format: 'SRT' | 'VTT') {
-    const transcript = await this.getTranscript(sessionId);
+    const transcript = await this.getTranscript(sessionId) as any;
     if (!transcript) throw new Error('Transcript not found');
     if (transcript.status !== 'ALIGNED') throw new Error('Transcript not aligned yet');
 
@@ -92,7 +92,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       await strapi.entityService.update(
         'api::library-transcription.library-transcription',
         transcriptId,
-        { data: { status: 'PROCESSING' } }
+        { data: { status: 'PROCESSING' as any } }
       );
 
       // Poll provider
@@ -110,7 +110,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         transcriptId,
         {
           data: {
-            status: 'RAW_READY',
+            status: 'RAW_READY' as any,
             segments: result.segments,
             words: result.words,
             language: result.language,
@@ -121,16 +121,16 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       const transcript = await strapi.entityService.findOne(
         'api::library-transcription.library-transcription',
         transcriptId
-      );
+      ) as any;
 
       // Fetch source asset to get its angle (A/B/C) for offset lookup
       const sourceAsset = await strapi.entityService.findOne(
         'api::media-asset.media-asset',
         transcript.sourceAssetId,
         { fields: ['id', 'angle'] }
-      );
+      ) as any;
 
-      const angleKey = (sourceAsset as any)?.angle;
+      const angleKey = sourceAsset?.angle;
       const masterOffset = (angleKey && transcript.syncOffsets_ms?.[angleKey])
         ? transcript.syncOffsets_ms[angleKey]
         : 0;
@@ -151,7 +151,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         transcriptId,
         {
           data: {
-            status: 'ALIGNED',
+            status: 'ALIGNED' as any,
             segments: aligned.segments,
             words: aligned.words,
             transcriptText,
@@ -167,7 +167,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         transcriptId,
         {
           data: {
-            status: 'FAILED',
+            status: 'FAILED' as any,
             metadata: {
               error: {
                 code: 'PROCESSING_FAILED',
