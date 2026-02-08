@@ -3305,6 +3305,8 @@ export interface ApiLibraryTranscriptionLibraryTranscription
         },
         number
       >;
+    hasDiarization: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     keyMoments: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
     language: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -3316,18 +3318,40 @@ export interface ApiLibraryTranscriptionLibraryTranscription
     > &
       Schema.Attribute.Private;
     metadata: Schema.Attribute.JSON;
+    provider: Schema.Attribute.Enumeration<['assemblyai', 'mock', 'whisper']> &
+      Schema.Attribute.DefaultTo<'whisper'>;
+    providerJobId: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
+    segments: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    sourceAssetId: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::media-asset.media-asset'
+    >;
     sourceMediaId: Schema.Attribute.Relation<
       'manyToOne',
       'api::media-item.media-item'
     > &
       Schema.Attribute.Required;
     status: Schema.Attribute.Enumeration<
-      ['pending', 'processing', 'completed', 'failed']
+      [
+        'pending',
+        'processing',
+        'completed',
+        'failed',
+        'QUEUED',
+        'PROCESSING',
+        'RAW_READY',
+        'ALIGNED',
+        'FAILED',
+      ]
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'pending'>;
     summary: Schema.Attribute.Text;
+    syncOffsets_ms: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
     transcriptionId: Schema.Attribute.UID<'transcriptionId'> &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -3337,6 +3361,7 @@ export interface ApiLibraryTranscriptionLibraryTranscription
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    words: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
   };
 }
 

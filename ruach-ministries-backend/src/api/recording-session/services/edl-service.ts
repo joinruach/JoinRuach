@@ -294,6 +294,125 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   /**
+   * Update EDL cuts (full replacement)
+   *
+   * @param sessionId - Recording session ID
+   * @param cuts - New cuts array
+   * @returns Updated EDL data
+   */
+  async updateCuts(sessionId: string, cuts: any[]) {
+    strapi.log.info(`[edl-service] Updating cuts for session ${sessionId}`);
+
+    const session = await strapi.entityService.findOne(
+      'api::recording-session.recording-session',
+      sessionId,
+      {
+        populate: ['edl']
+      }
+    ) as any;
+
+    if (!session || !session.edl) {
+      throw new Error(`Session ${sessionId} has no EDL to update`);
+    }
+
+    const edl = session.edl;
+
+    // Check if EDL is locked
+    if (edl.status === 'locked') {
+      throw new Error(`EDL for session ${sessionId} is locked. Cannot update locked EDLs.`);
+    }
+
+    // Update canonical EDL with new cuts
+    const updatedCanonicalEdl = {
+      ...edl.canonicalEdl,
+      tracks: {
+        ...edl.canonicalEdl.tracks,
+        program: cuts
+      },
+      metrics: {
+        cutCount: cuts.length,
+        avgShotLenMs: cuts.reduce((sum: number, cut: any) => sum + (cut.endMs - cut.startMs), 0) / cuts.length,
+        speakerSwitchCount: cuts.filter((cut: any) => cut.reason === 'speaker').length,
+        confidence: cuts.reduce((sum: number, cut: any) => sum + (cut.confidence || 0), 0) / cuts.length
+      }
+    };
+
+    // Update EDL entity
+    await strapi.entityService.update(
+      'api::edit-decision-list.edit-decision-list',
+      edl.id,
+      {
+        data: {
+          canonicalEdl: updatedCanonicalEdl as any,
+          version: edl.version + 1,
+          metadata: {
+            ...edl.metadata,
+            lastEditedAt: new Date().toISOString()
+          }
+        }
+      }
+    );
+
+    return this.getEDL(sessionId);
+  },
+
+  /**
+   * Update chapters
+   *
+   * @param sessionId - Recording session ID
+   * @param chapters - New chapters array
+   * @returns Updated EDL data
+   */
+  async updateChapters(sessionId: string, chapters: any[]) {
+    strapi.log.info(`[edl-service] Updating chapters for session ${sessionId}`);
+
+    const session = await strapi.entityService.findOne(
+      'api::recording-session.recording-session',
+      sessionId,
+      {
+        populate: ['edl']
+      }
+    ) as any;
+
+    if (!session || !session.edl) {
+      throw new Error(`Session ${sessionId} has no EDL to update`);
+    }
+
+    const edl = session.edl;
+
+    // Check if EDL is locked
+    if (edl.status === 'locked') {
+      throw new Error(`EDL for session ${sessionId} is locked. Cannot update locked EDLs.`);
+    }
+
+    // Update canonical EDL with new chapters
+    const updatedCanonicalEdl = {
+      ...edl.canonicalEdl,
+      tracks: {
+        ...edl.canonicalEdl.tracks,
+        chapters: chapters
+      }
+    };
+
+    // Update EDL entity
+    await strapi.entityService.update(
+      'api::edit-decision-list.edit-decision-list',
+      edl.id,
+      {
+        data: {
+          canonicalEdl: updatedCanonicalEdl as any,
+          metadata: {
+            ...edl.metadata,
+            lastEditedAt: new Date().toISOString()
+          }
+        }
+      }
+    );
+
+    return this.getEDL(sessionId);
+  },
+
+  /**
    * Calculate hash for audit trail
    */
   calculateHash(data: string): string {

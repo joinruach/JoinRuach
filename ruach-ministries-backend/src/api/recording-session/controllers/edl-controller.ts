@@ -125,5 +125,117 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         );
       }
     }
+  },
+
+  /**
+   * PUT /api/recording-sessions/:id/edl
+   * Update EDL cuts
+   */
+  async update(ctx: any) {
+    const { id } = ctx.params;
+    const { cuts } = ctx.request.body || {};
+
+    try {
+      const edlService = strapi.service(
+        'api::recording-session.edl-service'
+      ) as any;
+
+      if (!cuts) {
+        return ctx.badRequest('Cuts array is required');
+      }
+
+      const result = await edlService.updateCuts(id, cuts);
+
+      ctx.body = {
+        success: true,
+        message: 'EDL updated',
+        data: result
+      };
+    } catch (error) {
+      strapi.log.error('[edl-controller] Update failed:', error);
+      ctx.badRequest(
+        error instanceof Error ? error.message : 'EDL update failed'
+      );
+    }
+  },
+
+  /**
+   * PUT /api/recording-sessions/:id/edl/chapters
+   * Update EDL chapters
+   */
+  async updateChapters(ctx: any) {
+    const { id } = ctx.params;
+    const { chapters } = ctx.request.body || {};
+
+    try {
+      const edlService = strapi.service(
+        'api::recording-session.edl-service'
+      ) as any;
+
+      if (!chapters) {
+        return ctx.badRequest('Chapters array is required');
+      }
+
+      const result = await edlService.updateChapters(id, chapters);
+
+      ctx.body = {
+        success: true,
+        message: 'Chapters updated',
+        data: result
+      };
+    } catch (error) {
+      strapi.log.error('[edl-controller] Update chapters failed:', error);
+      ctx.badRequest(
+        error instanceof Error ? error.message : 'Chapters update failed'
+      );
+    }
+  },
+
+  /**
+   * GET /api/recording-sessions/:id/edl/export/:format
+   * Export EDL to different formats
+   */
+  async export(ctx: any) {
+    const { id, format } = ctx.params;
+
+    try {
+      const edlService = strapi.service(
+        'api::recording-session.edl-service'
+      ) as any;
+
+      const edlData = await edlService.getEDL(id);
+
+      // Export based on format
+      let content: string;
+      let filename: string;
+      let contentType: string;
+
+      switch (format) {
+        case 'json':
+          content = JSON.stringify(edlData.canonicalEdl, null, 2);
+          filename = `session-${id}.json`;
+          contentType = 'application/json';
+          break;
+
+        case 'fcpxml':
+          // TODO: Implement FCP XML export
+          content = '<?xml version="1.0" encoding="UTF-8"?>\n<fcpxml version="1.10">\n<!-- FCP XML export not yet implemented -->\n</fcpxml>';
+          filename = `session-${id}.fcpxml`;
+          contentType = 'application/xml';
+          break;
+
+        default:
+          return ctx.badRequest(`Unsupported export format: ${format}`);
+      }
+
+      ctx.set('Content-Disposition', `attachment; filename="${filename}"`);
+      ctx.set('Content-Type', contentType);
+      ctx.body = content;
+    } catch (error) {
+      strapi.log.error('[edl-controller] Export failed:', error);
+      ctx.badRequest(
+        error instanceof Error ? error.message : 'EDL export failed'
+      );
+    }
   }
 });

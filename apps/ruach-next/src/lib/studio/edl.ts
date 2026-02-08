@@ -181,3 +181,84 @@ export async function exportEDL(
 
   return response.blob();
 }
+
+/**
+ * Update a single cut
+ */
+export async function updateCut(
+  sessionId: string,
+  cutId: string,
+  updates: Partial<Cut>,
+  authToken: string
+): Promise<CanonicalEDL> {
+  const response = await apiFetch(
+    `/api/recording-sessions/${sessionId}/edl/cuts/${cutId}`,
+    {
+      method: 'PATCH',
+      authToken,
+      body: JSON.stringify(updates),
+    }
+  );
+
+  return response as CanonicalEDL;
+}
+
+/**
+ * Split a cut at specific timestamp
+ */
+export async function splitCut(
+  sessionId: string,
+  cutId: string,
+  splitTimeMs: number,
+  authToken: string
+): Promise<CanonicalEDL> {
+  const response = await apiFetch(
+    `/api/recording-sessions/${sessionId}/edl/cuts/${cutId}/split`,
+    {
+      method: 'POST',
+      authToken,
+      body: JSON.stringify({ splitTimeMs }),
+    }
+  );
+
+  return response as CanonicalEDL;
+}
+
+/**
+ * Delete a cut
+ */
+export async function deleteCut(
+  sessionId: string,
+  cutId: string,
+  authToken: string
+): Promise<CanonicalEDL> {
+  const response = await apiFetch(
+    `/api/recording-sessions/${sessionId}/edl/cuts/${cutId}`,
+    {
+      method: 'DELETE',
+      authToken,
+    }
+  );
+
+  return response as CanonicalEDL;
+}
+
+/**
+ * Update chapter markers
+ */
+export async function updateChapters(
+  sessionId: string,
+  chapters: ChapterMarker[],
+  authToken: string
+): Promise<CanonicalEDL> {
+  const response = await apiFetch(
+    `/api/recording-sessions/${sessionId}/edl/chapters`,
+    {
+      method: 'PUT',
+      authToken,
+      body: JSON.stringify({ chapters }),
+    }
+  );
+
+  return response as CanonicalEDL;
+}

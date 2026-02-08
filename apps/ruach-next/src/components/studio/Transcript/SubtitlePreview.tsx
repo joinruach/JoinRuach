@@ -69,6 +69,8 @@ export function SubtitlePreview({
 
   const previewContent = useMemo(() => {
     return selectedFormat === 'srt' ? generateSRT() : generateVTT();
+    // generateSRT/generateVTT are inner functions that depend on segments + speakerMap
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [segments, speakerMap, selectedFormat]);
 
   const handleDownload = () => {

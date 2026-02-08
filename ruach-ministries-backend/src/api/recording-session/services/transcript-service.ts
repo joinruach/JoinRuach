@@ -1,4 +1,7 @@
-import type { Core } from '@strapi/strapi';
+import type { Core, Schema } from '@strapi/strapi';
+
+// Helper to satisfy Strapi's JsonValue typing for typed objects/arrays
+const asJson = (value: unknown) => value as Schema.Attribute.JsonValue;
 import { v4 as uuidv4 } from 'uuid';
 import { mockProvider } from '../../../services/transcription/providers/mock-provider';
 import { transcriptAlignmentService } from '../../../services/transcription/transcript-alignment-service';
@@ -111,8 +114,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         {
           data: {
             status: 'RAW_READY' as any,
-            segments: result.segments,
-            words: result.words,
+            // Cast to JsonValue so Strapi's JSON attribute typing is satisfied
+            segments: asJson(result.segments),
+            words: asJson(result.words),
             language: result.language,
           },
         }
@@ -152,8 +156,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         {
           data: {
             status: 'ALIGNED' as any,
-            segments: aligned.segments,
-            words: aligned.words,
+            // Cast aligned payloads to JsonValue to satisfy Strapi typings
+            segments: asJson(aligned.segments),
+            words: asJson(aligned.words),
             transcriptText,
           },
         }

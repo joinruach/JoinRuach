@@ -99,7 +99,9 @@ const nextAuth = NextAuth({
   useSecureCookies: process.env.NODE_ENV === 'production', // Use secure cookies in production
   cookies: {
     csrfToken: {
-      name: '__Host-next-auth.csrf-token',
+      name: process.env.NODE_ENV === 'production'
+        ? '__Host-next-auth.csrf-token'
+        : 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
