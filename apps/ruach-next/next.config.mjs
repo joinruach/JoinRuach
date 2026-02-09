@@ -18,6 +18,7 @@ const securityHeaders = [
       style-src 'self' 'unsafe-inline';
       frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.tiktok.com;
       connect-src 'self'
+        ${process.env.NODE_ENV !== 'production' ? 'http://localhost:1337 http://127.0.0.1:1337' : ''}
         https://cdn.joinruach.org
         https://*.r2.cloudflarestorage.com
         https://api.convertkit.com

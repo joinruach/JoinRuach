@@ -63,8 +63,9 @@ export default function SyncReviewCockpit({
     setError(null);
 
     try {
-      await approveSync(session.id.toString(), authToken, notes);
-      router.push(`/${locale}/studio/sessions/${session.id}`);
+      const sessionSlug = session.documentId || session.id.toString();
+      await approveSync(sessionSlug, authToken, notes);
+      router.push(`/${locale}/studio/sessions/${sessionSlug}`);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to approve sync'
@@ -79,13 +80,14 @@ export default function SyncReviewCockpit({
     setError(null);
 
     try {
+      const sessionSlug = session.documentId || session.id.toString();
       await correctSync(
-        session.id.toString(),
+        sessionSlug,
         manualOffsets,
         authToken,
         notes
       );
-      router.push(`/${locale}/studio/sessions/${session.id}`);
+      router.push(`/${locale}/studio/sessions/${sessionSlug}`);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to correct sync'

@@ -19,12 +19,14 @@ export default function SessionActions({
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sessionSlug = session.documentId || session.id.toString();
+
   const handleTriggerSync = async () => {
     setIsSyncing(true);
     setError(null);
 
     try {
-      await triggerSync(session.id.toString(), authToken, session.anchorAngle);
+      await triggerSync(sessionSlug, authToken, session.anchorAngle);
       // Refresh the page to show updated status
       router.refresh();
     } catch (err) {
@@ -96,7 +98,7 @@ export default function SessionActions({
           {
             type: 'link' as const,
             label: 'Review Sync Results',
-            href: `/${locale}/studio/sessions/${session.id}/sync-review`,
+            href: `/${locale}/studio/sessions/${sessionSlug}/sync-review`,
           },
         ];
 
@@ -105,7 +107,7 @@ export default function SessionActions({
           {
             type: 'link' as const,
             label: 'Generate Transcript',
-            href: `/${locale}/studio/sessions/${session.id}/transcript`,
+            href: `/${locale}/studio/sessions/${sessionSlug}/transcript`,
           },
         ];
 
@@ -114,7 +116,7 @@ export default function SessionActions({
           {
             type: 'link' as const,
             label: 'Edit Timeline',
-            href: `/${locale}/studio/sessions/${session.id}/edl`,
+            href: `/${locale}/studio/sessions/${sessionSlug}/edl`,
           },
         ];
 
