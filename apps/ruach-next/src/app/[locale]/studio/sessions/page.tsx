@@ -245,7 +245,7 @@ export default async function SessionsPage({
                       <StatusBadge status={s.status} />
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(s.recordingDate).toLocaleDateString()}
+                      {s.recordingDate ? new Date(s.recordingDate).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-1">
@@ -258,7 +258,7 @@ export default async function SessionsPage({
                     </td>
                     <td className="px-6 py-4 text-right text-sm">
                       <Link
-                        href={`/${locale}/studio/sessions/${s.id}`}
+                        href={`/${locale}/studio/sessions/${s.documentId || s.id}`}
                         className="text-ruachGold hover:text-opacity-80 font-medium"
                       >
                         View →

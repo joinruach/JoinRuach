@@ -108,8 +108,8 @@ function isPageEnabled(page: string, status: SessionStatus): boolean {
   if (page === 'transcript')
     return currentIndex >= statusOrder.indexOf('synced');
 
-  // EDL enabled once editing
-  if (page === 'edl') return currentIndex >= statusOrder.indexOf('editing');
+  // EDL enabled once synced (page accepts synced or editing)
+  if (page === 'edl') return currentIndex >= statusOrder.indexOf('synced');
 
   return false;
 }
@@ -124,6 +124,7 @@ export default function SessionSidebar({
   const pathname = usePathname();
 
   const primaryAction = getPrimaryAction(session.status);
+  const sessionSlug = session.documentId || session.id;
 
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
@@ -143,17 +144,17 @@ export default function SessionSidebar({
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         <NavLink
-          href={`/${locale}/studio/sessions/${session.id}`}
+          href={`/${locale}/studio/sessions/${sessionSlug}`}
           active={
-            pathname === `/${locale}/studio/sessions/${session.id}` ||
-            (pathname?.endsWith(`/sessions/${session.id}`) ?? false)
+            pathname === `/${locale}/studio/sessions/${sessionSlug}` ||
+            (pathname?.endsWith(`/sessions/${sessionSlug}`) ?? false)
           }
         >
           Overview
         </NavLink>
 
         <NavLink
-          href={`/${locale}/studio/sessions/${session.id}/sync-review`}
+          href={`/${locale}/studio/sessions/${sessionSlug}/sync-review`}
           active={pathname?.includes('sync-review') ?? false}
           disabled={!isPageEnabled('sync-review', session.status)}
         >
@@ -161,7 +162,7 @@ export default function SessionSidebar({
         </NavLink>
 
         <NavLink
-          href={`/${locale}/studio/sessions/${session.id}/transcript`}
+          href={`/${locale}/studio/sessions/${sessionSlug}/transcript`}
           active={pathname?.includes('transcript') ?? false}
           disabled={!isPageEnabled('transcript', session.status)}
         >
@@ -169,7 +170,7 @@ export default function SessionSidebar({
         </NavLink>
 
         <NavLink
-          href={`/${locale}/studio/sessions/${session.id}/edl`}
+          href={`/${locale}/studio/sessions/${sessionSlug}/edl`}
           active={pathname?.includes('edl') ?? false}
           disabled={!isPageEnabled('edl', session.status)}
         >
@@ -181,7 +182,7 @@ export default function SessionSidebar({
       {primaryAction && (
         <div className="p-4 border-t border-gray-800">
           <Link
-            href={`/${locale}/studio/sessions/${session.id}${primaryAction.href}`}
+            href={`/${locale}/studio/sessions/${sessionSlug}${primaryAction.href}`}
             className="block w-full px-4 py-2 bg-ruachGold text-ruachDark text-center rounded-lg hover:bg-opacity-90 transition-colors font-medium"
           >
             {primaryAction.label}

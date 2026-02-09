@@ -22,21 +22,21 @@ export const CameraAngleSchema = z.enum(['A', 'B', 'C']);
 
 export const SessionSchema = z.object({
   id: z.number(),
-  documentId: z.string().optional(),
+  documentId: z.string().nullable().optional(),
   sessionId: z.string(),
   title: z.string(),
   status: SessionStatusSchema,
-  operatorStatus: OperatorStatusSchema.optional(),
-  syncOffsets_ms: z.record(z.number()).optional(),
-  syncConfidence: z.record(z.number()).optional(),
-  syncMethod: z.enum(['audio-offset-finder', 'manual', 'timecode']).optional(),
-  anchorAngle: CameraAngleSchema.optional(),
-  recordingDate: z.string(), // ISO date string
-  description: z.string().optional(),
-  durationMs: z.number().optional(),
+  operatorStatus: OperatorStatusSchema.nullable().optional(),
+  syncOffsets_ms: z.record(z.number()).nullable().optional(),
+  syncConfidence: z.record(z.number()).nullable().optional(),
+  syncMethod: z.enum(['audio-offset-finder', 'manual', 'timecode']).nullable().optional(),
+  anchorAngle: CameraAngleSchema.nullable().optional(),
+  recordingDate: z.string().nullable(), // ISO date string
+  description: z.string().nullable().optional(),
+  durationMs: z.number().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  publishedAt: z.string().optional(),
+  publishedAt: z.string().nullable().optional(),
 });
 
 export const AssetSchema = z.object({

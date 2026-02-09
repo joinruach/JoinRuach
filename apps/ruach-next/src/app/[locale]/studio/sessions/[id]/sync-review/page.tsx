@@ -24,16 +24,19 @@ export default async function SyncReviewPage({
 
   // Fetch session and assets
   let recordingSession;
-  let assets;
+  let assets: Awaited<ReturnType<typeof getSessionAssets>> = [];
 
   try {
-    [recordingSession, assets] = await Promise.all([
-      getSession(id, session.strapiJwt),
-      getSessionAssets(id, session.strapiJwt),
-    ]);
+    recordingSession = await getSession(id, session.strapiJwt);
   } catch (error) {
-    console.error('[Sync Review] Failed to fetch data:', error);
+    console.error('[Sync Review] Failed to fetch session:', error);
     redirect(`/${locale}/studio/sessions/${id}?error=fetch_failed`);
+  }
+
+  try {
+    assets = await getSessionAssets(id, session.strapiJwt);
+  } catch {
+    // Assets endpoint may not exist yet — continue with empty array
   }
 
   // Check if sync data is available

@@ -35,7 +35,7 @@ async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
     });
 
     if (!response.ok) {
-      console.error('[Inbox] Failed to fetch ingestion versions:', response.status);
+      console.warn('[Inbox] Failed to fetch ingestion versions:', response.status);
       return [];
     }
 
@@ -92,7 +92,7 @@ async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
         updatedAt: version.completedAt || version.createdAt,
       }));
   } catch (error) {
-    console.error('[Inbox] Error fetching ingestion inbox:', error);
+    console.warn('[Inbox] Error fetching ingestion inbox:', error);
     return [];
   }
 }

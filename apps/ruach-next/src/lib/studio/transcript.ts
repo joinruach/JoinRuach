@@ -86,14 +86,19 @@ export async function getTranscript(
   sessionId: string,
   authToken: string
 ): Promise<Transcript | null> {
-  const response = await apiFetch<{ data: { transcript: Transcript | null } }>(
-    '/api/recording-sessions/' + sessionId + '/transcript',
-    {
-      method: 'GET',
-      authToken,
-    }
-  );
-  return response.data?.transcript || null;
+  try {
+    const response = await apiFetch<{ data: { transcript: Transcript | null } }>(
+      '/api/recording-sessions/' + sessionId + '/transcript',
+      {
+        method: 'GET',
+        authToken,
+      }
+    );
+    return response.data?.transcript || null;
+  } catch {
+    // Transcript endpoint may not exist yet — return null
+    return null;
+  }
 }
 
 export async function updateTranscriptSegments(

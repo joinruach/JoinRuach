@@ -19,16 +19,20 @@ export default async function SessionDetailPage({
 
   // Fetch session and assets
   let recordingSession;
-  let assets;
+  let assets: Awaited<ReturnType<typeof getSessionAssets>> = [];
 
   try {
-    [recordingSession, assets] = await Promise.all([
-      getSession(id, session.strapiJwt),
-      getSessionAssets(id, session.strapiJwt),
-    ]);
+    recordingSession = await getSession(id, session.strapiJwt);
   } catch (error) {
-    console.error('[Session Detail] Failed to fetch data:', error);
+    console.error('[Session Detail] Failed to fetch session:', error);
     redirect(`/${locale}/studio/sessions?error=fetch_failed`);
+  }
+
+  try {
+    assets = await getSessionAssets(id, session.strapiJwt);
+  } catch (error) {
+    console.warn('[Session Detail] Failed to fetch assets (non-fatal):', error);
+    // Assets may not exist yet — continue with empty array
   }
 
   return (
