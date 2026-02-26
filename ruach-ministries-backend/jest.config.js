@@ -17,6 +17,7 @@ module.exports = {
         tsconfig: {
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
+          rootDir: undefined, // Allow ts-jest to compile files outside backend rootDir (e.g. shared frontend libs)
         },
       },
     ],
@@ -41,6 +42,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^server-only$': '<rootDir>/tests/__mocks__/server-only.js',
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 15000, // Strapi can be slow to start

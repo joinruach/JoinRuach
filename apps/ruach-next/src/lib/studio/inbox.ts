@@ -99,32 +99,196 @@ async function fetchIngestionInbox(jwt: string): Promise<InboxItem[]> {
 
 /**
  * Fetch render inbox items
- * Note: Render jobs API requires session IDs, so we only return failed/queued jobs for now
- * Full implementation will come in Phase 3 with a dedicated render jobs list endpoint
+ * Queries the render-job API for failed/queued jobs needing attention
  */
 async function fetchRenderInbox(jwt: string): Promise<InboxItem[]> {
-  // For Phase 2, we'll return empty array until we have a render jobs list API
-  // Phase 3 will add: GET /api/render-job/render-jobs (list all jobs)
-  // For now, individual session render jobs are accessible via /api/render-job/render-jobs/session/:id
-  return [];
+  try {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const response = await fetch(
+      `${strapiUrl}/api/render-jobs?filters[status][$in]=failed,queued,rendering&sort=updatedAt:desc&pagination[limit]=50&populate=recordingSession`,
+      {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${jwt}` },
+      }
+    );
+
+    if (!response.ok) {
+      // Endpoint may not exist yet — degrade gracefully
+      return [];
+    }
+
+    const data = await response.json();
+    const jobs = data.data || [];
+
+    return jobs.map((job: {
+      id: number;
+      documentId?: string;
+      status: string;
+      preset?: string;
+      recordingSession?: { title?: string };
+      createdAt: string;
+      updatedAt: string;
+      errorMessage?: string;
+    }) => ({
+      id: `render-${job.documentId || job.id}`,
+      category: 'render' as const,
+      entityType: 'render-job' as const,
+      entityId: job.documentId || job.id,
+
+      title: `Render: ${job.preset || 'Default'}`,
+      subtitle: job.recordingSession?.title,
+      icon: '🎬',
+
+      status: job.status as WorkflowStatus,
+      priority: job.status === 'failed' ? 'urgent' as const
+        : job.status === 'rendering' ? 'high' as const
+        : 'normal' as const,
+      reason: job.status === 'failed'
+        ? `Render failed: ${job.errorMessage || 'Unknown error'}`
+        : job.status === 'rendering'
+        ? 'Render in progress'
+        : 'Queued for rendering',
+
+      availableActions: job.status === 'failed'
+        ? ['retry', 'cancel'] as const
+        : ['review'] as const,
+      primaryAction: job.status === 'failed' ? 'retry' as const : 'review' as const,
+
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /**
- * Fetch publishing inbox items
- * TODO: Wire to actual publishing API in Phase 5
+ * Fetch publishing inbox items from the ruach-publisher plugin
  */
 async function fetchPublishInbox(jwt: string): Promise<InboxItem[]> {
-  // Mock implementation - replace with actual API call in Phase 5
-  return [];
+  try {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const response = await fetch(
+      `${strapiUrl}/api/ruach-publisher/jobs?status=failed,active,waiting,delayed`,
+      {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${jwt}` },
+      }
+    );
+
+    if (!response.ok) {
+      console.warn('[Inbox] Failed to fetch publish jobs:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || [];
+
+    return jobs.map((job: {
+      id: string;
+      platform: string;
+      mediaItemId?: number;
+      mediaItemTitle?: string;
+      workflowState: string;
+      priority: string;
+      retryAllowed: boolean;
+      failedReason?: string;
+      timestamp?: number;
+      finishedOn?: number;
+    }) => ({
+      id: `publish-${job.id}`,
+      category: 'publish' as const,
+      entityType: 'publish-job' as const,
+      entityId: job.mediaItemId || job.id,
+
+      title: job.mediaItemTitle || `Publish: ${job.platform}`,
+      subtitle: job.platform,
+      icon: '🚀',
+
+      status: job.workflowState as WorkflowStatus,
+      priority: job.priority as WorkflowPriority,
+      reason: job.workflowState === 'failed'
+        ? `Publish to ${job.platform} failed: ${job.failedReason || 'Unknown error'}`
+        : job.workflowState === 'processing'
+        ? `Publishing to ${job.platform} in progress`
+        : `Queued for ${job.platform}`,
+
+      availableActions: job.retryAllowed
+        ? ['retry', 'cancel'] as const
+        : ['review'] as const,
+      primaryAction: job.retryAllowed ? 'retry' as const : 'review' as const,
+
+      createdAt: job.timestamp ? new Date(job.timestamp).toISOString() : new Date().toISOString(),
+      updatedAt: job.finishedOn
+        ? new Date(job.finishedOn).toISOString()
+        : job.timestamp
+        ? new Date(job.timestamp).toISOString()
+        : new Date().toISOString(),
+    }));
+  } catch (error) {
+    console.warn('[Inbox] Error fetching publish inbox:', error);
+    return [];
+  }
 }
 
 /**
- * Fetch edit decision inbox items
- * TODO: Wire to actual EDL API in Phase 5
+ * Fetch edit decision inbox items from EDL content type
  */
 async function fetchEditInbox(jwt: string): Promise<InboxItem[]> {
-  // Mock implementation - replace with actual API call in Phase 5
-  return [];
+  try {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const response = await fetch(
+      `${strapiUrl}/api/edit-decision-lists?filters[status][$in]=pending,reviewing&populate=recordingSession&sort=updatedAt:desc&pagination[limit]=50`,
+      {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${jwt}` },
+      }
+    );
+
+    if (!response.ok) {
+      console.warn('[Inbox] Failed to fetch EDL inbox:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const edls = data.data || [];
+
+    return edls.map((edl: {
+      id: number;
+      documentId?: string;
+      status: string;
+      name?: string;
+      recordingSession?: { title?: string; documentId?: string };
+      createdAt: string;
+      updatedAt: string;
+    }) => ({
+      id: `edit-${edl.documentId || edl.id}`,
+      category: 'edit' as const,
+      entityType: 'media-item' as const,
+      entityId: edl.documentId || edl.id,
+
+      title: edl.name || 'Edit Decision List',
+      subtitle: edl.recordingSession?.title,
+      icon: '✂️',
+
+      status: edl.status as WorkflowStatus,
+      priority: edl.status === 'reviewing' ? 'high' as const : 'normal' as const,
+      reason: edl.status === 'reviewing'
+        ? 'EDL ready for operator review'
+        : 'EDL pending approval',
+
+      availableActions: edl.status === 'reviewing'
+        ? ['review', 'approve', 'reject'] as const
+        : ['review'] as const,
+      primaryAction: edl.status === 'reviewing' ? 'approve' as const : 'review' as const,
+
+      createdAt: edl.createdAt,
+      updatedAt: edl.updatedAt,
+    }));
+  } catch (error) {
+    console.warn('[Inbox] Error fetching edit inbox:', error);
+    return [];
+  }
 }
 
 /**

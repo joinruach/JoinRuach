@@ -1,5 +1,7 @@
 /**
  * Iron Chamber API Routes
+ *
+ * POST routes require authentication; GET routes are public (rate-limited).
  */
 
 import { writeRateLimit, readRateLimit, moderateRateLimit } from '../../../middlewares/rate-limit';
@@ -12,7 +14,7 @@ export default {
       path: '/iron-chamber/margin-reflection',
       handler: 'iron-chamber.submitMarginReflection',
       config: {
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [writeRateLimit],
       },
     },
@@ -50,7 +52,7 @@ export default {
       path: '/iron-chamber/insights/:insightId/vote',
       handler: 'iron-chamber.voteOnInsight',
       config: {
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [writeRateLimit],
       },
     },
@@ -70,7 +72,7 @@ export default {
       path: '/iron-chamber/curate-commentary',
       handler: 'iron-chamber.curateCommentary',
       config: {
-        auth: false, // TODO: Restrict to authorized curators
+        policies: ['global::is-curator-or-admin'],
         middlewares: [moderateRateLimit],
       },
     },
@@ -81,7 +83,7 @@ export default {
       path: '/iron-chamber/analyze-reflection/:reflectionId',
       handler: 'iron-chamber.analyzeReflection',
       config: {
-        auth: false,
+        policies: ['global::is-curator-or-admin'],
         middlewares: [moderateRateLimit],
       },
     },

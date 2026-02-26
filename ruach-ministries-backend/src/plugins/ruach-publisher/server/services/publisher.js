@@ -6,6 +6,7 @@
 
 'use strict';
 
+const crypto = require('crypto');
 const logger = require('../../../../config/logger');
 
 module.exports = ({ strapi }) => ({
@@ -57,20 +58,22 @@ module.exports = ({ strapi }) => ({
       return { queued: 0, platforms: [] };
     }
 
+    const correlationId = crypto.randomUUID();
     const jobPromises = [];
 
     // Queue a job for each enabled platform
     for (const platform of enabledPlatforms) {
       logger.debug(`Queueing job for platform: ${platform}`, {
         category: 'publisher',
+        correlationId,
         mediaItemId: mediaItem.id,
         platform,
       });
 
-      // Add job to queue
       const jobPromise = queue.add(
         `publish-${platform}`,
         {
+          correlationId,
           mediaItem: {
             id: mediaItem.id,
             title: mediaItem.title,
@@ -91,11 +94,11 @@ module.exports = ({ strapi }) => ({
       jobPromises.push(jobPromise);
     }
 
-    // Wait for all jobs to be queued
     const jobs = await Promise.all(jobPromises);
 
     logger.info('Media item distribution queued', {
       category: 'publisher',
+      correlationId,
       mediaItemId: mediaItem.id,
       queuedCount: jobs.length,
       platforms: enabledPlatforms,
@@ -103,6 +106,7 @@ module.exports = ({ strapi }) => ({
     });
 
     return {
+      correlationId,
       queued: jobs.length,
       platforms: enabledPlatforms,
       jobIds: jobs.map((j) => j.id),
@@ -117,13 +121,15 @@ module.exports = ({ strapi }) => ({
    * @returns {Promise<object>} - Job information
    */
   async retry(mediaItemId, platform) {
+    const correlationId = crypto.randomUUID();
+
     logger.info('Manually retrying publish', {
       category: 'publisher',
+      correlationId,
       mediaItemId,
       platform,
     });
 
-    // Fetch the media item
     const mediaItem = await strapi.entityService.findOne(
       'api::media-item.media-item',
       mediaItemId,
@@ -142,10 +148,10 @@ module.exports = ({ strapi }) => ({
       throw new Error('Publisher queue not initialized');
     }
 
-    // Queue the retry job
     const job = await queue.add(
       `publish-${platform}`,
       {
+        correlationId,
         mediaItem: {
           id: mediaItem.id,
           title: mediaItem.title,
@@ -165,12 +171,14 @@ module.exports = ({ strapi }) => ({
 
     logger.info('Retry job queued', {
       category: 'publisher',
+      correlationId,
       mediaItemId,
       platform,
       jobId: job.id,
     });
 
     return {
+      correlationId,
       jobId: job.id,
       platform,
       mediaItemId,
@@ -219,10 +227,12 @@ module.exports = ({ strapi }) => ({
       jobs: await Promise.all(
         mediaItemJobs.map(async (job) => ({
           id: job.id,
+          correlationId: job.data?.correlationId || null,
           platform: job.data.platform,
           state: job.state,
           attemptsMade: job.attemptsMade || 0,
           timestamp: job.timestamp,
+          processedOn: job.processedOn,
           finishedOn: job.finishedOn,
           failedReason: job.failedReason,
         }))

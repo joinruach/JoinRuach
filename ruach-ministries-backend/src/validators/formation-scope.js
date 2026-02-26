@@ -172,38 +172,98 @@ function formatScopeValidationError(result) {
 }
 
 /**
- * Check if user has completed prerequisites for a given scope
- * (For future use in Formation Engine gating)
+ * Check if user has completed prerequisites for a given scope.
+ *
+ * Gating rules:
+ * - Individual: always accessible
+ * - Household: requires ≥70% Individual completion
+ * - Ecclesia: requires Individual complete + ≥50% Household
+ * - Network: requires Individual + Ecclesia complete
  *
  * @param {number} userId - User ID
  * @param {string} targetScope - Target formation scope
- * @returns {Promise<boolean>} Whether user meets prerequisites
+ * @returns {Promise<{eligible: boolean, reason?: string, completedScopes: Object}>}
  */
 async function checkScopePrerequisites(userId, targetScope) {
-  // Placeholder for future implementation
-  // Will check user progress against scope requirements
+  const completedScopes = {
+    Individual: 0,
+    Household: 0,
+    Ecclesia: 0,
+    Network: 0,
+  };
+
+  // Individual is always open
+  if (targetScope === 'Individual') {
+    return { eligible: true, completedScopes };
+  }
+
+  // Query formation journey progress per scope
+  try {
+    const journeys = await strapi.db.query('api::formation-journey.formation-journey').findMany({
+      where: { user: userId },
+      select: ['formationScope', 'completedNodes', 'totalNodes'],
+    });
+
+    for (const journey of journeys) {
+      const scope = journey.formationScope;
+      const total = journey.totalNodes || 1;
+      const completed = journey.completedNodes || 0;
+      const pct = Math.round((completed / total) * 100);
+      if (scope && completedScopes.hasOwnProperty(scope)) {
+        completedScopes[scope] = pct;
+      }
+    }
+  } catch (error) {
+    console.warn(`[Formation Scope] Could not fetch journey progress for user ${userId}:`, error);
+    // If we can't check, fail open for Household (safe), closed for Network (risky)
+    if (targetScope === 'Household') {
+      return { eligible: true, reason: 'Progress check unavailable — defaulting open', completedScopes };
+    }
+    return { eligible: false, reason: 'Unable to verify prerequisites', completedScopes };
+  }
 
   switch (targetScope) {
-    case 'Individual':
-      return true; // Always accessible
+    case 'Household': {
+      const eligible = completedScopes.Individual >= 70;
+      return {
+        eligible,
+        reason: eligible
+          ? undefined
+          : `Individual formation must be at least 70% complete (currently ${completedScopes.Individual}%)`,
+        completedScopes,
+      };
+    }
 
-    case 'Household':
-      // Requires completion of core Individual nodes
-      // TODO: Implement prerequisite checking
-      return true;
+    case 'Ecclesia': {
+      const indComplete = completedScopes.Individual >= 100;
+      const householdHalf = completedScopes.Household >= 50;
+      const eligible = indComplete && householdHalf;
+      const reasons = [];
+      if (!indComplete) reasons.push(`Individual formation must be complete (currently ${completedScopes.Individual}%)`);
+      if (!householdHalf) reasons.push(`Household formation must be at least 50% complete (currently ${completedScopes.Household}%)`);
+      return {
+        eligible,
+        reason: eligible ? undefined : reasons.join('; '),
+        completedScopes,
+      };
+    }
 
-    case 'Ecclesia':
-      // Requires Individual formation + certain Household completion
-      // TODO: Implement prerequisite checking
-      return true;
-
-    case 'Network':
-      // Requires full Individual + Ecclesia formation
-      // TODO: Implement prerequisite checking
-      return false; // Locked by default
+    case 'Network': {
+      const indDone = completedScopes.Individual >= 100;
+      const ecclDone = completedScopes.Ecclesia >= 100;
+      const eligible = indDone && ecclDone;
+      const reasons = [];
+      if (!indDone) reasons.push(`Individual formation must be complete (currently ${completedScopes.Individual}%)`);
+      if (!ecclDone) reasons.push(`Ecclesia formation must be complete (currently ${completedScopes.Ecclesia}%)`);
+      return {
+        eligible,
+        reason: eligible ? undefined : reasons.join('; '),
+        completedScopes,
+      };
+    }
 
     default:
-      return false;
+      return { eligible: false, reason: `Unknown scope: ${targetScope}`, completedScopes };
   }
 }
 

@@ -272,9 +272,92 @@ export async function submitReview(ctx: any) {
   }
 }
 
+/**
+ * POST /api/ingestion/retry
+ * Re-enqueue a failed ingestion job
+ */
+export async function retry(ctx: any) {
+  const { strapi } = ctx as { strapi: Core.Strapi };
+
+  try {
+    const { versionId } = ctx.request.body;
+
+    if (!versionId) {
+      return ctx.badRequest('Missing required field: versionId');
+    }
+
+    const db = strapi.db.connection;
+
+    // Fetch existing version + source
+    const version = await db('scripture_versions')
+      .join('scripture_sources', 'scripture_versions.source_id', 'scripture_sources.id')
+      .select(
+        'scripture_versions.*',
+        'scripture_sources.source_id',
+        'scripture_sources.file_url',
+        'scripture_sources.file_type'
+      )
+      .where('scripture_versions.version_id', versionId)
+      .first();
+
+    if (!version) {
+      return ctx.notFound(`Version ${versionId} not found`);
+    }
+
+    if (version.status !== 'failed') {
+      return ctx.badRequest(`Cannot retry version with status "${version.status}" — only failed jobs can be retried`);
+    }
+
+    // Reset status to pending
+    await db('scripture_versions')
+      .where({ version_id: versionId })
+      .update({
+        status: 'pending',
+        progress: 0,
+        updated_at: new Date(),
+      });
+
+    // Determine content type from source_id prefix
+    const contentType = version.source_id.startsWith('scr:')
+      ? 'scripture'
+      : version.source_id.startsWith('canon:')
+        ? 'canon'
+        : 'library';
+
+    const params = version.ingestion_params
+      ? JSON.parse(version.ingestion_params)
+      : {};
+
+    // Re-enqueue the job
+    const jobId = await enqueueIngestion({
+      contentType,
+      sourceId: version.source_id,
+      versionId,
+      fileUrl: version.file_url,
+      fileType: version.file_type || 'pdf',
+      ...(contentType === 'scripture' && { scriptureParams: params }),
+      ...(contentType === 'canon' && { canonParams: params }),
+      ...(contentType === 'library' && { libraryParams: params }),
+    });
+
+    strapi.log.info(`[ingestion] Retried version ${versionId}, new job ${jobId}`);
+
+    ctx.body = {
+      success: true,
+      jobId,
+      versionId,
+      status: 'pending',
+    };
+  } catch (error) {
+    strapi.log.error('[ingestion] Retry failed', error);
+    ctx.internalServerError('Failed to retry ingestion job');
+  }
+}
+
 // Export as default object for Strapi controller
 export default {
   enqueue,
   listVersions,
   submitReview,
+  retry,
 };

@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "content_likes",
+  "info": {
+    "singularName": "content-like",
+    "pluralName": "content-likes",
+    "displayName": "Content Like"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "contentType": {
+      "type": "enumeration",
+      "enum": ["media", "course", "series", "event"],
+      "required": true
+    },
+    "contentId": {
+      "type": "string",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

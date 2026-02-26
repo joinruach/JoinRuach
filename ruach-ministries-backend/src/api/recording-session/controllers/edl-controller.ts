@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { generateFCPXML } from '../../../services/fcpxml-generator';
 
 /**
  * Phase 11: EDL Controller
@@ -217,12 +218,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           contentType = 'application/json';
           break;
 
-        case 'fcpxml':
-          // TODO: Implement FCP XML export
-          content = '<?xml version="1.0" encoding="UTF-8"?>\n<fcpxml version="1.10">\n<!-- FCP XML export not yet implemented -->\n</fcpxml>';
+        case 'fcpxml': {
+          const sessionTitle = edlData.session?.title || `Session ${id}`;
+          content = generateFCPXML(edlData.canonicalEdl, sessionTitle);
           filename = `session-${id}.fcpxml`;
           contentType = 'application/xml';
           break;
+        }
 
         default:
           return ctx.badRequest(`Unsupported export format: ${format}`);

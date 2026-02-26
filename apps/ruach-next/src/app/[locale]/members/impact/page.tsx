@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import LocalizedLink from "@/components/navigation/LocalizedLink";
 import { getUser } from "@/lib/strapi-user";
+import { auth } from "@/lib/auth";
+import { getPartnerProfile, getPartnerMetrics, getDonationHistory } from "@/lib/partner-data";
 import ImpactMetrics from "@/components/partners/ImpactMetrics";
 import DonationHistory from "@/components/partners/DonationHistory";
 
@@ -24,60 +26,56 @@ export default async function ImpactDashboardPage({
     redirect(`/${locale}/login?redirect=/${locale}/members/impact`);
   }
 
-  // TODO: Fetch real partner data from Stripe/Strapi
-  // For now, using mock data for demonstration
-  const partnerTier = "Advocate"; // Could be: Friend, Advocate, Ambassador
-  const memberSince = "January 2024";
+  const session = await auth();
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const jwt = (session as { strapiJwt?: string } | null)?.strapiJwt;
+
+  // Fetch real partner data from Stripe + Strapi
+  const profile = jwt
+    ? await getPartnerProfile(strapiUrl, jwt)
+    : { tier: "Supporter", memberSince: null, stripeCustomerId: null };
+
+  const partnerTier = profile.tier;
+  const memberSince = profile.memberSince || "Recently joined";
+
+  // Fetch Stripe metrics if customer ID exists
+  let metrics = { lifetimeTotal: 0, thisYearTotal: 0, donationCount: 0, firstDonationDate: null as string | null };
+  let donationHistory: { id: string; date: string; amount: number; method: string; status: "completed" | "pending" | "failed" | "refunded"; receiptUrl: string | null }[] = [];
+
+  if (profile.stripeCustomerId) {
+    try {
+      [metrics, donationHistory] = await Promise.all([
+        getPartnerMetrics(profile.stripeCustomerId),
+        getDonationHistory(profile.stripeCustomerId, 10),
+      ]);
+    } catch (error) {
+      console.warn("[Impact] Failed to fetch Stripe data:", error);
+    }
+  }
+
+  const currentYear = new Date().getFullYear();
+  const estimatedReach = Math.round(metrics.lifetimeTotal * 2);
 
   const impactMetrics = [
     {
       label: "Total Contributions",
-      value: "$1,200",
+      value: `$${metrics.lifetimeTotal.toLocaleString()}`,
       description: "Lifetime giving",
-      trend: { value: 15, direction: "up" as const },
     },
     {
       label: "This Year",
-      value: "$800",
-      description: "2024 donations",
+      value: `$${metrics.thisYearTotal.toLocaleString()}`,
+      description: `${currentYear} donations`,
     },
     {
       label: "Lives Impacted",
-      value: "2,400",
+      value: estimatedReach > 0 ? estimatedReach.toLocaleString() : "—",
       description: "Est. people reached",
-      trend: { value: 23, direction: "up" as const },
     },
     {
-      label: "Content Funded",
-      value: "8",
-      description: "Videos & resources",
-    },
-  ];
-
-  const donationHistory = [
-    {
-      id: "don_1",
-      date: "2024-11-01",
-      amount: 100,
-      method: "Credit Card",
-      status: "completed" as const,
-      receiptUrl: "/api/receipts/don_1",
-    },
-    {
-      id: "don_2",
-      date: "2024-10-01",
-      amount: 100,
-      method: "Credit Card",
-      status: "completed" as const,
-      receiptUrl: "/api/receipts/don_2",
-    },
-    {
-      id: "don_3",
-      date: "2024-09-01",
-      amount: 100,
-      method: "Credit Card",
-      status: "completed" as const,
-      receiptUrl: "/api/receipts/don_3",
+      label: "Donations",
+      value: metrics.donationCount.toString(),
+      description: "Total transactions",
     },
   ];
 
@@ -206,8 +204,11 @@ export default async function ImpactDashboardPage({
         <p className="text-sm text-zinc-600 dark:text-white/70">
           Download your complete donation statement for tax purposes.
         </p>
-        <button className="rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-500">
-          Download 2024 Tax Receipt
+        <button
+          className="rounded-full bg-amber-400 px-6 py-2 text-sm font-semibold text-black transition hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!profile.stripeCustomerId}
+        >
+          Download {currentYear} Tax Receipt
         </button>
       </section>
     </div>

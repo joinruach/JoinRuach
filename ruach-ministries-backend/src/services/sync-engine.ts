@@ -7,6 +7,12 @@ import * as os from "os";
 
 const execFileAsync = promisify(execFile);
 
+import {
+  analyzeAudioQuality,
+  computeAudioScore,
+  type AudioMetrics,
+} from './audio-quality-analyzer';
+
 /**
  * Phase 9: Auto-Sync Engine
  *
@@ -293,9 +299,10 @@ export default {
   },
 
   /**
-   * Select master camera based on audio quality heuristic
-   * Currently defaults to anchorAngle or 'A'
-   * TODO: Implement audio quality analysis (RMS loudness, noise floor)
+   * Select master camera based on audio quality analysis via ffprobe.
+   *
+   * Scores each camera on: RMS loudness, peak level, noise floor.
+   * Falls back to anchorAngle if analysis fails or scores are ambiguous.
    */
   async selectMasterCamera(
     this: any,
@@ -312,8 +319,77 @@ export default {
       throw new Error(`Session ${sessionId} not found`);
     }
 
-    // For now, return anchorAngle or default to 'A'
-    // Future: Analyze audio quality and pick best
-    return session.anchorAngle || 'A';
+    const assets = session.assets || [];
+    if (assets.length === 0) {
+      return session.anchorAngle || 'A';
+    }
+
+    const tempDir = path.join(os.tmpdir(), `audio-quality-${sessionId}-${Date.now()}`);
+
+    try {
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const scores: Array<{ camera: string; score: number; metrics: AudioMetrics }> = [];
+
+      for (const asset of assets) {
+        const audioUrl = asset.r2_audio_wav_url || asset.r2_original_url;
+        if (!audioUrl) {
+          strapi.log.warn(`[sync-engine] Camera ${asset.angle} has no audio URL, skipping quality check`);
+          continue;
+        }
+
+        try {
+          const audioPath = await this._downloadAudio(audioUrl, tempDir, `quality-${asset.angle}.wav`, strapi);
+          const metrics = await analyzeAudioQuality(audioPath);
+          const score = computeAudioScore(metrics);
+
+          scores.push({ camera: asset.angle, score, metrics });
+
+          strapi.log.info(
+            `[sync-engine] Camera ${asset.angle} audio score=${score.toFixed(2)} ` +
+            `(rms=${metrics.rmsLevelDb.toFixed(1)}dB, peak=${metrics.peakLevelDb.toFixed(1)}dB, noise=${metrics.noiseFloorDb.toFixed(1)}dB)`
+          );
+        } catch (error) {
+          strapi.log.warn(
+            `[sync-engine] Audio quality analysis failed for camera ${asset.angle}:`,
+            error instanceof Error ? error.message : error
+          );
+        }
+      }
+
+      if (scores.length === 0) {
+        strapi.log.info(`[sync-engine] No audio scores available, falling back to anchorAngle`);
+        return session.anchorAngle || 'A';
+      }
+
+      scores.sort((a, b) => b.score - a.score);
+      const best = scores[0];
+      const second = scores[1];
+
+      // If top two scores are within 5% of each other, prefer the anchor angle for stability
+      if (second && (best.score - second.score) / best.score < 0.05) {
+        const anchorCamera = scores.find(s => s.camera === (session.anchorAngle || 'A'));
+        if (anchorCamera) {
+          strapi.log.info(
+            `[sync-engine] Scores ambiguous (${best.camera}=${best.score.toFixed(2)} vs ${second.camera}=${second.score.toFixed(2)}), ` +
+            `preferring anchor camera ${anchorCamera.camera}`
+          );
+          return anchorCamera.camera;
+        }
+      }
+
+      strapi.log.info(`[sync-engine] Selected master camera: ${best.camera} (score=${best.score.toFixed(2)})`);
+      return best.camera;
+    } finally {
+      if (fs.existsSync(tempDir)) {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch (err) {
+          strapi.log.warn(`[sync-engine] Failed to cleanup temp directory: ${tempDir}`);
+        }
+      }
+    }
   }
 };

@@ -5,7 +5,7 @@ export default {
       path: '/ingestion/enqueue',
       handler: 'ingestion.enqueue',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
@@ -23,7 +23,16 @@ export default {
       path: '/ingestion/review',
       handler: 'ingestion.submitReview',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
+        middlewares: [],
+      },
+    },
+    {
+      method: 'POST',
+      path: '/ingestion/retry',
+      handler: 'ingestion.retry',
+      config: {
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },

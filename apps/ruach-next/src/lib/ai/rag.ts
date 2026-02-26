@@ -229,10 +229,9 @@ export async function getRelevantContext(
 
   // Get user history if userId provided
   let userHistory: Array<{ title: string; contentType: string; watchedAt: Date }> = [];
-  // TODO: Implement user history fetching
-  // if (userId) {
-  //   userHistory = await getUserRecentViews(userId, 3);
-  // }
+  if (userId) {
+    userHistory = await getUserRecentViews(userId, 5);
+  }
 
   return {
     contextText,
@@ -338,4 +337,54 @@ function buildContentUrl(contentType: string, slugOrId: string | number): string
 
   const base = baseMap[contentType] || '/';
   return `${base}/${slugOrId}`;
+}
+
+/**
+ * Fetch user's recent viewing history from media-progress entries
+ */
+async function getUserRecentViews(
+  userId: number,
+  limit: number
+): Promise<Array<{ title: string; contentType: string; watchedAt: Date }>> {
+  try {
+    const params = new URLSearchParams({
+      'filters[user][id][$eq]': userId.toString(),
+      'sort[0]': 'updatedAt:desc',
+      'pagination[limit]': limit.toString(),
+      'populate[mediaItem][fields][0]': 'title',
+      'populate[mediaItem][fields][1]': 'type',
+      'populate[course][fields][0]': 'title',
+    });
+
+    const response = await getJSON<{
+      data: Array<{
+        id: number;
+        attributes?: {
+          updatedAt?: string;
+          mediaItem?: {
+            data?: { attributes?: { title?: string; type?: string } | null } | null;
+          } | null;
+          course?: {
+            data?: { attributes?: { title?: string } | null } | null;
+          } | null;
+        };
+      }>;
+    }>(`/api/media-progresses?${params}`);
+
+    return (response.data || []).map((entry) => {
+      const attrs = entry.attributes;
+      const mediaTitle = attrs?.mediaItem?.data?.attributes?.title;
+      const courseTitle = attrs?.course?.data?.attributes?.title;
+      const contentType = attrs?.course?.data ? 'course' : 'media';
+
+      return {
+        title: mediaTitle || courseTitle || 'Unknown content',
+        contentType,
+        watchedAt: new Date(attrs?.updatedAt || Date.now()),
+      };
+    });
+  } catch (error) {
+    console.warn('[RAG] Failed to fetch user history:', error);
+    return [];
+  }
 }

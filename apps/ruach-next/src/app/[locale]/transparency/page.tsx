@@ -19,10 +19,8 @@ export default async function Transparency({
 }) {
   await params;
 
-  // TODO: Update this date when financial information changes
-  const lastUpdated = "December 2024";
-  // TODO: Replace with actual EIN number
-  const ein = "33-3149173";
+  const lastUpdated = process.env.NEXT_PUBLIC_TRANSPARENCY_UPDATED || "February 2026";
+  const ein = process.env.NEXT_PUBLIC_ORG_EIN || "33-3149173";
 
   return (
     <div className="space-y-12">

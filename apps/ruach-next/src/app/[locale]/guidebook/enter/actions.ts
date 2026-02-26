@@ -167,23 +167,52 @@ export async function getUserCovenantStatus(userId: string): Promise<{
   covenantType?: CovenantType;
   enteredAt?: Date;
 }> {
-  // TODO: Query Strapi for user's covenant entry event
-  // For now, return placeholder
+  try {
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+    const token = process.env.STRAPI_FORMATION_TOKEN;
 
-  // In production:
-  // const events = await fetch(
-  //   `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/formation-events?filters[userId][$eq]=${userId}&filters[eventType][$eq]=${FormationEventType.CovenantEntered}&sort=timestamp:desc&pagination[limit]=1`
-  // );
-  //
-  // if (events.data.length > 0) {
-  //   return {
-  //     hasEntered: true,
-  //     covenantType: events.data[0].data.covenantType,
-  //     enteredAt: new Date(events.data[0].timestamp),
-  //   };
-  // }
+    if (!strapiUrl) {
+      return { hasEntered: false };
+    }
 
-  return {
-    hasEntered: false,
-  };
+    const params = new URLSearchParams({
+      'filters[userId][$eq]': userId,
+      'filters[eventType][$eq]': FormationEventType.CovenantEntered,
+      'sort[0]': 'timestamp:desc',
+      'pagination[limit]': '1',
+    });
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${strapiUrl}/api/formation-events?${params}`,
+      { headers, cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      return { hasEntered: false };
+    }
+
+    const json = await response.json();
+    const events = json.data || [];
+
+    if (events.length === 0) {
+      return { hasEntered: false };
+    }
+
+    const event = events[0];
+    const attrs = event.attributes || event;
+
+    return {
+      hasEntered: true,
+      covenantType: attrs.data?.covenantType || attrs.covenantType,
+      enteredAt: new Date(attrs.timestamp || attrs.createdAt),
+    };
+  } catch (error) {
+    console.warn('[Covenant Status] Failed to query status:', error);
+    return { hasEntered: false };
+  }
 }

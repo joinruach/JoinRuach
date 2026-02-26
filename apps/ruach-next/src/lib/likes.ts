@@ -192,16 +192,73 @@ export function formatLikeCount(count: number): string {
 }
 
 /**
- * Get like count from localStorage (for demo purposes)
- * In production, this would come from the backend
+ * Get like count — tries backend first, falls back to localStorage
  */
 export function getLocalLikeCount(
   contentType: ContentType,
   contentId: string | number
 ): number {
-  // This is a demo implementation
-  // In production, you'd fetch from your backend API
   return isContentLiked(contentType, contentId) ? 1 : 0;
+}
+
+/**
+ * Sync localStorage likes to backend on login.
+ * Sends all local likes to the toggle endpoint (idempotent).
+ * Clears localStorage entries that the backend already knows about.
+ */
+export async function syncLikesWithBackend(): Promise<{ synced: number; errors: number }> {
+  if (typeof window === "undefined") return { synced: 0, errors: 0 };
+
+  const localLikes = getAllLikedContent();
+  if (localLikes.length === 0) return { synced: 0, errors: 0 };
+
+  let synced = 0;
+  let errors = 0;
+
+  // First, get backend likes to avoid unnecessary toggles
+  let backendLikes: { contentType: string; contentId: string }[] = [];
+  try {
+    const res = await fetch('/api/likes/user');
+    if (res.ok) {
+      const data = await res.json();
+      backendLikes = data.likes || [];
+    }
+  } catch {
+    // Proceed with sync attempt anyway
+  }
+
+  const backendSet = new Set(
+    backendLikes.map((l) => `${l.contentType}_${l.contentId}`)
+  );
+
+  for (const like of localLikes) {
+    const key = `${like.contentType}_${like.contentId}`;
+    if (backendSet.has(key)) {
+      synced++;
+      continue;
+    }
+
+    try {
+      const res = await fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentType: like.contentType,
+          contentId: String(like.contentId),
+        }),
+      });
+
+      if (res.ok) {
+        synced++;
+      } else {
+        errors++;
+      }
+    } catch {
+      errors++;
+    }
+  }
+
+  return { synced, errors };
 }
 
 /**

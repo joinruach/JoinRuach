@@ -64,17 +64,48 @@ export default function OperatorInbox({ items, locale }: OperatorInboxProps) {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
 
-    // For review action, navigate to detail page
-    if (action === 'review') {
+    // Navigation actions — go to detail page
+    if (action === 'review' || action === 'edit') {
       router.push(getItemDetailUrl(item, locale));
       return;
     }
 
-    // TODO: Wire up other actions to actual API endpoints in later phases
-    console.log(`Action ${action} on item ${itemId}`);
+    // Mutation actions — call API then refresh
+    try {
+      if (action === 'retry') {
+        if (item.category === 'publish') {
+          await fetch(`/api/publishing/jobs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'retry', entityId: item.entityId }),
+          });
+        } else if (item.category === 'ingest') {
+          await fetch(`/api/ingestion/retry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ versionId: item.entityId }),
+          });
+        }
+      } else if (action === 'cancel') {
+        await fetch(`/api/ingestion/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entityId: item.entityId, category: item.category }),
+        });
+      } else if (action === 'approve' || action === 'reject') {
+        await fetch(`/api/ingestion/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ versionId: item.entityId, decision: action }),
+        });
+      }
 
-    // For now, just navigate to detail page for all actions
-    router.push(getItemDetailUrl(item, locale));
+      router.refresh();
+    } catch (error) {
+      console.error(`[OperatorInbox] Action "${action}" failed for ${itemId}:`, error);
+      // Navigate to detail page as fallback so user can act manually
+      router.push(getItemDetailUrl(item, locale));
+    }
   };
 
   return (

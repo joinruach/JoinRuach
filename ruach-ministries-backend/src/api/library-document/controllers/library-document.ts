@@ -55,20 +55,126 @@ async function fullTextSearch(pool: Pool, query: string, limit: number, offset: 
 }
 
 /**
- * Semantic search using pgvector similarity
+ * Generate query embedding via OpenAI API
  */
-async function semanticSearch(pool: Pool, query: string, limit: number, offset: number, minScore: number) {
-  // TODO: Integrate with OpenAI embedding API
-  throw new Error('Semantic search requires OpenAI API integration (coming soon)');
+async function generateEmbedding(text: string): Promise<number[]> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY not configured');
+  }
+
+  const response = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'text-embedding-3-small',
+      input: text,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI embedding failed: ${err}`);
+  }
+
+  const data = await response.json();
+  return data.data[0].embedding;
 }
 
 /**
- * Hybrid search combining full-text and semantic search
+ * Semantic search using pgvector cosine similarity
+ */
+async function semanticSearch(pool: Pool, query: string, limit: number, offset: number, minScore: number) {
+  const embedding = await generateEmbedding(query);
+  const vectorLiteral = `[${embedding.join(',')}]`;
+
+  const sql = `
+    SELECT
+      c.id,
+      c.chunk_key,
+      c.chunk_text,
+      c.start_locator,
+      c.end_locator,
+      c.token_count,
+      d.id as document_id,
+      d.document_id as document_key,
+      d.title,
+      d.author,
+      d.document_type,
+      p.policy_name,
+      p.allow_rag_retrieval,
+      1 - (c.embedding <=> $1::vector) as similarity_score
+    FROM library_chunks c
+    INNER JOIN library_documents d ON c.document_id = d.id
+    INNER JOIN library_license_policies p ON d.license_policy_id = p.id
+    WHERE p.allow_rag_retrieval = true
+      AND c.embedding IS NOT NULL
+      AND 1 - (c.embedding <=> $1::vector) >= $2
+    ORDER BY similarity_score DESC
+    LIMIT $3 OFFSET $4
+  `;
+
+  const result = await pool.query(sql, [vectorLiteral, minScore, limit, offset]);
+  return result.rows.map(formatResult);
+}
+
+/**
+ * Hybrid search: combines full-text rank + vector similarity with weighted scoring
  */
 async function hybridSearch(pool: Pool, query: string, limit: number, offset: number, minScore: number) {
-  // For now, just use full-text search
-  // TODO: Implement true hybrid search when semantic search is ready
-  return fullTextSearch(pool, query, limit, offset);
+  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+
+  if (!hasOpenAI) {
+    return fullTextSearch(pool, query, limit, offset);
+  }
+
+  const embedding = await generateEmbedding(query);
+  const vectorLiteral = `[${embedding.join(',')}]`;
+
+  const sql = `
+    SELECT
+      c.id,
+      c.chunk_key,
+      c.chunk_text,
+      c.start_locator,
+      c.end_locator,
+      c.token_count,
+      d.id as document_id,
+      d.document_id as document_key,
+      d.title,
+      d.author,
+      d.document_type,
+      p.policy_name,
+      p.allow_rag_retrieval,
+      ts_rank(to_tsvector('english', c.chunk_text), plainto_tsquery('english', $1)) as fulltext_score,
+      CASE WHEN c.embedding IS NOT NULL
+        THEN 1 - (c.embedding <=> $2::vector)
+        ELSE 0
+      END as semantic_score,
+      (
+        0.4 * COALESCE(NULLIF(ts_rank(to_tsvector('english', c.chunk_text), plainto_tsquery('english', $1)), 0), 0) +
+        0.6 * CASE WHEN c.embedding IS NOT NULL
+          THEN 1 - (c.embedding <=> $2::vector)
+          ELSE 0
+        END
+      ) as relevance_score
+    FROM library_chunks c
+    INNER JOIN library_documents d ON c.document_id = d.id
+    INNER JOIN library_license_policies p ON d.license_policy_id = p.id
+    WHERE p.allow_rag_retrieval = true
+      AND (
+        to_tsvector('english', c.chunk_text) @@ plainto_tsquery('english', $1)
+        OR (c.embedding IS NOT NULL AND 1 - (c.embedding <=> $2::vector) >= $3)
+      )
+    ORDER BY relevance_score DESC
+    LIMIT $4 OFFSET $5
+  `;
+
+  const result = await pool.query(sql, [query, vectorLiteral, minScore, limit, offset]);
+  return result.rows.map(formatResult);
 }
 
 /**

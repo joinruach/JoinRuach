@@ -22,6 +22,7 @@ interface Version {
 export default function IngestionInbox({ locale }: { locale: string }) {
   const [versions, setVerses] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     status: '',
     contentType: '',
@@ -44,6 +45,28 @@ export default function IngestionInbox({ locale }: { locale: string }) {
       setLoading(false);
     }
   }, [filters]);
+
+  const handleRetry = useCallback(async (versionId: string) => {
+    setRetrying(versionId);
+    try {
+      const response = await fetch('/api/ingestion/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ versionId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        console.error('[IngestionInbox] Retry failed:', data.error);
+      }
+
+      await fetchVersions();
+    } catch (error) {
+      console.error('[IngestionInbox] Retry error:', error);
+    } finally {
+      setRetrying(null);
+    }
+  }, [fetchVersions]);
 
   useEffect(() => {
     fetchVersions();
@@ -235,7 +258,13 @@ export default function IngestionInbox({ locale }: { locale: string }) {
                       <span className="text-green-600 dark:text-green-400">✅ Complete</span>
                     )}
                     {version.status === 'failed' && (
-                      <span className="text-red-600 dark:text-red-400">❌ Failed</span>
+                      <button
+                        onClick={() => handleRetry(version.versionId)}
+                        disabled={retrying === version.versionId}
+                        className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 font-medium disabled:opacity-50"
+                      >
+                        {retrying === version.versionId ? 'Retrying…' : 'Retry'}
+                      </button>
                     )}
                   </td>
                 </tr>

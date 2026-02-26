@@ -8,6 +8,17 @@
 
 module.exports = [
   {
+    method: 'GET',
+    path: '/jobs',
+    handler: 'publisher.listJobs',
+    config: {
+      policies: [],
+      auth: {
+        scope: ['admin'],
+      },
+    },
+  },
+  {
     method: 'POST',
     path: '/publish/:id',
     handler: 'publisher.publish',

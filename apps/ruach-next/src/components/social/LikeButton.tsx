@@ -29,10 +29,27 @@ export default function LikeButton({
 
   useEffect(() => {
     setMounted(true);
-    // Check if user has liked this content
-    const liked = localStorage.getItem(storageKey) === "true";
-    setIsLiked(liked);
-  }, [storageKey]);
+    // Start with localStorage, then reconcile with backend
+    const localLiked = localStorage.getItem(storageKey) === "true";
+    setIsLiked(localLiked);
+
+    // Check backend for authoritative like state
+    fetch(`/api/likes?contentType=${contentType}&contentId=${contentId}&action=check`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.liked === "boolean") {
+          setIsLiked(data.liked);
+          if (data.liked) {
+            localStorage.setItem(storageKey, "true");
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        }
+      })
+      .catch(() => {
+        // Keep localStorage state as fallback
+      });
+  }, [storageKey, contentType, contentId]);
 
   const handleLike = async () => {
     if (isAnimating) return;
@@ -57,18 +74,28 @@ export default function LikeButton({
 
     trackLike(contentType, contentId, newLikedState);
 
-    // TODO: Make API call to backend to persist like
-    // try {
-    //   await fetch('/api/likes', {
-    //     method: 'POST',
-    //     body: JSON.stringify({ contentType, contentId, liked: newLikedState }),
-    //   });
-    // } catch (error) {
-    //   console.error('Failed to save like:', error);
-    //   // Revert on error
-    //   setIsLiked(!newLikedState);
-    //   setLikeCount(likeCount);
-    // }
+    // Persist to backend (toggle is idempotent)
+    try {
+      const res = await fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType, contentId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Reconcile with server count
+        setLikeCount(data.count);
+        setIsLiked(data.liked);
+        if (data.liked) {
+          localStorage.setItem(storageKey, "true");
+        } else {
+          localStorage.removeItem(storageKey);
+        }
+      }
+    } catch {
+      // Optimistic UI stays — localStorage is fallback
+    }
   };
 
   // Size variants

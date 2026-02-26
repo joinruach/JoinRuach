@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getJSON } from '@/lib/strapi';
+import { generateRecommendations, popularityRecommendations } from '@/lib/recommendations';
 
 export const dynamic = 'force-dynamic';
 
-// Strapi media item response type
 interface MediaItemResponse {
   id: number;
   attributes: {
@@ -13,54 +13,21 @@ interface MediaItemResponse {
     description?: string | null;
     type?: string | null;
     views?: number | null;
+    publishedAt?: string | null;
     thumbnail?: {
       data?: {
-        attributes?: {
-          url?: string;
-        } | null;
+        attributes?: { url?: string } | null;
       } | null;
     } | null;
     speakers?: {
-      data?: Array<{
-        attributes?: {
-          name?: string;
-        } | null;
-      }> | null;
+      data?: Array<{ attributes?: { name?: string } | null }> | null;
     } | null;
     tags?: {
-      data?: Array<{
-        attributes?: {
-          name?: string;
-        } | null;
-      }> | null;
+      data?: Array<{ attributes?: { name?: string } | null }> | null;
     } | null;
   };
 }
 
-// Recommendation response type
-interface Recommendation {
-  contentType: string;
-  contentId: number;
-  title: string;
-  description: string;
-  url: string;
-  thumbnailUrl?: string;
-  score: number;
-  reason: string;
-  metadata: {
-    type?: string;
-    views?: number;
-    speakers?: string[];
-    tags?: string[];
-  };
-}
-
-interface RecommendationsResponse {
-  recommendations: Recommendation[];
-  count: number;
-}
-
-// Type guard for media item
 function isValidMediaItem(item: unknown): item is MediaItemResponse {
   if (!item || typeof item !== 'object') return false;
   const i = item as Partial<MediaItemResponse>;
@@ -74,26 +41,92 @@ function isValidMediaItem(item: unknown): item is MediaItemResponse {
   );
 }
 
+function extractTags(item: MediaItemResponse): string[] {
+  return (
+    item.attributes.tags?.data
+      ?.map((t) => t.attributes?.name)
+      .filter((name): name is string => typeof name === 'string') || []
+  );
+}
+
+function extractSpeakers(item: MediaItemResponse): string[] {
+  return (
+    item.attributes.speakers?.data
+      ?.map((s) => s.attributes?.name)
+      .filter((name): name is string => typeof name === 'string') || []
+  );
+}
+
+/**
+ * Fetch user viewing history tags for personalization
+ */
+async function fetchUserHistoryWithTags(userId: string): Promise<
+  Array<{ title: string; contentType: string; tags: string[] }>
+> {
+  try {
+    const params = new URLSearchParams({
+      'filters[user][id][$eq]': userId,
+      'sort[0]': 'updatedAt:desc',
+      'pagination[limit]': '20',
+      'populate[mediaItem][fields][0]': 'title',
+      'populate[mediaItem][fields][1]': 'type',
+      'populate[mediaItem][populate][tags][fields][0]': 'name',
+    });
+
+    const response = await getJSON<{
+      data: Array<{
+        id: number;
+        attributes?: {
+          mediaItem?: {
+            data?: {
+              attributes?: {
+                title?: string;
+                type?: string;
+                tags?: {
+                  data?: Array<{ attributes?: { name?: string } | null }> | null;
+                } | null;
+              } | null;
+            } | null;
+          } | null;
+        };
+      }>;
+    }>(`/api/media-progresses?${params}`);
+
+    return (response.data || []).map((entry) => {
+      const media = entry.attributes?.mediaItem?.data?.attributes;
+      return {
+        title: media?.title || 'Unknown',
+        contentType: media?.type || 'media',
+        tags:
+          media?.tags?.data
+            ?.map((t) => t.attributes?.name)
+            .filter((n): n is string => typeof n === 'string') || [],
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Content Recommendations API
- * Returns personalized content recommendations
  *
  * GET /api/recommendations?userId=123&limit=10&type=media
+ *
+ * Personalized when userId provided, popularity-only for anonymous.
  */
-export async function GET(request: NextRequest): Promise<NextResponse<RecommendationsResponse | { error: string }>> {
+export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get('userId');
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const limit = Math.min(50, parseInt(searchParams.get('limit') || '10', 10));
     const contentType = searchParams.get('type');
 
-    // TODO: Implement full recommendation engine
-    // For now, return popular content as fallback
-
-    // Fetch popular media items
+    // Fetch candidate content (larger pool for scoring)
+    const fetchLimit = Math.max(limit * 3, 30);
     const params = new URLSearchParams({
       'sort[0]': 'views:desc',
-      'pagination[limit]': limit.toString(),
+      'pagination[limit]': fetchLimit.toString(),
       'populate[thumbnail]': 'true',
       'populate[speakers]': 'true',
       'populate[tags]': 'true',
@@ -103,27 +136,27 @@ export async function GET(request: NextRequest): Promise<NextResponse<Recommenda
     const response = await getJSON<{ data: unknown[] }>(`/api/media-items?${params}`);
     const validItems = (response.data || []).filter(isValidMediaItem);
 
-    // Format as recommendations
-    const recommendations: Recommendation[] = validItems.map((item) => ({
-      contentType: 'media',
-      contentId: item.id,
+    const candidates = validItems.map((item) => ({
+      id: item.id,
       title: item.attributes.title,
-      description: item.attributes.excerpt || item.attributes.description || '',
-      url: `/media/${item.attributes.slug}`,
+      slug: item.attributes.slug,
+      description: item.attributes.excerpt || item.attributes.description || undefined,
       thumbnailUrl: item.attributes.thumbnail?.data?.attributes?.url,
-      score: 0.8, // Mock score
-      reason: 'Popular with the Ruach community',
-      metadata: {
-        type: item.attributes.type || undefined,
-        views: item.attributes.views || undefined,
-        speakers: item.attributes.speakers?.data
-          ?.map((s) => s.attributes?.name)
-          .filter((name): name is string => typeof name === 'string') || [],
-        tags: item.attributes.tags?.data
-          ?.map((t) => t.attributes?.name)
-          .filter((name): name is string => typeof name === 'string') || [],
-      },
+      type: item.attributes.type || undefined,
+      views: item.attributes.views || 0,
+      publishedAt: item.attributes.publishedAt || new Date().toISOString(),
+      tags: extractTags(item),
+      speakers: extractSpeakers(item),
     }));
+
+    let recommendations;
+
+    if (userId) {
+      const userHistory = await fetchUserHistoryWithTags(userId);
+      recommendations = generateRecommendations(candidates, userHistory, limit);
+    } else {
+      recommendations = popularityRecommendations(candidates, limit);
+    }
 
     return NextResponse.json({
       recommendations,

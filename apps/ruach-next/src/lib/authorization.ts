@@ -9,17 +9,12 @@ export type UserRole = 'public' | 'authenticated' | 'partner' | 'studio' | 'admi
 /**
  * Check if a user has studio access
  *
- * TEMPORARY: Currently allows all authenticated users
- * TODO: Configure proper 'studio' and 'admin' roles in Strapi
- *
- * Studio access should be granted to: studio role, admin role
- * But for now we allow: authenticated, partner, studio, admin
+ * Requires 'studio' or 'admin' role configured in Strapi.
  */
 export function hasStudioAccess(role?: string): boolean {
   if (!role) return false;
 
-  // TEMPORARY: Allow all authenticated users until roles are configured in Strapi
-  const studioRoles: UserRole[] = ['authenticated', 'partner', 'studio', 'admin'];
+  const studioRoles: UserRole[] = ['studio', 'admin'];
   return studioRoles.includes(role as UserRole);
 }
 
@@ -94,9 +89,6 @@ export async function fetchUserRole(
     // - role.name (common for custom roles, as shown in admin UI)
     // We check both and log what we found for debugging
     const roleName = data.role?.type || data.role?.name || 'authenticated';
-
-    console.log('[Authorization] User role fetched:', roleName);
-    console.log('[Authorization] Full role object:', JSON.stringify(data.role, null, 2));
 
     return roleName;
   } catch (error) {
