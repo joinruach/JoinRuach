@@ -1,8 +1,11 @@
 /**
- * Phase 13: Render Job Routes
+ * Render Job Routes
  *
- * Custom routes for render job operations
+ * Custom routes for render job operations.
  * Auth: All routes require authentication. Mutations require studio operator role.
+ *
+ * IMPORTANT: Static paths (render-all, session/) MUST appear before :jobId
+ * to avoid Koa matching them as jobId parameters.
  */
 
 export default {
@@ -17,11 +20,11 @@ export default {
       },
     },
     {
-      method: 'GET',
-      path: '/render-jobs/:jobId',
-      handler: 'render-job-controller.get',
+      method: 'POST',
+      path: '/render-jobs/render-all/:sessionId',
+      handler: 'render-job-controller.renderAll',
       config: {
-        policies: ['global::is-authenticated-or-admin'],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -29,6 +32,24 @@ export default {
       method: 'GET',
       path: '/render-jobs/session/:sessionId',
       handler: 'render-job-controller.getBySession',
+      config: {
+        policies: ['global::is-authenticated-or-admin'],
+        middlewares: [],
+      },
+    },
+    {
+      method: 'GET',
+      path: '/render-jobs/:jobId/progress',
+      handler: 'render-job-controller.progress',
+      config: {
+        policies: ['global::is-authenticated-or-admin'],
+        middlewares: [],
+      },
+    },
+    {
+      method: 'GET',
+      path: '/render-jobs/:jobId',
+      handler: 'render-job-controller.get',
       config: {
         policies: ['global::is-authenticated-or-admin'],
         middlewares: [],

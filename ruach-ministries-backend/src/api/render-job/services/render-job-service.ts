@@ -2,6 +2,7 @@ import type { Core } from '@strapi/strapi';
 import { randomUUID } from 'crypto';
 import RenderStateMachine, { type RenderStatus } from '../../../services/render-state-machine';
 import RenderQueue from '../../../services/render-queue';
+import { checkRenderCostCap, recordRenderCost } from '../../../services/render-cost-guard';
 
 /**
  * Phase 13: Render Job Service
@@ -16,6 +17,15 @@ export interface CreateRenderJobInput {
   sessionId: string;
   format?: RenderFormat;
   metadata?: Record<string, any>;
+  /** Bypass hard cost cap — operator takes responsibility */
+  operatorOverride?: boolean;
+}
+
+export interface RenderCostData {
+  accruedSoFar: number;
+  displayCost: string;
+  currency: string;
+  disclaimer: string;
 }
 
 export interface RenderArtifacts {
@@ -27,6 +37,7 @@ export interface RenderArtifacts {
   fileSizeBytes?: number;
   resolution?: string;
   fps?: number;
+  costData?: RenderCostData;
 }
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -37,7 +48,13 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * @returns Created render job
    */
   async createJob(input: CreateRenderJobInput) {
-    const { sessionId, format = 'full_16_9', metadata = {} } = input;
+    const { sessionId, format = 'full_16_9', metadata = {}, operatorOverride = false } = input;
+
+    // Cost cap guard — blocks if monthly spend exceeds hard cap
+    const costCheck = await checkRenderCostCap(strapi, operatorOverride);
+    if (!costCheck.allowed) {
+      throw new Error(costCheck.blocked ?? 'Render blocked by cost cap');
+    }
 
     strapi.log.info(`[render-job-service] Creating job for session ${sessionId}, format ${format}`);
 
@@ -244,7 +261,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       throw new Error(`Cannot complete job in status: ${job.status}`);
     }
 
-    // Update with artifacts
+    // Merge cost data into existing metadata
+    const existingMetadata = job.metadata ?? {};
+    const mergedMetadata = {
+      ...existingMetadata,
+      ...(artifacts.costData
+        ? {
+            costData: {
+              ...artifacts.costData,
+              capturedAt: new Date().toISOString(),
+            },
+          }
+        : {}),
+    };
+
+    // Update with artifacts + cost metadata
     const updated = await strapi.entityService.update(
       'api::render-job.render-job',
       job.id,
@@ -260,12 +291,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
           fileSize_bytes: artifacts.fileSizeBytes,
           resolution: artifacts.resolution,
           fps: artifacts.fps,
+          metadata: mergedMetadata,
           renderCompletedAt: new Date(),
         },
       }
     ) as any;
 
-    strapi.log.info(`[render-job-service] Job ${jobId} completed successfully`);
+    // Increment Redis cost counter (atomic, O(1))
+    if (artifacts.costData && artifacts.costData.accruedSoFar > 0) {
+      await recordRenderCost(artifacts.costData.accruedSoFar);
+      strapi.log.info(
+        `[render-job-service] Job ${jobId} completed — cost: ${artifacts.costData.displayCost}`
+      );
+    } else {
+      strapi.log.info(`[render-job-service] Job ${jobId} completed successfully`);
+    }
 
     return updated;
   },

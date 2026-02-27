@@ -6,6 +6,7 @@ import { initializeLibraryIngestionQueue } from "./services/library-ingestion-qu
 import { initializeUnifiedIngestionQueue } from "./services/unified-ingestion-queue";
 import { initializeMediaTranscodingQueue, shutdownMediaTranscodingQueue } from "./services/media-transcoding-queue";
 import RenderWorker from './services/render-worker';
+import { mountBullBoard } from './services/bull-board';
 import seedPromptTemplates from "../database/seeds/ruach-prompt-templates";
 
 // Import security services for initialization
@@ -19,6 +20,11 @@ export default {
    */
   register({ strapi }: { strapi: Core.Strapi }) {
     registerReadOnlyLocks(strapi);
+
+    // Mount BullBoard queue dashboard
+    mountBullBoard(strapi.server.app).catch((err) => {
+      strapi.log.warn('[Register] BullBoard mount failed (non-fatal):', err);
+    });
   },
 
   /**

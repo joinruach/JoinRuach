@@ -1,142 +1,209 @@
 /**
- * Phase 13 Plan 2: Remotion Runner
+ * Stage 1: Remotion Lambda Runner
  *
- * Executes Remotion renders via CLI
- * Security: Uses execFile() to prevent command injection (V3/V23 fix)
+ * Renders video via AWS Lambda using @remotion/lambda/client.
+ * Replaces the previous CLI-based execFile approach.
  */
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
-import * as path from 'path';
-import * as fs from 'fs/promises';
-import { validatePath } from './safe-path';
+import { getPreset, type FormatSlug } from './format-presets';
 
-const execFileAsync = promisify(execFile);
+const REMOTION_FUNCTION_NAME = process.env.REMOTION_FUNCTION_NAME || '';
+const REMOTION_SERVE_URL = process.env.REMOTION_SERVE_URL || '';
+const REMOTION_REGION = process.env.REMOTION_REGION || 'us-east-1';
 
-export interface RemotionRenderOptions {
+export interface LambdaRenderOptions {
   sessionId: string;
-  cameraSources: Record<string, string>;
-  outputPath: string;
-  compositionId?: string;
-  showCaptions?: boolean;
-  showChapters?: boolean;
-  showSpeakerLabels?: boolean;
-  onProgress?: (progress: number) => void;
+  formatSlug: FormatSlug;
+  inputProps: Record<string, unknown>;
 }
 
-export interface RemotionRenderResult {
-  success: boolean;
-  outputPath?: string;
-  durationMs?: number;
-  error?: string;
-  logs?: string;
+export interface LambdaRenderHandle {
+  renderId: string;
+  bucketName: string;
+  region: string;
+  functionName: string;
+}
+
+export interface LambdaCostData {
+  accruedSoFar: number;
+  displayCost: string;
+  currency: string;
+  disclaimer: string;
+}
+
+export interface LambdaRenderProgress {
+  overallProgress: number;
+  framesRendered: number;
+  done: boolean;
+  outputFile?: string;
+  outputSize?: number;
+  costs?: LambdaCostData;
+  errors: string[];
+}
+
+export interface LambdaRenderResult {
+  outputUrl: string;
+  outputSize?: number;
+  costs?: LambdaCostData;
 }
 
 export default class RemotionRunner {
-  private static readonly RENDERER_DIR = path.join(
-    process.cwd(),
-    '..',
-    'ruach-video-renderer'
-  );
-
   /**
-   * Render video using Remotion CLI
+   * Trigger a Lambda render. Returns immediately with a handle for polling.
    */
-  static async render(options: RemotionRenderOptions): Promise<RemotionRenderResult> {
-    const {
-      sessionId,
-      cameraSources,
-      outputPath,
-      compositionId = 'MultiCam',
-      showCaptions = true,
-      showChapters = true,
-      showSpeakerLabels = true,
-    } = options;
+  static async render(options: LambdaRenderOptions): Promise<LambdaRenderHandle> {
+    const { formatSlug, inputProps } = options;
+    const preset = getPreset(formatSlug);
 
-    const startTime = Date.now();
-
-    try {
-      // Validate output path stays within sandbox
-      validatePath(outputPath, 'Remotion render outputPath');
-
-      // Ensure output directory exists
-      const outputDir = path.dirname(outputPath);
-      await fs.mkdir(outputDir, { recursive: true });
-
-      // Build Remotion props
-      const props = {
-        sessionId,
-        cameraSources,
-        showCaptions,
-        showChapters,
-        showSpeakerLabels,
-        debug: false,
-      };
-
-      const propsJson = JSON.stringify(props);
-
-      console.log('[remotion-runner] Executing render command');
-      console.log(`[remotion-runner] Output: ${outputPath}`);
-
-      const { stdout, stderr } = await execFileAsync(
-        'pnpm',
-        ['remotion', 'render', compositionId, outputPath, `--props=${propsJson}`, '--overwrite'],
-        {
-          cwd: this.RENDERER_DIR,
-          maxBuffer: 10 * 1024 * 1024,
-          timeout: 30 * 60 * 1000,
-        }
+    if (!REMOTION_FUNCTION_NAME || !REMOTION_SERVE_URL) {
+      throw new Error(
+        'Remotion Lambda not configured. Set REMOTION_FUNCTION_NAME and REMOTION_SERVE_URL.'
       );
-
-      const durationMs = Date.now() - startTime;
-
-      console.log('[remotion-runner] Render completed');
-      console.log(`[remotion-runner] Duration: ${durationMs}ms`);
-
-      // Check if output file exists
-      try {
-        await fs.access(outputPath);
-      } catch {
-        return {
-          success: false,
-          error: 'Output file not created',
-          logs: stdout + '\n' + stderr,
-        };
-      }
-
-      return {
-        success: true,
-        outputPath,
-        durationMs,
-        logs: stdout,
-      };
-    } catch (error: any) {
-      const durationMs = Date.now() - startTime;
-
-      console.error('[remotion-runner] Render failed:', error);
-
-      return {
-        success: false,
-        error: error.message || 'Unknown render error',
-        durationMs,
-        logs: error.stdout || error.stderr || '',
-      };
     }
+
+    if (preset.isStill) {
+      return this.renderStill(preset.compositionId, inputProps);
+    }
+
+    return this.renderMedia(preset.compositionId, inputProps, preset);
   }
 
   /**
-   * Check if Remotion is installed and accessible
+   * Render a video composition via Lambda.
    */
-  static async checkInstallation(): Promise<boolean> {
-    try {
-      const { stdout } = await execFileAsync('pnpm', ['remotion', '--version'], {
-        cwd: this.RENDERER_DIR,
-      });
-      console.log('[remotion-runner] Remotion version:', stdout.trim());
-      return true;
-    } catch (error) {
-      console.error('[remotion-runner] Remotion not accessible:', error);
-      return false;
+  private static async renderMedia(
+    compositionId: string,
+    inputProps: Record<string, unknown>,
+    preset: ReturnType<typeof getPreset>
+  ): Promise<LambdaRenderHandle> {
+    const { renderMediaOnLambda } = await import('@remotion/lambda/client');
+
+    const result = await renderMediaOnLambda({
+      region: REMOTION_REGION as Parameters<typeof renderMediaOnLambda>[0]['region'],
+      functionName: REMOTION_FUNCTION_NAME,
+      serveUrl: REMOTION_SERVE_URL,
+      composition: compositionId,
+      inputProps,
+      codec: preset.codec === 'h264' ? 'h264' : 'h265',
+      imageFormat: preset.imageFormat,
+      maxRetries: 3,
+      privacy: 'public',
+    });
+
+    console.log(`[remotion-runner] Lambda render triggered: ${result.renderId}`);
+
+    return {
+      renderId: result.renderId,
+      bucketName: result.bucketName,
+      region: REMOTION_REGION,
+      functionName: REMOTION_FUNCTION_NAME,
+    };
+  }
+
+  /**
+   * Render a single still frame via Lambda.
+   */
+  private static async renderStill(
+    compositionId: string,
+    inputProps: Record<string, unknown>
+  ): Promise<LambdaRenderHandle> {
+    const { renderStillOnLambda } = await import('@remotion/lambda/client');
+
+    const result = await renderStillOnLambda({
+      region: REMOTION_REGION as Parameters<typeof renderStillOnLambda>[0]['region'],
+      functionName: REMOTION_FUNCTION_NAME,
+      serveUrl: REMOTION_SERVE_URL,
+      composition: compositionId,
+      inputProps,
+      imageFormat: 'jpeg',
+      privacy: 'public',
+    });
+
+    console.log(`[remotion-runner] Lambda still rendered: ${result.renderId}`);
+
+    return {
+      renderId: result.renderId,
+      bucketName: result.bucketName,
+      region: REMOTION_REGION,
+      functionName: REMOTION_FUNCTION_NAME,
+    };
+  }
+
+  /**
+   * Poll Lambda for render progress.
+   */
+  static async getProgress(handle: LambdaRenderHandle): Promise<LambdaRenderProgress> {
+    const { getRenderProgress } = await import('@remotion/lambda/client');
+
+    const progress = await getRenderProgress({
+      region: handle.region as Parameters<typeof getRenderProgress>[0]['region'],
+      functionName: handle.functionName,
+      bucketName: handle.bucketName,
+      renderId: handle.renderId,
+    });
+
+    // Cost data only populated when done=true; zeroed during render
+    const rawCosts = (progress as any).costs;
+    const costs: LambdaCostData | undefined =
+      rawCosts && rawCosts.accruedSoFar > 0
+        ? {
+            accruedSoFar: rawCosts.accruedSoFar,
+            displayCost: rawCosts.displayCost,
+            currency: rawCosts.currency,
+            disclaimer: rawCosts.disclaimer,
+          }
+        : undefined;
+
+    return {
+      overallProgress: progress.overallProgress,
+      framesRendered: progress.framesRendered,
+      done: progress.done,
+      outputFile: progress.outputFile ?? undefined,
+      outputSize: progress.renderSize ?? undefined,
+      costs,
+      errors: (progress.errors ?? []).map((e) => e.message),
+    };
+  }
+
+  /**
+   * Poll until render completes. Returns the output URL.
+   * Calls onProgress callback on each poll cycle.
+   */
+  static async waitForRender(
+    handle: LambdaRenderHandle,
+    onProgress?: (progress: LambdaRenderProgress) => void | Promise<void>,
+    pollIntervalMs = 2000
+  ): Promise<LambdaRenderResult> {
+    const maxPolls = 900; // 30 minutes at 2s interval
+    let polls = 0;
+
+    while (polls < maxPolls) {
+      const progress = await this.getProgress(handle);
+
+      if (onProgress) {
+        await onProgress(progress);
+      }
+
+      if (progress.errors.length > 0) {
+        throw new Error(`Lambda render failed: ${progress.errors.join(', ')}`);
+      }
+
+      if (progress.done && progress.outputFile) {
+        return {
+          outputUrl: progress.outputFile,
+          outputSize: progress.outputSize,
+          costs: progress.costs,
+        };
+      }
+
+      if (progress.done) {
+        throw new Error('Lambda render completed but no output file was produced');
+      }
+
+      polls++;
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
     }
+
+    throw new Error(`Lambda render timed out after ${maxPolls * pollIntervalMs / 1000}s`);
   }
 }

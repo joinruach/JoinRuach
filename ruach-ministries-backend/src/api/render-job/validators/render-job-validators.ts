@@ -10,6 +10,12 @@ export const TriggerRenderRequestSchema = z.object({
   sessionId: z.string().min(1, 'sessionId is required'),
   format: z.string().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
+  operatorOverride: z.boolean().optional(),
 });
 
 export type TriggerRenderRequest = z.infer<typeof TriggerRenderRequestSchema>;
+
+/** POST /render-jobs/render-all/:sessionId */
+export const RenderAllParamsSchema = z.object({
+  sessionId: z.string().min(1, 'sessionId is required'),
+});

@@ -5,6 +5,7 @@
  */
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
 import * as fs from 'fs/promises';
 
 export interface UploadResult {
@@ -96,6 +97,69 @@ export default class R2Upload {
         success: false,
         error: error.message || 'Unknown upload error',
       };
+    }
+  }
+
+  /**
+   * Stream from a URL directly to R2 without buffering the full file in memory.
+   * Used for transferring Lambda output (S3) to R2.
+   *
+   * For large renders (1GB+), this keeps memory flat — chunks flow through
+   * the process without accumulating. The AWS SDK v3 accepts Node Readable
+   * streams as the PutObject Body and handles chunked transfer internally.
+   */
+  static async uploadFromUrl(
+    sourceUrl: string,
+    r2Key: string,
+    contentType: string
+  ): Promise<UploadResult> {
+    try {
+      const client = this.getClient();
+      const bucketName = process.env.R2_BUCKET_NAME;
+      const publicDomain = process.env.R2_PUBLIC_DOMAIN;
+
+      if (!bucketName) {
+        throw new Error('R2_BUCKET_NAME not configured');
+      }
+
+      const response = await fetch(sourceUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to download from source: ${response.status}`);
+      }
+
+      const contentLength = response.headers.get('content-length');
+
+      // Stream the response body directly to R2 — no full-file buffer.
+      // Readable.fromWeb bridges Web ReadableStream → Node Readable.
+      if (!response.body) {
+        throw new Error('Response body is null — cannot stream to R2');
+      }
+
+      const nodeStream = Readable.fromWeb(response.body as any);
+
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: r2Key,
+          Body: nodeStream,
+          ContentType: contentType,
+          // Content-Length helps R2 avoid chunked encoding overhead
+          ...(contentLength ? { ContentLength: parseInt(contentLength, 10) } : {}),
+        })
+      );
+
+      const url = publicDomain
+        ? `https://${publicDomain}/${r2Key}`
+        : `https://${bucketName}.r2.cloudflarestorage.com/${r2Key}`;
+
+      const sizeLog = contentLength ? `${contentLength} bytes` : 'unknown size';
+      console.log(`[r2-upload] Streamed from URL to ${r2Key} (${sizeLog})`);
+
+      return { success: true, url };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown upload error';
+      console.error('[r2-upload] Upload from URL failed:', error);
+      return { success: false, error: message };
     }
   }
 

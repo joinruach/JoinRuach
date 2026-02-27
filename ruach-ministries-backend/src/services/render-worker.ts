@@ -1,7 +1,8 @@
 /**
- * Phase 13 Plan 2: Render Worker
+ * Stage 1: Render Worker
  *
- * BullMQ worker that processes render jobs
+ * BullMQ worker that processes render jobs via Lambda.
+ * Concurrency raised to 4 (Lambda does the heavy lifting, not local CPU).
  */
 
 import { Worker, Job } from 'bullmq';
@@ -11,25 +12,19 @@ import type { RenderJobPayload } from './render-queue';
 import RenderPreflight from './render-preflight';
 import RemotionRunner from './remotion-runner';
 import R2Upload from './r2-upload';
-import ThumbnailGenerator from './thumbnail-generator';
-import * as path from 'path';
-import * as os from 'os';
-import * as fs from 'fs/promises';
+import { getPreset, isValidFormatSlug, type FormatSlug } from './format-presets';
+import { isJobOverCeiling } from './render-cost-guard';
 
 export default class RenderWorker {
   private static worker: Worker<RenderJobPayload> | null = null;
   private static connection: Redis | null = null;
 
-  /**
-   * Start worker
-   */
   static async start(strapi: Core.Strapi) {
     if (this.worker) {
       console.log('[render-worker] Worker already running');
       return;
     }
 
-    // Redis connection
     this.connection = new Redis({
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
@@ -37,7 +32,6 @@ export default class RenderWorker {
       maxRetriesPerRequest: null,
     });
 
-    // Create worker
     this.worker = new Worker<RenderJobPayload>(
       'render-jobs',
       async (job: Job<RenderJobPayload>) => {
@@ -45,7 +39,7 @@ export default class RenderWorker {
       },
       {
         connection: this.connection,
-        concurrency: 1, // Process one job at a time (CPU intensive)
+        concurrency: 4,
       }
     );
 
@@ -57,33 +51,29 @@ export default class RenderWorker {
       console.error(`[render-worker] Job ${job?.id} failed:`, error);
     });
 
-    console.log('[render-worker] Worker started');
+    console.log('[render-worker] Worker started (concurrency: 4)');
   }
 
-  /**
-   * Process a single render job
-   */
   private static async processJob(
     strapi: Core.Strapi,
     job: Job<RenderJobPayload>
   ): Promise<void> {
     const { renderJobId, sessionId, format } = job.data;
+    const formatSlug: FormatSlug = isValidFormatSlug(format) ? format : 'full_16_9';
 
-    console.log(`[render-worker] Processing job ${renderJobId}`);
+    console.log(`[render-worker] Processing job ${renderJobId} (format: ${formatSlug})`);
 
     const renderJobService = strapi.service('api::render-job.render-job-service') as any;
 
     try {
       // Move to processing
       await renderJobService.transitionStatus(renderJobId, 'processing', {
-        progress: 0.1,
+        progress: 0.05,
         bullmqJobId: job.id,
       });
 
       // Preflight validation
-      console.log(`[render-worker] Running preflight checks for ${renderJobId}`);
       const preflight = await RenderPreflight.validate(strapi, renderJobId);
-
       if (!preflight.valid) {
         throw new Error(`Preflight failed: ${preflight.errors.join(', ')}`);
       }
@@ -92,11 +82,14 @@ export default class RenderWorker {
         console.warn(`[render-worker] Warnings: ${preflight.warnings.join(', ')}`);
       }
 
-      // Get job details
+      await renderJobService.transitionStatus(renderJobId, 'processing', {
+        progress: 0.1,
+      });
+
+      // Build input props from session assets
       const renderJob = await renderJobService.getJob(renderJobId);
       const session = renderJob.recordingSession;
 
-      // Build camera sources
       const assets = await strapi.entityService.findMany('api::asset.asset' as any, {
         filters: { recordingSession: session.id },
       }) as any[];
@@ -108,115 +101,80 @@ export default class RenderWorker {
         }
       }
 
-      // Update progress
-      await renderJobService.transitionStatus(renderJobId, 'processing', {
-        progress: 0.2,
-      });
-
-      // Execute Remotion render
-      console.log(`[render-worker] Starting Remotion render for ${renderJobId}`);
-
-      const outputPath = path.join(
-        os.tmpdir(),
-        'ruach-renders',
-        `${renderJobId}.mp4`
-      );
-
-      const renderResult = await RemotionRunner.render({
+      const preset = getPreset(formatSlug);
+      const inputProps: Record<string, unknown> = {
         sessionId,
         cameraSources,
-        outputPath,
         showCaptions: true,
         showChapters: true,
         showSpeakerLabels: true,
-        onProgress: async (progress) => {
-          // Update progress (20% base + 70% for render + 10% for upload)
+      };
+
+      // Trigger Lambda render
+      console.log(`[render-worker] Triggering Lambda render for ${renderJobId}`);
+      const handle = await RemotionRunner.render({
+        sessionId,
+        formatSlug,
+        inputProps,
+      });
+
+      // Poll for completion, updating progress along the way
+      const result = await RemotionRunner.waitForRender(
+        handle,
+        async (progress) => {
+          // Per-job cost ceiling check
+          if (progress.costs && isJobOverCeiling(progress.costs.accruedSoFar)) {
+            throw new Error(
+              `Job ${renderJobId} exceeded per-job cost ceiling ` +
+              `($${progress.costs.accruedSoFar.toFixed(2)} > $${process.env.RENDER_JOB_MAX_USD})`
+            );
+          }
+
+          // Map Lambda progress (0-1) into our 0.1-0.85 range
+          const mappedProgress = 0.1 + progress.overallProgress * 0.75;
           await renderJobService.transitionStatus(renderJobId, 'processing', {
-            progress: 0.2 + (progress * 0.7),
+            progress: mappedProgress,
           });
-        },
-      });
-
-      if (!renderResult.success) {
-        throw new Error(renderResult.error || 'Render failed');
-      }
-
-      console.log(`[render-worker] Render completed, uploading artifacts for ${renderJobId}`);
-
-      // Update progress
-      await renderJobService.transitionStatus(renderJobId, 'processing', {
-        progress: 0.85,
-      });
-
-      // Generate thumbnail
-      const thumbnailResult = await ThumbnailGenerator.generateThumbnail(
-        outputPath,
-        undefined, // Auto-generate path
-        3 // Extract frame at 3 seconds
+        }
       );
 
-      // Update progress
+      console.log(`[render-worker] Lambda render done for ${renderJobId}`);
+
       await renderJobService.transitionStatus(renderJobId, 'processing', {
         progress: 0.9,
       });
 
-      // Upload artifacts to R2
-      const uploadResult = await R2Upload.uploadRenderArtifacts(
-        renderJobId,
-        sessionId,
-        outputPath
+      // Upload Lambda output to R2
+      const extension = preset.isStill ? 'jpg' : 'mp4';
+      const r2Key = `renders/${sessionId}/${renderJobId}.${extension}`;
+      const contentType = preset.isStill ? 'image/jpeg' : 'video/mp4';
+
+      const uploadResult = await R2Upload.uploadFromUrl(
+        result.outputUrl,
+        r2Key,
+        contentType
       );
 
-      if (uploadResult.error) {
-        throw new Error(`Artifact upload failed: ${uploadResult.error}`);
+      if (!uploadResult.success) {
+        throw new Error(`R2 upload failed: ${uploadResult.error}`);
       }
 
-      // Upload thumbnail if generated
-      let thumbnailUrl: string | undefined;
-      if (thumbnailResult.success && thumbnailResult.thumbnailPath) {
-        const thumbnailKey = `renders/${sessionId}/${renderJobId}-thumb.jpg`;
-        const thumbnailUpload = await R2Upload.uploadFile(
-          thumbnailResult.thumbnailPath,
-          thumbnailKey,
-          'image/jpeg'
-        );
-
-        if (thumbnailUpload.success) {
-          thumbnailUrl = thumbnailUpload.url;
-        }
-      }
-
-      // Update progress
       await renderJobService.transitionStatus(renderJobId, 'processing', {
         progress: 0.95,
       });
 
-      // Get video metadata (duration, size, resolution)
-      const stats = await fs.stat(outputPath);
-      const fileSizeBytes = stats.size;
-
-      // Complete job with R2 URLs
+      // Complete job with cost data from Lambda
       await renderJobService.completeJob(renderJobId, {
-        outputVideoUrl: uploadResult.videoUrl!,
-        outputThumbnailUrl: thumbnailUrl,
-        durationMs: renderResult.durationMs,
-        fileSizeBytes,
+        outputVideoUrl: uploadResult.url!,
+        fileSizeBytes: result.outputSize,
+        resolution: `${preset.width}x${preset.height}`,
+        fps: preset.fps,
+        costData: result.costs,
       });
 
-      // Cleanup local files
-      try {
-        await fs.unlink(outputPath);
-        if (thumbnailResult.thumbnailPath) {
-          await fs.unlink(thumbnailResult.thumbnailPath);
-        }
-        console.log(`[render-worker] Cleaned up local files for ${renderJobId}`);
-      } catch (cleanupError) {
-        console.warn(`[render-worker] Failed to cleanup local files:`, cleanupError);
-        // Don't fail job if cleanup fails
-      }
-
       console.log(`[render-worker] Job ${renderJobId} completed successfully`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const maxAttempts = job.opts?.attempts ?? 1;
       const isLastAttempt = job.attemptsMade >= maxAttempts - 1;
 
@@ -225,25 +183,18 @@ export default class RenderWorker {
           `[render-worker] Job ${renderJobId} permanently failed after ${maxAttempts} attempt(s):`,
           error
         );
-        await renderJobService.failJob(
-          renderJobId,
-          error.message || 'Unknown error during render'
-        );
+        await renderJobService.failJob(renderJobId, errorMessage);
       } else {
         console.warn(
           `[render-worker] Job ${renderJobId} failed (attempt ${job.attemptsMade + 1}/${maxAttempts}), will retry:`,
-          error.message
+          errorMessage
         );
-        // Keep status as 'processing' so BullMQ retry hits a valid transition
       }
 
-      throw error; // Re-throw for BullMQ retry logic
+      throw error;
     }
   }
 
-  /**
-   * Stop worker
-   */
   static async stop() {
     if (this.worker) {
       await this.worker.close();
