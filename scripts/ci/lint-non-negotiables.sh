@@ -142,6 +142,36 @@ for f in $(find "${SEARCH_PATHS[@]}" -path "*/formation/*" -name "*.ts" 2>/dev/n
 done
 echo ""
 
+# --- Security S1: No raw exec() in services (must use execFile) ---
+echo "--- [S1] No Raw exec(): must use execFile() in services ---"
+while IFS=: read -r file line_num content; do
+  if echo "$content" | grep -qP '\bexec\s*\(' && ! echo "$content" | grep -qP 'execFile|import|require'; then
+    report "ERROR" "S1-no-raw-exec" "$file" "$line_num" \
+      "Raw exec() call detected. Use execFile() with argument arrays to prevent command injection."
+  fi
+done < <(grep -rn --include="*.ts" -P '\bexec\b\(' \
+  "ruach-ministries-backend/src/services" 2>/dev/null || true)
+echo ""
+
+# --- Security S2: No shell: true in execFile options ---
+echo "--- [S2] No shell:true: prevents shell injection bypass ---"
+while IFS=: read -r file line_num content; do
+  report "ERROR" "S2-no-shell-true" "$file" "$line_num" \
+    "shell: true detected. This bypasses execFile() security by re-enabling shell interpretation."
+done < <(grep -rn --include="*.ts" --include="*.tsx" \
+  -P 'shell:\s*true' "${SEARCH_PATHS[@]}" 2>/dev/null || true)
+echo ""
+
+# --- Security S3: No inline Zod error handling (must use validateRequest) ---
+echo "--- [S3] Standardized Validation: no inline parsed.error.flatten ---"
+while IFS=: read -r file line_num content; do
+  report "ERROR" "S3-standardized-validation" "$file" "$line_num" \
+    "Inline Zod error handling detected. Use validateRequest() from utils/validate-request.ts for consistent error shape."
+done < <(grep -rn --include="*.ts" \
+  'parsed\.error\.flatten' \
+  "ruach-ministries-backend/src/api" 2>/dev/null || true)
+echo ""
+
 # --- Summary ---
 echo "========================================"
 echo "  Phase 6 Non-Negotiables Lint Results"

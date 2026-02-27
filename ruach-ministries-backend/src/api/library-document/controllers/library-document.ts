@@ -80,7 +80,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
     throw new Error(`OpenAI embedding failed: ${err}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as { data: Array<{ embedding: number[] }> };
   return data.data[0].embedding;
 }
 
