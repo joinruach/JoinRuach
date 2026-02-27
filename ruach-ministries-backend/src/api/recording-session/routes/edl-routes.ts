@@ -2,6 +2,9 @@
  * Phase 11: EDL Routes
  *
  * Custom routes for EDL generation and workflow management
+ * Auth: All routes require authentication.
+ * Mutations (POST/PUT) require studio operator role.
+ * Reads (GET) require any authenticated user.
  */
 
 export default {
@@ -11,7 +14,7 @@ export default {
       path: '/recording-sessions/:id/edl/compute',
       handler: 'edl-controller.compute',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -20,7 +23,7 @@ export default {
       path: '/recording-sessions/:id/edl/generate',
       handler: 'edl-controller.compute',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -29,7 +32,7 @@ export default {
       path: '/recording-sessions/:id/edl',
       handler: 'edl-controller.get',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
@@ -38,7 +41,7 @@ export default {
       path: '/recording-sessions/:id/edl',
       handler: 'edl-controller.update',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -47,7 +50,7 @@ export default {
       path: '/recording-sessions/:id/edl/chapters',
       handler: 'edl-controller.updateChapters',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -56,7 +59,7 @@ export default {
       path: '/recording-sessions/:id/edl/approve',
       handler: 'edl-controller.approve',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -65,7 +68,7 @@ export default {
       path: '/recording-sessions/:id/edl/lock',
       handler: 'edl-controller.lock',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -74,7 +77,7 @@ export default {
       path: '/recording-sessions/:id/edl/export/:format',
       handler: 'edl-controller.export',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },

@@ -1,5 +1,9 @@
 /**
  * Formation Engine API Routes
+ *
+ * Auth: All routes require authentication.
+ * Mutations (emit-event, recompute) require studio operator role.
+ * Reads (state, can-access, queue-stats) require any authenticated user.
  */
 
 export default {
@@ -9,7 +13,7 @@ export default {
       path: '/formation/emit-event',
       handler: 'formation-engine.emitEvent',
       config: {
-        auth: false, // Allow anonymous users
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -17,7 +21,7 @@ export default {
       path: '/formation/state/:userId',
       handler: 'formation-engine.getState',
       config: {
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -25,7 +29,7 @@ export default {
       path: '/formation/recompute/:userId',
       handler: 'formation-engine.recomputeState',
       config: {
-        auth: false,
+        policies: ['global::require-studio-operator'],
       },
     },
     {
@@ -33,7 +37,7 @@ export default {
       path: '/formation/can-access/:nodeId',
       handler: 'formation-engine.checkAccess',
       config: {
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -41,7 +45,7 @@ export default {
       path: '/formation/queue-stats',
       handler: 'formation-engine.getQueueStats',
       config: {
-        auth: false,
+        policies: ['global::require-studio-operator'],
       },
     },
   ],

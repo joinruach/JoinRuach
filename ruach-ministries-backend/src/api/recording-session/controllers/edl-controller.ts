@@ -1,5 +1,13 @@
 import type { Core } from '@strapi/strapi';
 import { generateFCPXML } from '../../../services/fcpxml-generator';
+import {
+  ComputeEDLRequestSchema,
+  UpdateEDLRequestSchema,
+  UpdateChaptersRequestSchema,
+  ApproveEDLRequestSchema,
+  LockEDLRequestSchema,
+} from '../validators/edl-validators';
+import { validateRequest } from '../../../utils/validate-request';
 
 /**
  * Phase 11: EDL Controller
@@ -15,7 +23,8 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async compute(ctx: any) {
     const { id } = ctx.params;
-    const options = ctx.request.body || {};
+    const options = validateRequest(ctx, ComputeEDLRequestSchema, ctx.request.body || {});
+    if (!options) return;
 
     try {
       const edlService = strapi.service(
@@ -72,7 +81,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async approve(ctx: any) {
     const { id } = ctx.params;
-    const { approvedBy, notes } = ctx.request.body || {};
+    const data = validateRequest(ctx, ApproveEDLRequestSchema, ctx.request.body || {});
+    if (!data) return;
+    const { approvedBy, notes } = data;
 
     try {
       const edlService = strapi.service(
@@ -100,7 +111,9 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async lock(ctx: any) {
     const { id } = ctx.params;
-    const { lockedBy, notes } = ctx.request.body || {};
+    const data = validateRequest(ctx, LockEDLRequestSchema, ctx.request.body || {});
+    if (!data) return;
+    const { lockedBy, notes } = data;
 
     try {
       const edlService = strapi.service(
@@ -134,16 +147,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async update(ctx: any) {
     const { id } = ctx.params;
-    const { cuts } = ctx.request.body || {};
+    const updateData = validateRequest(ctx, UpdateEDLRequestSchema, ctx.request.body || {});
+    if (!updateData) return;
+    const { cuts } = updateData;
 
     try {
       const edlService = strapi.service(
         'api::recording-session.edl-service'
       ) as any;
-
-      if (!cuts) {
-        return ctx.badRequest('Cuts array is required');
-      }
 
       const result = await edlService.updateCuts(id, cuts);
 
@@ -166,16 +177,14 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async updateChapters(ctx: any) {
     const { id } = ctx.params;
-    const { chapters } = ctx.request.body || {};
+    const chaptersData = validateRequest(ctx, UpdateChaptersRequestSchema, ctx.request.body || {});
+    if (!chaptersData) return;
+    const { chapters } = chaptersData;
 
     try {
       const edlService = strapi.service(
         'api::recording-session.edl-service'
       ) as any;
-
-      if (!chapters) {
-        return ctx.badRequest('Chapters array is required');
-      }
 
       const result = await edlService.updateChapters(id, chapters);
 

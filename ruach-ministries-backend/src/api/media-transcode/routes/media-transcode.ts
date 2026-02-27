@@ -1,3 +1,11 @@
+/**
+ * Media Transcode Routes
+ *
+ * Auth: All routes require authentication.
+ * Mutations (queue, quick-queue) require studio operator role.
+ * Reads (status, jobs) require any authenticated user.
+ */
+
 export default {
   routes: [
     {
@@ -5,8 +13,7 @@ export default {
       path: "/media-transcode/queue",
       handler: "media-transcode.queueTranscodingJob",
       config: {
-        policies: [],
-        auth: false,
+        policies: ['global::require-studio-operator'],
       },
     },
     {
@@ -14,8 +21,7 @@ export default {
       path: "/media-transcode/status/:jobId",
       handler: "media-transcode.getJobStatus",
       config: {
-        policies: [],
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -23,8 +29,7 @@ export default {
       path: "/media-transcode/jobs/:mediaItemId",
       handler: "media-transcode.listMediaJobs",
       config: {
-        policies: [],
-        auth: false,
+        policies: ['global::is-authenticated-or-admin'],
       },
     },
     {
@@ -32,8 +37,7 @@ export default {
       path: "/media-transcode/quick-queue",
       handler: "media-transcode.quickQueueTranscodes",
       config: {
-        policies: [],
-        auth: false,
+        policies: ['global::require-studio-operator'],
       },
     },
   ],

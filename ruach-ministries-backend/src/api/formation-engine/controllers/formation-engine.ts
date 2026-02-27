@@ -4,6 +4,8 @@
  */
 
 import type { Core } from '@strapi/strapi';
+import { EmitEventRequestSchema } from '../validators/formation-validators';
+import { validateRequest } from '../../../utils/validate-request';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
@@ -12,19 +14,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    */
   async emitEvent(ctx: any) {
     try {
-      const { eventType, eventData, userId, anonymousUserId } = ctx.request.body;
+      const data = validateRequest(ctx, EmitEventRequestSchema, ctx.request.body);
+      if (!data) return;
 
-      if (!eventType || !eventData) {
-        ctx.status = 400;
-        ctx.body = { error: 'eventType and eventData are required' };
-        return;
-      }
-
-      if (!userId && !anonymousUserId) {
-        ctx.status = 400;
-        ctx.body = { error: 'userId or anonymousUserId is required' };
-        return;
-      }
+      const { eventType, eventData, userId, anonymousUserId } = data;
 
       const event = {
         eventId: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

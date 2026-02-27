@@ -12,6 +12,55 @@ Phase 6 transforms Ruach Studio from a content management system with manual ope
 
 ---
 
+## Reality Check — EXISTS vs TO BUILD
+
+> **Updated:** 2026-02-27 — Based on adversarial stress test of actual codebase. Added Source of Truth column.
+
+| Feature | Status | Source of Truth | Notes |
+|---------|--------|-----------------|-------|
+| **Pillar 1: Assembly** | | | |
+| `sync-engine.ts` | **EXISTS** | code: `src/services/sync-engine.ts` | 395 lines, cross-correlation working. Uses `execFile()` (patched). |
+| `audio-quality-analyzer.ts` | **EXISTS** | code: `src/services/audio-quality-analyzer.ts` | 85 lines, master camera selection. |
+| `fcpxml-generator.ts` | **EXISTS** | code: `src/services/fcpxml-generator.ts` | 208 lines, NTSC rational timing. |
+| `canonical-edl.ts` | **EXISTS** | code: `src/services/canonical-edl.ts` | 203 lines, full type system. |
+| Audio Energy Analyzer | **TO BUILD** | doc: this spec | Pure function, no dependencies. |
+| Angle Selection Heuristic | **TO BUILD** | doc: this spec | Depends on energy analyzer. |
+| Auto-EDL Generator | **TO BUILD** | doc: this spec | Orchestration layer. |
+| **Pillar 2: Render** | | | |
+| `render-job-service.ts` | **EXISTS** | code: `src/api/render-job/services/render-job-service.ts` | 460 lines, CRUD + state transitions. Retry bug fixed (re-enqueues into BullMQ now). |
+| `render-state-machine.ts` | **EXISTS** | code: `src/services/render-state-machine.ts` | 133 lines, 5 states. |
+| `render-queue.ts` (BullMQ) | **EXISTS** | code: `src/services/render-queue.ts` | 3 retry attempts. **No DLQ configured.** |
+| `render-worker.ts` | **EXISTS** | code: `src/services/render-worker.ts` | 245 lines. **Missing correlationId.** |
+| `remotion-runner.ts` | **EXISTS** | code: `src/services/remotion-runner.ts` | CLI-based. Patched to `execFile()`. Lambda migration is TO BUILD. |
+| `r2-upload.ts` | **EXISTS** | code: `src/services/r2-upload.ts` | S3-compatible client. |
+| `transcode-worker.ts` | **EXISTS** | code: `src/services/transcode-worker.ts` | 720→540 lines. Patched to `execFile()`. |
+| Format Presets | **TO BUILD** | doc: this spec | 4 output formats. |
+| Render All endpoint | **TO BUILD** | doc: this spec | Multi-format batch rendering. |
+| Progress SSE streaming | **TO BUILD** | doc: this spec | Real-time render progress. |
+| **Pillar 3: Formation** | | | |
+| `formation-engine.ts` (backend service) | **EXISTS** | code: `src/api/formation-engine/services/formation-engine.ts` | Event sourcing, 17 types, inline reducer. |
+| `@ruach/formation` (package) | **EXISTS** | code: `packages/formation/` | **Divergent reducer** — does not match backend inline implementation. Must canonicalize. |
+| `FormationState` | **EXISTS** | code: `packages/formation/src/types.ts` | 5 phases, readinessLevel. |
+| pgvector + semantic search | **EXISTS** | config: Postgres `vector` extension + `src/services/semantic-search.ts` | Operational. |
+| Content Dependency Graph | **TO BUILD** | doc: this spec | DAG as Strapi content type. |
+| Formation Scoring | **TO BUILD** | doc: this spec | 5-factor weighted formula. |
+| Auto-Gating | **TO BUILD** | doc: this spec | Score-based access control. |
+| Next Step Widget | **TO BUILD** | doc: this spec | Personalized recommendations. |
+| **Cross-Cutting** | | | |
+| Auth policies on studio routes | **EXISTS** | code: `src/policies/require-studio-operator.ts` + route configs | Patched — all routes require authentication + role. |
+| Zod validation on mutations | **EXISTS** | code: `src/api/*/validators/*.ts` + `src/utils/validate-request.ts` | Patched — render, formation, transcode, EDL, sync controllers. |
+| Path validation (safe-path) | **EXISTS** | code: `src/services/safe-path.ts` | Allowlisted roots, wired into transcode/render/thumbnail workers. |
+| `correlationId` middleware | **TO BUILD** | doc: this spec | Described in Canonical ID Registry but no middleware exists. |
+| `automationId` generation | **TO BUILD** | doc: this spec | No orchestration function generates this yet. |
+| DLQ configuration (all queues) | **TO BUILD** | doc: this spec | BullMQ queues exist but none have DLQ configured. |
+| Event bus (cross-pillar) | **TO BUILD** | doc: this spec | Pillars currently import each other's services directly. |
+| Backpressure thresholds | **TO BUILD** | doc: this spec | Described but not implemented in queue config. |
+| Operator recovery commands | **TO BUILD** | doc: this spec | Described but no CLI or UI exists. |
+| `DecisionResult<T>` interface | **TO BUILD** | doc: this spec | TypeScript contract defined in this doc but not in code. |
+| `decision_audit` table | **TO BUILD** | doc: this spec | No Strapi content type or table exists. |
+
+---
+
 ## Three Pillars
 
 ### Pillar 1 — Automated Multicam Assembly

@@ -2,6 +2,7 @@
  * Phase 13: Render Job Routes
  *
  * Custom routes for render job operations
+ * Auth: All routes require authentication. Mutations require studio operator role.
  */
 
 export default {
@@ -11,7 +12,7 @@ export default {
       path: '/render-jobs/trigger',
       handler: 'render-job-controller.trigger',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -20,7 +21,7 @@ export default {
       path: '/render-jobs/:jobId',
       handler: 'render-job-controller.get',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
@@ -29,7 +30,7 @@ export default {
       path: '/render-jobs/session/:sessionId',
       handler: 'render-job-controller.getBySession',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
@@ -38,7 +39,7 @@ export default {
       path: '/render-jobs/:jobId/retry',
       handler: 'render-job-controller.retry',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -47,7 +48,7 @@ export default {
       path: '/render-jobs/:jobId/cancel',
       handler: 'render-job-controller.cancel',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },

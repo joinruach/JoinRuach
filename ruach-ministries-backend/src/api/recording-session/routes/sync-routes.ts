@@ -2,6 +2,9 @@
  * Phase 9: Sync Routes
  *
  * Custom routes for session sync operations
+ * Auth: All routes require authentication.
+ * Mutations (POST) require studio operator role.
+ * Reads (GET) require any authenticated user.
  */
 
 export default {
@@ -11,7 +14,7 @@ export default {
       path: '/recording-sessions/:id/sync/compute',
       handler: 'sync-controller.compute',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -20,7 +23,7 @@ export default {
       path: '/recording-sessions/:id/sync',
       handler: 'sync-controller.get',
       config: {
-        policies: [],
+        policies: ['global::is-authenticated-or-admin'],
         middlewares: [],
       },
     },
@@ -29,7 +32,7 @@ export default {
       path: '/recording-sessions/:id/sync/approve',
       handler: 'sync-controller.approve',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },
@@ -38,7 +41,7 @@ export default {
       path: '/recording-sessions/:id/sync/correct',
       handler: 'sync-controller.correct',
       config: {
-        policies: [],
+        policies: ['global::require-studio-operator'],
         middlewares: [],
       },
     },

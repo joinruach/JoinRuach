@@ -2,14 +2,16 @@
  * Phase 13 Plan 2: Remotion Runner
  *
  * Executes Remotion renders via CLI
+ * Security: Uses execFile() to prevent command injection (V3/V23 fix)
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { validatePath } from './safe-path';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export interface RemotionRenderOptions {
   sessionId: string;
@@ -54,6 +56,9 @@ export default class RemotionRunner {
     const startTime = Date.now();
 
     try {
+      // Validate output path stays within sandbox
+      validatePath(outputPath, 'Remotion render outputPath');
+
       // Ensure output directory exists
       const outputDir = path.dirname(outputPath);
       await fs.mkdir(outputDir, { recursive: true });
@@ -68,18 +73,20 @@ export default class RemotionRunner {
         debug: false,
       };
 
-      // Build Remotion CLI command
-      const propsJson = JSON.stringify(props).replace(/"/g, '\\"');
-      const command = `cd ${this.RENDERER_DIR} && pnpm remotion render ${compositionId} ${outputPath} --props="${propsJson}" --overwrite`;
+      const propsJson = JSON.stringify(props);
 
       console.log('[remotion-runner] Executing render command');
       console.log(`[remotion-runner] Output: ${outputPath}`);
 
-      // Execute render
-      const { stdout, stderr } = await execAsync(command, {
-        maxBuffer: 10 * 1024 * 1024, // 10MB buffer for logs
-        timeout: 30 * 60 * 1000, // 30 minute timeout
-      });
+      const { stdout, stderr } = await execFileAsync(
+        'pnpm',
+        ['remotion', 'render', compositionId, outputPath, `--props=${propsJson}`, '--overwrite'],
+        {
+          cwd: this.RENDERER_DIR,
+          maxBuffer: 10 * 1024 * 1024,
+          timeout: 30 * 60 * 1000,
+        }
+      );
 
       const durationMs = Date.now() - startTime;
 
@@ -122,7 +129,9 @@ export default class RemotionRunner {
    */
   static async checkInstallation(): Promise<boolean> {
     try {
-      const { stdout } = await execAsync(`cd ${this.RENDERER_DIR} && pnpm remotion --version`);
+      const { stdout } = await execFileAsync('pnpm', ['remotion', '--version'], {
+        cwd: this.RENDERER_DIR,
+      });
       console.log('[remotion-runner] Remotion version:', stdout.trim());
       return true;
     } catch (error) {

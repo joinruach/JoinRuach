@@ -5,6 +5,8 @@ import {
   listMediaTranscodingJobs,
   type TranscodingJobData,
 } from "../../../services/media-transcoding-queue";
+import { QueueTranscodeRequestSchema, QuickQueueRequestSchema } from "../validators/transcode-validators";
+import { validateRequest } from "../../../utils/validate-request";
 
 export default {
   /**
@@ -13,6 +15,10 @@ export default {
    */
   async queueTranscodingJob(ctx: any) {
     const { strapi } = ctx;
+
+    const data = validateRequest(ctx, QueueTranscodeRequestSchema, ctx.request.body);
+    if (!data) return;
+
     const {
       mediaItemId,
       sourceFileUrl,
@@ -22,32 +28,7 @@ export default {
       resolutions,
       thumbnailTimestamps,
       audioFormat,
-    } = ctx.request.body as {
-      mediaItemId: number;
-      sourceFileUrl: string;
-      sourceFileName: string;
-      mediaType: "video" | "audio";
-      jobType: "transcode" | "thumbnail" | "extract-audio";
-      resolutions?: Array<{
-        width: number;
-        height: number;
-        bitrate: string;
-        label: string;
-      }>;
-      thumbnailTimestamps?: number[];
-      audioFormat?: string;
-    };
-
-    // Validate required fields
-    if (
-      !mediaItemId ||
-      !sourceFileUrl ||
-      !sourceFileName ||
-      !mediaType ||
-      !jobType
-    ) {
-      return ctx.badRequest("Missing required fields");
-    }
+    } = data;
 
     // Validate media item exists
     const mediaItem = await strapi.entityService.findOne(
@@ -181,16 +162,11 @@ export default {
    */
   async quickQueueTranscodes(ctx: any) {
     const { strapi } = ctx;
-    const { mediaItemId, sourceFileUrl, sourceFileName } = ctx.request
-      .body as {
-      mediaItemId: number;
-      sourceFileUrl: string;
-      sourceFileName: string;
-    };
 
-    if (!mediaItemId || !sourceFileUrl || !sourceFileName) {
-      return ctx.badRequest("Missing required fields");
-    }
+    const data = validateRequest(ctx, QuickQueueRequestSchema, ctx.request.body);
+    if (!data) return;
+
+    const { mediaItemId, sourceFileUrl, sourceFileName } = data;
 
     // Validate media item exists
     const mediaItem = await strapi.entityService.findOne(

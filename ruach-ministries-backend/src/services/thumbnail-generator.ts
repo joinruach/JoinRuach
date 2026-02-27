@@ -2,14 +2,16 @@
  * Phase 13 Plan 3: Thumbnail Generator
  *
  * Extracts thumbnail from rendered video using ffmpeg
+ * Security: Uses execFile() to prevent command injection (V3/V23 fix)
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { validatePath } from './safe-path';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export interface ThumbnailResult {
   success: boolean;
@@ -32,6 +34,9 @@ export default class ThumbnailGenerator {
     timeOffset: number = 3
   ): Promise<ThumbnailResult> {
     try {
+      // Validate paths stay within sandbox
+      validatePath(videoPath, 'thumbnail videoPath');
+
       // Generate output path if not provided
       if (!outputPath) {
         const dir = path.dirname(videoPath);
@@ -39,21 +44,23 @@ export default class ThumbnailGenerator {
         outputPath = path.join(dir, `${basename}-thumb.jpg`);
       }
 
+      validatePath(outputPath, 'thumbnail outputPath');
+
       // Ensure output directory exists
       const outputDir = path.dirname(outputPath);
       await fs.mkdir(outputDir, { recursive: true });
 
-      // Extract frame using ffmpeg
-      // -ss: seek to time offset
-      // -i: input file
-      // -vframes 1: extract one frame
-      // -q:v 2: high quality JPEG (1-31, lower is better)
-      const command = `ffmpeg -ss ${timeOffset} -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}" -y`;
-
       console.log('[thumbnail-generator] Extracting thumbnail from video');
 
-      await execAsync(command, {
-        timeout: 30000, // 30 second timeout
+      await execFileAsync('ffmpeg', [
+        '-ss', String(timeOffset),
+        '-i', videoPath,
+        '-vframes', '1',
+        '-q:v', '2',
+        outputPath,
+        '-y',
+      ], {
+        timeout: 30000,
       });
 
       // Verify thumbnail exists
@@ -86,7 +93,7 @@ export default class ThumbnailGenerator {
    */
   static async checkInstallation(): Promise<boolean> {
     try {
-      await execAsync('ffmpeg -version');
+      await execFileAsync('ffmpeg', ['-version']);
       return true;
     } catch {
       console.error('[thumbnail-generator] ffmpeg not found');

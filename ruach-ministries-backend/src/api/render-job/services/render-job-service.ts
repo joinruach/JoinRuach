@@ -324,6 +324,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     const jobs = await strapi.entityService.findMany('api::render-job.render-job', {
       filters: { jobId },
+      populate: ['recordingSession'],
       limit: 1,
     }) as any[];
 
@@ -352,6 +353,31 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
         },
       }
     ) as any;
+
+    // Re-enqueue into BullMQ so a worker actually picks it up
+    try {
+      const sessionId = job.recordingSession?.id || job.recordingSession;
+      const bullmqJobId = await RenderQueue.addJob({
+        renderJobId: jobId,
+        sessionId: String(sessionId),
+        format: job.format || 'full_16_9',
+      }, true);
+
+      await strapi.entityService.update(
+        'api::render-job.render-job',
+        job.id,
+        { data: { bullmq_job_id: bullmqJobId } as any }
+      );
+
+      strapi.log.info(
+        `[render-job-service] Job ${jobId} re-enqueued as BullMQ job ${bullmqJobId}`
+      );
+    } catch (error) {
+      strapi.log.error(
+        `[render-job-service] Failed to re-enqueue job ${jobId}:`,
+        error
+      );
+    }
 
     strapi.log.info(`[render-job-service] Job ${jobId} queued for retry`);
 

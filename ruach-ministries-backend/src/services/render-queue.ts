@@ -63,11 +63,17 @@ export default class RenderQueue {
    * @param payload - Job data
    * @returns BullMQ job ID
    */
-  static async addJob(payload: RenderJobPayload): Promise<string> {
+  static async addJob(payload: RenderJobPayload, isRetry = false): Promise<string> {
     const queue = await this.initialize();
 
+    // For retries, append a suffix to avoid BullMQ duplicate job ID rejection
+    // (failed jobs stay in Redis for 7 days per removeOnFail config)
+    const jobId = isRetry
+      ? `${payload.renderJobId}-retry-${Date.now()}`
+      : payload.renderJobId;
+
     const job = await queue.add('render-video', payload, {
-      jobId: payload.renderJobId, // Use render job ID as BullMQ job ID
+      jobId,
     });
 
     console.log(`[render-queue] Added job ${job.id} to queue`);

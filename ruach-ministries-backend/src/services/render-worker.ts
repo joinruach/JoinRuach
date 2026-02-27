@@ -217,12 +217,25 @@ export default class RenderWorker {
 
       console.log(`[render-worker] Job ${renderJobId} completed successfully`);
     } catch (error: any) {
-      console.error(`[render-worker] Job ${renderJobId} failed:`, error);
+      const maxAttempts = job.opts?.attempts ?? 1;
+      const isLastAttempt = job.attemptsMade >= maxAttempts - 1;
 
-      await renderJobService.failJob(
-        renderJobId,
-        error.message || 'Unknown error during render'
-      );
+      if (isLastAttempt) {
+        console.error(
+          `[render-worker] Job ${renderJobId} permanently failed after ${maxAttempts} attempt(s):`,
+          error
+        );
+        await renderJobService.failJob(
+          renderJobId,
+          error.message || 'Unknown error during render'
+        );
+      } else {
+        console.warn(
+          `[render-worker] Job ${renderJobId} failed (attempt ${job.attemptsMade + 1}/${maxAttempts}), will retry:`,
+          error.message
+        );
+        // Keep status as 'processing' so BullMQ retry hits a valid transition
+      }
 
       throw error; // Re-throw for BullMQ retry logic
     }

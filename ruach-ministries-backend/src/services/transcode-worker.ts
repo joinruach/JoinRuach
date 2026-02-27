@@ -1,5 +1,5 @@
 import type { Core } from "@strapi/strapi";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
@@ -9,8 +9,9 @@ import type {
   TranscodingJobData,
   TranscodingJobProgress,
 } from "./media-transcoding-queue";
+import { validatePath, validateFileName } from "./safe-path";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 interface TranscodeResult {
   transcodes?: Array<{
@@ -60,7 +61,10 @@ export default {
     strapi?: Core.Strapi
   ): Promise<TranscodeResult> {
     const data = job.data;
-    const tempDir = path.join(os.tmpdir(), `transcode-${job.id}`);
+    const tempDir = validatePath(
+      path.join(os.tmpdir(), `transcode-${job.id}`),
+      'transcode tempDir'
+    );
 
     // Create temp directory
     if (!fs.existsSync(tempDir)) {
@@ -119,7 +123,6 @@ export default {
           updateProgress
         );
       } else if (data.type === "proxy") {
-        // Phase 9: Generate proxy optimized for web scrubbing
         results.proxy = await this._processProxy(
           processFile,
           data,
@@ -129,7 +132,6 @@ export default {
           strapi
         );
       } else if (data.type === "mezzanine") {
-        // Phase 9: Generate ProRes mezzanine for Remotion rendering
         results.mezzanine = await this._processMezzanine(
           processFile,
           data,
@@ -139,7 +141,6 @@ export default {
           strapi
         );
       } else if (data.type === "extract-audio-wav") {
-        // Phase 9: Extract uncompressed WAV for audio-offset-finder
         results.audioWav = await this._extractAudioForSync(
           processFile,
           data,
@@ -178,7 +179,11 @@ export default {
     tempDir: string,
     fileName: string
   ): Promise<string> {
-    const filePath = path.join(tempDir, fileName);
+    validateFileName(fileName, 'R2 download fileName');
+    const filePath = validatePath(
+      path.join(tempDir, fileName),
+      'R2 download filePath'
+    );
 
     // Download file using fetch
     const response = await fetch(url);
@@ -249,10 +254,14 @@ export default {
     this: any,
     filePath: string
   ): Promise<{ duration: number; width: number; height: number }> {
-    const ffprobeCmd = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noprint_wrappers=1 -show_entries stream=width,height "${filePath}"`;
-
     try {
-      const { stdout } = await execAsync(ffprobeCmd);
+      const { stdout } = await execFileAsync('ffprobe', [
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1:noprint_wrappers=1',
+        '-show_entries', 'stream=width,height',
+        filePath,
+      ]);
       const lines = stdout.trim().split("\n");
 
       // Parse duration, width, height from ffprobe output
@@ -274,8 +283,13 @@ export default {
 
       // If still no values, try alternative format
       if (duration === 0 || width === 0 || height === 0) {
-        const fullCmd = `ffprobe -v error -select_streams v:0 -show_entries stream=duration,width,height -of csv=p=0 "${filePath}"`;
-        const { stdout: fullOutput } = await execAsync(fullCmd);
+        const { stdout: fullOutput } = await execFileAsync('ffprobe', [
+          '-v', 'error',
+          '-select_streams', 'v:0',
+          '-show_entries', 'stream=duration,width,height',
+          '-of', 'csv=p=0',
+          filePath,
+        ]);
         const [dur, w, h] = fullOutput.trim().split(",");
         if (dur) duration = parseFloat(dur);
         if (w) width = parseInt(w, 10);
@@ -319,11 +333,18 @@ export default {
 
       const outputFile = path.join(tempDir, `output-${res.label}.mp4`);
 
-      // FFmpeg command for H.264 encoding
-      const ffmpegCmd = `ffmpeg -i "${sourceFile}" -vf "scale=${res.width}:${res.height}" -c:v libx264 -preset medium -b:v ${res.bitrate} -c:a aac -b:a 128k "${outputFile}" -y`;
-
       try {
-        await execAsync(ffmpegCmd, { maxBuffer: 1024 * 1024 * 100 });
+        await execFileAsync('ffmpeg', [
+          '-i', sourceFile,
+          '-vf', `scale=${res.width}:${res.height}`,
+          '-c:v', 'libx264',
+          '-preset', 'medium',
+          '-b:v', res.bitrate,
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          outputFile,
+          '-y',
+        ], { maxBuffer: 1024 * 1024 * 100 });
 
         // Upload to R2
         const uploadResult = await this._uploadToR2(
@@ -381,11 +402,15 @@ export default {
 
       const outputFile = path.join(tempDir, `thumbnail-${percentLabel}p.jpg`);
 
-      // FFmpeg command for thumbnail
-      const ffmpegCmd = `ffmpeg -ss ${timestamp} -i "${sourceFile}" -vf "scale=320:180" -vframes 1 "${outputFile}" -y`;
-
       try {
-        await execAsync(ffmpegCmd);
+        await execFileAsync('ffmpeg', [
+          '-ss', String(timestamp),
+          '-i', sourceFile,
+          '-vf', 'scale=320:180',
+          '-vframes', '1',
+          outputFile,
+          '-y',
+        ]);
 
         // Upload to R2
         const uploadResult = await this._uploadToR2(
@@ -431,18 +456,23 @@ export default {
     const audioFormat = data.audioFormat || "mp3";
     const outputFile = path.join(tempDir, `audio.${audioFormat}`);
 
-    // FFmpeg command for audio extraction
-    let ffmpegCmd: string;
+    const baseArgs = ['-i', sourceFile];
+    let formatArgs: string[];
     if (audioFormat === "mp3") {
-      ffmpegCmd = `ffmpeg -i "${sourceFile}" -q:a 0 -map a "${outputFile}" -y`;
+      formatArgs = ['-q:a', '0', '-map', 'a'];
     } else if (audioFormat === "aac") {
-      ffmpegCmd = `ffmpeg -i "${sourceFile}" -c:a aac -b:a 192k "${outputFile}" -y`;
+      formatArgs = ['-c:a', 'aac', '-b:a', '192k'];
     } else {
-      ffmpegCmd = `ffmpeg -i "${sourceFile}" -c:a libvorbis -q:a 4 "${outputFile}" -y`;
+      formatArgs = ['-c:a', 'libvorbis', '-q:a', '4'];
     }
 
     try {
-      await execAsync(ffmpegCmd, { maxBuffer: 1024 * 1024 * 100 });
+      await execFileAsync('ffmpeg', [
+        ...baseArgs,
+        ...formatArgs,
+        outputFile,
+        '-y',
+      ], { maxBuffer: 1024 * 1024 * 100 });
 
       // Upload to R2
       const uploadResult = await this._uploadToR2(
@@ -494,19 +524,23 @@ export default {
    */
   async _detectVFR(this: any, filePath: string): Promise<boolean> {
     try {
-      const cmd = `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate,avg_frame_rate -of json "${filePath}"`;
-      const { stdout } = await execAsync(cmd);
+      const { stdout } = await execFileAsync('ffprobe', [
+        '-v', 'error',
+        '-select_streams', 'v:0',
+        '-show_entries', 'stream=r_frame_rate,avg_frame_rate',
+        '-of', 'json',
+        filePath,
+      ]);
       const data = JSON.parse(stdout);
 
       if (!data.streams || data.streams.length === 0) {
-        return false; // No video stream, not VFR
+        return false;
       }
 
       const stream = data.streams[0];
-      const rFrameRate = stream.r_frame_rate; // Declared frame rate
-      const avgFrameRate = stream.avg_frame_rate; // Actual average
+      const rFrameRate = stream.r_frame_rate;
+      const avgFrameRate = stream.avg_frame_rate;
 
-      // VFR if declared != actual
       return rFrameRate !== avgFrameRate;
     } catch (error) {
       // If detection fails, assume CFR to avoid unnecessary conversion
@@ -528,10 +562,16 @@ export default {
     const outputFile = path.join(tempDir, "cfr-converted.mp4");
 
     try {
-      // Convert to 30fps CFR with high quality (-crf 18)
-      const cmd = `ffmpeg -i "${sourceFile}" -vsync cfr -r 30 -c:v libx264 -crf 18 -c:a copy "${outputFile}" -y`;
-
-      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 100 });
+      await execFileAsync('ffmpeg', [
+        '-i', sourceFile,
+        '-vsync', 'cfr',
+        '-r', '30',
+        '-c:v', 'libx264',
+        '-crf', '18',
+        '-c:a', 'copy',
+        outputFile,
+        '-y',
+      ], { maxBuffer: 1024 * 1024 * 100 });
 
       return outputFile;
     } catch (error) {
@@ -565,21 +605,21 @@ export default {
     const outputFile = path.join(tempDir, "proxy-720p.mp4");
 
     try {
-      // FFmpeg command from Phase 9 RESEARCH.md - Code Examples
-      const cmd = `ffmpeg -i "${sourceFile}" \\
-        -vcodec libx264 \\
-        -pix_fmt yuv420p \\
-        -profile:v baseline \\
-        -level 3.0 \\
-        -g 2 \\
-        -preset fast \\
-        -crf 23 \\
-        -vf "scale=-2:720" \\
-        -movflags +faststart \\
-        -an \\
-        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
-
-      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 100 });
+      await execFileAsync('ffmpeg', [
+        '-i', sourceFile,
+        '-vcodec', 'libx264',
+        '-pix_fmt', 'yuv420p',
+        '-profile:v', 'baseline',
+        '-level', '3.0',
+        '-g', '2',
+        '-preset', 'fast',
+        '-crf', '23',
+        '-vf', 'scale=-2:720',
+        '-movflags', '+faststart',
+        '-an',
+        outputFile,
+        '-y',
+      ], { maxBuffer: 1024 * 1024 * 100 });
 
       // Upload to R2
       const uploadResult = await this._uploadToR2(
@@ -626,19 +666,19 @@ export default {
     const outputFile = path.join(tempDir, "mezzanine.mov");
 
     try {
-      // FFmpeg command from Phase 9 RESEARCH.md - Code Examples
-      const cmd = `ffmpeg -i "${sourceFile}" \\
-        -c:v prores_ks \\
-        -profile:v 2 \\
-        -vendor apl0 \\
-        -pix_fmt yuv422p10le \\
-        -r 30 \\
-        -c:a pcm_s24le \\
-        -ar 48000 \\
-        -ac 2 \\
-        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
-
-      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 200 }); // Larger buffer for ProRes
+      await execFileAsync('ffmpeg', [
+        '-i', sourceFile,
+        '-c:v', 'prores_ks',
+        '-profile:v', '2',
+        '-vendor', 'apl0',
+        '-pix_fmt', 'yuv422p10le',
+        '-r', '30',
+        '-c:a', 'pcm_s24le',
+        '-ar', '48000',
+        '-ac', '2',
+        outputFile,
+        '-y',
+      ], { maxBuffer: 1024 * 1024 * 200 });
 
       // Upload to R2
       const uploadResult = await this._uploadToR2(
@@ -686,15 +726,15 @@ export default {
     const outputFile = path.join(tempDir, "audio-sync.wav");
 
     try {
-      // Uncompressed PCM WAV from Phase 9 RESEARCH.md - Code Examples
-      const cmd = `ffmpeg -i "${sourceFile}" \\
-        -vn \\
-        -acodec pcm_s16le \\
-        -ar 48000 \\
-        -ac 2 \\
-        "${outputFile}" -y`.replace(/\\\n\s+/g, ' ');
-
-      await execAsync(cmd, { maxBuffer: 1024 * 1024 * 150 }); // WAV files are large
+      await execFileAsync('ffmpeg', [
+        '-i', sourceFile,
+        '-vn',
+        '-acodec', 'pcm_s16le',
+        '-ar', '48000',
+        '-ac', '2',
+        outputFile,
+        '-y',
+      ], { maxBuffer: 1024 * 1024 * 150 });
 
       // Upload to R2
       const uploadResult = await this._uploadToR2(

@@ -1,4 +1,6 @@
 import type { Core } from '@strapi/strapi';
+import { TriggerRenderRequestSchema } from '../validators/render-job-validators';
+import { validateRequest } from '../../../utils/validate-request';
 
 /**
  * Phase 13: Render Job Controller
@@ -14,11 +16,10 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
    * Body: { sessionId: string, format?: string, metadata?: object }
    */
   async trigger(ctx: any) {
-    const { sessionId, format, metadata } = ctx.request.body;
+    const data = validateRequest(ctx, TriggerRenderRequestSchema, ctx.request.body);
+    if (!data) return;
 
-    if (!sessionId) {
-      return ctx.badRequest('sessionId is required');
-    }
+    const { sessionId, format, metadata } = data;
 
     try {
       const renderJobService = strapi.service('api::render-job.render-job-service') as any;
