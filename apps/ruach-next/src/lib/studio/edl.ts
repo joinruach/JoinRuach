@@ -9,7 +9,7 @@ export interface Cut {
   startMs: number;
   endMs: number;
   camera: CameraAngle;
-  reason?: 'speaker' | 'reaction' | 'wide';
+  reason?: 'speaker' | 'reaction' | 'wide' | 'emphasis' | 'operator';
   confidence?: number;
 }
 
