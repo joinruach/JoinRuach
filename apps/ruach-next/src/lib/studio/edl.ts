@@ -81,6 +81,11 @@ export async function getEDL(
   sessionId: string,
   authToken: string
 ): Promise<CanonicalEDL | null> {
+  // Dev-only mock EDL for visual testing of confidence UI
+  if (process.env.NEXT_PUBLIC_DEV_MOCK_EDL === 'true') {
+    return buildMockEDL(sessionId);
+  }
+
   try {
     const response = await apiFetch(
       `/api/recording-sessions/${sessionId}/edl`,
@@ -95,6 +100,36 @@ export async function getEDL(
     // EDL not found
     return null;
   }
+}
+
+/** Dev-only: hardcoded EDL with mixed confidence for UI testing */
+function buildMockEDL(sessionId: string): CanonicalEDL {
+  const cuts: Cut[] = [
+    { id: 'mock-1', startMs: 0, endMs: 8000, camera: 'A', reason: 'speaker', confidence: 0.95 },
+    { id: 'mock-2', startMs: 8000, endMs: 14000, camera: 'B', reason: 'speaker', confidence: 0.85 },
+    { id: 'mock-3', startMs: 14000, endMs: 22000, camera: 'A', reason: 'speaker', confidence: 0.82 },
+    { id: 'mock-4', startMs: 22000, endMs: 30000, camera: 'C', reason: 'wide', confidence: 0.65 },
+    { id: 'mock-5', startMs: 30000, endMs: 38000, camera: 'B', reason: 'emphasis', confidence: 0.55 },
+    { id: 'mock-6', startMs: 38000, endMs: 46000, camera: 'A', reason: 'speaker', confidence: 0.52 },
+    { id: 'mock-7', startMs: 46000, endMs: 52000, camera: 'C', reason: 'wide', confidence: 0.35 },
+    { id: 'mock-8', startMs: 52000, endMs: 60000, camera: 'B', reason: 'emphasis', confidence: 0.4 },
+  ];
+
+  return {
+    id: 999,
+    sessionId,
+    version: 1,
+    status: 'draft',
+    durationMs: 60000,
+    tracks: { program: cuts },
+    metrics: {
+      totalCuts: cuts.length,
+      avgShotLength: 7500,
+      cameraDistribution: { A: 3, B: 3, C: 2 },
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 /**

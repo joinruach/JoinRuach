@@ -19,20 +19,23 @@ export default async function StudioLayout({
   // Await params
   const { locale } = await params;
 
+  // Dev-only: bypass auth for mock EDL visual testing
+  const isMockMode = process.env.NEXT_PUBLIC_DEV_MOCK_EDL === 'true';
+
   // Check authentication (extra safety, middleware already checks)
-  const session = await auth();
+  const session = isMockMode ? null : await auth();
 
   console.log('[Studio Layout] Checking authorization');
   console.log('[Studio Layout] Session exists:', !!session);
   console.log('[Studio Layout] User role:', session?.role);
 
-  if (!session) {
+  if (!session && !isMockMode) {
     console.log('[Studio Layout] No session, redirecting to login');
     redirect(`/${locale}/login?callbackUrl=/${locale}/studio`);
   }
 
   // Check studio access - only 'studio' and 'admin' roles allowed
-  const hasAccess = hasStudioAccess(session.role);
+  const hasAccess = isMockMode || hasStudioAccess(session?.role);
   console.log('[Studio Layout] Has studio access:', hasAccess);
 
   if (!hasAccess) {
@@ -47,7 +50,7 @@ export default async function StudioLayout({
   let failedCount = 0;
 
   try {
-    if (session.strapiJwt) {
+    if (session?.strapiJwt) {
       const inboxItems = await fetchInboxItems(session.strapiJwt);
       const stats = calculateQueueStats(inboxItems);
       urgentCount = stats.urgent;
@@ -62,7 +65,7 @@ export default async function StudioLayout({
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Navigation Sidebar */}
       <StudioNav
-        userRole={session.role}
+        userRole={session?.role ?? 'studio'}
         urgentCount={urgentCount}
         failedCount={failedCount}
       />

@@ -11,6 +11,18 @@ export default async function SessionLayout({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+
+  // Dev-only: bypass auth for mock EDL visual testing
+  if (process.env.NEXT_PUBLIC_DEV_MOCK_EDL === 'true') {
+    return (
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-white dark:bg-gray-900">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   const session = await auth();
 
   if (!session?.strapiJwt) {

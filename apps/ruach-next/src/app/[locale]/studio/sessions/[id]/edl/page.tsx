@@ -18,6 +18,21 @@ export default async function SessionEDLPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+
+  // Dev-only: bypass auth and session for mock EDL visual testing
+  if (process.env.NEXT_PUBLIC_DEV_MOCK_EDL === 'true') {
+    const edl = await getEDL(id, 'mock-token');
+    return (
+      <EDLEditorPage
+        sessionId={id}
+        session={{ status: 'synced' } as any}
+        initialEDL={edl}
+        authToken="mock-token"
+        locale={locale}
+      />
+    );
+  }
+
   const session = await auth();
 
   if (!session?.strapiJwt) {

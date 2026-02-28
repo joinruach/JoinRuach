@@ -27,6 +27,11 @@ export async function proxy(req: NextRequest) {
   );
 
   if (isStudioRoute) {
+    // Dev-only: bypass auth for mock EDL visual testing
+    if (process.env.NEXT_PUBLIC_DEV_MOCK_EDL === 'true') {
+      return NextResponse.next();
+    }
+
     // Extract locale from pathname
     const locale = locales.find((l) => pathname.startsWith(`/${l}/`)) || defaultLocale;
 
