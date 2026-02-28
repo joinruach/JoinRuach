@@ -3,8 +3,8 @@ type Donation = {
   date: string;
   amount: number;
   method: string;
-  status: "completed" | "pending" | "failed";
-  receiptUrl?: string;
+  status: "completed" | "pending" | "failed" | "refunded";
+  receiptUrl?: string | null;
 };
 
 type DonationHistoryProps = {

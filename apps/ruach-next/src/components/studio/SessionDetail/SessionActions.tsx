@@ -26,7 +26,7 @@ export default function SessionActions({
     setError(null);
 
     try {
-      await triggerSync(sessionSlug, authToken, session.anchorAngle);
+      await triggerSync(sessionSlug, authToken, session.anchorAngle ?? undefined);
       // Refresh the page to show updated status
       router.refresh();
     } catch (err) {
