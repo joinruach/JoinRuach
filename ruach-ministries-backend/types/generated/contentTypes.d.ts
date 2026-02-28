@@ -1234,6 +1234,42 @@ export interface ApiContactSubmissionContactSubmission
   };
 }
 
+export interface ApiContentLikeContentLike extends Struct.CollectionTypeSchema {
+  collectionName: 'content_likes';
+  info: {
+    displayName: 'Content Like';
+    pluralName: 'content-likes';
+    singularName: 'content-like';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    contentId: Schema.Attribute.String & Schema.Attribute.Required;
+    contentType: Schema.Attribute.Enumeration<
+      ['media', 'course', 'series', 'event']
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::content-like.content-like'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiCourseEntitlementCourseEntitlement
   extends Struct.CollectionTypeSchema {
   collectionName: 'course_entitlements';
@@ -6796,6 +6832,7 @@ declare module '@strapi/strapi' {
       'api::contact-info.contact-info': ApiContactInfoContactInfo;
       'api::contact-message.contact-message': ApiContactMessageContactMessage;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
+      'api::content-like.content-like': ApiContentLikeContentLike;
       'api::course-entitlement.course-entitlement': ApiCourseEntitlementCourseEntitlement;
       'api::course-license.course-license': ApiCourseLicenseCourseLicense;
       'api::course-profile.course-profile': ApiCourseProfileCourseProfile;
