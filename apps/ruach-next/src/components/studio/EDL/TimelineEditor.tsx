@@ -7,6 +7,7 @@ import { CutInspector } from './CutInspector';
 import { PlayheadControls } from './PlayheadControls';
 import { EventMarkerPanel } from './EventMarkerPanel';
 import { EDLActions } from './EDLActions';
+import { ReviewToolbar } from './ReviewToolbar';
 
 interface TimelineEditorProps {
   sessionId: string;
@@ -27,6 +28,7 @@ export function TimelineEditor({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
 
   const selectedCut = cuts.find((c) => c.id === selectedCutId);
 
@@ -96,6 +98,30 @@ export function TimelineEditor({
     setHasChanges(true);
   }
 
+  // Mark all high-confidence cuts as operator-approved
+  function bulkApproveHighConfidence() {
+    setCuts((prev) =>
+      prev.map((cut) =>
+        (cut.confidence ?? 0) >= 0.8
+          ? { ...cut, reason: 'operator' as const }
+          : cut
+      )
+    );
+    setHasChanges(true);
+  }
+
+  // Select next low-confidence cut for review
+  function selectNextLowConfidence() {
+    const currentIdx = selectedCutId
+      ? cuts.findIndex((c) => c.id === selectedCutId)
+      : -1;
+    const searchStart = currentIdx + 1;
+    const lowCut =
+      cuts.slice(searchStart).find((c) => (c.confidence ?? 0) < 0.5) ??
+      cuts.slice(0, searchStart).find((c) => (c.confidence ?? 0) < 0.5);
+    if (lowCut) setSelectedCutId(lowCut.id);
+  }
+
   // Save changes to backend
   async function handleSave() {
     setIsSaving(true);
@@ -138,6 +164,16 @@ export function TimelineEditor({
             <span className="text-sm text-yellow-400">Unsaved changes</span>
           )}
           <button
+            onClick={() => setReviewMode((r) => !r)}
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              reviewMode
+                ? 'bg-ruachGold text-ruachDark'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Review
+          </button>
+          <button
             onClick={handleReset}
             disabled={!hasChanges || isSaving}
             className="px-4 py-2 text-sm text-gray-300 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -153,6 +189,15 @@ export function TimelineEditor({
           </button>
         </div>
       </div>
+
+      {/* Review Toolbar */}
+      {reviewMode && (
+        <ReviewToolbar
+          cuts={cuts}
+          onApproveHighConfidence={bulkApproveHighConfidence}
+          onSelectNextLowConfidence={selectNextLowConfidence}
+        />
+      )}
 
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">

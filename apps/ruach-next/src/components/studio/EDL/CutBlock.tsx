@@ -15,6 +15,13 @@ const CAMERA_COLORS = {
   C: 'bg-purple-500',
 } as const;
 
+function getConfidenceColor(confidence?: number): string {
+  if (confidence === undefined) return 'bg-gray-400';
+  if (confidence >= 0.8) return 'bg-green-400';
+  if (confidence >= 0.5) return 'bg-yellow-400';
+  return 'bg-red-400';
+}
+
 function formatDuration(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -55,6 +62,9 @@ export function CutBlock({ cut, durationMs, isSelected, onClick }: CutBlockProps
           {formatDuration(cut.endMs - cut.startMs)}
         </div>
       </div>
+      <div
+        className={`absolute bottom-0 left-0 right-0 h-1 ${getConfidenceColor(cut.confidence)} rounded-b`}
+      />
     </div>
   );
 }

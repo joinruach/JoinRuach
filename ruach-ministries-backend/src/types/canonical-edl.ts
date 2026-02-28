@@ -165,6 +165,9 @@ export interface EDLGenerationOptions {
   /** Style profile for editing */
   style?: "sermon" | "podcast" | "teaching" | "shorts";
 
+  /** Generation mode: 'transcript' uses speaker labels, 'energy' uses audio energy */
+  mode?: "transcript" | "energy";
+
   /** Generate chapter markers */
   includeChapters?: boolean;
 
@@ -185,6 +188,12 @@ export interface EDLGenerationOptions {
 
   /** Trim silence at start/end */
   trimSilence?: boolean;
+
+  /** dB lead required to trigger camera switch (energy mode only, default 6) */
+  leadThresholdDb?: number;
+
+  /** dB level below which audio is treated as silence (energy mode only, default -40) */
+  silenceThresholdDb?: number;
 }
 
 /**

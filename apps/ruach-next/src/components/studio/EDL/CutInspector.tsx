@@ -13,6 +13,12 @@ interface CutInspectorProps {
   onClose: () => void;
 }
 
+function getConfidenceBadge(confidence: number): { color: string; label: string } {
+  if (confidence >= 0.8) return { color: 'bg-green-500/20 text-green-400', label: 'High' };
+  if (confidence >= 0.5) return { color: 'bg-yellow-500/20 text-yellow-400', label: 'Medium' };
+  return { color: 'bg-red-500/20 text-red-400', label: 'Low' };
+}
+
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -66,12 +72,17 @@ export function CutInspector({
             <span className="text-white capitalize">{cut.reason}</span>
           </div>
         )}
-        {cut.confidence !== undefined && (
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Confidence</span>
-            <span className="text-white">{(cut.confidence * 100).toFixed(0)}%</span>
-          </div>
-        )}
+        {cut.confidence !== undefined && (() => {
+          const badge = getConfidenceBadge(cut.confidence);
+          return (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-400">Confidence</span>
+              <span className={`px-2 py-0.5 rounded text-xs font-medium ${badge.color}`}>
+                {badge.label} · {(cut.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Camera Selector */}
