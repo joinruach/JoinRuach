@@ -50,6 +50,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
   async createJob(input: CreateRenderJobInput) {
     const { sessionId, format = 'full_16_9', metadata = {}, operatorOverride = false } = input;
 
+    // Kill switch — immediate halt for all new renders
+    if (process.env.RENDERING_DISABLED === 'true') {
+      throw new Error('Rendering is currently disabled (RENDERING_DISABLED=true). Contact an administrator.');
+    }
+
     // Cost cap guard — blocks if monthly spend exceeds hard cap
     const costCheck = await checkRenderCostCap(strapi, operatorOverride);
     if (!costCheck.allowed) {

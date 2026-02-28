@@ -253,7 +253,24 @@ export function RenderJobMonitor({ jobId, onComplete }: RenderJobMonitorProps) {
                 <div className="stat-value text-2xl">{job.fps} FPS</div>
               </div>
             )}
+
+            {job.costData && (
+              <div className="stat">
+                <div className="stat-title">Render Cost</div>
+                <div className="stat-value text-2xl">
+                  {job.costData.displayCost}
+                </div>
+                <div className="stat-desc">{job.costData.currency}</div>
+              </div>
+            )}
           </div>
+
+          {/* Cost disclaimer */}
+          {job.costData?.disclaimer && (
+            <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+              {job.costData.disclaimer}
+            </p>
+          )}
         </div>
       )}
 

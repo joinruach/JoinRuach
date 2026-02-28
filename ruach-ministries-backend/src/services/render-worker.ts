@@ -66,6 +66,13 @@ export default class RenderWorker {
     const renderJobService = strapi.service('api::render-job.render-job-service') as any;
 
     try {
+      // Kill switch — fail fast if rendering was disabled while job was queued
+      if (process.env.RENDERING_DISABLED === 'true') {
+        await renderJobService.failJob(renderJobId, 'Rendering disabled (RENDERING_DISABLED=true)');
+        console.warn(`[render-worker] Job ${renderJobId} rejected — kill switch active`);
+        return;
+      }
+
       // Move to processing
       await renderJobService.transitionStatus(renderJobId, 'processing', {
         progress: 0.05,

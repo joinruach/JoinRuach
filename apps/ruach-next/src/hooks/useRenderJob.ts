@@ -38,6 +38,15 @@ export interface RenderJob {
   createdAt: string;
   updatedAt: string;
 
+  // Cost
+  costData?: {
+    accruedSoFar: number;
+    displayCost: string;
+    currency: string;
+    disclaimer: string;
+    capturedAt?: string;
+  } | null;
+
   // Advanced
   bullmqJobId?: string;
   metadata?: Record<string, any>;
