@@ -68,7 +68,10 @@ export default class RenderWorker {
     try {
       // Kill switch — fail fast if rendering was disabled while job was queued
       if (process.env.RENDERING_DISABLED === 'true') {
-        await renderJobService.failJob(renderJobId, 'Rendering disabled (RENDERING_DISABLED=true)');
+        await renderJobService.failJob(
+          renderJobId,
+          '[rendering_disabled] Rendering is disabled by operator (RENDERING_DISABLED=true). Job was rejected at worker pickup — no Lambda invocation occurred.',
+        );
         console.warn(`[render-worker] Job ${renderJobId} rejected — kill switch active`);
         return;
       }

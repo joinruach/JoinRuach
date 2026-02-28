@@ -4,6 +4,18 @@ import RenderStateMachine, { type RenderStatus } from '../../../services/render-
 import RenderQueue from '../../../services/render-queue';
 import { checkRenderCostCap, recordRenderCost } from '../../../services/render-cost-guard';
 
+/** Typed error for operator-grade triage (grepable code, correct HTTP status) */
+export class RenderServiceError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly httpStatus: number = 400,
+  ) {
+    super(message);
+    this.name = 'RenderServiceError';
+  }
+}
+
 /**
  * Phase 13: Render Job Service
  *
@@ -52,13 +64,21 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
 
     // Kill switch — immediate halt for all new renders
     if (process.env.RENDERING_DISABLED === 'true') {
-      throw new Error('Rendering is currently disabled (RENDERING_DISABLED=true). Contact an administrator.');
+      throw new RenderServiceError(
+        'Rendering is currently disabled by operator. Contact an administrator.',
+        'rendering_disabled',
+        503,
+      );
     }
 
     // Cost cap guard — blocks if monthly spend exceeds hard cap
     const costCheck = await checkRenderCostCap(strapi, operatorOverride);
     if (!costCheck.allowed) {
-      throw new Error(costCheck.blocked ?? 'Render blocked by cost cap');
+      throw new RenderServiceError(
+        costCheck.blocked ?? 'Render blocked by cost cap',
+        'cost_cap_exceeded',
+        503,
+      );
     }
 
     strapi.log.info(`[render-job-service] Creating job for session ${sessionId}, format ${format}`);

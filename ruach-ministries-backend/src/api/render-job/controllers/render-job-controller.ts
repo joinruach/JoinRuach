@@ -6,6 +6,7 @@ import {
 import { validateRequest } from '../../../utils/validate-request';
 import { ALL_FORMAT_SLUGS } from '../../../services/format-presets';
 import RemotionRunner from '../../../services/remotion-runner';
+import { RenderServiceError } from '../services/render-job-service';
 
 /**
  * Phase 13: Render Job Controller
@@ -49,6 +50,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       };
     } catch (error) {
       strapi.log.error('[render-job-controller] Trigger failed:', error);
+      if (error instanceof RenderServiceError) {
+        ctx.status = error.httpStatus;
+        ctx.body = { error: error.message, code: error.code };
+        return;
+      }
       ctx.badRequest(error instanceof Error ? error.message : 'Failed to trigger render job');
     }
   },
@@ -240,6 +246,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       };
     } catch (error) {
       strapi.log.error('[render-job-controller] Render-all failed:', error);
+      if (error instanceof RenderServiceError) {
+        ctx.status = error.httpStatus;
+        ctx.body = { error: error.message, code: error.code };
+        return;
+      }
       ctx.badRequest(
         error instanceof Error ? error.message : 'Failed to create render-all jobs'
       );
