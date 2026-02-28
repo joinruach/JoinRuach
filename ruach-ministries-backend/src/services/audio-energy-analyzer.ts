@@ -44,7 +44,7 @@ export async function analyzeAudioEnergy(
 
   const { stderr } = await execFileAsync('ffmpeg', [
     '-i', audioPath,
-    '-af', `asetnsamples=n=${samplesPerWindow},astats=metadata=1:reset=1`,
+    '-af', `asetnsamples=n=${samplesPerWindow},astats=metadata=1:reset=1,ametadata=print`,
     '-f', 'null',
     '-',
   ], { maxBuffer: 1024 * 1024 * 50 });

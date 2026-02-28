@@ -11,6 +11,13 @@ type DonationHistoryProps = {
   donations: Donation[];
 };
 
+const STATUS_CONFIG: Record<Donation['status'], { label: string; className: string }> = {
+  completed: { label: 'Completed', className: 'bg-green-100 text-green-700' },
+  pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-700' },
+  failed: { label: 'Failed', className: 'bg-red-100 text-red-700' },
+  refunded: { label: 'Refunded', className: 'bg-blue-100 text-blue-700' },
+};
+
 export default function DonationHistory({ donations }: DonationHistoryProps) {
   if (donations.length === 0) {
     return (
@@ -49,15 +56,9 @@ export default function DonationHistory({ donations }: DonationHistoryProps) {
                 <td className="px-6 py-4 text-neutral-700">{donation.method}</td>
                 <td className="px-6 py-4">
                   <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                      donation.status === "completed"
-                        ? "bg-green-100 text-green-700"
-                        : donation.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                    }`}
+                    className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${STATUS_CONFIG[donation.status].className}`}
                   >
-                    {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
+                    {STATUS_CONFIG[donation.status].label}
                   </span>
                 </td>
                 <td className="px-6 py-4">
