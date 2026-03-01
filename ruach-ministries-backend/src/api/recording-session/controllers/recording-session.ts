@@ -47,7 +47,7 @@ export default factories.createCoreController(
         r2_key: a.r_2_original_url,
         r2_proxy_url: a.r_2_proxy_url,
         r2_mezzanine_url: a.r_2_mezzanine_url,
-        r2_audio_wav_url: null,
+        r2_audio_wav_url: a.r_2_audio_wav_url || null,
         transcodingStatus: 'complete',
         uploadStatus: 'complete',
         durationMs: a.duration_ms,

@@ -40,6 +40,9 @@ export interface TranscodingJobData {
   // Storage
   r2BucketName: string;
   r2OutputPath: string;
+
+  // Optional: link to media-asset for propagating results (e.g. WAV URL)
+  mediaAssetDocumentId?: string;
 }
 
 export interface TranscodingJobProgress {
@@ -120,6 +123,35 @@ function createRedisConnection(): RedisOptions {
     options.tls = {};
   }
   return options;
+}
+
+/**
+ * Update media-asset's r2_audio_wav_url after WAV extraction completes.
+ * Uses knex directly to match existing DB access patterns.
+ */
+async function propagateAudioWavUrl(
+  strapi: Core.Strapi,
+  mediaAssetDocumentId: string,
+  wavUrl: string,
+): Promise<void> {
+  const knex = strapi.db.connection;
+  const updated = await knex("media_assets")
+    .where("document_id", mediaAssetDocumentId)
+    .update({
+      r_2_audio_wav_url: wavUrl,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (updated === 0) {
+    strapi.log.warn(
+      `[media-transcoding] No media-asset found with documentId=${mediaAssetDocumentId}`,
+    );
+    return;
+  }
+
+  strapi.log.info(
+    `[media-transcoding] Updated media-asset ${mediaAssetDocumentId} with WAV URL`,
+  );
 }
 
 /**
@@ -226,8 +258,25 @@ export async function initializeMediaTranscodingQueue({
       );
     });
 
-    worker.on("completed", (job) => {
+    worker.on("completed", async (job) => {
       strapi.log.info(`[media-transcoding] Job ${job.id} completed`);
+
+      // Propagate audioWav URL to linked media-asset
+      const result = job.returnvalue;
+      if (result?.results?.audioWav?.outputUrl && job.data.mediaAssetDocumentId) {
+        try {
+          await propagateAudioWavUrl(
+            strapi,
+            job.data.mediaAssetDocumentId,
+            result.results.audioWav.outputUrl,
+          );
+        } catch (err) {
+          strapi.log.error(
+            `[media-transcoding] Failed to propagate WAV URL for asset ${job.data.mediaAssetDocumentId}:`,
+            err instanceof Error ? err.message : err,
+          );
+        }
+      }
     });
 
     strapi.log.info("✅ Media transcoding queue initialized");

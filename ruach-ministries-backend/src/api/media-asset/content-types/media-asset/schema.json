@@ -57,6 +57,11 @@
       "maxLength": 1024,
       "description": "Normalized intermediate for rendering"
     },
+    "r2_audio_wav_url": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "48kHz stereo WAV for sync/energy analysis"
+    },
     "duration_ms": {
       "type": "integer",
       "min": 0,
